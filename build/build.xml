@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project name="ThinWire RIA Ajax Framework" default="help" basedir=".">
+	<target name="-init">
+		<!-- Path locations -->
+		<property name="path.library" value="../lib"/>
+		<property name="path.source" value="../src"/>
+		<property name="path.temp" value="../temp"/>
+		
+		<!-- Load version information from internal properties file -->
+		<loadproperties srcFile="${path.source}/thinwire/ui/resources/versionInfo.properties"/>
+					
+		<tstamp/>
+	</target>
+	
+	<!-- Compile the framework, create a jar and create a distribution zip -->
+	<target name="dist" depends="-init,-compile,-jso,-jar,-zip,-clean"/>
+	
+	<!-- Compile the framework, create a jar, translate to Java 1.4 and create a distribution zip -->
+	<target name="dist14" depends="-init,-compile,-jso,-retroweaver,-jar,-zipJava14,-clean"/>
+	
+	<target name="-compile">
+		<echo message="Compiling Java Source"/>
+		
+		<delete dir="${path.temp}"/>
+		<mkdir dir="${path.temp}"/>
+		
+		<javac srcdir="${path.source}" destdir="${path.temp}" target="1.5" source="1.5" debug="yes">
+			<classpath>
+				<fileset dir="./" includes="*/**"/>
+				<fileset dir="${path.library}" includes="*/**"/>
+			</classpath>
+	    </javac>
+
+		<copy todir="${path.temp}" overwrite="true">
+			<fileset dir="${path.source}" defaultexcludes="yes">
+				<include name="thinwire/render/**/resources/*.*"/>
+				<include name="thinwire/ui/**/resources/*.*"/>
+				<include name="thinwire/util/**/resources/*.*"/>				
+				<exclude name="thinwire/render/web/resources/Logger.js"/>
+			</fileset>
+		</copy>		
+	</target>
+	
+	<target name="-jso">
+		<echo message="Applying ThinWire JavaScript Optimizer for Smaller Client-Side Code"/>
+					
+		<taskdef name="jso" classname="thinwire.tools.jso.AntTask">
+			<classpath>
+				<fileset dir="./" includes="*/**"/>
+			</classpath>
+		</taskdef>
+
+		<jso srcdir="${path.temp}" destdir="${path.temp}"
+			includes="/thinwire/render/web/resources/*.js;/thinwire/ui/layout/resources/*.js"/>
+    </target>
+	
+	<target name="-retroweaver">
+		<echo message="Applying Retroweaver Translation for Java 1.4 Support"/>
+		
+		<taskdef name="retroweaver" classname="com.rc.retroweaver.ant.RetroWeaverTask">
+	    	<classpath>
+				<fileset dir="./" includes="*/**"/>
+	    	</classpath>
+	    </taskdef>
+		
+		<retroweaver srcdir="${path.temp}" target="1.4"/>
+	</target>
+	
+	<target name="-jar">
+		<jar jarfile="../${versionInfo.originalFilename}" basedir="${path.temp}">
+			<manifest>
+				<attribute name="Manifest-Version" value="2.0"/>
+				<attribute name="Built-By" value="${user.name}"/>
+				<attribute name="Main-Class" value="thinwire.ui.Application"/>				
+
+				<section name="thinwire/render/web/">
+					<attribute name="Implementation-Title" value="ThinWire RIA Ajax Framework Web Renderer"/>
+					<attribute name="Implementation-Version" value="${versionInfo.productVersion}"/>
+					<attribute name="Implementation-Vendor" value="${versionInfo.companyName}"/>
+				</section>
+
+				<section name="thinwire/ui/">
+					<attribute name="Implementation-Title" value="ThinWire RIA Ajax Framework"/>
+					<attribute name="Implementation-Version" value="${versionInfo.productVersion}"/>
+					<attribute name="Implementation-Vendor" value="${versionInfo.companyName}"/>
+				</section>
+
+				<section name="thinwire/util/">
+					<attribute name="Implementation-Title" value="ThinWire RIA Ajax Framework Utilities"/>
+					<attribute name="Implementation-Version" value="${versionInfo.productVersion}"/>
+					<attribute name="Implementation-Vendor" value="${versionInfo.companyName}"/>
+				</section>        
+			</manifest>
+		</jar>		
+	</target>
+	
+	<target name="-zip">
+		<delete dir="${path.temp}"/>
+		<mkdir dir="${path.temp}"/>
+
+		<copy todir="${path.temp}" flatten="true">
+			<fileset dir="../">
+				<include name="${versionInfo.originalFilename}"/>
+				<include name="LICENSE.txt"/>
+			</fileset>
+			
+			<fileset dir="${path.library}" includes="*/**"/>
+		</copy>	
+			
+		<zip destfile="../thinwire-${versionInfo.productVersion}.zip" basedir="${path.temp}" filesonly="true"/>
+	</target>
+
+	<target name="-zipJava14">
+		<delete dir="${path.temp}"/>
+		<mkdir dir="${path.temp}"/>
+
+		<copy todir="${path.temp}" flatten="true">
+			<fileset dir="../">
+				<include name="${versionInfo.originalFilename}"/>
+				<include name="LICENSE.txt"/>
+			</fileset>
+			
+			<fileset dir="${path.library}" includes="*/**"/>
+			<fileset dir="./" includes="retroweaver*/retroweaver-rt*.jar"/>
+		</copy>
+		
+		<zip destfile="../thinwire-${versionInfo.productVersion}-java14.zip" basedir="${path.temp}" filesonly="true"/>
+	</target>	
+	
+	<target name="-clean">
+		<delete dir="${path.temp}"/>
+		<delete file="../${versionInfo.originalFilename}"/>	
+	</target>
+	
+	<!-- Archive the source, including everything needed to build the framework -->
+	<target name="source" depends="-init">
+		<delete dir="${path.temp}"/>
+		<mkdir dir="${path.temp}"/>
+		
+		<copy todir="${path.temp}" overwrite="true">
+			<fileset dir="../" defaultexcludes="yes">
+				<include name="lib/**/*"/>
+				<include name="src/**/*"/>
+				<include name="build/**/*"/>
+				<include name="LICENSE.txt"/>
+				<include name="README.txt"/>
+			</fileset>
+		</copy>
+
+		<zip destfile="../thinwire-${versionInfo.productVersion}-src.zip"><fileset dir="${path.temp}"/></zip>
+		<delete dir="${path.temp}"/>
+	</target>
+	
+	<!-- Build the API javadoc and archive it -->
+	<target name="javadoc" depends="-init">
+		<mkdir dir="${path.temp}"/>
+
+		<javadoc destdir="${path.temp}"
+			author="false"
+			version="false"
+			use="false"
+			access="protected"
+			windowtitle="ThinWire RIA Ajax Framework API v${versionInfo.productVersion}"
+			doctitle="ThinWire RIA Ajax Framework API v${versionInfo.productVersion}">
+
+			<fileset dir="${path.source}" defaultexcludes="yes">
+				<include name="thinwire/ui/**/*.java"/>
+				<include name="thinwire/util/**/*.java"/>
+			</fileset>
+		
+			<bottom><![CDATA[<a href="http://www.thinwire.com">ThinWire&reg;</a> is a registered of <a href="http://www.customcreditsystems.com">Custom Credit Systems</a>&nbsp;&nbsp;Copyright &copy; 2006 All rights reserved.
+				<div style="padding-top:10px;text-align:center;">
+ 				    <a href="http://www.opensource.org/licenses/gpl-license.php"><img src="http://opensource.org/trademarks/open_source_button.png" border="0" width="88" height="31" alt="ThinWire_is_Open_Source_under_the_terms_of_the_GPLv2"></a>
+				    <a href="http://sourceforge.net/projects/thinwire"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=170706&amp;type=1" border="0" width="88" height="31" alt="SourceForge.net_Project_Page"></a>
+				</div>
+		    ]]></bottom>
+		</javadoc>
+
+		<replaceregexp match="(parent[.]document[.]title[=].*?;)" replace="try {\1} catch (e) {}" flags="g">
+			<fileset dir="${path.temp}" includes="**/*.html"/>
+		</replaceregexp>		
+		
+		<copy todir="${path.temp}" overwrite="true">
+			<fileset dir="${path.source}" includes="thinwire/**/doc-files/*.*"/>
+		</copy>
+		
+		<zip destfile="../thinwire-${versionInfo.productVersion}-doc.zip">
+			<fileset dir="${path.temp}"/>
+		</zip>
+		
+		<delete dir="${path.temp}"/>
+	</target>
+	
+	<target name="help">
+<echo>               ThinWire(TM) RIA Ajax Framework
+         Copyright (C) 2003-2006 Custom Credit Systems
+
+The following build targets are available:
+
+ dist        compile the framework, create a jar and package
+	         it along with other required runtime files into
+             a distribution zip.
+
+ dist14      compile a Java 1.4 compatible version of the
+             framework, create a jar and package it along with
+             other required runtime files into a distribution
+             zip.
+	
+ source      create a source only distribution that contains
+             everything necessary to build the framework.
+
+ javadoc     generate the framework API documentation and
+             package it into a javadoc only distribution zip
+             file.
+</echo>
+	</target>
+</project>

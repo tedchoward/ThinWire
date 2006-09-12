@@ -1,0 +1,139 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!--
+/*
+ *                      ThinWire(TM) RIA Ajax Framework
+ *              Copyright (C) 2003-2006 Custom Credit Systems
+ * 
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
+ * version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+ * Place, Suite 330, Boston, MA 02111-1307 USA
+ *
+ * Users wishing to use this library in proprietary products which are not 
+ * themselves to be released under the GNU Public License should contact Custom
+ * Credit Systems for a license to do so.
+ * 
+ *               Custom Credit Systems, Richardson, TX 75081, USA.
+ *                          http://www.thinwire.com
+ */
+-->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+<title>[ThinWire File Upload]</title>
+<style type="text/css">
+.fileUploadLabel {
+    padding: 3px; 
+    font-family: tahoma, sans-serif;
+    font-size: 8pt;
+    width: 70px;
+    float: left;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.fileUploadEditor {
+    border: 2px inset;
+    margin: 0px;
+    padding: 1px; 
+    font-family: tahoma, sans-serif;
+    font-size: 8pt;
+}
+
+.fileUploadButton {
+    border: 2px outset;
+    margin: 3px;
+    padding: 1px;
+    width: 80px;
+    height: 22px;
+    font-family: tahoma, sans-serif;
+    font-size: 8pt;
+}
+</style>
+</head>
+<body style="background-color:threedface;">
+<form id="uploadForm" accept-charset="utf-8" onsubmit="return false;" action="?_twa_=upload" method="post" enctype="multipart/form-data">
+<div id="files" style="overflow:auto;"></div>
+<input class="fileUploadButton" id="ok" onclick="document.getElementById('uploadForm').submit();" type="button" value="Ok"/>
+<input class="fileUploadButton" onclick="document.getElementById('ok').disabled=true;document.getElementById('uploadForm').submit();" type="button" value="Cancel"/>
+</form>
+<script type="text/javascript" defer="defer">
+var tw_fileCount = 0;
+
+with (document.getElementById("files").style) {
+    width = parseInt(tw_width) - 20 + "px";
+    height = parseInt(tw_height) - 75 + "px";
+}
+
+function addUploadLine() {
+    var files = document.getElementById("files");
+    var file = document.createElement("input");
+    file.className = "fileUploadEditor";
+    file.name = "file" + tw_fileCount;
+    file.size = "72";
+    file.type = "file";
+    var label = getLabel("File Name" + (tw_multiFile ? " " + (tw_fileCount + 1) : "") + ":");    
+    files.appendChild(label);    
+    files.appendChild(file);    
+    
+    if (tw_showDescription) {
+        var desc = document.createElement("input");
+        desc.className = "fileUploadEditor";
+        desc.name = "desc" + tw_fileCount;
+        desc.size = "72";
+        desc.type = "text";
+        var label = getLabel("Description" + (tw_multiFile ? " " + (tw_fileCount + 1) : "") + ":");
+        files.appendChild(label);
+        files.appendChild(desc);
+    }
+    
+    tw_fileCount++;
+}
+
+function removeUploadLine() {
+    var files = document.getElementById("files");
+    files.removeChild(files.lastChild);
+    files.removeChild(files.lastChild);
+    
+    if (tw_showDescription) {
+        files.removeChild(files.lastChild);
+        files.removeChild(files.lastChild);
+    }
+    
+    tw_fileCount--;
+}
+
+function getLabel(text) {
+    var label = document.createElement("div");
+    label.className = "fileUploadLabel";
+    label.appendChild(document.createTextNode(text));
+    return label;
+}
+
+function insertButton(text, handler) {
+    var br = document.getElementById("files");
+    var add = document.createElement("input");
+    add.className = "fileUploadButton";
+    add.value = text;
+    add.onclick = handler;
+    add.type = "button";
+    files.parentNode.insertBefore(add, files.nextSibling);
+}
+
+addUploadLine();
+
+if (tw_multiFile) {
+    insertButton("Remove", removeUploadLine);
+    insertButton("Add", addUploadLine);
+}
+</script>
+</body>
+</html>
