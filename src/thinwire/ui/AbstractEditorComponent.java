@@ -32,6 +32,7 @@ abstract class AbstractEditorComponent extends AbstractTextComponent implements 
     private int selectionBeginIndex;
     private int selectionEndIndex;
     private int cursorIndex;
+    private AlignX alignX = AlignX.LEFT;    
     
     public void setSelectionRange(int selectionBeginIndex, int selectionEndIndex) {
         validateSelectionIndex(selectionBeginIndex);
@@ -102,4 +103,16 @@ abstract class AbstractEditorComponent extends AbstractTextComponent implements 
     public int getMaxLength() {
         return maxLength;
     }
+    
+
+    public AlignX getAlignX() {
+        return alignX;
+    }   
+
+    public void setAlignX(AlignX alignX) {
+        if (alignX == null) throw new IllegalArgumentException(PROPERTY_ALIGN_X + " == null");
+        AlignX oldAlignX = this.alignX;
+        this.alignX = alignX;
+        firePropertyChange(this, PROPERTY_ALIGN_X, oldAlignX, alignX);
+    }    
 }

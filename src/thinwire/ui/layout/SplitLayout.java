@@ -67,7 +67,6 @@ public class SplitLayout implements Layout {
         
     public SplitLayout(Container container, SplitType split, double size) {
         divider = new Divider();
-        divider.getStyle().getBackground().setColor(Color.THREEDFACE);
         
         maxLeft = new Image();
         maxRight = new Image();
@@ -158,8 +157,9 @@ public class SplitLayout implements Layout {
     }
     
     public void setDividerSize(int dividerSize) {
-        if (dividerSize <= 0) throw new IllegalArgumentException("dividerSize <= 0");
-        this.dividerSize = dividerSize;
+        this.dividerSize = dividerSize;        
+        this.divider.setVisible(dividerSize > 0);
+        this.setVisibleMaximizeButtons(dividerSize > 0);            
         if (autoLayout) apply();
     }
     

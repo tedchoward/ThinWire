@@ -31,5 +31,5 @@ import java.util.EventListener;
  * @author jjg
  */
 public interface ItemChangeListener extends EventListener {
-    public void itemChange(ItemChangeEvent ice);
+    public void itemChange(ItemChangeEvent ev);
 }

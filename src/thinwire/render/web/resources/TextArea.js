@@ -26,7 +26,7 @@ var tw_TextArea = tw_BaseText.extend({
     _maxLength: -1,
     
     construct: function(id, containerId, props) {
-        this.$.construct.apply(this, [["div", "textarea"], ["textArea", "textAreaEditor"], id, containerId, "focusEvent,blurEvent"]);
+        this.$.construct.apply(this, [["div", "textarea"], ["textArea", "textAreaEditor"], id, containerId]);
         this._useToolTip = false;
         this.init(-1, props);
     },

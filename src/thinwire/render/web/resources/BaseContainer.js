@@ -37,6 +37,10 @@ var tw_BaseContainer = tw_Component.extend({
         return this._container;
     },
     
+    setStyle: function(name, value, processFont) {
+        if (processFont || name.indexOf("font") == -1) this.$.setStyle.apply(this, [name, value]);
+    },
+    
     setScroll: function(scrollCode) {
         var overflow;
         

@@ -375,20 +375,26 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     }
     
     final String getQualifiedURL(String location) {        
-        URI uri;
-        
-        try {        
-            uri = new URI(location);
-        } catch (URISyntaxException e) {            
-            uri = WebApplication.current().getRelativeFile(location).toURI();
-        }
-        
-        String scheme = uri.getScheme();
-        
-        if (scheme != null && scheme.equals("file")) {            
-            location = "%SYSROOT%" + getRemoteNameForLocalFile(location);            
+        if (location.trim().length() > 0) {
+            URI uri;
+
+            try {        
+                uri = new URI(location);
+            } catch (URISyntaxException e) {
+                uri = null;
+            }
+                    
+            if (uri == null || uri.getScheme() == null) uri = WebApplication.current().getRelativeFile(location).toURI();
+            
+            String scheme = uri.getScheme();        
+            
+            if (scheme.equals("file") || scheme.equals("class")) {            
+                location = "%SYSROOT%" + getRemoteNameForLocalFile(location);            
+            } else {
+                location = uri.toString();
+            }
         } else {
-            location = uri.toString();
+            location = "";
         }
 
         return location;

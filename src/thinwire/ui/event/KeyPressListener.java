@@ -27,5 +27,5 @@ package thinwire.ui.event;
 import java.util.EventListener;
 
 public interface KeyPressListener extends EventListener {
-    public void keyPress(KeyPressEvent e);
+    public void keyPress(KeyPressEvent ev);
 }

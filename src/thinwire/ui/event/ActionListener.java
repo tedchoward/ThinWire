@@ -32,5 +32,5 @@ import java.util.EventListener;
  * @author jjg
  */
 public interface ActionListener extends EventListener {
-    public void actionPerformed(ActionEvent e);
+    public void actionPerformed(ActionEvent ev);
 }

@@ -27,7 +27,7 @@ package thinwire.ui;
 /**
  * @author Joshua J. Gertzen
  */
-interface TextAlignComponent {
+public interface AlignTextComponent extends TextComponent {
     public static final String PROPERTY_ALIGN_X = "alignX";
 
     /**

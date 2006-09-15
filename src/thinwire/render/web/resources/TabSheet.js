@@ -51,7 +51,7 @@ var tw_TabSheet = tw_BaseContainer.extend({
         
         if (tab != null) {
             this._borderBox = this._backgroundBox = this._fontBox = tab;    
-            this.$.setStyle.apply(this, [name, value]);
+            this.$.setStyle.apply(this, [name, value, true]);
             this._borderBox = this._backgroundBox = this._fontBox = this._box;
         }
     },

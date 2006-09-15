@@ -28,7 +28,7 @@ var tw_DropDownGridBox = tw_BaseText.extend({
     _editAllowed: true,
     
     construct: function(id, containerId, props) {
-        this.$.construct.apply(this, [["div", "input", "text"], ["dropDownGridBox", "dropDownGridBoxTextField"], id, containerId, "alignX,editMask"]); 
+        this.$.construct.apply(this, [["div", "input", "text"], ["dropDownGridBox", "dropDownGridBoxTextField"], id, containerId, "editMask"]); 
         this._subtractEditorWidth = 17;
         
         var button = document.createElement("div");

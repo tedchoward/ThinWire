@@ -33,7 +33,6 @@ class AbstractMaskEditorComponent extends AbstractEditorComponent implements Mas
     private String editMask = "";
     String formattedText = "";
     private boolean formatText = true;
-    private AlignX alignX = AlignX.LEFT;
     
     public String getEditMask() {
         return editMask;
@@ -104,15 +103,4 @@ class AbstractMaskEditorComponent extends AbstractEditorComponent implements Mas
         
         return text;
     }
-
-    public AlignX getAlignX() {
-        return alignX;
-    }   
-
-    public void setAlignX(AlignX alignX) {
-        if (alignX == null) throw new IllegalArgumentException(PROPERTY_ALIGN_X + " == null");
-        AlignX oldAlignX = this.alignX;
-        this.alignX = alignX;
-        firePropertyChange(this, PROPERTY_ALIGN_X, oldAlignX, alignX);
-    }       
 }

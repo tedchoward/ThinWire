@@ -75,7 +75,7 @@ import thinwire.ui.style.Style;
  * 
  * @author Joshua J. Gertzen
  */
-public final class Label extends AbstractTextComponent implements TextAlignComponent, ActionEventComponent {
+public final class Label extends AbstractTextComponent implements AlignTextComponent, ActionEventComponent {
     public static final String PROPERTY_LABEL_FOR = "labelFor";
     
     static {

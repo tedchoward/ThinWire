@@ -23,7 +23,6 @@
  *                          http://www.thinwire.com
  */
 var tw_BaseText = tw_Component.extend({
-    _supportAlignX: false,
     _supportEditMask: false,
     _timerId: 0,
     _editor: null,
@@ -55,7 +54,6 @@ var tw_BaseText = tw_Component.extend({
         tw_addEventListener(editor, "blur", this._blurListener);        
         
         support = support == null ? ",," : "," + support + ",";            
-        if (support.indexOf(",alignX,") >= 0) this._supportAlignX = true;
         if (support.indexOf(",editMask,") >= 0) this._supportEditMask = true;                    
     },
         
@@ -197,7 +195,6 @@ var tw_BaseText = tw_Component.extend({
     },    
 
     setAlignX: function(alignX) {
-        if (!this._supportAlignX) { alert("'alignX' property not supported by this component"); return; }
         this._editor.style.textAlign = alignX;
     },
     

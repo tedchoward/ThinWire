@@ -27,7 +27,7 @@ package thinwire.ui;
 /**
  * @author Joshua J. Gertzen
  */
-public interface MaskEditorComponent extends EditorComponent, TextAlignComponent {
+public interface MaskEditorComponent extends EditorComponent {
     public static final String PROPERTY_EDIT_MASK = "editMask";
     public static final String PROPERTY_FORMAT_TEXT = "formatText";
     

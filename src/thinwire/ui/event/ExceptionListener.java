@@ -27,5 +27,5 @@ package thinwire.ui.event;
 import java.util.EventListener;
 
 public interface ExceptionListener extends EventListener {
-    public void exceptionOccurred(ExceptionEvent e);
+    public void exceptionOccurred(ExceptionEvent ev);
 }

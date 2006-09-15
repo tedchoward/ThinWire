@@ -24,8 +24,10 @@
  */
 package thinwire.render.web;
 
+import thinwire.ui.AlignX;
 import thinwire.ui.Component;
 import thinwire.ui.TextArea;
+import thinwire.ui.TextField;
 import thinwire.ui.event.PropertyChangeEvent;
 
 /**
@@ -40,6 +42,7 @@ final class TextAreaRenderer extends ComponentRenderer {
         TextArea ta = (TextArea)c;
         addInitProperty(TextArea.PROPERTY_TEXT, ta.getText());
         addInitProperty(TextArea.PROPERTY_MAX_LENGTH, ta.getMaxLength());
+        addInitProperty(TextField.PROPERTY_ALIGN_X, ta.getAlignX().name().toLowerCase());        
         super.render(wr, c, container);        		
 	}
         
@@ -55,6 +58,8 @@ final class TextAreaRenderer extends ComponentRenderer {
             
             if (name.equals(TextArea.PROPERTY_MAX_LENGTH)) {
                 postClientEvent(SET_MAX_LENGTH, pce.getNewValue());            
+            } else if (name.equals(TextArea.PROPERTY_ALIGN_X)) {
+                postClientEvent(SET_ALIGN_X, ((AlignX)pce.getNewValue()).name().toLowerCase());
             } else if (name.equals(TextArea.PROPERTY_SELECTION_BEGIN_INDEX) || name.equals(TextArea.PROPERTY_SELECTION_END_INDEX)) {
                 TextArea ta = (TextArea)comp;
                 int beginIndex = ta.getSelectionBeginIndex();

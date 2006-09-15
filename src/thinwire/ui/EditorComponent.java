@@ -27,7 +27,7 @@ package thinwire.ui;
 /**
  * @author Joshua J. Gertzen
  */
-public interface EditorComponent extends TextComponent {
+public interface EditorComponent extends AlignTextComponent {
     public static final String PROPERTY_SELECTION_BEGIN_INDEX = "selectionBeginIndex";
     public static final String PROPERTY_SELECTION_END_INDEX = "selectionEndIndex";    
     public static final String PROPERTY_CURSOR_INDEX = "cursorIndex";

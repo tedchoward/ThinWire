@@ -27,5 +27,5 @@ package thinwire.ui.event;
 import java.util.EventListener;
 
 public interface PropertyChangeListener extends EventListener {
-    void propertyChange(PropertyChangeEvent evt);
+    void propertyChange(PropertyChangeEvent ev);
 }

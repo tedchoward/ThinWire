@@ -456,6 +456,7 @@
 
 .webBrowser {
     position: absolute;
+    background-color: window;
 }
 
 .hyperlink {
