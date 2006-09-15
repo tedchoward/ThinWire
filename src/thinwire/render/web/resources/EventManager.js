@@ -31,6 +31,8 @@ var tw_EventManager = Class.extend({
     _EVENT_RUN_TIMER: 4,
     _autoSyncResponse: true,
     _outboundEvents: null,
+    _postOutboundEvents: false,
+    _vsEventOrder: null,
     _inboundEvents: null,
     _timerId: 0,
     _comm: null,
@@ -61,9 +63,11 @@ var tw_EventManager = Class.extend({
         if (this._comm != null) {
             var timerTime = 100;
             
-            if (this._outboundEvents.length > 0 && this._comm.isReady()) {
-                var msg = this._outboundEvents.join(":");
+            if (this._postOutboundEvents && this._comm.isReady()) {
+                this._postOutboundEvents = false;
+                var msg = this._outboundEvents.join(":");                
                 this._outboundEvents = [];
+                this._vsEventOrder = {};
                 msg = "data=" + encodeURIComponent(msg);
                 this._inboundEventListener(this._comm.send("POST", tw_APP_URL, msg));
             }
@@ -81,7 +85,7 @@ var tw_EventManager = Class.extend({
                         var ret = obj[call.m].apply(obj, call.a);            
                         
                         if (call.s && this._autoSyncResponse) {
-                            this._postSyncResponse(ret);
+                            this.sendSyncResponse(ret, true);
                             timerTime = 0;
                         }
                     }
@@ -91,8 +95,19 @@ var tw_EventManager = Class.extend({
             this._resetTimer(timerTime);
         }        
     },
+        
+    _sendOutboundEvent: function(type, value) {
+        this._queueOutboundEvent(type, value);
+        this._postOutboundEvents = true;
+        this._resetTimer(0);
+    }, 
     
-    _postOutboundEvent: function(type, value) {
+    _postOutboundEvent: function(type, value) {        
+        this._queueOutboundEvent(type, value);
+        this._postOutboundEvents = true;
+    },
+    
+    _queueOutboundEvent: function(type, value) {
         this._outboundEvents.push(type);
         
         if (value == null) {
@@ -103,47 +118,55 @@ var tw_EventManager = Class.extend({
             this._outboundEvents.push(value);
         }
     },
-
-    _postSyncResponse: function(value) {
-        this._postOutboundEvent(this._EVENT_SYNC_CALL, value == null ? "0:" : new String(value).length + ":" + value);
-    },
-    
+        
     manualSyncResponse: function() {
         this._autoSyncResponse = false;
     },
     
     sendViewStateChanged: function(id, name, value) {
-        this.postViewStateChanged(id, name, value, true);
+        value = id + ":" + name + (value == null ? ":0:" : ":" + new String(value).length + ":" + value);
+        this._sendOutboundEvent(this._EVENT_WEB_COMPONENT, value);
     },
         
-    postViewStateChanged: function(id, name, value, sendNow) {    
-        var eventValue = id + ":" + name + (value == null ? ":0:" : ":" + new String(value).length + ":" + value);
-        this._postOutboundEvent(this._EVENT_WEB_COMPONENT, eventValue);
+    postViewStateChanged: function(id, name, value) {    
+        value = id + ":" + name + (value == null ? ":0:" : ":" + new String(value).length + ":" + value);
+        this._postOutboundEvent(this._EVENT_WEB_COMPONENT, value);
     },
     
-    postLogMessage: function(levelName, msg) {
-        this._postOutboundEvent(this._EVENT_LOG_MESSAGE, levelName + ":" + new String(msg).length + ":" + msg); 
+    queueViewStateChanged: function(id, name, value) {
+        value = id + ":" + name + (value == null ? ":0:" : ":" + new String(value).length + ":" + value);
+        var key = id + ":" + name;
+        var order = this._vsEventOrder[key];
+                                        
+        if (order == undefined) {            
+            this._queueOutboundEvent(this._EVENT_WEB_COMPONENT, value);
+            this._vsEventOrder[key] = this._outboundEvents.length - 2;            
+        } else {
+            this._outboundEvents[order] = value.length;
+            this._outboundEvents[order + 1] = value;
+        }                            
     },
-
-    sendGetEvents: function() {
-        this._postOutboundEvent(this._EVENT_GET_EVENTS, "");
-        this._resetTimer(0);
-    },
+        
+    postLogMessage: function(levelName, msg) { this._postOutboundEvent(this._EVENT_LOG_MESSAGE, levelName + ":" + new String(msg).length + ":" + msg); },
+    sendGetEvents: function() { this._sendOutboundEvent(this._EVENT_GET_EVENTS, ""); },    
+    sendRunTimer: function(id) { this._sendOutboundEvent(this._EVENT_RUN_TIMER, id + ":"); },    
     
-    sendRunTimer: function(id) {
-        this._postOutboundEvent(this._EVENT_RUN_TIMER, id + ":")
-        this._resetTimer(0);
-    },
-    
-    sendSyncResponse: function(value) {
-        this._postSyncResponse(value);
-        this._resetTimer(0);
+    sendSyncResponse: function(value, postOnly) {
+        value = value == null ? "0:" : new String(value).length + ":" + value;
+        
+        if (postOnly) {
+            this._postOutboundEvent(this._EVENT_SYNC_CALL, value);
+        } else {
+            this._sendOutboundEvent(this._EVENT_SYNC_CALL, value);
+        }
     },
     
     start: function() {
         this._comm = new tw_HttpRequest(this._inboundEventListener);
         this._outboundEvents = [];
         this._inboundEvents = [];
+        this._vsEventOrder = {};
+        this._postOutboundEvents = false;
         this.sendGetEvents();
     },
     
@@ -151,6 +174,9 @@ var tw_EventManager = Class.extend({
         if (this._timerId != 0) clearTimeout(this._timerId);
         this._timerId = 0;
         if (this._comm != null) this._comm.abort();
+        this._outboundEvents = null;
+        this._inboundEvents = null;
+        this._vsEventOrder = null;
         this._comm = null;
     }         
 });

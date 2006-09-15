@@ -186,11 +186,11 @@ var tw_Component = Class.extend({
             if (tw_Component.currentFocus !== this) {
                 if (tw_Component.currentFocus != null) {
                     tw_Component.currentFocus.setFocus(false);
-                    tw_em.postViewStateChanged(tw_Component.currentFocus._id, "focus", false);
+                    tw_Component.currentFocus.firePropertyChange("focus", false);
                 }
                 
                 tw_Component.currentFocus = this;
-                tw_em.postViewStateChanged(this._id, "focus", true);
+                this.firePropertyChange("focus", true);
                 
                 try {
                     if (this._focusBox.focus) this._focusBox.focus();
@@ -296,6 +296,22 @@ var tw_Component = Class.extend({
         }
     },
     
+    firePropertyChange: function(name, value) {
+        var props = undefined;
+        if (this._eventNotifiers != null) props = this._eventNotifiers["propertyChange"];                        
+
+        if (props != undefined && props[name] === true) {
+            tw_em.postViewStateChanged(this._id, name, value);
+        } else {
+            tw_em.queueViewStateChanged(this._id, name, value);
+        }                           
+        
+        //if (this instanceof tw_TextField && name == "text") {
+        //}
+
+        //tw_em.postViewStateChanged(this._id, name, value);
+    },
+        
     getNextComponent: function(usable) {
         var parent = this._parent;
         var comp = null;

@@ -161,7 +161,7 @@ var tw_Tree = tw_Component.extend({
         
         node.subNodes.style.display = state ? "block" : "none";            
         if (this._treeTop.firstChild == node) this._makeTopImage();
-        if (sendEvent) tw_em.postViewStateChanged(this._id, (state ? "expanded" : "unexpanded"), this._fullIndex(node));
+        if (sendEvent) this.firePropertyChange("itemExpanded", (state ? "t" : "f") + this._fullIndex(node));
     },
     
     /* Return the rootItem if the node is a descendant of the root item.
@@ -387,7 +387,7 @@ var tw_Tree = tw_Component.extend({
         }        
         
         this._currentItem = item;
-        if (sendEvent) tw_em.postViewStateChanged(this._id, "itemSelected", this._fullIndex(item));         
+        if (sendEvent) this.firePropertyChange("itemSelected", this._fullIndex(item));         
     },
     
     _fullIndexItem: function(findex) {

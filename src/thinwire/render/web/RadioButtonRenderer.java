@@ -38,8 +38,9 @@ final class RadioButtonRenderer extends ComponentRenderer {
 	void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         jsClass = RADIOBUTTON_CLASS;
 		RadioButton rb = (RadioButton)c;
-        addInitProperty("text", rb.getText());
-        addInitProperty("checked", rb.isChecked());
+        addClientSideProperty(RadioButton.PROPERTY_CHECKED);
+        addInitProperty(RadioButton.PROPERTY_TEXT, rb.getText());
+        addInitProperty(RadioButton.PROPERTY_CHECKED, rb.isChecked());
         super.render(wr, c, container);
 	}
     

@@ -174,7 +174,7 @@ var tw_BaseText = tw_Component.extend({
         var selectionNew = tw_getSelectionRange(this._editor).join();
 
         if (this._selectionOld != selectionNew && selectionNew.indexOf("-1") == -1) {
-            tw_em.postViewStateChanged(this._id, "selectionRange", selectionNew);
+            this.firePropertyChange("selectionRange", selectionNew);
             this._selectionOld = selectionNew;
         }
     },    
@@ -182,7 +182,7 @@ var tw_BaseText = tw_Component.extend({
     _changeText: function(noSelectChange) {        
         this._timerId = 0;
         this._lastValue = this._editor.value;
-        tw_em.postViewStateChanged(this._id, "text", this._lastValue);
+        this.firePropertyChange("text", this._lastValue);
         if (this._useToolTip) this._editor.title = this._lastValue;
         this._handleSelectionChange(noSelectChange); //call selection notify
         

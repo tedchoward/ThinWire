@@ -65,7 +65,6 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
     private static final String SET_COLUMN = "setColumn";
     private static final String REMOVE_COLUMN = "removeColumn";
     private static final int MIN_SIZE = 25;
-    private static final String VIEW_STATE_COLUMN_WIDTH = "columnWidth";
     private static final String VIEW_STATE_COLUMN_SORT = "columnSort";
 
     private Set<Integer> rowState = new HashSet<Integer>();
@@ -139,6 +138,9 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
             }
         } 
 
+        addClientSideProperty(GridBox.Row.PROPERTY_ROW_CHECKED);
+        addClientSideProperty(GridBox.Row.PROPERTY_ROW_SELECTED);
+        addClientSideProperty(GridBox.Column.PROPERTY_COLUMN_WIDTH);
         addInitProperty(GridBox.PROPERTY_VISIBLE_HEADER, gb.isVisibleHeader());
         addInitProperty(GridBox.PROPERTY_VISIBLE_CHECK_BOXES, gb.isVisibleCheckBoxes());
         addInitProperty(GridBox.PROPERTY_FULL_ROW_CHECK_BOX, gb.isFullRowCheckBox());

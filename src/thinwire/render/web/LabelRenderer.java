@@ -47,12 +47,6 @@ final class LabelRenderer extends ComponentRenderer {
     
     public void propertyChange(PropertyChangeEvent pce) {
         String name = pce.getPropertyName();
-        
-        if (name.equals(Component.PROPERTY_FOCUS)) {
-            String coolBean = name;
-            coolBean.indexOf('0');
-        }
-        
         if (isPropertyChangeIgnored(name)) return;
         Object newValue = pce.getNewValue();
         

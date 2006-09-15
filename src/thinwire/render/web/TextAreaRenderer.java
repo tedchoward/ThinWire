@@ -24,82 +24,32 @@
  */
 package thinwire.render.web;
 
-import thinwire.ui.AlignX;
 import thinwire.ui.Component;
 import thinwire.ui.TextArea;
-import thinwire.ui.TextField;
 import thinwire.ui.event.PropertyChangeEvent;
 
 /**
  * @author Joshua J. Gertzen
  */
-final class TextAreaRenderer extends ComponentRenderer {
+final class TextAreaRenderer extends EditorComponentRenderer {
     private static final String TEXTAREA_CLASS = "tw_TextArea";
     private static final String SET_MAX_LENGTH = "setMaxLength";
 
     void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         jsClass = TEXTAREA_CLASS;
         TextArea ta = (TextArea)c;
-        addInitProperty(TextArea.PROPERTY_TEXT, ta.getText());
         addInitProperty(TextArea.PROPERTY_MAX_LENGTH, ta.getMaxLength());
-        addInitProperty(TextField.PROPERTY_ALIGN_X, ta.getAlignX().name().toLowerCase());        
         super.render(wr, c, container);        		
 	}
         
     public void propertyChange(PropertyChangeEvent pce) {
-        String name = pce.getPropertyName();
+        String name = pce.getPropertyName();        
+        if (isPropertyChangeIgnored(name)) return;
         
-        if (name.equals(TextArea.PROPERTY_TEXT)) {
-            Object newValue = pce.getNewValue();
-            if (isPropertyChangeIgnored(name, newValue)) return;
-            postClientEvent(SET_TEXT, newValue);
-        } else { 
-            if (isPropertyChangeIgnored(name)) return;
-            
-            if (name.equals(TextArea.PROPERTY_MAX_LENGTH)) {
-                postClientEvent(SET_MAX_LENGTH, pce.getNewValue());            
-            } else if (name.equals(TextArea.PROPERTY_ALIGN_X)) {
-                postClientEvent(SET_ALIGN_X, ((AlignX)pce.getNewValue()).name().toLowerCase());
-            } else if (name.equals(TextArea.PROPERTY_SELECTION_BEGIN_INDEX) || name.equals(TextArea.PROPERTY_SELECTION_END_INDEX)) {
-                TextArea ta = (TextArea)comp;
-                int beginIndex = ta.getSelectionBeginIndex();
-                int endIndex = ta.getSelectionEndIndex();
-                postClientEvent(SET_SELECTION_RANGE, beginIndex, endIndex);
-            } else {
-                super.propertyChange(pce);
-            }
-        }
-    }
-    
-    public void componentChange(WebComponentEvent event) {
-        String name = event.getName();
-        String value = (String)event.getValue();
-        TextArea ta = (TextArea)comp;
-        
-        if (name.equals(TextArea.PROPERTY_TEXT)) {
-            setPropertyChangeIgnored(name, value, true);
-            ta.setText(value);
+        if (name.equals(TextArea.PROPERTY_MAX_LENGTH)) {
+            postClientEvent(SET_MAX_LENGTH, pce.getNewValue());            
         } else {
-            setPropertyChangeIgnored(name, true);
-            
-            if (name.equals("selectionRange")) {
-                int index = value.indexOf(',');
-                int beginIndex = Integer.parseInt(value.substring(0, index));
-                int endIndex = Integer.parseInt(value.substring(index + 1));
-                int textLength = ta.getText().length();
-                
-                if (beginIndex >= 0 && beginIndex <= textLength && endIndex >= 0 && endIndex <= textLength) {                
-                    setPropertyChangeIgnored(TextArea.PROPERTY_SELECTION_BEGIN_INDEX, true);
-                    setPropertyChangeIgnored(TextArea.PROPERTY_SELECTION_END_INDEX, true);
-                    ta.setSelectionRange(beginIndex, endIndex);
-                    setPropertyChangeIgnored(TextArea.PROPERTY_SELECTION_BEGIN_INDEX, false);
-                    setPropertyChangeIgnored(TextArea.PROPERTY_SELECTION_END_INDEX, false);
-                }
-            } else {
-                super.componentChange(event);
-            }
+            super.propertyChange(pce);
         }
-        
-        setPropertyChangeIgnored(name, false);            
     }
 }

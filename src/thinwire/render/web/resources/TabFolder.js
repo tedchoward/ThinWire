@@ -200,7 +200,7 @@ var tw_TabFolder = tw_BaseContainer.extend({
         this._setTabActive(this._currentIndex, false);
         this._currentIndex = index;    
         this._setTabActive(this._currentIndex, true);
-        if (notify) tw_em.postViewStateChanged(this._id, "currentIndex", index);            
+        if (notify) this.firePropertyChange("currentIndex", index);            
     },
     
     destroy: function() {

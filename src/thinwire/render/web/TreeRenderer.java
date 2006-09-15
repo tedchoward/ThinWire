@@ -55,7 +55,9 @@ final class TreeRenderer extends ComponentRenderer implements ItemChangeListener
         synchronized (sb) {
             prepareInitData(sb);
         }
-        
+
+        addClientSideProperty(Tree.Item.PROPERTY_ITEM_EXPANDED);
+        addClientSideProperty(Tree.Item.PROPERTY_ITEM_SELECTED);
         addInitProperty("initData", sb);        
         tree.addItemChangeListener(this);
         super.render(wr, c, container);
@@ -137,11 +139,11 @@ final class TreeRenderer extends ComponentRenderer implements ItemChangeListener
             setPropertyChangeIgnored(name, true);
             ti.setSelected(true);
             setPropertyChangeIgnored(name, false);
-        } else if (name.endsWith("expanded")) {
-            Tree.Item ti = fullIndexItem(tree, value);            
+        } else if (name.equals(Tree.Item.PROPERTY_ITEM_EXPANDED)) {
+            Tree.Item ti = fullIndexItem(tree, value.substring(1));
             setPropertyChangeIgnored(name, true);
-            ti.setExpanded(name.charAt(0) == 'e');
-            setPropertyChangeIgnored(name, false);
+            ti.setExpanded(value.charAt(0) == 't');
+            setPropertyChangeIgnored(name, false);            
         } else {
             super.componentChange(event);
         }

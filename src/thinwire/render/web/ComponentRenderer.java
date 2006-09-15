@@ -41,7 +41,6 @@ import thinwire.render.Renderer;
 import thinwire.ui.event.*;
 import thinwire.ui.Component;
 import thinwire.ui.Container;
-import thinwire.ui.MaskEditorComponent;
 import thinwire.ui.event.PropertyChangeEvent;
 import thinwire.ui.style.*;
 
@@ -65,8 +64,6 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     //Shared by other renderers
     static final String DESTROY = "destroy";
     static final String SET_TEXT = "setText";
-    static final String SET_EDIT_MASK = "setEditMask";    
-    static final String SET_SELECTION_RANGE = "setSelectionRange";
     static final String SET_IMAGE = "setImage";
     static final String SET_ALIGN_X = "setAlignX";
     
@@ -82,6 +79,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     private Object[] quickArgs2;
     private Object[] quickArgs1;
     private StringBuffer initProps = new StringBuffer();
+    private Map<String, String> clientSideProps = new HashMap<String, String>();
     String jsClass;
     Component comp;
     WindowRenderer wr;
@@ -95,7 +93,8 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         id = wr.addComponentId(comp);
         if (this instanceof WebComponentListener) wr.ai.setWebComponentListener(id, (WebComponentListener)this);
         FX.Type visibleChange = comp.getStyle().getFX().getVisibleChange();
-        
+        addClientSideProperty(Component.PROPERTY_FOCUS);
+
         if (!isPropertyChangeIgnored(Component.PROPERTY_X)) addInitProperty(Component.PROPERTY_X, comp.getX());
         if (!isPropertyChangeIgnored(Component.PROPERTY_Y)) addInitProperty(Component.PROPERTY_Y, comp.getY());
         if (!isPropertyChangeIgnored(Component.PROPERTY_WIDTH)) addInitProperty(Component.PROPERTY_WIDTH, comp.getWidth());
@@ -176,21 +175,40 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         WebApplication.encodeObject(initProps, value);
         initProps.append(',');
     }
+    
+    void addClientSideProperty(String name) {
+        this.clientSideProps.put(name, name);
+    }
+
+    void addClientSideProperty(String name, String clientName) {
+        this.clientSideProps.put(name, clientName);
+    }
 
     public void eventSubTypeListenerInit(Class<? extends EventListener> clazz, Set<String> subTypes) {
-        if (ActionListener.class.isAssignableFrom(clazz)) {
-            for (String subType : subTypes) {
-                postClientEvent(REGISTER_EVENT_NOTIFIER, "action", subType);
-            }            
-        } else if (KeyPressListener.class.isAssignableFrom(clazz)) {
-            for (String subType : subTypes) {
-                postClientEvent(REGISTER_EVENT_NOTIFIER, "keyPress", subType);
-            }
+        for (String subType : subTypes) {
+            eventSubTypeListenerAdded(clazz, subType);
         }
     }
     
     public void eventSubTypeListenerAdded(Class<? extends EventListener> clazz, String subType) {
-        if (ActionListener.class.isAssignableFrom(clazz)) {
+        if (PropertyChangeListener.class.isAssignableFrom(clazz)) {
+            String prop = clientSideProps.get(subType);
+
+            if (prop != null) {
+                if (!prop.equals(subType)) {
+                    String count = clientSideProps.get(prop);
+                    
+                    if (count == null) {                        
+                        clientSideProps.put(prop, "1");
+                        postClientEvent(REGISTER_EVENT_NOTIFIER, "propertyChange", prop);
+                    } else {
+                        clientSideProps.put(prop, String.valueOf(Integer.parseInt(count) + 1));
+                    }
+                } else {                    
+                    postClientEvent(REGISTER_EVENT_NOTIFIER, "propertyChange", prop);
+                }
+            }
+        } else if (ActionListener.class.isAssignableFrom(clazz)) {
             postClientEvent(REGISTER_EVENT_NOTIFIER, "action", subType);
         } else if (KeyPressListener.class.isAssignableFrom(clazz)) {
             postClientEvent(REGISTER_EVENT_NOTIFIER, "keyPress", subType);
@@ -198,7 +216,24 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     }
     
     public void eventSubTypeListenerRemoved(Class<? extends EventListener> clazz, String subType) {
-        if (ActionListener.class.isAssignableFrom(clazz)) {
+        if (PropertyChangeListener.class.isAssignableFrom(clazz)) {
+            String prop = clientSideProps.get(subType);
+
+            if (prop != null) {
+                if (!prop.equals(subType)) {
+                    int cnt = Integer.parseInt(clientSideProps.get(prop));
+                    
+                    if (cnt == 1) {               
+                        clientSideProps.remove(prop);
+                        postClientEvent(UNREGISTER_EVENT_NOTIFIER, "propertyChange", prop);
+                    } else {
+                        clientSideProps.put(prop, String.valueOf(cnt - 1));
+                    }
+                } else {                    
+                    postClientEvent(UNREGISTER_EVENT_NOTIFIER, "propertyChange", prop);
+                }
+            }            
+        } else if (ActionListener.class.isAssignableFrom(clazz)) {
             postClientEvent(UNREGISTER_EVENT_NOTIFIER, "action", subType);            
         } else if (KeyPressListener.class.isAssignableFrom(clazz)) {
             postClientEvent(UNREGISTER_EVENT_NOTIFIER, "keyPress", subType);
@@ -390,18 +425,6 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         s = REGEX_CRLF.matcher(s).replaceAll(" ");
         return s;
     }
-    
-    static final String getEditMaskTextLength(Component c) {
-        if (c instanceof MaskEditorComponent) {
-            MaskEditorComponent maskEditor = (MaskEditorComponent)c; 
-            String editMask = maskEditor.getEditMask();        
-            int maxLength = maskEditor.getMaxLength();
-            if (editMask.equals("") && maxLength > 0) editMask = "<=" + maxLength;
-            return editMask;
-        } else {
-            throw new IllegalArgumentException("(c instanceof Components.PropertyEditMask && c instanceof Components.PropertyMaxLength) == false");
-        }
-    }     
     
     final String getRemoteNameForLocalFile(String localName) {
         if (localName.trim().length() == 0) return "";

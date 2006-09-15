@@ -38,6 +38,7 @@ final class CheckBoxRenderer extends ComponentRenderer {
     void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         jsClass = CHECKBOX_CLASS;
         CheckBox cb = (CheckBox)c;
+        addClientSideProperty(CheckBox.PROPERTY_CHECKED);
         addInitProperty(CheckBox.PROPERTY_TEXT, cb.getText());
         addInitProperty(CheckBox.PROPERTY_CHECKED, cb.isChecked());
         super.render(wr, c, container);

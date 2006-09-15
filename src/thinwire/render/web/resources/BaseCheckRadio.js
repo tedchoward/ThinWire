@@ -70,7 +70,7 @@ var tw_BaseCheckRadio = tw_Component.extend({
         this.setFocus(true)
         var checked = this._image.style.backgroundImage == this._imageChecked;
         this.setChecked(!checked);
-        tw_em.postViewStateChanged(this._id, "checked", !checked);
+        this.firePropertyChange("checked", !checked);
     },
 
     setWidth: function(width) {

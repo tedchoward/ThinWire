@@ -275,7 +275,7 @@ var tw_GridBox = tw_Component.extend({
         var columnHeader = tw_getEventTarget(event, "gridBoxColumnHeader");
         var cn = this._header.childNodes;        
         for (var index = cn.length; --index >= 0;) if (cn.item(index) === columnHeader) break;
-        tw_em.postViewStateChanged(this._id, "columnSort", index);        
+        tw_em.sendViewStateChanged(this._id, "columnSort", index);        
     },
 
     _scrollListener: function(event) {
@@ -300,7 +300,7 @@ var tw_GridBox = tw_Component.extend({
         if (this._visibleCheckBoxes) {
             if (this._fullRowCheckBox || (tw_getEventOffsetX(event) < 16 && this._content.childNodes.item(0) == column)) {
                 var state = this.setRowIndexCheckState(index, -1);
-                tw_em.postViewStateChanged(this._id, "rowChecked", (state ? "t" : "f") + index);
+                this.firePropertyChange("rowChecked", (state ? "t" : "f") + index);
             }
     
             this.fireAction("click", index);
@@ -562,7 +562,7 @@ var tw_GridBox = tw_Component.extend({
             
                 case "Space":
                     var state = this.setRowIndexCheckState(this._currentIndex, -1);
-                    tw_em.postViewStateChanged(this._id, "itemChecked", (state ? "t" : "f") + this._currentIndex);
+                    this.firePropertyChange("rowChecked", (state ? "t" : "f") + this._currentIndex);
                     break;
         
                 case "Enter":                
@@ -758,7 +758,7 @@ var tw_GridBox = tw_Component.extend({
             header.style.width = totalFixedWidth + "px";
         }
         
-        if (width > 0 && sendEvent) tw_em.postViewStateChanged(this._id, "columnWidth", index + "," + width);
+        if (width > 0 && sendEvent) this.firePropertyChange("columnWidth", index + "," + width);
     },
 
     setColumnAlignX: function(index, alignX) {
@@ -784,7 +784,7 @@ var tw_GridBox = tw_Component.extend({
         
         this._toggleHighlight(index, true);        
         this._currentIndex = index;    
-        if (sendEvent) tw_em.postViewStateChanged(this._id, "rowSelected", index);
+        if (sendEvent) this.firePropertyChange("rowSelected", index);
     },
 
     setRowIndexCheckState: function(index, state) {

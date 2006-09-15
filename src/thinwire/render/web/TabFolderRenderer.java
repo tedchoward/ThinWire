@@ -37,6 +37,7 @@ final class TabFolderRenderer extends ContainerRenderer {
 
     void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         jsClass = TABFOLDER_CLASS;
+        addClientSideProperty(TabFolder.PROPERTY_CURRENT_INDEX);        
         setPropertyChangeIgnored(TabFolder.PROPERTY_SCROLL, true);
         super.render(wr, c, container);
         postClientEvent(SET_CURRENT_INDEX, new Integer(((TabFolder)c).getCurrentIndex()));        
