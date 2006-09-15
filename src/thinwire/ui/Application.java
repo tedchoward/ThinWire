@@ -141,9 +141,11 @@ public abstract class Application {
     }   
     
     /**
-     * Adds a <code>PropertyChangeListener</code> that will be notified when the specified property of any component changes. To
-     * further clarify, a global property change listener will receive an event notification whenever the specified property of any
-     * component within an application instance changes.
+     * Adds a <code>PropertyChangeListener</code> that will be notified when the specified property of any new component changes. To
+     * further clarify, a global property change listener will receive an event notification for any component that is created after
+     * this global property change listener is added, for which the specified property changes.  Therefore, establishing a global
+     * property change listener is the same as addding a {@link Component#addPropertyChangeListener(String, PropertyChangeListener)}
+     * call after the creation of every new component. 
      * <p>
      * As a general rule, you should avoid using this feature because it can cause a large volume of events to be generated. This is
      * especially true if you listen to a frequently updated property, such as <code>PROPERTY_TEXT</code>. However, there are
@@ -173,7 +175,7 @@ public abstract class Application {
      * </pre>
      * 
      * @param propertyName the name of the property that the listener will receive change events for.
-     * @param listener the listener that will receive <code>PropertyChangeEvent</code> objects upon the property changing.
+     * @param listener the listener that will receive <code>PropertyChangeEvent</code> objects upon the property of any new component changing.
      * @throws IllegalArgumentException if <code>listener</code> or <code>propertyName</code> is null or if
      *         <code>propertyName</code> is an empty string.
      * @see Component#addPropertyChangeListener(String, PropertyChangeListener)
@@ -186,11 +188,11 @@ public abstract class Application {
     
     /**
      * Adds a <code>PropertyChangeListener</code> to the component that will be notified when any of the specified properties of
-     * any component changes. This method is equivalent to calling
+     * any new component changes. This method is equivalent to calling
      * {@link #addGlobalPropertyChangeListener(String, PropertyChangeListener)} once for each property you want to listen to.
      * @param propertyNames a string array of property names that the listener will receive change events for.
      * @param listener the listerner that will receive <code>PropertyChangeEvent</code> objects anytime one of the specified
-     *        propertyNames of this component change.
+     *        propertyNames of any new component change.
      * @throws IllegalArgumentException if <code>listener</code>, <code>propertyNames</code> or any property name is the array is null or if
      *         any property name is an empty string.
      * @see #addGlobalPropertyChangeListener(String, PropertyChangeListener)
@@ -203,9 +205,9 @@ public abstract class Application {
     }    
     
     /**
-     * Removes the <code>PropertyChangeListener</code> form the list that will be notified when the specified property of any
-     * component changes. NOTE: An exception is NOT thrown if you attempt to remove a listener that does not exist on this
-     * component.
+     * Removes the <code>PropertyChangeListener</code> from the list of global listeners that are added to all 
+     * new <code>Component</code>'s.  To further clarify, removing a global property change listener will NOT
+     * remove the <code>listener</code> from <code>Component</code>'s that have already been created.
      * @param listener the listener to remove from the notification list.
      * @throws IllegalArgumentException if <code>listener</code> is null.
      * @see thinwire.ui.event.PropertyChangeListener

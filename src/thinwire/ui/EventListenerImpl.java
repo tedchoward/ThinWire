@@ -49,15 +49,28 @@ import thinwire.ui.event.PropertyChangeListener;
 class EventListenerImpl<E extends EventListener> {
     private Map<E, Set<String>> specificListeners;
     private Renderer renderer;
-    private EventListenerImpl<E> globalImpl;
             
     EventListenerImpl() {
+        this(null);
+    }
 
-    }
-    
-    EventListenerImpl(EventListenerImpl<E> globalImpl) {
-        this.globalImpl = globalImpl;
-    }
+    EventListenerImpl(EventListenerImpl<E> copy) {
+        if (copy != null && copy.hasListeners()) {
+            for (Map.Entry<E, Set<String>> e : copy.specificListeners.entrySet()) {
+                Set<String> subTypes = e.getValue();
+                
+                if (subTypes == null) {
+                    this.addListener(e.getKey());
+                } else {
+                    E listener = e.getKey();
+                    
+                    for (String subType : subTypes) {
+                        this.addListener(subType, listener);
+                    }
+                }
+            }
+        }
+    }    
     
     private boolean hasListeners() {
         return specificListeners != null && specificListeners.size() > 0;
@@ -165,10 +178,9 @@ class EventListenerImpl<E extends EventListener> {
     }
     
     void firePropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
-        if(!hasListeners() && renderer == null && (globalImpl == null || !globalImpl.hasListeners())) return;
+        if(!hasListeners() && renderer == null) return;
         PropertyChangeEvent pce = new PropertyChangeEvent(source, propertyName, oldValue, newValue);
         if (renderer != null) renderer.propertyChange(pce);
-        if (globalImpl != null && globalImpl.hasListeners()) globalImpl.fireEvent(pce, propertyName);
         if (hasListeners()) fireEvent(pce, propertyName);        
     }
         
