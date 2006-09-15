@@ -46,10 +46,10 @@ public class Style implements StyleGroup<Style> {
         b.setSize(0);
         b.setType(Border.Type.NONE);
         
-        Effect e = s.getEffect();
-        e.setPositionChange(Effect.Type.NONE);
-        e.setSizeChange(Effect.Type.NONE);
-        e.setVisibleChange(Effect.Type.NONE);
+        FX fx = s.getFX();
+        fx.setPositionChange(FX.Type.NONE);
+        fx.setSizeChange(FX.Type.NONE);
+        fx.setVisibleChange(FX.Type.NONE);
         
         DEFAULT_STYLE = s;
     }
@@ -58,7 +58,7 @@ public class Style implements StyleGroup<Style> {
     private Font font;
     private Background background;
     private Border border;
-    private Effect effect;
+    private FX fx;
     
     public Style() {
         this(null, null);
@@ -74,7 +74,7 @@ public class Style implements StyleGroup<Style> {
         this.font = new Font(this, defaultStyle);
         this.background = new Background(this, defaultStyle);
         this.border = new Border(this, defaultStyle);
-        this.effect = new Effect(this, defaultStyle);
+        this.fx = new FX(this, defaultStyle);
     }
 
     //NOTE: This is overridden by Component so it can receive these property change notifications
@@ -87,7 +87,7 @@ public class Style implements StyleGroup<Style> {
         getFont().copy(style.getFont());
         getBackground().copy(style.getBackground());
         getBorder().copy(style.getBorder());
-        getEffect().copy(style.getEffect());
+        getFX().copy(style.getFX());
     }
     
     public Object getValue(String propertyName) {
@@ -97,8 +97,8 @@ public class Style implements StyleGroup<Style> {
             return getBackground().getValue(propertyName);
         } else if (propertyName.startsWith("border")) {
             return getBorder().getValue(propertyName);
-        } else if (propertyName.startsWith("effect")) {
-            return getEffect().getValue(propertyName);
+        } else if (propertyName.startsWith("fx")) {
+            return getFX().getValue(propertyName);
         } else {
             throw new IllegalArgumentException("property '" + propertyName + "' is unknown");
         }
@@ -112,7 +112,7 @@ public class Style implements StyleGroup<Style> {
         } else if (propertyName.startsWith("border")) {
             return getBorder().getDefaultValue(propertyName);
         } else if (propertyName.startsWith("effect")) {
-            return getEffect().getDefaultValue(propertyName);
+            return getFX().getDefaultValue(propertyName);
         } else {
             throw new IllegalArgumentException("property '" + propertyName + "' is unknown");
         }
@@ -134,7 +134,7 @@ public class Style implements StyleGroup<Style> {
         return border;
     }               
     
-    public Effect getEffect() {
-        return effect;
+    public FX getFX() {
+        return fx;
     }               
 }

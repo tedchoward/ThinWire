@@ -27,18 +27,19 @@ var tw_Animation = Class.extend({
     _getter: "",
     _setter: "",
     _neg: false,
-    _adjust: false,
-    _lastTime: null,
     _dist: 0,
-    _time: 0,
     _unitSize: 0,
     _unitTime: 0,
+    //_beginTime: 0,
+    _lastTime: 0,
+    _calcUnitTime: 0,
     
-    construct: function(obj, getter, setter, dist, time, adjust) {
+    construct: function(obj, getter, setter, dist, unitSize, time) {        
         if (obj == null) obj = window;
         this._obj = obj;
         this._getter = getter;
-        this._setter = setter;
+        this._setter = setter;        
+        this._run = this._run.bind(this);
         
         if (dist < 0) {
             this._neg = true;
@@ -46,67 +47,39 @@ var tw_Animation = Class.extend({
         }
         
         this._dist = dist;
-        this._time = time;
-        this._adjust = adjust;        
-        this._unitSize = dist / time;
-        
-        if (this._unitSize < 1) {
-            this._unitTime = Math.floor(1 / this._unitSize + .5);
-            this._unitSize = 1;
-        } else {
-            this._unitTime = 1;
-        }
-        
-        this.run = this.run.bind(this);
+        this._unitSize = unitSize; // 8 for visible        
+        this._calcUnitTime = Math.floor(time / Math.floor(dist / this._unitSize + .5) + .5);
+        this._unitTime = Math.floor(this._calcUnitTime / 2);
     },
-    
-    run: function() { 
-        this._obj[this._setter](this._obj[this._getter]() + (this._neg ? -this._unitSize : this._unitSize));
-        this._dist -= this._unitSize;
         
-        if (this._adjust) {
+    start: function() {
+        setTimeout(this._run, 0);
+    },    
+    
+    _run: function() { 
+        //if (this._beginTime == 0) this._beginTime = new Date().getTime();
+        
+        if (this._unitSize > this._dist) {
+            this._unitSize = this._dist;                        
+        } else {
             var thisTime = new Date().getTime();
 
-            if (this._lastTime != null) {
-                var actTime = thisTime - this._lastTime;
-                
-                if (actTime > this._unitTime) {
-                    var scale = actTime / this._unitTime;
-                    this._unitSize = Math.floor(this._unitSize * scale + .5);
-                    this._unitTime = Math.floor(this._unitTime * scale + .5);
-                }
+            if (this._lastTime > 0) {
+                var actTime = thisTime - this._lastTime;                
+                this._unitTime = Math.floor(this._unitTime * (this._calcUnitTime / actTime) + .5);
             }
             
-            this._lastTime = thisTime;                
+            this._lastTime = thisTime;                         
         }
-        
-        if (this._dist > 0) setTimeout(this.run, this._unitTime);
+
+        this._obj[this._setter](this._obj[this._getter]() + (this._neg ? -this._unitSize : this._unitSize));
+        this._dist -= this._unitSize;
+
+        if (this._dist > 0) {
+            setTimeout(this._run, this._unitTime);
+        }// else {
+           // alert((new Date().getTime() - this._beginTime) + "," + this._dist + "," + this._unitSize + "," + this._unitTime + "," + this._calcUnitTime);
+        //}            
     }    
 });
-
-tw_Animation.setBounds = function(id, x, y, width, height, time, adjust) {    
-    var comp = tw_Component.instances[id];
-    
-    if (comp != null) {
-        if (x != comp.getX()) new tw_Animation(comp, "getX", "setX", x - comp.getX(), time).run(); 
-        if (y != comp.getY()) new tw_Animation(comp, "getY", "setY", y - comp.getY(), time).run(); 
-        if (width != comp.getWidth()) new tw_Animation(comp, "getWidth", "setWidth", width - comp.getWidth(), time).run(); 
-        if (height != comp.getHeight()) new tw_Animation(comp, "getHeight", "setHeight", height - comp.getHeight(), time).run(); 
-    }
-    
-    tw_em.sendViewStateChanged(comp._id, "bounds", x + "," + y + "," + width + "," + height);
-};
-
-tw_Animation.setVisible = function(id, visible, time, adjust) {    
-    var comp = tw_Component.instances[id];
-    
-    if (comp != null) {
-        var opacity = visible ? 100 : 0;
-        var fx = new tw_Animation(comp, "getOpacity", "setOpacity", opacity - comp.getOpacity(), time);
-        fx.run();        
-    }
-    
-    tw_em.sendViewStateChanged(comp._id, "visible", visible);
-};
-
 

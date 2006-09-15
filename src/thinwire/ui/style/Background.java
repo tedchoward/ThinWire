@@ -76,6 +76,6 @@ public class Background implements StyleGroup<Background> {
         if (color == null) throw new IllegalArgumentException("color == null");
         Color oldColor = this.color;
         this.color = color;        
-        if (parent != null) parent.firePropertyChange(parent, PROPERTY_BACKGROUND_COLOR, oldColor, this.color);
+        if (parent != null) parent.firePropertyChange(this, PROPERTY_BACKGROUND_COLOR, oldColor, this.color);
     }
 }

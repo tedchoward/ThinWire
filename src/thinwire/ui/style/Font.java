@@ -133,7 +133,7 @@ public class Font implements StyleGroup<Font> {
         if (family == null) throw new IllegalArgumentException("family == null");
         Family oldFamily = this.family;
         this.family = family;
-        if (parent != null) parent.firePropertyChange(parent, PROPERTY_FONT_FAMILY, oldFamily, family);
+        if (parent != null) parent.firePropertyChange(this, PROPERTY_FONT_FAMILY, oldFamily, family);
     }
     
     public Color getColor() {
@@ -146,7 +146,7 @@ public class Font implements StyleGroup<Font> {
         if (color == null) throw new IllegalArgumentException("color == null");
         Color oldColor = this.color;
         this.color = color;        
-        if (parent != null) parent.firePropertyChange(parent, PROPERTY_FONT_COLOR, oldColor, this.color);
+        if (parent != null) parent.firePropertyChange(this, PROPERTY_FONT_COLOR, oldColor, this.color);
     }    
     
     public int getSize() {
@@ -159,7 +159,7 @@ public class Font implements StyleGroup<Font> {
         if (size <= 0 || size > 128) throw new IllegalArgumentException("size <= 0 || size > 128");
         int oldSize = this.size;
         this.size = size;
-        if (parent != null) parent.firePropertyChange(parent, PROPERTY_FONT_SIZE, oldSize, size);
+        if (parent != null) parent.firePropertyChange(this, PROPERTY_FONT_SIZE, oldSize, size);
     }
     
     public boolean isBold() {
@@ -170,7 +170,7 @@ public class Font implements StyleGroup<Font> {
     public void setBold(boolean bold) {       
         boolean oldBold = this.bold == 1;
         this.bold = bold == true ? 1 : 0;
-        if (parent != null) parent.firePropertyChange(parent, PROPERTY_FONT_BOLD, oldBold, bold);
+        if (parent != null) parent.firePropertyChange(this, PROPERTY_FONT_BOLD, oldBold, bold);
     }
 
     public boolean isItalic() {
@@ -181,7 +181,7 @@ public class Font implements StyleGroup<Font> {
     public void setItalic(boolean italic) {
         boolean oldItalic = this.italic == 1;
         this.italic = italic == true ? 1 : 0;
-        if (parent != null) parent.firePropertyChange(parent, PROPERTY_FONT_ITALIC, oldItalic, italic);
+        if (parent != null) parent.firePropertyChange(this, PROPERTY_FONT_ITALIC, oldItalic, italic);
     }
     
     public boolean isUnderline() {
@@ -192,6 +192,6 @@ public class Font implements StyleGroup<Font> {
     public void setUnderline(boolean underline) {
         boolean oldUnderline = this.underline == 1;
         this.underline = underline == true ? 1 : 0;
-        if (parent != null) parent.firePropertyChange(parent, PROPERTY_FONT_UNDERLINE, oldUnderline, underline);        
+        if (parent != null) parent.firePropertyChange(this, PROPERTY_FONT_UNDERLINE, oldUnderline, underline);        
     }
 }

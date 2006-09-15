@@ -164,6 +164,13 @@ var tw_Component = Class.extend({
         return this._focusCapable;
     },
     
+    setPropertyWithEffect: function(prop, value, unitSize, time) {
+        prop = prop.charAt(0).toUpperCase() + prop.substring(1);
+        var get = "get" + prop;
+        var set = "set" + prop;
+        new tw_Animation(this, get, set, value - this[get](), unitSize, time).start();
+    },
+    
     _focusListener: function() {
         this.setFocus(true);        
     },

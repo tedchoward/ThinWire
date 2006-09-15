@@ -60,6 +60,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     static final String SET_WIDTH = "setWidth";
     static final String SET_HEIGHT = "setHeight";
     static final String SET_VISIBLE = "setVisible";
+    static final String SET_PROPERTY_WITH_EFFECT = "setPropertyWithEffect";
 
     //Shared by other renderers
     static final String DESTROY = "destroy";
@@ -93,12 +94,13 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         this.comp = comp;        
         id = wr.addComponentId(comp);
         if (this instanceof WebComponentListener) wr.ai.setWebComponentListener(id, (WebComponentListener)this);
+        FX.Type visibleChange = comp.getStyle().getFX().getVisibleChange();
         
         if (!isPropertyChangeIgnored(Component.PROPERTY_X)) addInitProperty(Component.PROPERTY_X, comp.getX());
         if (!isPropertyChangeIgnored(Component.PROPERTY_Y)) addInitProperty(Component.PROPERTY_Y, comp.getY());
         if (!isPropertyChangeIgnored(Component.PROPERTY_WIDTH)) addInitProperty(Component.PROPERTY_WIDTH, comp.getWidth());
         if (!isPropertyChangeIgnored(Component.PROPERTY_HEIGHT)) addInitProperty(Component.PROPERTY_HEIGHT, comp.getHeight());
-        if (!isPropertyChangeIgnored(Component.PROPERTY_VISIBLE)) addInitProperty(Component.PROPERTY_VISIBLE, comp.isVisible());
+        if (!isPropertyChangeIgnored(Component.PROPERTY_VISIBLE)) addInitProperty(Component.PROPERTY_VISIBLE, visibleChange == FX.Type.NONE ? comp.isVisible() : Boolean.FALSE);
         if (!isPropertyChangeIgnored(Component.PROPERTY_ENABLED)) addInitProperty(Component.PROPERTY_ENABLED, comp.isEnabled());
         if (!comp.isFocusCapable()) addInitProperty(Component.PROPERTY_FOCUS_CAPABLE, false);         
         if (comp.isFocus()) addInitProperty(Component.PROPERTY_FOCUS, true);
@@ -123,10 +125,11 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         setStyle(Font.PROPERTY_FONT_BOLD, true);
         setStyle(Font.PROPERTY_FONT_ITALIC, true);
         setStyle(Font.PROPERTY_FONT_UNDERLINE, true);
+        if (visibleChange == FX.Type.SMOOTH && !isPropertyChangeIgnored(Component.PROPERTY_VISIBLE) && comp.isVisible()) setPropertyWithEffect(Component.PROPERTY_VISIBLE, Boolean.TRUE, Boolean.FALSE, SET_VISIBLE, FX.PROPERTY_FX_VISIBLE_CHANGE);        
         ((WebApplication)WebApplication.current()).setPackagePrivateMember("renderer", comp, this);
 
         if (comp.isFocusCapable() && ((Container)wr.comp).getComponentWithFocus() == null) comp.setFocus(true);
-}
+	}
     
     void setStyle(String propertyName, boolean isNotDefault) {
         Object value = comp.getStyle().getValue(propertyName);
@@ -258,31 +261,62 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
             comp.fireKeyPress((String)event.getValue());
         }
     }
+
+    private void setPropertyWithEffect(String propertyName, Object newValue, Object oldValue, String standardMethod, String styleProp) {
+        FX.Type type = (FX.Type)comp.getStyle().getValue(styleProp);
+        
+        if (type == FX.Type.SMOOTH) {
+            int time;
+            int unitSize;
+            
+            if (styleProp.equals(FX.PROPERTY_FX_VISIBLE_CHANGE)) {
+                propertyName = "opacity";
+                newValue = ((Boolean)newValue).booleanValue() ? 100 : 0;
+                unitSize = 10;
+                time = 250;
+            } else {
+                int dist = (Integer)newValue - (Integer)oldValue;
+                if (dist < 0) dist = ~dist + 1;
+
+                if (styleProp.equals(FX.PROPERTY_FX_POSITION_CHANGE)) {                
+                    unitSize = 10;
+                    time = dist;
+                } else {
+                    unitSize = 10;
+                    time = dist;
+                }
+            }
+            
+            wr.ai.callClientFunction(false, id, SET_PROPERTY_WITH_EFFECT, new Object[] {propertyName, newValue, unitSize, time});
+        } else {
+            postClientEvent(standardMethod, newValue);
+        }
+    }    
     
     public void propertyChange(PropertyChangeEvent pce) {
         String name = pce.getPropertyName();
         if (isPropertyChangeIgnored(name)) return;
-        Object newValue = pce.getNewValue();
         
         if (name.equals(Component.PROPERTY_ENABLED)) {
-            postClientEvent(SET_ENABLED, newValue);
+            postClientEvent(SET_ENABLED, pce.getNewValue());
         } else if (name.equals(Component.PROPERTY_FOCUS)) {
-            if (((Boolean)newValue).booleanValue())
-                postClientEvent(SET_FOCUS, newValue);
+            Object newValue = pce.getNewValue();
+            if (((Boolean)newValue).booleanValue()) postClientEvent(SET_FOCUS, newValue);
         } else if (name.equals(Component.PROPERTY_FOCUS_CAPABLE)) {
-            postClientEvent(SET_FOCUS_CAPABLE, newValue);
+            postClientEvent(SET_FOCUS_CAPABLE, pce.getNewValue());
         } else if (name.equals(Component.PROPERTY_X)) {
-            postClientEvent(SET_X, newValue);
+            setPropertyWithEffect(name, pce.getNewValue(), pce.getOldValue(), SET_X, FX.PROPERTY_FX_POSITION_CHANGE);
         } else if (name.equals(Component.PROPERTY_Y)) {
-            postClientEvent(SET_Y, newValue);
+            setPropertyWithEffect(name, pce.getNewValue(), pce.getOldValue(), SET_Y, FX.PROPERTY_FX_POSITION_CHANGE);
         } else if (name.equals(Component.PROPERTY_WIDTH)) {
-            postClientEvent(SET_WIDTH, newValue);
+            setPropertyWithEffect(name, pce.getNewValue(), pce.getOldValue(), SET_WIDTH, FX.PROPERTY_FX_SIZE_CHANGE);
         } else if (name.equals(Component.PROPERTY_HEIGHT)) {
-            postClientEvent(SET_HEIGHT, newValue);
+            setPropertyWithEffect(name, pce.getNewValue(), pce.getOldValue(), SET_HEIGHT, FX.PROPERTY_FX_SIZE_CHANGE);
         } else if (name.equals(Component.PROPERTY_VISIBLE)) {
-            postClientEvent(SET_VISIBLE, newValue);
-        } else if (pce.getSource() instanceof Style) {
-            setStyle(pce.getPropertyName(), false);            
+            setPropertyWithEffect(name, pce.getNewValue(), pce.getOldValue(), SET_VISIBLE, FX.PROPERTY_FX_VISIBLE_CHANGE);
+        } else {
+            Object source = pce.getSource();            
+            if (source instanceof Background || source instanceof Font || source instanceof Border) setStyle(pce.getPropertyName(), false);
         }
     }
 

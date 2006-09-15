@@ -69,40 +69,6 @@ import thinwire.ui.event.ItemChangeEvent.Type;
  * original via ag's policy.
  * 
  * </UL>
- * <b>Sample JavaScript Code:</b><br>
- * <pre>
- * var out = System.out;
- * var values = [[ 0,  1,  2 , 3,  4],
- *               [10, 11, 12, 13, 14],
- *               [20, 21, 22, 23, 24],
- *               [30, 31, 32, 33, 34],
- *               [40, 41, 42, 43, 44]];
- * 
- * var ag = new ArrayGrid();
- * 
- * for (var i = 0; i < 5; i++){
- *   var col = new ArrayGrid.Column();
- *   ag.getColumns().add(col);
- * }
- * 
- * for (var i = 0; i < 5; i++){
- *   var row = new ArrayGrid.Row();
- *   ag.getRows().add(row);
- *   for (var j = 0; j < 5; j++){
- *     row.set(j, new Integer(values[i][j]));
- *   }
- * }
- * 
- * out.println("\n");
- * for (var i = 0; i < 5; i++){
- *   var row = ag.getRows().get(i);
- *   var line = "";
- *   for (var j = 0; j < 5; j++){
- *     line += row.get(j) + " ";
- *   }
- *   out.println(line);
- * }
- * </pre>
  * <b>Sample Java Code:</b><br>
  * <pre>
  *   int[][] values = { { 0, 1, 2, 3, 4 }, { 10, 11, 12, 13, 14 },
@@ -166,12 +132,12 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
      * @param grid the inner Grid to which this ArrayGrid provides access.  May be null.
      * @param rowType the class to which this ArrayGrid's Rows belong
      * @param columnType  the class to which this ArrayGrid's Columns belong
-     * @throws ClassCastException if rowType does not extend Table.Row or columnType does
-     *   not extend Table.Column.
+     * @throws ClassCastException if rowType does not extend Grid.Row or columnType does
+     *   not extend Grid.Column.
      */
     protected ArrayGrid(Grid<R, C> grid, Class<? extends Row> rowType, Class<? extends Column> columnType) {
         if (!(Row.class.isAssignableFrom(rowType) && Column.class.isAssignableFrom(columnType)))
-            throw new ClassCastException("the rowType must be a subclass of Table.Row and the columnType must be a subclass of Table.Column");
+            throw new ClassCastException("the rowType must be a subclass of Grid.Row and the columnType must be a subclass of Grid.Column");
         
         this.rowType = rowType;
         this.columnType = columnType;

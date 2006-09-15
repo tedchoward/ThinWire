@@ -46,7 +46,7 @@ import thinwire.ui.event.PropertyChangeEvent;
 import thinwire.ui.event.PropertyChangeListener;
 
 /**
- * The Application class refers to an instance of the NexGen system.  Methods in this class are
+ * The Application class represents an instance of a ThinWire application.  Methods in this class are
  *  those that directly affect the system and it's environment.
  * @author Joshua J. Gertzen
  */

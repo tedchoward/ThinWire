@@ -94,7 +94,7 @@ public class Border implements StyleGroup<Border> {
         if (type == null) throw new IllegalArgumentException("type == null");
         Type oldType = this.type; 
         this.type = type;
-        if (parent != null) parent.firePropertyChange(parent, PROPERTY_BORDER_TYPE, oldType, this.type);        
+        if (parent != null) parent.firePropertyChange(this, PROPERTY_BORDER_TYPE, oldType, this.type);        
     }
     
     public int getSize() {
@@ -107,7 +107,7 @@ public class Border implements StyleGroup<Border> {
         if (size < 0 || size > 32) throw new IllegalArgumentException("size < 0 || size > 32");
         int oldSize = this.size;
         this.size = size;
-        if (parent != null) parent.firePropertyChange(parent, PROPERTY_BORDER_SIZE, oldSize, size);
+        if (parent != null) parent.firePropertyChange(this, PROPERTY_BORDER_SIZE, oldSize, size);
     }
     
     public Color getColor() {
@@ -120,6 +120,6 @@ public class Border implements StyleGroup<Border> {
         if (color == null) throw new IllegalArgumentException("color == null");
         Color oldColor = this.color;
         this.color = color;        
-        if (parent != null) parent.firePropertyChange(parent, PROPERTY_BORDER_COLOR, oldColor, this.color);
+        if (parent != null) parent.firePropertyChange(this, PROPERTY_BORDER_COLOR, oldColor, this.color);
     }
 }
