@@ -363,7 +363,7 @@ abstract class AbstractComponent implements Component {
     }
 
     public void setX(int x) {
-        rangeCheck(PROPERTY_X, x, -65535, 65536);
+        rangeCheck(PROPERTY_X, x, Short.MIN_VALUE, Short.MAX_VALUE);
         int oldX = this.x;
         this.x = x;
         firePropertyChange(this, PROPERTY_X, oldX, x);
@@ -374,15 +374,15 @@ abstract class AbstractComponent implements Component {
     }
 
     public void setY(int y) {
-        rangeCheck(PROPERTY_Y, y, -65535, 65536);
+        rangeCheck(PROPERTY_Y, y, Short.MIN_VALUE, Short.MAX_VALUE);
         int oldY = this.y;
         this.y = y;
         firePropertyChange(this, PROPERTY_Y, oldY, y);
     }
         
     public void setPosition(int x, int y) {
-        rangeCheck(PROPERTY_X, x, -65535, 65536);
-        rangeCheck(PROPERTY_Y, y, -65535, 65536);
+        rangeCheck(PROPERTY_X, x, Short.MIN_VALUE, Short.MAX_VALUE);
+        rangeCheck(PROPERTY_Y, y, Short.MIN_VALUE, Short.MAX_VALUE);
         int oX = -1, oY = -1;
         boolean error = false;
         
@@ -416,7 +416,7 @@ abstract class AbstractComponent implements Component {
     }
 
     public void setWidth(int width) {
-        rangeCheck(PROPERTY_WIDTH, width, 0, 65536);
+        rangeCheck(PROPERTY_WIDTH, width, 0, Short.MAX_VALUE);
         int oldWidth = this.width;
         this.width = width;
         firePropertyChange(this, PROPERTY_WIDTH, oldWidth, width);
@@ -427,15 +427,15 @@ abstract class AbstractComponent implements Component {
     }
 
     public void setHeight(int height) {
-        rangeCheck(PROPERTY_HEIGHT, height, 0, 65536);
+        rangeCheck(PROPERTY_HEIGHT, height, 0, Short.MAX_VALUE);
         int oldHeight = this.height;
         this.height = height;
         firePropertyChange(this, PROPERTY_HEIGHT, oldHeight, height);
     }
     
     public void setSize(int width, int height) {
-        rangeCheck(PROPERTY_WIDTH, width, 0, 65536);
-        rangeCheck(PROPERTY_HEIGHT, height, 0, 65536);
+        rangeCheck(PROPERTY_WIDTH, width, 0, Short.MAX_VALUE);
+        rangeCheck(PROPERTY_HEIGHT, height, 0, Short.MAX_VALUE);
         int oWidth = -1, oHeight = -1;
         boolean error = false;
         
@@ -465,10 +465,10 @@ abstract class AbstractComponent implements Component {
     }
     
     public void setBounds(int x, int y, int width, int height) {
-        rangeCheck(PROPERTY_X, x, -65535, 65536);
-        rangeCheck(PROPERTY_Y, y, -65535, 65536);
-        rangeCheck(PROPERTY_WIDTH, width, 0, 65536);
-        rangeCheck(PROPERTY_HEIGHT, height, 0, 65536);
+        rangeCheck(PROPERTY_X, x, Short.MIN_VALUE, Short.MAX_VALUE);
+        rangeCheck(PROPERTY_Y, y, Short.MIN_VALUE, Short.MAX_VALUE);
+        rangeCheck(PROPERTY_WIDTH, width, 0, Short.MAX_VALUE);
+        rangeCheck(PROPERTY_HEIGHT, height, 0, Short.MAX_VALUE);
         int oX = -1, oY = -1, oWidth = -1, oHeight = -1;
         boolean error = false;
         

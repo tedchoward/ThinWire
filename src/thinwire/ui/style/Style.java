@@ -27,7 +27,7 @@ package thinwire.ui.style;
 /**
  * @author Joshua J. Gertzen
  */
-public class Style {  
+public class Style implements StyleGroup<Style> {  
     private static final Style DEFAULT_STYLE;
     static {
         Style s = new Style();
@@ -46,6 +46,11 @@ public class Style {
         b.setSize(0);
         b.setType(Border.Type.NONE);
         
+        Effect e = s.getEffect();
+        e.setPositionChange(Effect.Type.NONE);
+        e.setSizeChange(Effect.Type.NONE);
+        e.setVisibleChange(Effect.Type.NONE);
+        
         DEFAULT_STYLE = s;
     }
     
@@ -53,6 +58,7 @@ public class Style {
     private Font font;
     private Background background;
     private Border border;
+    private Effect effect;
     
     public Style() {
         this(null, null);
@@ -68,6 +74,7 @@ public class Style {
         this.font = new Font(this, defaultStyle);
         this.background = new Background(this, defaultStyle);
         this.border = new Border(this, defaultStyle);
+        this.effect = new Effect(this, defaultStyle);
     }
 
     //NOTE: This is overridden by Component so it can receive these property change notifications
@@ -80,6 +87,7 @@ public class Style {
         getFont().copy(style.getFont());
         getBackground().copy(style.getBackground());
         getBorder().copy(style.getBorder());
+        getEffect().copy(style.getEffect());
     }
     
     public Object getValue(String propertyName) {
@@ -89,6 +97,8 @@ public class Style {
             return getBackground().getValue(propertyName);
         } else if (propertyName.startsWith("border")) {
             return getBorder().getValue(propertyName);
+        } else if (propertyName.startsWith("effect")) {
+            return getEffect().getValue(propertyName);
         } else {
             throw new IllegalArgumentException("property '" + propertyName + "' is unknown");
         }
@@ -101,6 +111,8 @@ public class Style {
             return getBackground().getDefaultValue(propertyName);
         } else if (propertyName.startsWith("border")) {
             return getBorder().getDefaultValue(propertyName);
+        } else if (propertyName.startsWith("effect")) {
+            return getEffect().getDefaultValue(propertyName);
         } else {
             throw new IllegalArgumentException("property '" + propertyName + "' is unknown");
         }
@@ -120,5 +132,9 @@ public class Style {
     
     public Border getBorder() {
         return border;
+    }               
+    
+    public Effect getEffect() {
+        return effect;
     }               
 }

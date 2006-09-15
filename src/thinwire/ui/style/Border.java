@@ -27,7 +27,7 @@ package thinwire.ui.style;
 /**
  * @author Joshua J. Gertzen
  */
-public class Border {
+public class Border implements StyleGroup<Border> {
     public static final String PROPERTY_BORDER_COLOR = "borderColor";
     public static final String PROPERTY_BORDER_SIZE = "borderSize";
     public static final String PROPERTY_BORDER_TYPE = "borderType";
@@ -61,7 +61,7 @@ public class Border {
         return getBorderValue(defaultStyle.getBorder(), propertyName);
     }
     
-    private Object getBorderValue(Border border, String propertyName) {
+    private static Object getBorderValue(Border border, String propertyName) {
         if (propertyName.equals(PROPERTY_BORDER_TYPE)) {
             return border.getType();
         } else if (propertyName.equals(PROPERTY_BORDER_SIZE)) {
@@ -72,7 +72,7 @@ public class Border {
             throw new IllegalArgumentException("property '" + propertyName + "' is unknown");
         }
     }
-    
+        
     public void copy(Border border) {
         if (border == null) throw new IllegalArgumentException("border == null");
         setType(border.getType());

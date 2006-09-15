@@ -27,7 +27,7 @@ package thinwire.ui.style;
 /**
  * @author Joshua J. Gertzen
  */
-public class Background {
+public class Background implements StyleGroup<Background> {
     public static final String PROPERTY_BACKGROUND_COLOR = "backgroundColor";
         
     private Style parent;
@@ -49,9 +49,7 @@ public class Background {
         return getBackgroundValue(defaultStyle.getBackground(), propertyName);
     }
     
-    private Object getBackgroundValue(Background background, String propertyName) {
-        if (defaultStyle == null) throw new IllegalStateException("defaultStyle == null");
-        
+    private static Object getBackgroundValue(Background background, String propertyName) {
         if (propertyName.equals(PROPERTY_BACKGROUND_COLOR)) {
             return background.getColor();
         } else {

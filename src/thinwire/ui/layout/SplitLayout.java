@@ -28,7 +28,6 @@ import java.util.List;
 
 import thinwire.ui.*;
 import thinwire.ui.event.*;
-import thinwire.ui.style.Color;
 
 /**
  * @author Joshua J. Gertzen

@@ -517,7 +517,7 @@ public interface Component {
      * If the prior value and new value differ, setting this property causes a <code>PropertyChangeEvent</code> ( propertyName = PROPERTY_X ) to be generated.
      * </p>
      * @param x the x coordinate (in pixels) to assign to this <code>Component</code>
-     * @throws IllegalArgumentException if the x value is < -65535 or >= 65536
+     * @throws IllegalArgumentException if the x value is < -32768 or >= 32767
      * @see #getX()
      * @see #setPosition(int, int)
      * @see #setBounds(int, int, int, int)
@@ -541,7 +541,7 @@ public interface Component {
      * If the prior value and new value differ, setting this property causes a <code>PropertyChangeEvent</code> ( propertyName = PROPERTY_Y ) to be generated.
      * </p>
      * @param y the y coordinate (in pixels) to assign to this <code>Component</code>
-     * @throws IllegalArgumentException if the y value is < -65535 or >= 65536
+     * @throws IllegalArgumentException if the y value is < -32768 or >= 32767
      * @see #getY()
      * @see #setPosition(int, int)
      * @see #setBounds(int, int, int, int)
@@ -561,7 +561,7 @@ public interface Component {
      * </p>
      * @param x the x coordinate (in pixels) to assign to this <code>Component</code>
      * @param y the y coordinate (in pixels) to assign to this <code>Component</code>
-     * @throws IllegalArgumentException if the x or y value is < -65535 or >= 65536
+     * @throws IllegalArgumentException if the x or y value is < -32768 or >= 32767
      * @see #setX
      * @see #setY
      * @see #setBounds(int, int, int, int)
@@ -586,7 +586,7 @@ public interface Component {
      * If the prior value and new value differ, setting this property causes a <code>PropertyChangeEvent</code> ( propertyName = PROPERTY_WIDTH ) to be generated.
      * </p>
      * @param width the width (in pixels) to assign to this <code>Component</code>
-     * @throws IllegalArgumentException if the width value is < 0 or >= 65536
+     * @throws IllegalArgumentException if the width value is < 0 or >= 32767
      * @see #getWidth()
      * @see #setSize(int, int)
      * @see #setBounds(int, int, int, int)
@@ -610,7 +610,7 @@ public interface Component {
      * If the prior value and new value differ, setting this property causes a <code>PropertyChangeEvent</code> ( propertyName = PROPERTY_HEIGHT ) to be generated.
      * </p>
      * @param height the height (in pixels) to assign to this <code>Component</code>
-     * @throws IllegalArgumentException if the height value is < 0 or >= 65536
+     * @throws IllegalArgumentException if the height value is < 0 or >= 32767
      * @see #getHeight()
      * @see #setSize(int, int)
      * @see #setBounds(int, int, int, int)
@@ -630,7 +630,7 @@ public interface Component {
      * </p>
      * @param width the width (in pixels) to assign to this <code>Component</code>
      * @param height the height (in pixels) to assign to this <code>Component</code>
-     * @throws IllegalArgumentException if the width or height value is < 0 or >= 65536
+     * @throws IllegalArgumentException if the width or height value is < 0 or >= 32767
      * @see #setWidth
      * @see #setHeight
      * @see #setBounds(int, int, int, int)
@@ -653,7 +653,7 @@ public interface Component {
      * @param y the y coordinate (in pixels) to assign to this <code>Component</code>
      * @param width the width (in pixels) to assign to this <code>Component</code>
      * @param height the height (in pixels) to assign to this <code>Component</code>
-     * @throws IllegalArgumentException if the width or height value is < 0 or >= 65536, or if the x or y value is < -65535 or >= 65536
+     * @throws IllegalArgumentException if the width or height value is < 0 or >= 32767, or if the x or y value is < -32768 or >= 32767
      * @see #setX
      * @see #setY
      * @see #setWidth

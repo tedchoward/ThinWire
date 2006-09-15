@@ -24,16 +24,14 @@
  */
 package thinwire.ui.style;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Joshua J. Gertzen
  */
 public class Color {    
-    private static final Map<String, Color> NAMED_COLORS = new HashMap<String, Color>();    
+    private static final Map<String, Color> NAMED_COLORS = new HashMap<String, Color>();
+    private static final Color[] VALUES;
     
     //Borrowed from SVG 1.0 Color Set
     public static final Color ALICEBLUE = new Color("aliceblue", 240, 248, 255);
@@ -214,6 +212,25 @@ public class Color {
     public static final Color WINDOWFRAME = new Color("windowframe", -1, -1, -1);
     public static final Color WINDOWTEXT = new Color("windowtext", -1, -1, -1);
     public static final Color TRANSPARENT = new Color("transparent", -1, -1, -1);        
+    static {
+        VALUES = NAMED_COLORS.values().toArray(new Color[NAMED_COLORS.size()]);
+        Arrays.sort(VALUES, new Comparator<Color>() {
+            public int compare(Color c1, Color c2) {
+                int o1 = c1.ordinal();
+                int o2 = c2.ordinal();
+                
+                if (o1 == o2) {
+                    return 0;
+                } else if (o1 > o2) {
+                    return 1;
+                } else {
+                    return -1;
+                }
+            }            
+        });
+    }    
+    
+    private static int nextOrdinal = 0;
     
     public static final Color valueOf(String colorId) {
         if (colorId.startsWith("rgb(")) {
@@ -241,10 +258,13 @@ public class Color {
         }
     }
     
-    public static final Collection<Color> getNamedColors() {
-        return Collections.unmodifiableCollection(NAMED_COLORS.values());
+    public static final Color[] values() {
+        Color[] values = new Color[VALUES.length];
+        System.arraycopy(VALUES, 0, values, 0, VALUES.length);
+        return values;
     }
     
+    private int ordinal;
     private String name;
     private String rgbString;
     private String hexString;
@@ -258,8 +278,11 @@ public class Color {
                 synchronized (NAMED_COLORS) {
                     NAMED_COLORS.put(name, this);
                 }
+                
+                this.ordinal = nextOrdinal++;
                 this.name = name;
             } else {
+                this.ordinal = -1;
                 this.name = "";
             }
             
@@ -273,6 +296,7 @@ public class Color {
                 NAMED_COLORS.put(name, this);
             }
             
+            this.ordinal = nextOrdinal++;            
             this.red = -1;
             this.green = -1;
             this.blue = -1;
@@ -294,8 +318,12 @@ public class Color {
         return this.blue;
     }
     
-    public String getName() {
-        return name;
+    public String name() {
+        return name.toUpperCase();
+    }
+    
+    public int ordinal() {        
+        return ordinal;
     }
     
     public String toRGBString() {

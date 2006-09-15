@@ -27,7 +27,7 @@ package thinwire.ui.style;
 /**
  * @author Joshua J. Gertzen
  */
-public class Font {
+public class Font implements StyleGroup<Font> {
     public static final String PROPERTY_FONT_UNDERLINE = "fontUnderline";
     public static final String PROPERTY_FONT_ITALIC = "fontItalic";
     public static final String PROPERTY_FONT_BOLD = "fontBold";
@@ -92,7 +92,7 @@ public class Font {
         return getFontValue(defaultStyle.getFont(), propertyName);
     }
     
-    private Object getFontValue(Font font, String propertyName) {        
+    private static Object getFontValue(Font font, String propertyName) {        
         if (propertyName.equals(PROPERTY_FONT_FAMILY)) {
             return font.getFamily();
         } else if (propertyName.equals(PROPERTY_FONT_COLOR)) {

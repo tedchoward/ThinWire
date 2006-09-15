@@ -230,6 +230,10 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
             this.setPropertyChangeIgnored(Component.PROPERTY_HEIGHT, false);
             this.setPropertyChangeIgnored(Component.PROPERTY_X, false);
             this.setPropertyChangeIgnored(Component.PROPERTY_Y, false);
+        } else if (name.equals(Component.PROPERTY_VISIBLE)) {
+            this.setPropertyChangeIgnored(Component.PROPERTY_VISIBLE, true);
+            comp.setVisible(((String)event.getValue()).toLowerCase().equals("true"));
+            this.setPropertyChangeIgnored(Component.PROPERTY_VISIBLE, false);
         } else if (name.equals(Component.PROPERTY_FOCUS)) {
             setPropertyChangeIgnored(Component.PROPERTY_FOCUS, true);
             

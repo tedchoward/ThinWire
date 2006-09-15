@@ -300,7 +300,7 @@ var tw_GridBox = tw_Component.extend({
         if (this._visibleCheckBoxes) {
             if (this._fullRowCheckBox || (tw_getEventOffsetX(event) < 16 && this._content.childNodes.item(0) == column)) {
                 var state = this.setRowIndexCheckState(index, -1);
-                tw_em.postViewStateChanged(this._id, "itemChecked", (state ? "t" : "f") + index);
+                tw_em.postViewStateChanged(this._id, "rowChecked", (state ? "t" : "f") + index);
             }
     
             this.fireAction("click", index);

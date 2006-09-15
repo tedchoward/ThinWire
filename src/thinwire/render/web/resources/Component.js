@@ -35,6 +35,7 @@ function tw_newComponent(className, id, containerId, props) {
 //TODO: Opera, it's still possible to drag-highlight text.
 var tw_Component = Class.extend({
     _box: null,
+    _opacity: 100,
     _focusBox: null,
     _id: -1,
     _parent: null,
@@ -122,11 +123,22 @@ var tw_Component = Class.extend({
     },
     
     isVisible: function() {
-        return this._box.style.display != "none";
+        return this._opacity > 0;
     },
     
     setVisible: function(visible) {
-        this._box.style.display = visible ? "block" : "none";
+        this.setOpacity(visible ? 100 : 0);
+    },
+    
+    setOpacity: function(opacity) {
+        this._box.style.display = opacity > 0 ? "block" : "none";        
+        this._box.style.opacity = opacity / 100;
+        if (tw_isIE) this._box.style.filter = opacity >= 100 ? "" : "alpha(opacity=" + opacity + ")";
+        this._opacity = opacity;
+    },
+    
+    getOpacity: function() {
+        return this._opacity;
     },
     
     isEnabled: function() {
