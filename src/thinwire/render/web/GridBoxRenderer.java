@@ -71,7 +71,6 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
     private Set<Integer> columnState = new HashSet<Integer>();
     private GridBox gb;
     private Map<GridBox, GridBoxRenderer> childToRenderer;
-    private int sortOrder = Integer.MAX_VALUE;
     DropDownGridBox dd;
     
     //TODO: Column indexes on the client side may differ if there is a hidden column between two visible columns
@@ -408,36 +407,8 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
             setPropertyChangeIgnored(GridBox.Row.PROPERTY_ROW_CHECKED, false);
             setPropertyChangeIgnored(GridBox.Row.PROPERTY_ROW_SELECTED, false);
         } else if (name.equals(VIEW_STATE_COLUMN_SORT)) {
-            final int index = Integer.parseInt(value);
-            final Comparator<? super Object> comparator;
-            
-            if (gb.getColumns().get(index).getSortComparator() != null) {
-                comparator = gb.getColumns().get(index).getSortComparator(); 
-            } else {
-                comparator = new Comparator<Object>() {
-                    public int compare(Object o1, Object o2) {
-                        return o1.toString().toLowerCase().compareTo(o2.toString().toLowerCase());
-                    }
-                };   
-            }
-            
-            if (index == sortOrder) {
-                sortOrder = -index;
-                
-                Collections.sort(gb.getRows(), new Comparator<Row>() {
-                    public int compare(Row o1, Row o2) {
-                        return ~comparator.compare(o1.get(index), o2.get(index)) + 1;
-                    }
-                });                
-            } else {
-                sortOrder = index;
-                
-                Collections.sort(gb.getRows(), new Comparator<Row>() {
-                    public int compare(Row o1, Row o2) {
-                        return comparator.compare(o1.get(index), o2.get(index));
-                    }
-                });                
-            }
+            Column col = gb.getColumns().get(Integer.parseInt(value));
+            col.setSortOrder(col.getSortOrder() == Column.SortOrder.ASC ? Column.SortOrder.DESC : Column.SortOrder.ASC); 
         } else if (name.equals(GridBox.Column.PROPERTY_COLUMN_WIDTH)) {
             setPropertyChangeIgnored(GridBox.Column.PROPERTY_COLUMN_WIDTH, true);
             String[] values = value.split(",");

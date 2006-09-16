@@ -299,17 +299,27 @@ public final class GridBox extends AbstractComponent implements Grid<GridBox.Row
         public static final String PROPERTY_COLUMN_DISPLAY_NAME = "columnDisplayName";
         public static final String PROPERTY_COLUMN_DISPLAY_FORMAT = "columnDisplayFormat";
         public static final String PROPERTY_COLUMN_SORT_COMPARATOR = "columnSortComparator";
+        public static final String PROPERTY_COLUMN_SORT_ORDER = "columnSortOrder";
 
+        private static final Comparator<Object> DEFAULT_SORT = new Comparator<Object>() {
+            public int compare(Object o1, Object o2) {
+                return o1.toString().toLowerCase().compareTo(o2.toString().toLowerCase());
+            }
+        };        
+
+        public static enum SortOrder {NONE, ASC, DESC};
+        
         public interface Format {
             public Object format(Object value);
         }    
-                
+        
         //Visible used to default to false, which creates confusion when using this component.
         private boolean visible = isCompatModeOn() ? false : true;
         private int width = -1;
         private AlignX alignX = AlignX.LEFT;
         private Format displayFormat = null;
-        private Comparator sortComparator;
+        private Comparator sortComparator = DEFAULT_SORT;
+        private SortOrder sortOrder = SortOrder.NONE;
 
         /**
          * Construct a Column.
@@ -443,10 +453,61 @@ public final class GridBox extends AbstractComponent implements Grid<GridBox.Row
          * @param sortComparator this Column's Comparator.
          */
         public void setSortComparator(Comparator sortComparator) {
+            if (sortComparator == null) sortComparator = DEFAULT_SORT;
             Comparator oldSortComparator = this.sortComparator;
             GridBox gb = (GridBox) getParent();
-            this.sortComparator = sortComparator;
-            if (gb != null) gb.firePropertyChange(this, PROPERTY_COLUMN_SORT_COMPARATOR, oldSortComparator, sortComparator);
+            this.sortComparator = sortComparator;            
+            if (gb != null) gb.firePropertyChange(this, PROPERTY_COLUMN_SORT_COMPARATOR, oldSortComparator, sortComparator);                
+            setSortOrder(null);
+        }
+        
+        public SortOrder getSortOrder() {
+            return sortOrder;
+        }
+        
+        public void setSortOrder(SortOrder sortOrder) {
+            if (sortOrder == null) sortOrder = SortOrder.NONE;
+            SortOrder oldSortOrder = this.sortOrder;
+            GridBox gb = (GridBox)getParent();
+            this.sortOrder = sortOrder;
+            
+            if (sortOrder == SortOrder.NONE) {
+                gb.sortOrderChanged = false;
+                
+                for (Column c : gb.getColumns()) {
+                    if (c.getSortOrder() != SortOrder.NONE) {
+                        gb.sortOrderChanged = true;
+                        break;
+                    }
+                }
+            } else {            
+                for (Column c : gb.getColumns()) {
+                    if (c != this) c.setSortOrder(SortOrder.NONE);
+                }
+
+                sort(gb, sortOrder == SortOrder.DESC);
+                gb.sortOrderChanged = true;
+            }
+            
+            if (gb != null) gb.firePropertyChange(this, PROPERTY_COLUMN_SORT_ORDER, oldSortOrder, sortOrder);
+        }
+        
+        private void sort(final GridBox gb, boolean descending) {
+            final int index = getIndex();
+            
+            if (descending) {               
+                Collections.sort(gb.getRows(), new Comparator<Row>() {
+                    public int compare(Row o1, Row o2) {
+                        return ~sortComparator.compare(o1.get(index), o2.get(index)) + 1;
+                    }
+                });                                
+            } else {                
+                Collections.sort(gb.getRows(), new Comparator<Row>() {
+                    public int compare(Row o1, Row o2) {
+                        return sortComparator.compare(o1.get(index), o2.get(index));
+                    }
+                });                                
+            }
         }
     }
     
@@ -474,10 +535,11 @@ public final class GridBox extends AbstractComponent implements Grid<GridBox.Row
     public static final String PROPERTY_VISIBLE_CHECK_BOXES = "visibleCheckBoxes";
     public static final String PROPERTY_FULL_ROW_CHECK_BOX = "fullRowCheckBox";
     
+    private boolean sortOrderChanged;
     private boolean visibleHeader;
     private boolean visibleCheckBoxes;
     private boolean fullRowCheckBox;
-    private boolean compatModeOn;
+    private boolean compatModeOn;    
     private int selectedRowIndex = -1;
     
     private EventListenerImpl<ItemChangeListener> icei = new EventListenerImpl<ItemChangeListener>();
@@ -514,6 +576,12 @@ public final class GridBox extends AbstractComponent implements Grid<GridBox.Row
                                 GridBox.this.selectedRowIndex = -1;                              
                             }
                         }
+
+                        if (GridBox.this.sortOrderChanged) {
+                            for (GridBox.Column c : GridBox.this.getColumns()) {
+                                c.setSortOrder(GridBox.Column.SortOrder.NONE);
+                            }
+                        }
                     } else if (type == ItemChangeEvent.Type.ADD) {
                         GridBox.Row newRow = (GridBox.Row)newValue;
                         if (newRow.getChild() != null) GridBox.this.rowsWithChildren.add(newRow);
@@ -527,6 +595,12 @@ public final class GridBox extends AbstractComponent implements Grid<GridBox.Row
                             }
                         } else if (rowIndex <= GridBox.this.selectedRowIndex) {
                             if (GridBox.this.selectedRowIndex + 1 < size) GridBox.this.selectedRowIndex++;
+                        }
+                        
+                        if (GridBox.this.sortOrderChanged) {
+                            for (GridBox.Column c : GridBox.this.getColumns()) {
+                                c.setSortOrder(GridBox.Column.SortOrder.NONE);
+                            }
                         }
                     }
                 }                
