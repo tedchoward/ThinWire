@@ -471,25 +471,27 @@ public final class GridBox extends AbstractComponent implements Grid<GridBox.Row
             GridBox gb = (GridBox)getParent();
             this.sortOrder = sortOrder;
             
-            if (sortOrder == SortOrder.NONE) {
-                gb.sortOrderChanged = false;
-                
-                for (Column c : gb.getColumns()) {
-                    if (c.getSortOrder() != SortOrder.NONE) {
-                        gb.sortOrderChanged = true;
-                        break;
+            if (gb != null) {            
+                if (sortOrder == SortOrder.NONE) {
+                    gb.sortOrderChanged = false;
+                    
+                    for (Column c : gb.getColumns()) {
+                        if (c.getSortOrder() != SortOrder.NONE) {
+                            gb.sortOrderChanged = true;
+                            break;
+                        }
                     }
+                } else {            
+                    for (Column c : gb.getColumns()) {
+                        if (c != this) c.setSortOrder(SortOrder.NONE);
+                    }
+    
+                    sort(gb, sortOrder == SortOrder.DESC);
+                    gb.sortOrderChanged = true;
                 }
-            } else {            
-                for (Column c : gb.getColumns()) {
-                    if (c != this) c.setSortOrder(SortOrder.NONE);
-                }
-
-                sort(gb, sortOrder == SortOrder.DESC);
-                gb.sortOrderChanged = true;
+                
+                gb.firePropertyChange(this, PROPERTY_COLUMN_SORT_ORDER, oldSortOrder, sortOrder);
             }
-            
-            if (gb != null) gb.firePropertyChange(this, PROPERTY_COLUMN_SORT_ORDER, oldSortOrder, sortOrder);
         }
         
         private void sort(final GridBox gb, boolean descending) {

@@ -27,20 +27,9 @@ package thinwire.ui;
 /**
  * @author Joshua J. Gertzen
  */
-public interface EditorComponent extends AlignTextComponent {
-    public static final String PROPERTY_SELECTION_BEGIN_INDEX = "selectionBeginIndex";
-    public static final String PROPERTY_SELECTION_END_INDEX = "selectionEndIndex";    
-    public static final String PROPERTY_CURSOR_INDEX = "cursorIndex";
+public interface EditorComponent extends AlignTextComponent, SelectionComponent {
     public static final String PROPERTY_MAX_LENGTH = "maxLength";    
-    
-    public void setSelectionRange(int selectionBeginIndex, int selectionEndIndex);
-    public int getSelectionBeginIndex();
-    public void setSelectionBeginIndex(int selectionBeginIndex);
-    public int getSelectionEndIndex();
-    public void setSelectionEndIndex(int selectionEndIndex);
-    public int getCursorIndex();
-    public void setCursorIndex(int index);
-    
+        
     /**
      * Sets the editor max length.
      * @param maxLength The maxLength to set.
@@ -51,6 +40,5 @@ public interface EditorComponent extends AlignTextComponent {
      * Gets the TextField's max length.
      * @return Returns the maxLength.
      */
-    public int getMaxLength();
-    
+    public int getMaxLength();    
 }
