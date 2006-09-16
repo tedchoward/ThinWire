@@ -181,16 +181,13 @@ var tw_GridBox = tw_Component.extend({
                 if (props.width < container.getWidth()) props.width = container.getWidth();
                 if (props.height < container.getHeight()) props.height = container.getHeight();
                 props.x = container.getX();
-                props.y = container.getY() + container.getHeight();
-                
-                this._box.style.display = "none";
+                props.y = container.getY() + container.getHeight();                
+                this.setVisible(false);
     
                 //Destroy existing GridBox for the dropdown if it exists
                 if (container._gridBox != undefined) {
-                    var ogb = container._gridBox._box;                    
+                    showDropDown = container._gridBox.isVisible();
                     container._gridBox.destroy();
-                    ogb.parentNode.removeChild(ogb);
-                    if (ogb.style.display != "none") showDropDown = true;                    
                 }
     
                 container._gridBox = this;
@@ -287,6 +284,7 @@ var tw_GridBox = tw_Component.extend({
     
     _cellClickListener: function(event) {
         if (!this.isEnabled()) return;
+        this.setFocus(true);
         var cell = tw_getEventTarget(event);
         var column = cell.parentNode;    
         var index = 1;
@@ -808,9 +806,9 @@ var tw_GridBox = tw_Component.extend({
         columnHeader.className = "gridBoxColumnHeader";
         columnHeader.style.borderColor = tw_borderColor;    
         columnHeader.style.height = (tw_sizeIncludesBorders ? tw_GridBox.headerHeight : tw_GridBox.headerHeight - tw_CALC_BORDER_SUB) + "px";
-        columnHeader.style.textAlign = alignX;
-        
+        columnHeader.style.textAlign = alignX;                
         columnHeader.appendChild(document.createTextNode(name));
+                
         tw_addEventListener(columnHeader, "focus", this._focusListener);
         tw_addEventListener(columnHeader, "blur", this._blurListener);    
         tw_addEventListener(columnHeader, "click", this._columnClickListener);

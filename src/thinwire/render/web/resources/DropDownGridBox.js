@@ -185,7 +185,7 @@ var tw_DropDownGridBox = tw_BaseText.extend({
             
             gb.setY(offsetY);
             gb.setX(offsetX);
-            gb.setVisible(true);            
+            gb.setVisible(true);
             gb.setFocus(true);
         } else {
             this._gridBox.closeChildren();
