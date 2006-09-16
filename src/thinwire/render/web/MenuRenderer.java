@@ -56,13 +56,18 @@ final class MenuRenderer extends ComponentRenderer implements ItemChangeListener
 	
 	void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         jsClass = MENU_CLASS;
+        boolean windowMenu = container instanceof WindowRenderer;
+
         //a menu does not support the focus, enabled, x, y, width or height properties
-        setPropertyChangeIgnored(Component.PROPERTY_X, true);
-        setPropertyChangeIgnored(Component.PROPERTY_Y, true);
-        setPropertyChangeIgnored(Component.PROPERTY_WIDTH, true);
-        setPropertyChangeIgnored(Component.PROPERTY_HEIGHT, true);
+        if (windowMenu) {
+            setPropertyChangeIgnored(Component.PROPERTY_X, true);
+            setPropertyChangeIgnored(Component.PROPERTY_Y, true);
+            setPropertyChangeIgnored(Component.PROPERTY_WIDTH, true);
+            setPropertyChangeIgnored(Component.PROPERTY_HEIGHT, true);
+            setPropertyChangeIgnored(Component.PROPERTY_VISIBLE, true);
+        }
+
         setPropertyChangeIgnored(Component.PROPERTY_ENABLED, true);
-        setPropertyChangeIgnored(Component.PROPERTY_VISIBLE, true);
         setPropertyChangeIgnored(Component.PROPERTY_FOCUS, true);
 
 		menu = (Menu)c;
@@ -70,7 +75,8 @@ final class MenuRenderer extends ComponentRenderer implements ItemChangeListener
         this.wr = wr;
         buildMenuChildrenInit((Menu.Item)menu.getRootItem(), true);
         menu.addItemChangeListener(this);
-        addInitProperty("initData", sb);
+        addInitProperty("initData", sb);        
+        addInitProperty("windowMenu", windowMenu);
         super.render(wr, c, container);
 		sb.setLength(0);
 	}
@@ -128,6 +134,8 @@ final class MenuRenderer extends ComponentRenderer implements ItemChangeListener
             } else if (name.equals(Menu.Item.PROPERTY_ITEM_ENABLED)) {
                 postClientEvent(ITEM_SET_ENABLED, fullIndex, newValue);
             }
+        } else {
+            super.propertyChange(pce);
         }
     }
     

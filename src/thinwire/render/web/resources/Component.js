@@ -462,7 +462,7 @@ var tw_Component = Class.extend({
         
         if (this._parent != null) {
             if (this._parent instanceof tw_BaseContainer) {
-                if (this instanceof tw_Menu) {
+                if (this instanceof tw_Menu && this._windowMenu) {
                     this._parent.setMenu(this);
                 } else {
                     this._parent.addComponent(insertAtIndex, this);

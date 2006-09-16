@@ -29,6 +29,7 @@ var tw_menu_imageMenuArrowInvert = "url(?_twr_=menuArrowInvert.png)";
 var tw_Menu = tw_Component.extend({
     _menusAreVisible: false,
     _activeMenuItem: null,
+    _windowMenu: false,
     
     construct: function(id, containerId, props) {
         this.$.construct.apply(this, ["div", "mainMenu", id, containerId]);
@@ -43,10 +44,19 @@ var tw_Menu = tw_Component.extend({
         this._itemMouseOver = this._itemMouseOver.bind(this);
         this._itemClick = this._itemClick.bind(this);        
 
+        this._windowMenu = props.windowMenu;                
         var initData = props.initData;
         delete props.initData;
+        delete props.windowMenu;
+        
+        if (!this._windowMenu) {
+            this._box.style.position = "absolute";
+            this._box.style.borderWidth = "2px";
+            this._box.style.borderStyle = "outset";
+        }
+        
         this._load(this._box, initData);
-        this.init(-1, null);
+        this.init(-1, props);
     },
             
     _mainMenuMouseOver: function(event) {
@@ -469,7 +479,7 @@ var tw_Menu = tw_Component.extend({
         
         return node;
     },
-
+        
     itemLoad: function(data, itemPos) {
         var item = this._fullIndexItem(itemPos);
         this._load(item, data);
