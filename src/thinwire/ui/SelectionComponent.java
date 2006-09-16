@@ -3,8 +3,12 @@
   */
 package thinwire.ui;
 
+/**
+ * @author Joshua J. Gertzen
+ * @author Ted C. Howard
+ */
 public interface SelectionComponent extends Component {
-    public static final String PROPERTY_LENGTH = "length";    
+    public static final String PROPERTY_LENGTH = "length";
     public static final String PROPERTY_SELECTION_BEGIN_INDEX = "selectionBeginIndex";
     public static final String PROPERTY_SELECTION_END_INDEX = "selectionEndIndex";    
     public static final String PROPERTY_CURSOR_INDEX = "cursorIndex";

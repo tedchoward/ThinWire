@@ -171,12 +171,10 @@ public final class Tree extends AbstractHierarchyComponent<Tree.Item> {
         /**
          * Get the selected state of the item.
          * @return true if this item is the selected item in the tree, false otherwise.
-         * @throws IllegalStateException if the item has not been added to a tree.
          */
         public boolean isSelected() {
             Tree tree = getHierarchy();
-            if (tree == null) throw new IllegalStateException("getHierarchy() == null");
-            return tree.selectedItem == this;
+            return tree == null ? false : tree.selectedItem == this; 
         }
 
         /**
@@ -186,7 +184,7 @@ public final class Tree extends AbstractHierarchyComponent<Tree.Item> {
          */
         public void setSelected(boolean selected) {
             Tree tree = getHierarchy();
-            if (tree == null) throw new IllegalStateException("getHierarchy() == null");
+            if (tree == null) throw new IllegalStateException("the item must be added to a Tree before it can be set to selected");
             Tree.Item oldSelectedItem = tree.selectedItem;                         
             tree.selectedItem = selected ? this : tree.getRootItem();
             tree.firePropertyChange(this, PROPERTY_ITEM_SELECTED, oldSelectedItem == this, tree.selectedItem == this);
@@ -247,7 +245,7 @@ public final class Tree extends AbstractHierarchyComponent<Tree.Item> {
 
     /**
      * Get the selected item of Tree.
-     * @return the selected item of Tree, this will never return null.
+     * @return the selected item of Tree.
      */
     public Item getSelectedItem() {
         return selectedItem;
