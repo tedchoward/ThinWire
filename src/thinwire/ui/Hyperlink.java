@@ -92,7 +92,7 @@ public final class Hyperlink extends AbstractTextComponent implements ActionEven
             target = "olhl" + id;
         }
         
-        ((WebApplication)WebApplication.current()).callClientFunction(false, "tw_Hyperlink", "openLocation", new Object[] {location, target});
+        ((WebApplication)WebApplication.current()).clientSideMethodCall("tw_Hyperlink", "openLocation", location, target);
     }
     
     private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>();    

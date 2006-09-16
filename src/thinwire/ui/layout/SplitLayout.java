@@ -26,6 +26,9 @@ package thinwire.ui.layout;
 
 import java.util.List;
 
+import thinwire.render.RenderStateEvent;
+import thinwire.render.RenderStateListener;
+import thinwire.render.web.WebApplication;
 import thinwire.ui.*;
 import thinwire.ui.event.*;
 
@@ -34,6 +37,9 @@ import thinwire.ui.event.*;
  */
 public class SplitLayout implements Layout {
     public enum SplitType {VERTICAL, HORIZONTAL};
+        
+    private static final String RES_PATH = "class:///thinwire.ui.layout.SplitLayout/resources/";
+    private static final String CLIENT_SIDE_LIB = RES_PATH + "SplitLayout.js";
     
     private PropertyChangeListener pcl = new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent ev) {
@@ -46,58 +52,47 @@ public class SplitLayout implements Layout {
             if (autoLayout) apply();
         }
     };
-    
-    private static final String IMG_PATH = "class:///thinwire.ui.layout.SplitLayout/resources/";
-    private static final String IMG_UP_ARROW = IMG_PATH + "splitLayoutUpArrow.png";
-    private static final String IMG_DOWN_ARROW = IMG_PATH + "splitLayoutDownArrow.png";
-    private static final String IMG_LEFT_ARROW = IMG_PATH + "splitLayoutLeftArrow.png";
-    private static final String IMG_RIGHT_ARROW = IMG_PATH + "splitLayoutRightArrow.png";
-
+            
     private boolean autoLayout;
     private Container container;
     private SplitType split;
     private int dividerSize;
-    private Divider divider;
-    private Image maxLeft;
-    private Image maxRight;
+    private Label divider;
     private double size;
-    private boolean visibleMaximizeButtons;
     private int maximized;
+    private boolean layoutInProgress;
         
     public SplitLayout(Container container, SplitType split, double size) {
-        divider = new Divider();
-        
-        maxLeft = new Image();
-        maxRight = new Image();
-
-        ActionListener acl = new ActionListener() {
-            public void actionPerformed(ActionEvent ev) {
-                if (isMaximized()) {
-                    setMaximized(false);
-                } else {
-                    boolean autoLayout = isAutoLayout();
-                    setAutoLayout(false);
-                    setMaximized(true);  
- 
-                    if ((ev.getSource() == maxLeft && maximized == 0) || (ev.getSource() == maxRight && maximized == 1)) {
-                        setMaximized(true, true);
+        final WebApplication app = (WebApplication)Application.current();        
+        app.clientSideIncludeFile(CLIENT_SIDE_LIB);
+        divider = new Label();
+        divider.addPropertyChangeListener(new String[] {Component.PROPERTY_X, Component.PROPERTY_Y}, new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent ev) {
+                if (!layoutInProgress && SplitLayout.this.container != null) {
+                    double value = (Integer)ev.getNewValue() + dividerSize;
+                    
+                    if (SplitLayout.this.size < 1) {
+                        int contValue = ev.getPropertyName().equals(Component.PROPERTY_X) ? SplitLayout.this.container.getInnerWidth() : SplitLayout.this.container.getInnerHeight();
+                        value = Math.floor(value / contValue * 1000 + .5) / 1000; 
                     }
                     
-                    setAutoLayout(autoLayout);
+                    SplitLayout.this.setSize(value);
                 }
-            }            
-        };
-        
-        maxLeft.addActionListener(Image.ACTION_CLICK, acl);        
-        maxRight.addActionListener(Image.ACTION_CLICK, acl);        
-        
+            }
+        });
+                
         setSplit(split);
         setSize(size);
-        setVisibleMaximizeButtons(true);
         setMaximized(false);
-        setDividerSize(6);
+        setDividerSize(4);
         setContainer(container);
         setAutoLayout(true);
+        
+        app.invokeAfterRendered(divider, new RenderStateListener() {
+            public void renderStateChange(RenderStateEvent ev) {
+                app.clientSideMethodCall("tw_SplitLayout", "newInstance", ev.getId());                
+            }
+        });                
     }
         
     public Container getContainer() {
@@ -108,8 +103,6 @@ public class SplitLayout implements Layout {
         if (this.container != null) {
             this.container.removeItemChangeListener(icl);
             this.container.removePropertyChangeListener(pcl);
-            this.container.getChildren().remove(maxLeft);
-            this.container.getChildren().remove(maxRight);
             this.container.getChildren().remove(divider);            
         }
         
@@ -117,8 +110,6 @@ public class SplitLayout implements Layout {
         divider.setSize(10, 2);
         divider.setVisible(false);
         this.container.getChildren().add(divider);
-        this.container.getChildren().add(maxLeft);
-        this.container.getChildren().add(maxRight);
         this.container.addItemChangeListener(icl);
         String[] props;
         
@@ -158,7 +149,6 @@ public class SplitLayout implements Layout {
     public void setDividerSize(int dividerSize) {
         this.dividerSize = dividerSize;        
         this.divider.setVisible(dividerSize > 0);
-        this.setVisibleMaximizeButtons(dividerSize > 0);            
         if (autoLayout) apply();
     }
     
@@ -169,15 +159,6 @@ public class SplitLayout implements Layout {
     public void setSize(double size) {
         this.size = size;
         if (autoLayout) apply();
-    }
-    
-    public boolean isVisibleMaximizeButtons() {
-        return this.visibleMaximizeButtons; 
-    }
-    
-    public void setVisibleMaximizeButtons(boolean visibleMaximizeButtons) {
-       this.visibleMaximizeButtons = visibleMaximizeButtons;
-       if (autoLayout) apply();
     }
         
     public void setMaximized(boolean maximized) {
@@ -216,7 +197,8 @@ public class SplitLayout implements Layout {
        if (container == null) return;
        int innerHeight = container.getInnerHeight();
        int innerWidth = container.getInnerWidth();
-       if (innerHeight < 10 || innerWidth < 10) return;       
+       if (innerHeight < 10 || innerWidth < 10) return;
+       layoutInProgress = true;
        int firstSize = (split == SplitType.VERTICAL ? innerWidth : innerHeight) - dividerSize;
        int secondSize;
        
@@ -268,55 +250,19 @@ public class SplitLayout implements Layout {
                } else {
                    c.setVisible(false);
                }
-           } else if (c == divider) {
-               int imgSize = 8;
-               
+           } else if (c == divider) {               
                if (split == SplitType.VERTICAL) {
                    c.setBounds(firstSize, 0, dividerSize, innerHeight);
-
-                   if (visibleMaximizeButtons) {
-                       if (dividerSize <= imgSize) {
-                           maxLeft.setPosition(c.getX() - ((imgSize - dividerSize) / 2), c.getY() + 6);
-                       } else {
-                           maxLeft.setPosition(c.getX() + ((dividerSize - imgSize) / 2), c.getY() + 6);
-                           imgSize = dividerSize;
-                       }
-                       
-                       maxLeft.setSize(imgSize, 16);
-                       maxLeft.setImage(maximized == 1 ? IMG_RIGHT_ARROW : IMG_LEFT_ARROW);                       
-                       maxRight.setBounds(maxLeft.getX(), maxLeft.getY() + maxLeft.getHeight() + 2, imgSize, 16);                   
-                       maxRight.setImage(maximized == 0 ? IMG_LEFT_ARROW : IMG_RIGHT_ARROW);
-                   }
                } else {                   
                    c.setBounds(0, firstSize, innerWidth, dividerSize);                   
-
-                   if (visibleMaximizeButtons) {
-                       if (dividerSize <= imgSize) {
-                           maxLeft.setPosition(c.getX() + 6, c.getY() - ((imgSize - dividerSize) / 2));
-                       } else {
-                           maxLeft.setPosition(c.getX() + 6, c.getY());
-                           imgSize = dividerSize;
-                       }
-                       
-                       maxLeft.setSize(16, imgSize);
-                       maxLeft.setImage(maximized == 1 ? IMG_DOWN_ARROW : IMG_UP_ARROW);                       
-                       maxRight.setBounds(maxLeft.getX() + maxLeft.getWidth() + 2, maxLeft.getY(), 16, imgSize);                   
-                       maxRight.setImage(maximized == 0 ? IMG_UP_ARROW : IMG_DOWN_ARROW);
-                   }
-               }
-
-               if (visibleMaximizeButtons) {
-                   maxLeft.setVisible(true);
-                   maxRight.setVisible(true);
-               } else {
-                   maxLeft.setVisible(false);
-                   maxRight.setVisible(false);
                }
 
                c.setVisible(true);
-           } else if (c != maxLeft && c != maxRight) {
+           } else {
                c.setVisible(false);
            }
        }
+       
+       layoutInProgress = false;
     }
 }

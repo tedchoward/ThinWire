@@ -54,8 +54,8 @@ final class MenuRenderer extends ComponentRenderer implements ItemChangeListener
     private Map<Menu.Item, KeyPressListener> itemToKeyPressListeners;
     private StringBuffer sb;
 	
-	void render(WindowRenderer wr, Component c, ComponentRenderer container) {
-        jsClass = MENU_CLASS;
+	void render(WindowRenderer wr, Component c, ComponentRenderer container) {        
+        init(MENU_CLASS, wr, c, container);
         boolean windowMenu = container instanceof WindowRenderer;
 
         //a menu does not support the focus, enabled, x, y, width or height properties
@@ -72,7 +72,6 @@ final class MenuRenderer extends ComponentRenderer implements ItemChangeListener
 
 		menu = (Menu)c;
         sb = new StringBuffer();
-        this.wr = wr;
         buildMenuChildrenInit((Menu.Item)menu.getRootItem(), true);
         menu.addItemChangeListener(this);
         addInitProperty("initData", sb);        

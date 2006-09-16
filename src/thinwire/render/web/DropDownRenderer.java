@@ -37,7 +37,7 @@ final class DropDownRenderer extends MaskEditorComponentRenderer {
     private ComponentRenderer ddcr;
 
 	void render(WindowRenderer wr, Component c, ComponentRenderer container) {
-        jsClass = DROPDOWNGRIDBOX_CLASS;
+	    init(DROPDOWNGRIDBOX_CLASS, wr, c, container);
 	    DropDown dd = (DropDown)c;        
         addInitProperty(DropDown.PROPERTY_EDIT_ALLOWED, dd.isEditAllowed());
         super.render(wr, c, container);

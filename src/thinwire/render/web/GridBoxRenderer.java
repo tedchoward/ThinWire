@@ -80,7 +80,7 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
     }
     
     private void render(WindowRenderer wr, Component c, ComponentRenderer container, Integer parentIndex) {
-        jsClass = GRIDBOX_CLASS;
+        init(GRIDBOX_CLASS, wr, c, container);
         gb = (GridBox)c;       
 
         this.wr = wr;
@@ -364,11 +364,10 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
                 postClientEvent(ADD_ROW, rowIndex, getValues((List)newValue, gb.getColumns(), null).toString());
                 GridBox gbc = nro.getChild();
                 if (gbc != null) renderChild(rowIndex, gbc);
-                if (nro.isSelected()) postClientEvent(SET_ROW_INDEX_SELECTED, rowIndex, Boolean.FALSE);
             } else if (type == ItemChangeEvent.Type.REMOVE) {
                 rowState.remove(new Integer(System.identityHashCode(oro)));                
                 postClientEvent(REMOVE_ROW, rowIndex);
-                GridBox gbc = oro.getChild();               
+                GridBox gbc = oro.getChild();
                 if (gbc != null) ((GridBoxRenderer)childToRenderer.remove(gbc)).destroy();
             } else {
                 rowState.remove(new Integer(System.identityHashCode(oro)));

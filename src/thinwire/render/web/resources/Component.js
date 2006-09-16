@@ -178,7 +178,7 @@ var tw_Component = Class.extend({
     _blurListener: function() {
         this.setFocus(false);        
     },
-    
+        
     setFocus: function(focus) {
         if (!this.isEnabled() || !this.isVisible()) return false;
         
@@ -305,11 +305,6 @@ var tw_Component = Class.extend({
         } else {
             tw_em.queueViewStateChanged(this._id, name, value);
         }                           
-        
-        //if (this instanceof tw_TextField && name == "text") {
-        //}
-
-        //tw_em.postViewStateChanged(this._id, name, value);
     },
         
     getNextComponent: function(usable) {

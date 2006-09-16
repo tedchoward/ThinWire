@@ -46,7 +46,7 @@ class ContainerRenderer extends ComponentRenderer implements ItemChangeListener 
     private Map<Component, ComponentRenderer> compToRenderer;
     
 	void render(WindowRenderer wr, Component comp, ComponentRenderer container) {
-        if (jsClass == null) jsClass = CONTAINER_CLASS;
+        if (jsClass == null) init(CONTAINER_CLASS, wr, comp, container);            
         setPropertyChangeIgnored(Component.PROPERTY_FOCUS, true);
         setPropertyChangeIgnored(Component.PROPERTY_ENABLED, true);
         Container c = (Container)comp;
@@ -60,7 +60,7 @@ class ContainerRenderer extends ComponentRenderer implements ItemChangeListener 
         
         if (comp != null && !(comp instanceof Container)) {
             ComponentRenderer cr = compToRenderer.get(comp);
-            if (!cr.isPropertyChangeIgnored(Component.PROPERTY_FOCUS)) cr.postClientEvent(SET_FOCUS, null);
+            if (!cr.isPropertyChangeIgnored(Component.PROPERTY_FOCUS)) cr.postClientEvent(SET_FOCUS, true);
         }
 	}
     
@@ -104,6 +104,10 @@ class ContainerRenderer extends ComponentRenderer implements ItemChangeListener 
         ComponentRenderer r = wr.ai.getRenderer(comp);
         compToRenderer.put(comp, r);
         r.render(wr, comp, this);        
+    }
+    
+    boolean isFullyRendered() {
+        return compToRenderer.size() == ((Container)comp).getChildren().size();
     }
     
     public void propertyChange(PropertyChangeEvent pce) {        

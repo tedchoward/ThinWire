@@ -36,7 +36,7 @@ final class TextFieldRenderer extends MaskEditorComponentRenderer {
     private static final String SET_INPUT_HIDDEN = "setInputHidden";
 
     void render(WindowRenderer wr, Component c, ComponentRenderer container) {
-        jsClass = TEXTFIELD_CLASS;
+        init(TEXTFIELD_CLASS, wr, c, container);
 		TextField tf = (TextField)c;
         addInitProperty(TextField.PROPERTY_INPUT_HIDDEN, tf.isInputHidden());
         super.render(wr, c, container);

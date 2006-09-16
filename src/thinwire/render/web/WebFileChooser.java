@@ -120,7 +120,7 @@ class WebFileChooser {
         d.setVisible(true);
         WindowRenderer wr = app.getWindowRenderer(d);
         containerId = wr.getComponentId(c);
-        app.callClientFunction(false, PREPARE_FILE_CHOOSER, new Object[] {containerId, showDescription, multiFile});
+        app.clientSideFunctionCall(PREPARE_FILE_CHOOSER, containerId, showDescription, multiFile);
         d.setWaitForWindow(true);
     }
     

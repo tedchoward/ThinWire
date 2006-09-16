@@ -500,29 +500,33 @@ public final class GridBox extends AbstractComponent implements Grid<GridBox.Row
                     
                     //If the selected row is removed or if the first row is added, then
                     //we need to guarantee the selected row is correct.
-                    if (type == ItemChangeEvent.Type.REMOVE) {                        
-                        if (((GridBox.Row)oldValue).getChild() != null) GridBox.this.rowsWithChildren.remove(oldValue);
-                        if (((GridBox.Row)oldValue).isChecked()) GridBox.this.checkedRows.remove(oldValue);
+                    if (type == ItemChangeEvent.Type.REMOVE) {
+                        GridBox.Row oldRow = (GridBox.Row)oldValue; 
+                        if (oldRow.getChild() != null) GridBox.this.rowsWithChildren.remove(oldRow);
+                        if (oldRow.isChecked()) GridBox.this.checkedRows.remove(oldRow);
 
                         if (rowIndex == GridBox.this.selectedRowIndex) {
                             if (rowIndex < size) {
-                                ((GridBox.Row)rows.get(rowIndex)).setSelected(true);
+                                rows.get(rowIndex).setSelected(true);
                             } else if (size > 0) {
-                                ((GridBox.Row)rows.get(size - 1)).setSelected(true);
+                                rows.get(size - 1).setSelected(true);
                             } else {
                                 GridBox.this.selectedRowIndex = -1;                              
                             }
                         }
                     } else if (type == ItemChangeEvent.Type.ADD) {
-                        if (((GridBox.Row)newValue).getChild() != null) GridBox.this.rowsWithChildren.add((GridBox.Row)newValue);
-                        if (((GridBox.Row)newValue).isChecked()) GridBox.this.checkedRows.add((GridBox.Row)newValue);
+                        GridBox.Row newRow = (GridBox.Row)newValue;
+                        if (newRow.getChild() != null) GridBox.this.rowsWithChildren.add(newRow);
+                        if (newRow.isChecked()) GridBox.this.checkedRows.add(newRow);
                         
                         if (size == 1) {
                             if (GridBox.this.getColumns().size() > 0) {
-                                ((GridBox.Row)newValue).setSelected(true);
+                                newRow.setSelected(true);
                             } else {
                                 GridBox.this.selectedRowIndex = 0;
                             }
+                        } else if (rowIndex <= GridBox.this.selectedRowIndex) {
+                            if (GridBox.this.selectedRowIndex + 1 < size) GridBox.this.selectedRowIndex++;
                         }
                     }
                 }                

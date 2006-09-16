@@ -30,7 +30,6 @@ var tw_Animation = Class.extend({
     _dist: 0,
     _unitSize: 0,
     _unitTime: 0,
-    //_beginTime: 0,
     _lastTime: 0,
     _calcUnitTime: 0,
     
@@ -47,7 +46,7 @@ var tw_Animation = Class.extend({
         }
         
         this._dist = dist;
-        this._unitSize = unitSize; // 8 for visible        
+        this._unitSize = unitSize;        
         this._calcUnitTime = Math.floor(time / Math.floor(dist / this._unitSize + .5) + .5);
         this._unitTime = Math.floor(this._calcUnitTime / 2);
     },
@@ -57,8 +56,6 @@ var tw_Animation = Class.extend({
     },    
     
     _run: function() { 
-        //if (this._beginTime == 0) this._beginTime = new Date().getTime();
-        
         if (this._unitSize > this._dist) {
             this._unitSize = this._dist;                        
         } else {
@@ -66,20 +63,15 @@ var tw_Animation = Class.extend({
 
             if (this._lastTime > 0) {
                 var actTime = thisTime - this._lastTime;                
-                this._unitTime = Math.floor(this._unitTime * (this._calcUnitTime / actTime) + .5);
+                if (actTime > 0) this._unitTime = Math.floor(this._unitTime * (this._calcUnitTime / actTime) + .5);
             }
             
-            this._lastTime = thisTime;                         
+            this._lastTime = thisTime;
         }
-
+        
         this._obj[this._setter](this._obj[this._getter]() + (this._neg ? -this._unitSize : this._unitSize));
         this._dist -= this._unitSize;
-
-        if (this._dist > 0) {
-            setTimeout(this._run, this._unitTime);
-        }// else {
-           // alert((new Date().getTime() - this._beginTime) + "," + this._dist + "," + this._unitSize + "," + this._unitTime + "," + this._calcUnitTime);
-        //}            
-    }    
+        if (this._dist > 0) setTimeout(this._run, this._unitTime);
+    }
 });
 

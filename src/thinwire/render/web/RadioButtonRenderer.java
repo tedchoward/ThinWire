@@ -36,7 +36,7 @@ final class RadioButtonRenderer extends ComponentRenderer {
     private static final String SET_CHECKED = "setChecked";
     
 	void render(WindowRenderer wr, Component c, ComponentRenderer container) {
-        jsClass = RADIOBUTTON_CLASS;
+        init(RADIOBUTTON_CLASS, wr, c, container);
 		RadioButton rb = (RadioButton)c;
         addClientSideProperty(RadioButton.PROPERTY_CHECKED);
         addInitProperty(RadioButton.PROPERTY_TEXT, rb.getText());

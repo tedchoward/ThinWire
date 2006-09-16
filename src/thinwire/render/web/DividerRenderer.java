@@ -34,7 +34,7 @@ final class DividerRenderer extends ComponentRenderer {
     private static final String DIVIDER_CLASS = "tw_Divider";
 
     public void render(WindowRenderer wr, Component c, ComponentRenderer container) {
-        jsClass = DIVIDER_CLASS;
+        init(DIVIDER_CLASS, wr, c, container);
         //TODO: Since Divider can be clicked, it should support having it's enabled state toggled        
         setPropertyChangeIgnored(Component.PROPERTY_ENABLED, true);
         super.render(wr, c, container);

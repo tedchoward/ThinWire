@@ -36,7 +36,7 @@ final class WebBrowserRenderer extends ComponentRenderer {
     private static final String SET_LOCATION = "setLocation";
 
     void render(WindowRenderer wr, Component c, ComponentRenderer container) {
-        jsClass = WEBBROWSER_CLASS; 
+        init(WEBBROWSER_CLASS, wr, c, container); 
         addInitProperty(WebBrowser.PROPERTY_LOCATION, getQualifiedURL(((WebBrowser)c).getLocation()));        
         super.render(wr, c, container);
     }

@@ -36,7 +36,7 @@ final class HyperlinkRenderer extends ComponentRenderer {
     private static final String SET_LOCATION = "setLocation";
 
     void render(WindowRenderer wr, Component c, ComponentRenderer container) {
-        jsClass = HYPERLINK_CLASS;
+        init(HYPERLINK_CLASS, wr, c, container);
         Hyperlink hl = (Hyperlink)c;
         addInitProperty(Hyperlink.PROPERTY_TEXT, hl.getText());
         addInitProperty(Hyperlink.PROPERTY_LOCATION, getLocation(hl.getLocation()));

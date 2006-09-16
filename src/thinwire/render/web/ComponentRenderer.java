@@ -75,21 +75,22 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     
     private Map<String, Object> ignoredProperties = new HashMap<String, Object>(3);
     private List<String> remoteFiles;
-    private Object[] quickArgs3;
-    private Object[] quickArgs2;
-    private Object[] quickArgs1;
     private StringBuffer initProps = new StringBuffer();
-    private Map<String, String> clientSideProps = new HashMap<String, String>();
+    private Map<String, String> clientSideProps = new HashMap<String, String>();    
     String jsClass;
     Component comp;
     WindowRenderer wr;
     ContainerRenderer cr;
     Integer id;
     
-	void render(WindowRenderer wr, Component comp, ComponentRenderer container) {
+    void init(String jsClass, WindowRenderer wr, Component comp, ComponentRenderer container) {
+        this.jsClass = jsClass;
         this.wr = wr;
         this.cr = container instanceof ContainerRenderer ? (ContainerRenderer)container : null;
-        this.comp = comp;        
+        this.comp = comp;
+    }
+    
+	void render(WindowRenderer wr, Component comp, ComponentRenderer container) {
         id = wr.addComponentId(comp);
         if (this instanceof WebComponentListener) wr.ai.setWebComponentListener(id, (WebComponentListener)this);
         FX.Type visibleChange = comp.getStyle().getFX().getVisibleChange();
@@ -98,20 +99,20 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         if (!isPropertyChangeIgnored(Component.PROPERTY_X)) addInitProperty(Component.PROPERTY_X, comp.getX());
         if (!isPropertyChangeIgnored(Component.PROPERTY_Y)) addInitProperty(Component.PROPERTY_Y, comp.getY());
         if (!isPropertyChangeIgnored(Component.PROPERTY_WIDTH)) addInitProperty(Component.PROPERTY_WIDTH, comp.getWidth());
-        if (!isPropertyChangeIgnored(Component.PROPERTY_HEIGHT)) addInitProperty(Component.PROPERTY_HEIGHT, comp.getHeight());
-        if (!isPropertyChangeIgnored(Component.PROPERTY_VISIBLE)) addInitProperty(Component.PROPERTY_VISIBLE, visibleChange == FX.Type.NONE ? comp.isVisible() : Boolean.FALSE);
+        if (!isPropertyChangeIgnored(Component.PROPERTY_HEIGHT)) addInitProperty(Component.PROPERTY_HEIGHT, comp.getHeight());        
+        if (!isPropertyChangeIgnored(Component.PROPERTY_VISIBLE)) addInitProperty(Component.PROPERTY_VISIBLE, 
+                visibleChange != FX.Type.NONE && cr != null && cr.isFullyRendered() ? Boolean.FALSE : comp.isVisible());                
         if (!isPropertyChangeIgnored(Component.PROPERTY_ENABLED)) addInitProperty(Component.PROPERTY_ENABLED, comp.isEnabled());
         if (!comp.isFocusCapable()) addInitProperty(Component.PROPERTY_FOCUS_CAPABLE, false);         
         if (comp.isFocus()) addInitProperty(Component.PROPERTY_FOCUS, true);
                 
-        if (jsClass != null) {            
+        if (jsClass != null) {
             initProps.insert(0, '{');            
             initProps.setCharAt(initProps.length() - 1, '}');            
-            Object[] args = new Object[] {jsClass, id,
-                    cr == null ? (container == null ? 0 : container.id) : cr.id,
-                    initProps};
+            wr.ai.clientSideFunctionCall("tw_newComponent", jsClass, id, 
+                    cr == null ? (container == null ? 0 : container.id) : cr.id, 
+                    initProps);
             initProps = null;
-            wr.ai.callClientFunction(false, "tw_newComponent", args);
         }
         
         setStyle(Background.PROPERTY_BACKGROUND_COLOR, true);
@@ -124,10 +125,15 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         setStyle(Font.PROPERTY_FONT_BOLD, true);
         setStyle(Font.PROPERTY_FONT_ITALIC, true);
         setStyle(Font.PROPERTY_FONT_UNDERLINE, true);
-        if (visibleChange == FX.Type.SMOOTH && !isPropertyChangeIgnored(Component.PROPERTY_VISIBLE) && comp.isVisible()) setPropertyWithEffect(Component.PROPERTY_VISIBLE, Boolean.TRUE, Boolean.FALSE, SET_VISIBLE, FX.PROPERTY_FX_VISIBLE_CHANGE);        
-        ((WebApplication)WebApplication.current()).setPackagePrivateMember("renderer", comp, this);
-
+        
+        if (visibleChange == FX.Type.SMOOTH && !isPropertyChangeIgnored(Component.PROPERTY_VISIBLE) && comp.isVisible() && cr != null && cr.isFullyRendered())
+            setPropertyWithEffect(Component.PROPERTY_VISIBLE, Boolean.TRUE, Boolean.FALSE, SET_VISIBLE, FX.PROPERTY_FX_VISIBLE_CHANGE);
+        
+        wr.ai.setPackagePrivateMember("renderer", comp, this);        
+        
         if (comp.isFocusCapable() && ((Container)wr.comp).getComponentWithFocus() == null) comp.setFocus(true);
+        
+        wr.ai.flushRenderCallbacks(comp, id);        
 	}
     
     void setStyle(String propertyName, boolean isNotDefault) {
@@ -144,7 +150,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     }
         
     void destroy() {
-        ((WebApplication)WebApplication.current()).setPackagePrivateMember("renderer", comp, null);
+        wr.ai.setPackagePrivateMember("renderer", comp, null);
         wr.ai.setWebComponentListener(id, null);
         comp.removePropertyChangeListener(this);
         wr.removeComponentId(comp);
@@ -152,9 +158,6 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         comp = null;
         wr = null;
         id = null;
-        quickArgs3 = null;
-        quickArgs2 = null;
-        quickArgs1 = null;
         initProps = new StringBuffer();
         ignoredProperties = new HashMap<String, Object>(3);
         
@@ -322,7 +325,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
                 }
             }
             
-            wr.ai.callClientFunction(false, id, SET_PROPERTY_WITH_EFFECT, new Object[] {propertyName, newValue, unitSize, time});
+            wr.ai.clientSideMethodCall(id, SET_PROPERTY_WITH_EFFECT, propertyName, newValue, unitSize, time);
         } else {
             postClientEvent(standardMethod, newValue);
         }
@@ -355,29 +358,8 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         }
     }
 
-    final void postClientEvent(String methodName, Object arg) {
-        if (quickArgs1 == null) quickArgs1 = new Object[1];
-        quickArgs1[0] = arg;
-        wr.ai.callClientFunction(false, id, methodName, quickArgs1);
-    }
-
-    final void postClientEvent(String methodName, Object arg1, Object arg2) {
-        if (quickArgs2 == null) quickArgs2 = new Object[2];
-        quickArgs2[0] = arg1;
-        quickArgs2[1] = arg2;
-        wr.ai.callClientFunction(false, id, methodName, quickArgs2);
-    }
-
-    final void postClientEvent(String methodName, Object arg1, Object arg2, Object arg3) {
-        if (quickArgs3 == null) quickArgs3 = new Object[3];
-        quickArgs3[0] = arg1;
-        quickArgs3[1] = arg2;
-        quickArgs3[2] = arg3;
-        wr.ai.callClientFunction(false, id, methodName, quickArgs3);
-    }
-
-    final void postClientEvent(String methodName, Object[] args) {
-        wr.ai.callClientFunction(false, id, methodName, args);       
+    final void postClientEvent(String methodName, Object... args) {
+        wr.ai.clientSideMethodCall(id, methodName, args);
     }
     
     final void setPropertyChangeIgnored(String name, Object value, boolean ignore) {
@@ -428,7 +410,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     
     final String getRemoteNameForLocalFile(String localName) {
         if (localName.trim().length() == 0) return "";
-        if (!localName.startsWith("class:///")) localName = WebApplication.current().getRelativeFile(localName).getAbsolutePath();        
+        if (!localName.startsWith("class:///")) localName = wr.ai.getRelativeFile(localName).getAbsolutePath();        
         String remoteName = RemoteFileMap.INSTANCE.add(localName);
         if (remoteFiles == null) remoteFiles = new ArrayList<String>(5);
         remoteFiles.add(localName);
@@ -445,7 +427,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
                 uri = null;
             }
                     
-            if (uri == null || uri.getScheme() == null) uri = WebApplication.current().getRelativeFile(location).toURI();
+            if (uri == null || uri.getScheme() == null) uri = wr.ai.getRelativeFile(location).toURI();
             
             String scheme = uri.getScheme();        
             

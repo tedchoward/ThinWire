@@ -36,7 +36,7 @@ final class LabelRenderer extends ComponentRenderer {
     private static final String LABEL_CLASS = "tw_Label";
     
 	void render(WindowRenderer wr, Component c, ComponentRenderer container) {
-        jsClass = LABEL_CLASS;
+        init(LABEL_CLASS, wr, c, container);
         //TODO: Since Label can be clicked, it should support having it's enabled state toggled
         setPropertyChangeIgnored(Component.PROPERTY_ENABLED, true);                
 		Label l = (Label)c;

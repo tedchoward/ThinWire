@@ -36,7 +36,7 @@ class TabSheetRenderer extends ContainerRenderer {
     private static final String TABSHEET_CLASS = "tw_TabSheet";
 
     void render(WindowRenderer wr, Component c, ComponentRenderer container) {
-        jsClass = TABSHEET_CLASS;
+        init(TABSHEET_CLASS, wr, c, container);
         //a tabsheet does not support x, y, width, height, enabled or visible
         setPropertyChangeIgnored(Component.PROPERTY_X, true);
         setPropertyChangeIgnored(Component.PROPERTY_Y, true);

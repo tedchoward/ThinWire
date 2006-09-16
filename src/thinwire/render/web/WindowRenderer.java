@@ -54,7 +54,7 @@ class WindowRenderer extends ContainerRenderer {
     }
     
     void destroy() {
-        ai.callClientFunction(false, id, DESTROY, null);
+        ai.clientSideMethodCall(id, DESTROY);
         if (mr != null) mr.destroy();
         super.destroy();
         mr = null;

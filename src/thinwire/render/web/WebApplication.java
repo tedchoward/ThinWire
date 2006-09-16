@@ -28,8 +28,11 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -37,6 +40,8 @@ import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpSession;
 
+import thinwire.render.RenderStateEvent;
+import thinwire.render.RenderStateListener;
 import thinwire.ui.Application;
 import thinwire.ui.Dialog;
 import thinwire.ui.FileChooser;
@@ -115,6 +120,8 @@ public final class WebApplication extends Application {
     private Map<String, Class<ComponentRenderer>> nameToRenderer;
     private Map<Window, WindowRenderer> windowToRenderer;
     private Map<Integer, WebComponentListener> webComponentListeners;
+    private Set<String> clientSideIncludes;    
+    private Map<Component, Object> renderCallbacks; 
     private String[] syncCallResponse = new String[1];
     private WebFileChooser fileChooser;
     private boolean threadCaptured;
@@ -158,7 +165,7 @@ public final class WebApplication extends Application {
         timerMap = new HashMap<String, Timer>();
         sbClientEvents = new StringBuffer(4096);
         sbClientEvents.append('[');
-        webComponentListeners = new HashMap<Integer, WebComponentListener>();
+        webComponentListeners = new HashMap<Integer, WebComponentListener>();        
         id = httpSession.getId();
         setBaseFolder(servlet.getServletContext().getRealPath(""));
 
@@ -236,9 +243,8 @@ public final class WebApplication extends Application {
                     releaseThread(); // ?? The hideWindow does this, doesn't it?
 
                     // Call the client-side shutdown instance
-                    callClientFunction(false, SHUTDOWN_INSTANCE,
-                            new Object[] { "The application instance has shutdown. Press F5 to restart the"
-                                    + " application or close the browser to end your session." });
+                    clientSideFunctionCall(SHUTDOWN_INSTANCE, 
+                            "The application instance has shutdown. Press F5 to restart the application or close the browser to end your session.");
 
                     if (userActionListener != null){
                     	userActionListener.stop();
@@ -341,17 +347,80 @@ public final class WebApplication extends Application {
             syncCallResponse.notify();
         }
     }
-
-    public String callClientFunction(boolean sync, String name, Object[] args) {
-        return callClientFunction(sync, (Object)null, name, args);
+    
+    public void clientSideIncludeFile(String localName) {
+        if (clientSideIncludes == null) {            
+            clientSideIncludes = new HashSet<String>(3);
+        } else if (clientSideIncludes.contains(localName)) {
+            return;
+        }
+        
+        if (localName == null || localName.trim().length() == 0) throw new IllegalArgumentException("localName == null || localName.trim().length() == 0");
+        if (!localName.startsWith("class:///")) localName = this.getRelativeFile(localName).getAbsolutePath();
+        String remoteName = RemoteFileMap.INSTANCE.add(localName);
+        clientSideFunctionCallWaitForReturn("tw_include", remoteName);
+        clientSideIncludes.add(localName);
+    }
+    
+    public void clientSideFunctionCall(String functionName, Object... args) {
+        clientSideCallImpl(false, null, functionName, args);
     }
 
-    public String callClientFunction(boolean sync, String objectName, String name, Object[] args) {
-        return callClientFunction(sync, (Object)objectName, name, args);
+    public String clientSideFunctionCallWaitForReturn(String functionName, Object... args) {
+        return clientSideCallImpl(true, null, functionName, args);
+    }
+    
+    public void clientSideMethodCall(String objectName, String methodName, Object... args) {
+        clientSideCallImpl(false, objectName, methodName, args);
+    }
+    
+    public String clientSideMethodCallWaitForReturn(String objectName, String methodName, Object... args) {
+        return clientSideCallImpl(true, objectName, methodName, args);
     }
 
-    public String callClientFunction(boolean sync, Integer objectId, String name, Object[] args) {
-        return callClientFunction(sync, (Object)objectId, name, args);   
+    public void clientSideMethodCall(Integer componentId, String methodName, Object... args) {
+        clientSideCallImpl(false, componentId, methodName, args);   
+    }
+    
+    public String clientSideMethodCallWaitForReturn(Integer componentId, String methodName, Object... args) {
+        return clientSideCallImpl(true, componentId, methodName, args);   
+    }
+    
+    public void invokeAfterRendered(Component comp, RenderStateListener r) {
+        Integer id = getComponentId(comp);
+
+        if (id == null) {
+            if (renderCallbacks == null) renderCallbacks = new WeakHashMap<Component, Object>();            
+            Object o = renderCallbacks.get(comp);            
+
+            if (o instanceof RenderStateListener) {
+                List l = new ArrayList<RenderStateListener>(3);
+                l.add(o);
+                l.add(r);
+                renderCallbacks.put(comp, l);
+            } else {
+                if (o == null) renderCallbacks.put(comp, o = new ArrayList<RenderStateListener>(3));                
+                ((List)o).add(r);                
+            }
+        } else {        
+            r.renderStateChange(new RenderStateEvent(comp, id));
+        }
+    }
+    
+    void flushRenderCallbacks(Component comp, Integer id) {
+        if (renderCallbacks == null) return;
+        Object o = renderCallbacks.remove(comp);        
+        if (o == null) return;
+        
+        RenderStateEvent ev = new RenderStateEvent(comp, id);
+        
+        if (o instanceof RenderStateListener) {
+            ((RenderStateListener)o).renderStateChange(ev);
+        } else {        
+            for (RenderStateListener r : ((List<RenderStateListener>)o)) {
+                r.renderStateChange(ev);
+            }
+        }
     }
     
     static void encodeObject(StringBuffer sb, Object o) {
@@ -374,7 +443,7 @@ public final class WebApplication extends Application {
         }        
     }
     
-    private String callClientFunction(boolean sync, Object objectId, String name, Object[] args) {
+    private String clientSideCallImpl(boolean sync, Object objectId, String name, Object[] args) {
         StringBuffer sb = sbClientEvents;
         String ret = null;
 
@@ -458,6 +527,7 @@ public final class WebApplication extends Application {
 
         return ret;
     }
+        
     
     public Integer getComponentId(Component comp) {
         Component w = comp;
@@ -483,7 +553,7 @@ public final class WebApplication extends Application {
                     if (processClientEvents) {
                         synchronized (eventQueue) {
                             if (!threadWaiting) {
-                                callClientFunction(false, "tw_em", "sendGetEvents", null);
+                                clientSideMethodCall("tw_em", "sendGetEvents");
                             }
                         }
 
@@ -645,19 +715,19 @@ public final class WebApplication extends Application {
             timer.timeout = timeout;
             timer.repeat = repeat;
             timerMap.put(timerId, timer);
-            callClientFunction(false, "tw_addTimerTask", new Object[] {timerId, timeout});
+            clientSideFunctionCall("tw_addTimerTask", timerId, timeout);
         }
     }
 
     public void resetTimerTask(Runnable task) {
         String timerId = String.valueOf(System.identityHashCode(task));
         Timer timer = timerMap.get(timerId);        
-        if (timer != null) callClientFunction(false, "tw_addTimerTask", new Object[] {timerId, timer.timeout});
+        if (timer != null) clientSideFunctionCall("tw_addTimerTask", timerId, timer.timeout);
     }
 
     public void removeTimerTask(Runnable task) {
         String timerId = String.valueOf(System.identityHashCode(task));
-        callClientFunction(false, "tw_removeTimerTask", new Object[] {timerId});
+        clientSideFunctionCall("tw_removeTimerTask", timerId);
         timerMap.remove(timerId);
     }
 

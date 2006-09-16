@@ -34,12 +34,15 @@ var tw_EventManager = Class.extend({
     _postOutboundEvents: false,
     _vsEventOrder: null,
     _inboundEvents: null,
+    _activityInd: null,
+    _activityIndTimer: 0,
     _timerId: 0,
     _comm: null,
     
-    construct: function() {
+    construct: function() {        
         this._eventLoop = this._eventLoop.bind(this);
-        this._inboundEventListener = this._inboundEventListener.bind(this);        
+        this._inboundEventListener = this._inboundEventListener.bind(this);
+        this._hideActivityInd = this._hideActivityInd.bind(this);        
     },
     
     _resetTimer: function(time) {        
@@ -56,7 +59,30 @@ var tw_EventManager = Class.extend({
             } catch (e) {
                 alert("SYNTAX ERROR WITH eval(calls): " + calls);
             }
+        }        
+        
+        this._setActivityIndVisible(false);
+    },
+
+    _setActivityIndVisible: function(state) {
+        if (this._activityInd != null) {
+            if (state) {
+                if (this._activityIndTimer != 0) {
+                    clearTimeout(this._activityIndTimer);
+                    this._activityIndTimer = 0;                    
+                } else {
+                    this._activityInd.style.zIndex = ++tw_Component.zIndex;
+                    this._activityInd.style.display = "block";
+                }                
+            } else {
+                this._activityIndTimer = setTimeout(this._hideActivityInd, 300);
+            }
         }
+    },
+    
+    _hideActivityInd: function() {
+        this._activityIndTimer = 0;
+        this._activityInd.style.display = "none";        
     },
         
     _eventLoop: function() {
@@ -64,6 +90,7 @@ var tw_EventManager = Class.extend({
             var timerTime = 100;
             
             if (this._postOutboundEvents && this._comm.isReady()) {
+                this._setActivityIndVisible(true);
                 this._postOutboundEvents = false;
                 var msg = this._outboundEvents.join(":");                
                 this._outboundEvents = [];
@@ -162,6 +189,15 @@ var tw_EventManager = Class.extend({
     },
     
     start: function() {
+        this._activityInd = document.createElement("img");
+        this._activityInd.src = tw_EventManager.imageActivityInd;
+        var s = this._activityInd.style;
+        s.position = "absolute";
+        s.right = "1px";
+        s.top = "1px";
+        s.display = "none";        
+        document.body.appendChild(this._activityInd);                
+        
         this._comm = new tw_HttpRequest(this._inboundEventListener);
         this._outboundEvents = [];
         this._inboundEvents = [];
@@ -178,6 +214,9 @@ var tw_EventManager = Class.extend({
         this._inboundEvents = null;
         this._vsEventOrder = null;
         this._comm = null;
+        document.body.removeChild(this._activityInd);
+        this._activityInd = null;
     }         
 });
 
+tw_EventManager.imageActivityInd = "?_twr_=activityInd.gif";

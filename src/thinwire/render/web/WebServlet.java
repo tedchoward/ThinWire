@@ -263,49 +263,42 @@ public final class WebServlet extends HttpServlet {
     }
     
     private void handlePlatformResource(HttpServletRequest request, HttpServletResponse response, String resource) throws IOException, ServletException {
-        if (log.isLoggable(Level.FINEST)) log.finest("getting platform resource: " + resource);
-        byte[] res = getPlatformResource(resource);
-        
-        if (res == null) {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND);           
-        } else {        
-            String mimeType;
-                        
-            //Necessary because the XMLHttpRequest object in certain browsers, such as Opera
-            //do not properly handle text/javascript as the content type.  
-            if (resource.endsWith(".js")) {
-                mimeType = "text/plain";
-            } else {
-                mimeType = getServletContext().getMimeType(resource);
-                if (mimeType.startsWith("image/")) response.setHeader("Cache-Control", "max-age=43200");
-            }
-            
-            response.setContentType(mimeType);
-            response.getOutputStream().write(res);
-        }
+        if (log.isLoggable(Level.FINEST)) log.finest("getting platform resource: " + resource);        
+        handleResource(resource, getPlatformResource(resource), response);
     }
     
     private void handleUserResource(HttpServletRequest request, HttpServletResponse response, String servletPath) throws IOException, ServletException {
         if (log.isLoggable(Level.FINEST)) log.finest("getting user resource: " + servletPath);
-
+        
         if (servletPath.length() > USER_RESOURCE.length()) {
             String resourceName = servletPath.substring(USER_RESOURCE.length());
-            
+            handleResource(resourceName, RemoteFileMap.INSTANCE.load(resourceName), response);
+        } else
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST);        
+    }
+    
+    private void handleResource(String resourceName, byte[] data, HttpServletResponse response) throws IOException, ServletException {        
+        if (data == null) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);           
+        } else {        
             try {
-                byte[] data = RemoteFileMap.INSTANCE.load(resourceName);
-                String mimeType = getServletContext().getMimeType(resourceName);
-                
-                if (mimeType != null) {
+                String mimeType;
+                            
+                //Necessary because the XMLHttpRequest object in certain browsers, such as Opera
+                //do not properly handle text/javascript as the content type.  
+                if (resourceName.endsWith(".js")) {
+                    mimeType = "text/plain";
+                } else {
+                    mimeType = getServletContext().getMimeType(resourceName);
                     if (mimeType.startsWith("image/")) response.setHeader("Cache-Control", "max-age=43200");
-                    response.setContentType(mimeType);
                 }
                 
+                response.setContentType(mimeType);
                 response.getOutputStream().write(data);
             } catch (Exception e){
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
             }
-        } else
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST);        
+        }        
     }
 
     private void handleUserUpload(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {

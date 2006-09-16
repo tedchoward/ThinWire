@@ -35,7 +35,7 @@ final class ButtonRenderer extends ComponentRenderer {
     private static final String BUTTON_CLASS = "tw_Button";
 
     void render(WindowRenderer wr, Component c, ComponentRenderer container) {
-        jsClass = BUTTON_CLASS;
+        init(BUTTON_CLASS, wr, c, container);
         Button b = (Button)c;
         addInitProperty(Button.PROPERTY_TEXT, b.getText());
         addInitProperty(Button.PROPERTY_IMAGE, getRemoteNameForLocalFile(b.getImage()));

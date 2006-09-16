@@ -159,20 +159,34 @@ var tw_Menu = tw_Component.extend({
     },
                 
     _setImageUrl: function(item, imageUrl) {
-        item.firstChild.childNodes.item(0).style.backgroundImage = imageUrl == null || imageUrl.length == 0 ? "" : "url(" + tw_BASE_PATH + "/resources/" + imageUrl + ")";
+        imageUrl = imageUrl == null || imageUrl.length == 0 ? "" : "url(" + tw_BASE_PATH + "/resources/" + imageUrl + ")";
+        
+        if (item.className == "menuItem") {
+            item.firstChild.childNodes.item(0).style.backgroundImage = imageUrl;
+        } else {
+            var s = item.firstChild.style; 
+            s.backgroundImage = imageUrl;
+            s.backgroundRepeat = "no-repeat";
+            s.backgroundPosition = "center left";
+            s.paddingLeft = imageUrl == "" ? "" : "18px";            
+        }
     },
         
     _setKeyPressCombo: function(item, text) {
-        var textNode = item.firstChild.childNodes.item(2);        
-        text = document.createTextNode(text);
-
-        if (textNode.childNodes.length == 0) {
-            textNode.appendChild(text);
+        if (item.className == "menuItem") {
+            var textNode = item.firstChild.childNodes.item(2);        
+            text = document.createTextNode(text);
+    
+            if (textNode.childNodes.length == 0) {
+                textNode.appendChild(text);
+            } else {
+                textNode.replaceChild(text, textNode.firstChild);
+            }
+    
+            this._calcEmWidth(item);
         } else {
-            textNode.replaceChild(text, textNode.firstChild);
+            item.title = text;
         }
-
-        this._calcEmWidth(item);
     },
     
     _getKeyPressCombo: function(item) {

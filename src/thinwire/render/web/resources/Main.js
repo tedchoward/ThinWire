@@ -30,28 +30,16 @@ var tw_isIE = !tw_isOpera && !tw_isGecko && tw_userAgent.indexOf("msie") >= 0;
 var tw_isIE55 = tw_isIE && tw_userAgent.indexOf("msie 5.5") >= 0;
 if (!tw_isIE && !tw_isIE55 && !tw_isGecko && !tw_isOpera) alert("This browser is not officially supported:" + tw_userAgent);
 
-// Hide the source of all functions
-/*Function.prototype.toString = function() {
-	return "function() {\n        [native code]\n}";
-}
-
-if (Function.prototype.toSource != undefined) Function.prototype.toSource = Function.prototype.toString;
-*/
-
-function tw_include(name) {       
-    if (tw_include.tw_libraries[name] == true) return; 
-
+function tw_include(name) {
     try {
-        if (tw_include.tw_request == null) tw_include.tw_request = new tw_HttpRequest(); 
-        var script = tw_include.tw_request.send("GET", "?_twr_=" + name + ".js", "");
+        if (tw_include.tw_request == undefined) tw_include.tw_request = new tw_HttpRequest();
+        var script = tw_include.tw_request.send("GET", tw_APP_URL + "resources/" + name, "");
     
         if (tw_isIE && window.execScript) {
             window.execScript(script);
         } else {
             window.eval(script);
-        }
-        
-        tw_include.tw_libraries[name] = true;
+        }        
     } catch (e) {
         var ret = confirm("Failed to include library '" + name + "'\n" +
             "Exception details:" + e + "\n\n" +
@@ -63,9 +51,6 @@ function tw_include(name) {
             //loading scripts on the fly.
             document.getElementById("jsidebug").src = "?_twr_=" + name + ".js"; 
         }
-    }        
+    }       
 }
-
-tw_include.tw_libraries = {};
-tw_include.tw_request = null;
 

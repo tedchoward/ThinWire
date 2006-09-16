@@ -33,12 +33,12 @@ final class FrameRenderer extends WindowRenderer {
     private static final String FRAME_CLASS = "tw_Frame";
     private WebApplication app;
     
-	void render(WindowRenderer wr, Component c, ComponentRenderer state) {
+	void render(WindowRenderer wr, Component c, ComponentRenderer container) {
+        init(FRAME_CLASS, wr, c, container);
         setPropertyChangeIgnored(Component.PROPERTY_X, true);
         setPropertyChangeIgnored(Component.PROPERTY_Y, true);
         setPropertyChangeIgnored(Component.PROPERTY_WIDTH, true);
         setPropertyChangeIgnored(Component.PROPERTY_HEIGHT, true);
-        jsClass = FRAME_CLASS;
         app = (WebApplication)WebApplication.current();
         super.render(wr, c, null);
 	}

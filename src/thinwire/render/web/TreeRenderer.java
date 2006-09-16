@@ -48,7 +48,7 @@ final class TreeRenderer extends ComponentRenderer implements ItemChangeListener
     private Tree tree;
     
 	void render(WindowRenderer wr, Component c, ComponentRenderer container) {
-        jsClass = TREE_CLASS;
+        init(TREE_CLASS, wr, c, container);
         tree = (Tree)c;
         StringBuffer sb = new StringBuffer();
         

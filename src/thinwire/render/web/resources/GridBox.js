@@ -390,8 +390,14 @@ var tw_GridBox = tw_Component.extend({
         return this._content.childNodes.length - 1;
     },
     
+    _getRowCount: function() {
+        var col = this._lastColumn();
+        return col == null ? 0 : col.childNodes.length;
+    },
+    
     _lastColumn: function() {
-        return this._content.childNodes.item(this._getColumnCount() - 1);
+        var cnt = this._getColumnCount() - 1;
+        return cnt < 0 ? null : this._content.childNodes.item(cnt);
     },
     
     _toggleHighlight: function(index, state) {
@@ -879,8 +885,17 @@ var tw_GridBox = tw_Component.extend({
                 column.appendChild(cell);
         }
         
-        if (this._currentIndex > -1 && index <= this._currentIndex)
-            this._currentIndex++;
+        var size = this._getRowCount();
+        
+        if (size == 1) {
+            if (this._getColumnCount() > 0) {
+                this.setRowIndexSelected(0);
+            } else {
+                this._currentIndex = 0;
+            }
+        } else if (index <= this._currentIndex) {
+            if (this._currentIndex + 1 < size) this.setRowIndexSelected(this._currentIndex + 1);
+        }        
     },
     
     removeRow: function(index) {
@@ -892,6 +907,18 @@ var tw_GridBox = tw_Component.extend({
             var column = content.childNodes.item(i);
             column.removeChild(column.childNodes.item(index));        
         }
+        
+        if (index == this._currentIndex) {
+            var size = this._getRowCount();
+            
+            if (index < size) {                
+                this.setRowIndexSelected(index);
+            } else if (size > 0) {
+                this.setRowIndexSelected(size - 1);
+            } else {
+                this._currentIndex = -1;
+            }
+        }        
     },
     
     setRow: function(index, values) {

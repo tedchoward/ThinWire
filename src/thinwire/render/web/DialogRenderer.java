@@ -35,8 +35,8 @@ final class DialogRenderer extends WindowRenderer {
     private static final String DIALOG_CLASS = "tw_Dialog";
     private static final String SET_RESIZE_ALLOWED = "setResizeAllowed";
 
-	void render(WindowRenderer wr, Component c, ComponentRenderer container) {
-        jsClass = DIALOG_CLASS;
+	void render(WindowRenderer wr, Component c, ComponentRenderer container) {        
+        init(DIALOG_CLASS, wr, c, container);
         addInitProperty(Dialog.PROPERTY_RESIZE_ALLOWED, ((Dialog)c).isResizeAllowed());
         super.render(wr, c, container);
 	}

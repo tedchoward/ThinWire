@@ -128,6 +128,67 @@ var tw_BaseText = tw_Component.extend({
         return ret;
     },    
     
+    _getStringCount: function(text, str, start, end) {
+        var count = 0;
+        if (start == null) start = 0;
+        if (end == null) end = text.length;
+        
+        while ((start = text.indexOf(str, start)) >= 0) {
+            if (start >= end) break;
+            count++;
+            start++;
+        }
+        
+        return count;
+    },
+        
+    _getIESelectionIndexToRange: function(comp, r, compareType) {
+        //Try the duplication method first, if that fails, then use the components create range.
+        try {
+            var cr = r.duplicate();
+            cr.moveToElementText(comp);
+            r.compareEndPoints(compareType, cr);
+        } catch (e) {
+            try {
+                var cr = comp.createTextRange();
+                r.compareEndPoints(compareType, cr);
+            } catch (e) {
+                return -1;
+            }
+        }
+
+        var startIndex = 0;
+        var endIndex = comp.value.length - this._getStringCount(comp.value);
+        var index = endIndex == 1 ? 1 : Math.floor(endIndex / 2); //index at the middle of the text.
+        var direction;
+        cr.moveStart("character", index); //initial move        
+                
+        while ((direction = r.compareEndPoints(compareType, cr)) != 0) {            
+            if (direction < 0) { //the selection (r) is further to the left.
+                if (index == endIndex && startIndex != 0) break;
+                endIndex = index;
+                var diff = index - startIndex;                 
+                diff = -(diff > 1 ? Math.floor(diff / 2) : 1);
+                
+                if (index < 0) {
+                    index = 0;
+                    break;
+                }
+            } else { // the selection (r) is further to the right.
+                if (index == startIndex && startIndex == endIndex - 1) break;
+                startIndex = index;
+                var diff = endIndex - index;
+                diff = diff > 1 ? Math.floor(diff / 2) : 1;
+                if (startIndex == endIndex) break;
+            }
+                            
+            index += diff;
+            cr.moveStart("character", diff);
+        }
+        
+        return index;
+    },    
+    
     /****
      * Don't call this until the textfield has been attached to a document.
      * Calling it first resulted in an "unspecified" HTML error.  
@@ -135,8 +196,51 @@ var tw_BaseText = tw_Component.extend({
      */
     setSelectionRange: function(beginIndex, endIndex) {
         this._selectionOld = beginIndex + "," + endIndex;        
-        if (tw_Component.currentFocus === this) tw_setSelectionRange(this._editor, beginIndex, endIndex);
+        
+        if (tw_Component.currentFocus === this) {
+            var comp = this._editor;
+            //NOTE: We have to do this because the text range does not count CRLF as two characters.
+            beginIndex -= this._getStringCount(comp.value, "\n", 0, beginIndex);
+            endIndex -= this._getStringCount(comp.value, "\n", 0, endIndex);        
+            
+            if (tw_isIE) {
+                endIndex = -(comp.value.length - this._getStringCount(comp.value, "\n") - endIndex);
+                var r = comp.createTextRange();
+                var movedStart = r.moveStart("character", beginIndex);
+                var movedEnd = r.moveEnd("character", endIndex);        
+                r.select();
+            } else {
+                comp.setSelectionRange(beginIndex, endIndex);
+            }
+        }            
     },
+    
+    //Should be function of BaseText
+    getSelectionRange: function() {
+        var comp = this._editor;
+                
+        if (tw_isIE) {       
+            var r = document.selection.createRange();        
+            var start = this._getIESelectionIndexToRange(comp, r, "StartToStart");
+            var end = this._getIESelectionIndexToRange(comp, r, "EndToStart");
+            if (start == -1 || end == -1) return [-1, -1];
+            var value = comp.value.replace(/\r\n/g, "\n");        
+            if (start > value.length) start = value.length;
+            if (end > value.length) end = value.length;
+        } else {           
+            try {
+                var start = comp.selectionStart ? comp.selectionStart : 0;
+                var end = comp.selectionEnd ? comp.selectionEnd : 0;
+                var value = comp.value;
+            } catch (e) {
+                return [0, 0];
+            }
+        }
+        
+        start += this._getStringCount(value, "\n", 0, start);
+        end += this._getStringCount(value, "\n", 0, end);       
+        return [start, end];
+    },      
     
     _textStateChange: function(useTimer, noSelectChange) {
         if (useTimer && noSelectChange) alert("textStateChange does not support 'useTimer == true && noSelectChange == true'");
@@ -171,7 +275,7 @@ var tw_BaseText = tw_Component.extend({
         if (noSelectChange || !this.isVisible() || !this.isEnabled()) return;
         this._timerId = 0;
         if (this._selectionOld == undefined) this._selectionOld = this._editor.value.length + "," + this._editor.value.length;            
-        var selectionNew = tw_getSelectionRange(this._editor).join();
+        var selectionNew = this.getSelectionRange().join();
 
         if (this._selectionOld != selectionNew && selectionNew.indexOf("-1") == -1) {
             this.firePropertyChange("selectionRange", selectionNew);
@@ -503,7 +607,7 @@ var tw_BaseText = tw_Component.extend({
         if (this._editor.value != this._validatedValue) this._editor.value = this._validatedValue;                     
         return valid;
     },
-    
+        
     keyPressNotify: function(keyPressCombo) {        
         if (keyPressCombo == "Esc") {
             var time = new Date().getTime();
