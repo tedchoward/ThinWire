@@ -468,3 +468,22 @@
     white-space: nowrap;
 }
 
+.slider {
+    position: absolute;
+    overflow: hidden;
+    background-color: transparent;
+}
+
+.sliderLine {
+    position: absolute;
+    border: 1px solid;
+    border-color: buttonshadow buttonhighlight buttonhighlight buttonshadow;
+    line-height: 0px;
+}
+
+.sliderCursor {
+    position: absolute;    
+    border: 2px outset;
+    overflow: hidden;
+    background-color: buttonface;
+}
