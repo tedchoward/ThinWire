@@ -35,6 +35,14 @@ var tw_Tree = tw_Component.extend({
     
     construct: function(id, containerId, props) {
         this.$.construct.apply(this, ["div", "tree", id, containerId]);
+        var s = this._box.style;
+        s.backgroundColor = "window";
+        s.border = "2px inset";
+        s.overflow = "auto";
+        s.whiteSpace = "nowrap";
+        s.display = "block";
+        s.fontFamily = "tahoma, sans-serif";
+        s.fontSize = "8pt";
         this._box.style.borderColor = tw_borderColor;
         this._box.tw_isLeaf = false;
         
@@ -87,6 +95,16 @@ var tw_Tree = tw_Component.extend({
         }
     },
     
+    _createTextNode: function() {
+        var textNode = document.createElement("span");
+        var s = textNode.style;
+        s.verticalAlign = "middle";
+        s.padding = "2px";
+        s.paddingTop = "1px";
+        s.paddingBottom = "1px";
+        return textNode;        
+    },
+    
     _addRootItem: function(visible, text, itemImg) {
         if (this._rootItem == undefined) {
             var node = document.createElement("span");
@@ -94,7 +112,7 @@ var tw_Tree = tw_Component.extend({
             
             itemImg = this._expandImageURL(itemImg);            
             var imgNode = document.createElement("img");
-            imgNode.className = "treeCell";
+            imgNode.style.verticalAlign = "middle";
             node.appendChild(imgNode);
             node.assignedImageNode = imgNode;
             
@@ -105,8 +123,7 @@ var tw_Tree = tw_Component.extend({
                 imgNode.style.display = "inline";
             }            
             
-            var textNode = document.createElement("span");
-            textNode.className = "treeText";
+            var textNode = this._createTextNode();
             node.appendChild(textNode);
             textNode.appendChild(document.createTextNode(text));
             node.textNode = textNode;
@@ -249,7 +266,7 @@ var tw_Tree = tw_Component.extend({
 
         for (var i=0; i < level; i++) {
             tiNode = document.createElement("img");
-            tiNode.className = "treeCell";
+            tiNode.style.verticalAlign = "middle";
             tiNode.src = tw_Tree.imageStraight;
             node.appendChild(tiNode);
         }
@@ -272,7 +289,7 @@ var tw_Tree = tw_Component.extend({
         //Add another image node to the new node.
         //This image node gets a click event handler.
         tiNode = document.createElement("img");
-        tiNode.className = "treeCell";
+        tiNode.style.verticalAlign = "middle";
         tiNode.src = bimg;
         node.appendChild(tiNode);
         node.imageNode = tiNode;
@@ -281,8 +298,8 @@ var tw_Tree = tw_Component.extend({
         //Add an assignedImage node to the new node if the 
         //itemImg parameter has a non-empty value.
         itemImg = this._expandImageURL(itemImg);        
-        var imgNode = document.createElement("img");
-        imgNode.className = "treeCell";
+        var imgNode = document.createElement("img");        
+        imgNode.style.verticalAlign = "middle";
         node.appendChild(imgNode);
         node.assignedImageNode = imgNode;
 
@@ -294,8 +311,7 @@ var tw_Tree = tw_Component.extend({
         }
       
         //Add a text node to the new row node.
-        var textNode = document.createElement("span");
-        textNode.className = "treeText";
+        var textNode = this._createTextNode();
         node.appendChild(textNode);
         node.textNode = textNode;
         textNode.appendChild(document.createTextNode(text));
@@ -305,6 +321,7 @@ var tw_Tree = tw_Component.extend({
         //Add the span which will hold the row's child rows.
         var br = document.createElement("span");
         br.className = "treeBranch";
+        br.style.display = "none";
         node.appendChild(br);
         node.subNodes = br;
         

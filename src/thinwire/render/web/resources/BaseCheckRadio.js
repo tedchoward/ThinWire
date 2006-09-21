@@ -31,27 +31,38 @@ var tw_BaseCheckRadio = tw_Component.extend({
     
     construct: function(className, id, containerId) {
         this.$.construct.apply(this, ["a", className, id, containerId, "text,lineHeight"]);
-
-        this._box.style.paddingLeft = "18px";
-        this._box.style.border = "0px";
-        this._box.style.margin = "0px";
+        var s = this._box.style;
+        s.cursor = "default";
+        s.backgroundRepeat = "no-repeat";
+        s.backgroundPosition = "center left";
+        s.backgroundColor = "transparent";
+        s.textDecoration = "none";
+        s.fontFamily = "tahoma, sans-serif";
+        s.fontSize = "8pt";
+        s.color = "windowtext";
+        s.whiteSpace = "nowrap";
+        s.display = "block";
+        s.paddingLeft = "18px";
+        s.border = "0px";
 
         this._backgroundBox = document.createElement("div");
-        this._backgroundBox.style.position = "absolute";
-        this._backgroundBox.style.width = "9px";
-        this._backgroundBox.style.height = "9px";
-        this._backgroundBox.style.overflow = "hidden";
-        this._backgroundBox.style.left = "4px";
-        this._backgroundBox.style.zIndex = 0;
-        this._backgroundBox.style.backgroundColor = "window";
+        var s = this._backgroundBox.style; 
+        s.position = "absolute";
+        s.width = "9px";
+        s.height = "9px";
+        s.overflow = "hidden";
+        s.left = "4px";
+        s.zIndex = 0;
+        s.backgroundColor = "window";
         this._box.appendChild(this._backgroundBox);               
         
         this._image = document.createElement("div");
-        this._image.style.position = "absolute";
-        this._image.style.width = "16px";
-        this._image.style.height = "16px";
-        this._image.style.left = "1px";
-        this._image.style.zIndex = 1;
+        var s = this._image.style; 
+        s.position = "absolute";
+        s.width = "16px";
+        s.height = "16px";
+        s.left = "1px";
+        s.zIndex = 1;
         this._box.appendChild(this._image);
         
         var prefix = (this instanceof tw_CheckBox) ? "cb" : "rb";

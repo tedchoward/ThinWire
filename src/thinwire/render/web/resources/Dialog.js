@@ -34,32 +34,61 @@ var tw_Dialog = tw_BaseContainer.extend({
     _moveDrag: null,
     _resizeDrag: null,
     _imageResize: "url(?_twr_=dResize.png)",
-
     
     construct: function(id, containerId, props) {
         this.$.construct.apply(this, ["dialog", id, 0]);
         var dialog = this._box;
-        dialog.style.borderColor = tw_borderColor;
+        var s = dialog.style;
+        s.cursor = "default";    
+        s.overflow = "visible";
+        s.padding = "1px";
+        s.border = "2px outset";
+        s.backgroundColor = "threedface";        
+        s.borderColor = tw_borderColor;
+        
         var title = document.createElement("div");
-        title.className = "dialogTitle";
+        var s = title.style;
+        s.paddingLeft = "2px";
+        s.marginBottom = "1px";
+        s.height = "18px";    
+        s.lineHeight = "17px";
+        s.whiteSpace = "nowrap";
+        s.overflow = "hidden";
+        s.backgroundColor = "activecaption";
+        s.color = "captiontext";
+        s.fontFamily = "tahoma, sans-serif";
+        s.fontSize = "8pt";
+        s.fontWeight = "bold";        
         title.appendChild(document.createTextNode(""));
         this._moveDrag = new tw_DragHandler(title, this._moveDragListener.bind(this));                
         
         var closeButton = document.createElement("div");
-        closeButton.className = "dialogButton";
-        closeButton.style.borderColor = tw_borderColor;
-        closeButton.style.top = "3px";
-        closeButton.style.right = "3px";
-        closeButton.style.lineHeight = 8 + "px";   
+        var s = closeButton.style;
+        s.textAlign = "center";
+        s.position = "absolute";
+        s.margin = "0px";
+        s.color = "black";
+        s.padding = "1px";    
+        s.border = "2px outset";
+        s.overflow = "hidden";
+        s.backgroundColor = "buttonface";
+        s.borderColor = tw_borderColor;
+        s.top = "3px";
+        s.right = "3px";
+        s.lineHeight = 8 + "px";        
         var subtractSize = tw_sizeIncludesBorders ? 0 : tw_CALC_BORDER_PADDING_SUB;
-        closeButton.style.width = 16 - subtractSize + "px";
-        closeButton.style.height = 14 - subtractSize + "px";    
-        closeButton.appendChild(document.createTextNode("X"));          
+        s.width = 16 - subtractSize + "px";
+        s.height = 14 - subtractSize + "px";        
+        closeButton.appendChild(document.createTextNode("X"));
+        
         title.appendChild(closeButton);    
-        dialog.appendChild(title);        
+        dialog.appendChild(title);
              
         var container = document.createElement("div");
         container.className = "container";
+        var s = container.style;
+        s.backgroundColor = "threedface";
+        s.position = "absolute";
         dialog.appendChild(container);
 
         tw_Frame.active.setModalLayerVisible(true, this);

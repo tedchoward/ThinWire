@@ -35,16 +35,28 @@ var tw_BaseText = tw_Component.extend({
     _valueOnFocus: null,
     _selectionOld: undefined,
     
-    construct: function(tagNames, classNames, id, containerId, support) {
-        this.$.construct.apply(this, [tagNames[0], classNames[0], id, containerId, support]);
-        this._box.style.borderColor = tw_borderColor;        
+    construct: function(tagNames, className, id, containerId, support) {
+        this.$.construct.apply(this, [tagNames[0], className, id, containerId, support]);
+        var s = this._box.style;
+        s.border = "2px inset";
+        s.backgroundColor = "transparent";
+        s.borderColor = tw_borderColor;        
         
         var editor = document.createElement(tagNames[1]);    
-        editor.className = classNames[1];
+        var s = editor.style;
+        s.position = "absolute";
+        s.left = "0px";
+        s.top = "0px";
+        s.margin = "0px";
+        s.border = "0px";
+        s.padding = "1px";
+        s.fontFamily = "tahoma, sans-serif";
+        s.fontSize = "8pt";
+        s.backgroundColor = "window";
+                
         if (tagNames.length > 2) editor.type = tagNames[2];
         this._box.appendChild(editor);
-        this._editor = this._focusBox = this._fontBox = editor;
-
+        this._editor = this._focusBox = this._fontBox = this._backgroundBox = editor;
         this._focusListener = this._focusListener.bind(this);
         this._blurListener = this._blurListener.bind(this);
         

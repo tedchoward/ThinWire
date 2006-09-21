@@ -29,6 +29,12 @@ var tw_TabSheet = tw_BaseContainer.extend({
     
     construct: function(id, containerId, props) {
         this.$.construct.apply(this, ["tabSheet", id, containerId]);
+        var s = this._box.style;
+        s.background = "buttonface";
+        s.top = "0px";
+        s.left = "0px";
+        s.zIndex = "0";
+        
         var tabIndex = props.tabIndex;
         delete props.tabIndex;
         this.init(tabIndex, props);    

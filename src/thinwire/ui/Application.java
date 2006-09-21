@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 import java.util.Properties;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -53,7 +54,7 @@ import thinwire.ui.event.PropertyChangeListener;
 public abstract class Application {
 	private static final Logger log = Logger.getLogger(Application.class.getName());	
 	private static final Map<Thread, Application> instanceForThread = Collections.synchronizedMap(new HashMap<Thread, Application>());
-    
+
     private static final Map<String, String> versionInfo;
     static {
         Properties props = new Properties();
@@ -73,6 +74,25 @@ public abstract class Application {
             throw new RuntimeException(e);
         }
     }            
+    
+    private Map<Local, Object> appLocal = new WeakHashMap<Local, Object>();
+    
+    public static class Local<T> {
+        public void set(T value) {
+            Application.current().appLocal.put(this, value);
+        }
+        
+        public T get() {
+            Map<Local, Object> map = Application.current().appLocal;
+            T value = (T)map.get(this);
+            if (value == null && !map.containsKey(this)) map.put(this, value = initialValue());
+            return value;
+        }
+        
+        protected T initialValue() {
+            return null;
+        }
+    }
     
     /**
      * Returns the current version info details for the platform.

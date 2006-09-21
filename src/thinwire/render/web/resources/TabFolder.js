@@ -33,14 +33,24 @@ var tw_TabFolder = tw_BaseContainer.extend({
     
     construct: function(id, containerId, props) {
         this.$.construct.apply(this, ["tabFolder", id, containerId]);
+        var s = this._box.style;
+        s.backgroundColor = "transparent";    
+        s.overflow = "visible";
     
         this._tabs = document.createElement("div");
-        this._tabs.className = "tabFolderTabs";
+        var s = this._tabs.style;
+        s.position = "absolute";
+        s.zIndex = "1";
         this._box.appendChild(this._tabs);
         
         this._borderBox = this._container = document.createElement("div");
-        this._container.className = "tabFolderContent";
-        this._container.style.borderColor = tw_borderColor;
+        var s = this._container.style;
+        s.backgroundColor = "threedface";
+        s.position = "absolute";
+        s.border = "2px outset";
+        s.padding = "1px";
+        s.zIndex = "0";
+        s.borderColor = tw_borderColor;
         this._box.appendChild(this._container);    
         this._fontBox = null; 
         
@@ -99,21 +109,38 @@ var tw_TabFolder = tw_BaseContainer.extend({
         var tab = document.createElement("a");
         tab.id = "tab" + sheet._id;
         tab.className = "tabSheetTab";
-        tab.style.borderColor = tw_borderColor;
-        tab.style.lineHeight = tab.style.height = tw_TabFolder._tabsHeight - (tw_sizeIncludesBorders ? 2 : 4) + "px";
-        tab.style.backgroundImage = "";
-        ss = sheet._box.style;
-        tab.style.backgroundColor = ss.backgroundColor;
-        tab.style.fontSize = ss.fontSize;
-        tab.style.fontWeight = ss.fontWeight;
-        tab.style.fontStyle = ss.fontStyle;
-        tab.style.textDecoration = ss.textDecoration;
-        tab.style.color = ss.color;
-        if (ss.borderStyle != "") tab.style.borderStyle = ss.borderStyle;
-        if (ss.borderColor != "") tab.style.borderColor = ss.borderColor;
+        var s = tab.style;
+        s.cursor = "default";
+        s.whiteSpace = "nowrap";
+        s.styleFloat = "left"; //Doesn't work in FF.
+        s.display = "block";
+        s.border = "2px outset";
+        s.borderBottom = "0px";
+        s.fontFamily = "tahoma, sans-serif";        
+        s.lineHeight = s.height = tw_TabFolder._tabsHeight - (tw_sizeIncludesBorders ? 2 : 4) + "px";
+        s.backgroundImage = "";
+        
+        var ss = sheet._box.style;
+        s.borderColor = ss.borderColor == "" ? tw_borderColor : ss.borderColor;
+        s.backgroundColor = ss.backgroundColor == "" ? "threedface" : ss.backgroundColor;
+        s.fontSize = ss.fontSize == "" ? "8pt" : ss.fontSize;
+        s.fontWeight = ss.fontWeight;
+        s.fontStyle = ss.fontStyle;
+        s.textDecoration = ss.textDecoration == "" ? "none" : ss.textDecoration;
+        s.color = ss.color == "" ? "windowtext" : ss.color;
+        if (ss.borderStyle != "") s.borderStyle = ss.borderStyle;
         
         var tabImage = document.createElement("div");
-        tabImage.className = "tabSheetTabImage";
+        tabImage.className = "floatDivLeft"; //hack for FF
+        var s = tabImage.style;
+        s.styleFloat = "left"; //Doesn't work in FF.
+        s.backgroundRepeat = "no-repeat";
+        s.backgroundPosition = "center center";
+        s.width = "16px";
+        s.height = "16px";
+        s.paddingLeft = "3px";
+        s.overflow = "hidden";
+        s.display = "none";
         tab.appendChild(tabImage);
         
         tab.appendChild(document.createTextNode(""));
@@ -133,6 +160,7 @@ var tw_TabFolder = tw_BaseContainer.extend({
         }
         
         this.$.addComponent.apply(this, [insertAtIndex, sheet]);
+        
         if (this._currentIndex != insertAtIndex) this._setTabActive(insertAtIndex, false);
         this._setTabActive(this._currentIndex, true);    
     },

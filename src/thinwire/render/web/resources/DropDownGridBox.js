@@ -28,21 +28,33 @@ var tw_DropDownGridBox = tw_BaseText.extend({
     _editAllowed: true,
     
     construct: function(id, containerId, props) {
-        this.$.construct.apply(this, [["div", "input", "text"], ["dropDownGridBox", "dropDownGridBoxTextField"], id, containerId, "editMask"]); 
+        this.$.construct.apply(this, [["div", "input", "text"], "dropDownGridBox", id, containerId, "editMask"]);
+        this._box.style.fontSize = "1px";
         this._subtractEditorWidth = 17;
         
         var button = document.createElement("div");
-        button.className = "dropDownGridBoxButton";
-        button.style.border = "2px outset";
-        button.style.borderColor = tw_borderColor;        
-        button.style.width = tw_sizeIncludesBorders ? "16px" : "12px";    
-        button.style.backgroundImage = "url(?_twr_=tbArrowDown.png)";
+        var s = button.style;
+        s.position = "absolute";
+        s.left = "0px";
+        s.top = "0px";
+        s.backgroundColor = "transparent";
+        s.backgroundRepeat = "no-repeat";
+        s.backgroundPosition = "center center";                
+        s.border = "2px outset";
+        s.borderColor = tw_borderColor;        
+        s.width = tw_sizeIncludesBorders ? "16px" : "12px";    
+        s.backgroundImage = "url(?_twr_=tbArrowDown.png)";
         this._button = button;
         
         var buttonBorder = document.createElement("div");
-        buttonBorder.className = "dropDownGridBoxButtonBorder";
-        buttonBorder.style.borderWidth = "0px";
-        buttonBorder.style.width = "16px";
+        var s = buttonBorder.style;
+        s.position = "absolute";
+        s.right = "0px";
+        s.backgroundColor = "buttonface";
+        s.borderStyle = "solid";
+        s.borderColor = "black";                        
+        s.borderWidth = "0px";
+        s.width = "16px";
         buttonBorder.appendChild(button);
         this._box.appendChild(buttonBorder);
                 

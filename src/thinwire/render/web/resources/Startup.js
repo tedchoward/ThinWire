@@ -176,6 +176,43 @@ function tw_getTime() {
     return new Date().getTime();
 }
 
+function tw_getFontMetrics(family, size, bold, italic, underline) {
+    var comp = document.createElement("div");
+    var s = comp.style;
+    s.position = "absolute";
+    s.width = "1px";
+    s.height = "1px";
+    s.top = "0px";
+    s.left = "0px";
+    if (!tw_isIE) s.overflow = "auto";
+    if (!tw_isIE && !tw_isGecko) s.lineHeight = "0px";
+    s.whiteSpace = "nowrap";
+    s.backgroundColor = "transparent";
+    s.color = "transparent";    
+    s.fontSize = size + "pt";
+    s.fontFamily = family;
+    s.fontWeight = bold ? "bold" : "normal";
+    s.fontStyle = italic ? "italic" : "normal";
+    s.textDecoration = underline ? "underline" : "none";
+    document.body.appendChild(comp);    
+    
+    var metrics = [0];
+    
+    for (var i = 0, cnt = tw_fontChars.length; i < cnt; i++) {
+        var text = document.createTextNode(tw_fontChars[i]);
+        comp.appendChild(text);
+        if (i == 65) metrics[0] = comp.scrollHeight;
+        metrics.push(comp.scrollWidth);
+        comp.removeChild(text);
+    }
+    
+    document.body.removeChild(comp);
+    return metrics.join(",");
+}
+
+var tw_fontChars = [];
+for (var i = 32; i < 256; i++) tw_fontChars.push(String.fromCharCode(i));
+
 // Initialize Logger Instance
 //var tw_log = new tw_Logger();
 

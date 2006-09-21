@@ -56,6 +56,11 @@ var tw_Component = Class.extend({
     construct: function(tagName, className, id, containerId, support) {
         var box = document.createElement(tagName);
         box.className = className;
+        var s = box.style;
+        s.position = "absolute";
+        s.overflow = "hidden";
+        s.padding = "0px";
+        s.margin = "0px";
         box.id = id;
         this._box = this._focusBox = this._backgroundBox = this._borderBox = this._fontBox = box;
         this._id = id;
@@ -492,3 +497,4 @@ tw_Component.keyPressNotifySpaceFireAction = function(keyPressCombo) {
         return this.$.keyPressNotify.apply(this, [keyPressCombo]);
     }
 };
+

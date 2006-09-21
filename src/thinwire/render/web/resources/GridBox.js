@@ -44,7 +44,14 @@ var tw_GridBox = tw_Component.extend({
     _parentCell: null,
     
     construct: function(id, containerId, props) {
-        this.$.construct.apply(this, ["div", "gridBox", id, containerId]);        
+        this.$.construct.apply(this, ["div", "gridBox", id, containerId]);
+        var s = this._box.style;
+        s.border = "2px inset";
+        s.backgroundColor = "window";
+        s.color = "windowtext";
+        s.fontFamily = "tahoma, sans-serif";
+        s.fontSize = "8pt";
+        
         this._root = this;   
         var visibleCheckBoxes = props.visibleCheckBoxes;
         var cols = props.columnData;
@@ -58,26 +65,24 @@ var tw_GridBox = tw_Component.extend({
         delete props.checkedRows;
         delete props.parentIndex;
         
-        /*this._font = {
-            fontFamily: "tahoma, sans-serif", 
-            fontSize: "8pt", 
-            color: "windowtext", 
-            fontWeight: "normal", 
-            fontStyle: "normal",
-            textDecoration: "none"
-        }*/
-        
         var header = document.createElement("div");
         header.className = "gridBoxHeader";
-        header.style.display = "none";
-        header.style.height = tw_GridBox.headerHeight + "px";
+        var s = header.style;
+        s.position = "absolute";
+        s.backgroundColor = "buttonface";        
+        s.display = "none";
+        s.height = tw_GridBox.headerHeight + "px";
         this._hresize = {column: null, startX: -1};        
         this._header = header;
         this._box.appendChild(header);
         
         var body = document.createElement("div");
         body.className = "gridBoxBody";
-        body.style.top = "0px";
+        var s = body.style;
+        s.position = "absolute";
+        s.width = "100%";
+        s.overflow = "auto";        
+        s.top = "0px";
         this._box.appendChild(body);
     
         var content = document.createElement("div");
@@ -136,6 +141,9 @@ var tw_GridBox = tw_Component.extend({
                     
                     var column = document.createElement("div");
                     column.className = "gridBoxColumn";
+                    var s = column.style;
+                    s.styleFloat = "left";
+                    s.overflow = "hidden";                            
                     column.tw_autoSize = false;
                     column.style.width = tw_GridBox.childColumnWidth + "px";                
                                 
@@ -322,6 +330,13 @@ var tw_GridBox = tw_Component.extend({
     _newCell: function(value, columnIndex, state) {
         var cell = document.createElement("div");
         cell.className = "gridBoxCell";
+        var s = cell.style;
+        s.height = "14px";
+        s.paddingLeft = "3px";
+        s.whiteSpace = "nowrap";
+        s.backgroundRepeat = "no-repeat";
+        s.backgroundPosition = "center left";
+        s.backgroundColor = "transparent";        
             
         if (columnIndex == 0) {
             var s = cell.style;        
@@ -804,9 +819,15 @@ var tw_GridBox = tw_Component.extend({
         
         var columnHeader = document.createElement("div");
         columnHeader.className = "gridBoxColumnHeader";
-        columnHeader.style.borderColor = tw_borderColor;    
-        columnHeader.style.height = (tw_sizeIncludesBorders ? tw_GridBox.headerHeight : tw_GridBox.headerHeight - tw_CALC_BORDER_SUB) + "px";
-        columnHeader.style.textAlign = alignX;                
+        var s = columnHeader.style;
+        s.borderStyle = "outset";
+        s.backgroundColor = "buttonface";    
+        s.styleFloat = "left";
+        s.overflow = "hidden";
+        s.whiteSpace = "nowrap";        
+        s.borderColor = tw_borderColor;    
+        s.height = (tw_sizeIncludesBorders ? tw_GridBox.headerHeight : tw_GridBox.headerHeight - tw_CALC_BORDER_SUB) + "px";
+        s.textAlign = alignX;                
         columnHeader.appendChild(document.createTextNode(name));
                 
         tw_addEventListener(columnHeader, "focus", this._focusListener);
@@ -815,7 +836,10 @@ var tw_GridBox = tw_Component.extend({
         
         var column = document.createElement("div");
         column.className = "gridBoxColumn";
-        column.style.textAlign = alignX;
+        var s = column.style;
+        s.styleFloat = "left";
+        s.overflow = "hidden";        
+        s.textAlign = alignX;
         column.tw_autoSize = false;
         tw_addEventListener(column, "focus", this._focusListener);
         tw_addEventListener(column, "blur", this._blurListener);

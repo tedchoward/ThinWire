@@ -36,6 +36,7 @@ public class SliderRenderer extends ComponentRenderer {
     
     public void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         init(SLIDER_CLASS, wr, c, container);
+        addClientSideProperty(Slider.PROPERTY_CURSOR_INDEX);        
         addInitProperty(Slider.PROPERTY_LENGTH, ((Slider) c).getLength());
         addInitProperty(Slider.PROPERTY_CURSOR_INDEX, ((Slider) c).getCursorIndex());
         super.render(wr, c, container);

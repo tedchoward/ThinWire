@@ -24,6 +24,12 @@
  */
 package thinwire.ui.style;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import thinwire.render.web.WebApplication;
+import thinwire.ui.Application;
+
 /**
  * @author Joshua J. Gertzen
  */
@@ -67,6 +73,17 @@ public class Font implements StyleGroup<Font> {
             return name().toLowerCase().replace('_', '-');
         }
     }
+
+    private static Application.Local<Map<String, Metrics>> fontMetrics = new Application.Local<Map<String,Metrics>>() {
+        protected Map<String, Metrics> initialValue() {
+            return new HashMap<String, Metrics>();
+        }
+    };
+    
+    private static class Metrics {
+        private int[] widths;
+        private int height;
+    }
     
     private Style parent;
     private Style defaultStyle;
@@ -76,11 +93,57 @@ public class Font implements StyleGroup<Font> {
     private int bold = -1;
     private int italic = -1;
     private int underline = -1;
+    private String computedState;
     
     Font(Style parent, Style defaultStyle) {
         this.parent = parent;
         this.defaultStyle = defaultStyle;        
         if (defaultStyle != null) copy(defaultStyle.getFont());
+    }
+    
+    private String getComputedState() {
+        if (computedState == null) {
+            StringBuilder sb = new StringBuilder();
+            sb.append('"').append(getFamily()).append('"').append(';');
+            sb.append(getSize()).append(';');
+            sb.append(isBold()).append(';');
+            sb.append(isItalic()).append(';');
+            sb.append(isUnderline());
+            computedState = sb.toString();
+        }
+        
+        return computedState;
+    }
+    
+    public int getStringWidth(String s) {
+        String computedState = getComputedState();
+        Map<String, Metrics> map = fontMetrics.get(); 
+        Metrics fm = map.get(computedState);        
+        
+        if (fm == null) {
+            fm = new Metrics();            
+            String[] ary = ((WebApplication)WebApplication.current()).clientSideFunctionCallWaitForReturn("tw_getFontMetrics", getFamily(), getSize(), isBold(), isItalic(), isUnderline()).split(",");
+            fm.widths = new int[ary.length - 1];
+            fm.height = Integer.parseInt(ary[0]);
+                            
+            for (int i = 1, cnt = ary.length; i < cnt; i++) {
+                fm.widths[i - 1] = Integer.parseInt(ary[i]);
+            }
+            
+            map.put(computedState, fm);
+        }
+        
+        int[] widths = fm.widths;        
+        int width = 0;
+        
+        for (int i = 0, cnt = s.length(); i < cnt; i++) {
+            char c = s.charAt(i);
+            byte b = (byte)c;
+            int w = widths[b - 32];
+            width += w;
+        }
+        
+        return width;
     }
     
     public Object getValue(String propertyName) {
@@ -132,6 +195,7 @@ public class Font implements StyleGroup<Font> {
         if (family == null && defaultStyle != null) family = defaultStyle.getFont().getFamily();
         if (family == null) throw new IllegalArgumentException("family == null");
         Family oldFamily = this.family;
+        this.computedState = null;
         this.family = family;
         if (parent != null) parent.firePropertyChange(this, PROPERTY_FONT_FAMILY, oldFamily, family);
     }
@@ -158,6 +222,7 @@ public class Font implements StyleGroup<Font> {
         if (size <= 0 && defaultStyle != null) size = defaultStyle.getFont().getSize();
         if (size <= 0 || size > 128) throw new IllegalArgumentException("size <= 0 || size > 128");
         int oldSize = this.size;
+        this.computedState = null;        
         this.size = size;
         if (parent != null) parent.firePropertyChange(this, PROPERTY_FONT_SIZE, oldSize, size);
     }
@@ -169,6 +234,7 @@ public class Font implements StyleGroup<Font> {
     
     public void setBold(boolean bold) {       
         boolean oldBold = this.bold == 1;
+        this.computedState = null;        
         this.bold = bold == true ? 1 : 0;
         if (parent != null) parent.firePropertyChange(this, PROPERTY_FONT_BOLD, oldBold, bold);
     }
@@ -180,6 +246,7 @@ public class Font implements StyleGroup<Font> {
     
     public void setItalic(boolean italic) {
         boolean oldItalic = this.italic == 1;
+        this.computedState = null;        
         this.italic = italic == true ? 1 : 0;
         if (parent != null) parent.firePropertyChange(this, PROPERTY_FONT_ITALIC, oldItalic, italic);
     }
@@ -191,6 +258,7 @@ public class Font implements StyleGroup<Font> {
     
     public void setUnderline(boolean underline) {
         boolean oldUnderline = this.underline == 1;
+        this.computedState = null;        
         this.underline = underline == true ? 1 : 0;
         if (parent != null) parent.firePropertyChange(this, PROPERTY_FONT_UNDERLINE, oldUnderline, underline);        
     }

@@ -25,10 +25,16 @@
 var tw_Divider = tw_Component.extend({
     construct: function(id, containerId, props) {
         this.$.construct.apply(this, ["div", "divider", id, containerId]);
+        var s = this._box.style;
+        s.backgroundColor = "transparent";
         tw_addEventListener(this._box, "click", this._clickListener.bind(this));
 
         var tagLine = document.createElement("div");
-        tagLine.className = "dividerLine";
+        var s = tagLine.style;
+        s.position = "absolute";
+        s.border = "1px solid";
+        s.borderColor = "buttonshadow buttonhighlight buttonhighlight buttonshadow";
+        s.lineHeight = "0px";        
         this._box.appendChild(tagLine);
         this.init(-1, props);
     },

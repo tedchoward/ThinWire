@@ -24,7 +24,7 @@
  */
 var tw_TextField = tw_BaseText.extend({
     construct: function(id, containerId, props) {
-        this.$.construct.apply(this, [["div", "input", props.inputHidden ? "password" : "text"], ["textField", "textFieldEditor"], id, containerId, "editMask"]);
+        this.$.construct.apply(this, [["div", "input", props.inputHidden ? "password" : "text"], "textField", id, containerId, "editMask"]);
         delete props.inputHidden;
         this.init(-1, props);        
     },

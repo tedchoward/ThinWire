@@ -33,19 +33,28 @@ var tw_Slider = tw_Component.extend({
    
     construct: function(id, containerId, props) {
         this.$.construct.apply(this, ["div", "slider", id, containerId]);
+        var s = this._box.style;
+        s.backgroundColor = "transparent";
         
         var line = document.createElement("div");
-        line.className = "sliderLine";
+        var s = line.style;
+        s.position = "absolute";
+        s.border = "1px solid";
+        s.borderColor = "buttonshadow buttonhighlight buttonhighlight buttonshadow";
+        s.lineHeight = "0px";
         this._box.appendChild(line);
         
         var cursor = document.createElement("div");
-        cursor.className = "sliderCursor";
+        var s = cursor.style;
+        s.position = "absolute";    
+        s.border = "2px outset";
+        s.overflow = "hidden";
+        s.backgroundColor = "buttonface";
         this._cursorDrag = new tw_DragHandler(cursor, this._cursorDragListener.bind(this));
         this._box.appendChild(cursor);
         
         this.setLength(props.length);
         this.setCursorIndex(props.cursorIndex);
-        this.registerEventNotifier("propertyChange", "cursorIndex");
         tw_addEventListener(this._box, "click", this._clickListener.bind(this));
         tw_setFocusCapable(this._box, true);
         this.init(-1, props);

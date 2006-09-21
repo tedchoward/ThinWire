@@ -24,8 +24,12 @@
  */
 var tw_WebBrowser = tw_BaseBrowserLink.extend({
     construct: function(id, containerId, props) {
-        this.$.construct.apply(this, ["iframe", "webBrowser", id, containerId]);        
+        this.$.construct.apply(this, ["iframe", "webBrowser", id, containerId]);
+        var s = this._box.style;
         this.init(-1, props);        
+        //NOTE: This must happen after the component is added to the document otherwise
+        //firefox ignores it.
+        s.backgroundColor = "window";                
     },
     
     setLocation: function(location) {

@@ -36,30 +36,45 @@ var tw_Frame = tw_BaseContainer.extend({
     
     construct: function(id, containerId, props) {
         this.$.construct.apply(this, ["frame", id, 0]);
+        var s = this._box.style;
+        s.cursor = "default";    
+        s.top = "0px";
+        s.left = "0px";
+        s.backgroundColor = "window";
+        s.width = "100%";
+        s.height = "100%";
+        
         tw_Frame.active = this;
         this._modalDialogIds = [];
         tw_setSelectionEnabled(false);
                 
         this._backgroundBox = this._container = document.createElement("div");
         this._container.className = "container";
-        this._container.style.backgroundColor = "window";
-        this._container.style.overflow = "hidden";
-        this._container.style.zIndex = 0;
+        var s = this._container.style;
+        s.backgroundColor = "window";
+        s.position = "absolute";        
+        s.overflow = "hidden";
+        s.zIndex = "0";
+        s.width = "100%";
         this._box.appendChild(this._container);
 
         this._modalLayer = document.createElement("div");
-        this._modalLayer.className = "frameModalLayer";
+        var s = this._modalLayer.style; 
+        s.display = "none";
+        s.position = "absolute";
+        s.height = "100%";
+        s.width = "100%";
+        s.backgroundColor = "transparent";
+        s.zIndex = "1";        
         
         if (tw_isIE) {
             //NOTE: IE allows clicks to propagate if the background-color is transparent.
             //However, if the background is white and the opacity is zero, it works like it should.
-            this._modalLayer.style.filter = "alpha(opacity=0)";
-            this._modalLayer.style.backgroundColor = "white";
+            s.filter = "alpha(opacity=0)";
+            s.backgroundColor = "white";
         }
         
-        this._modalLayer.style.display = "none"; //necessary so code can check for this state.
         tw_addEventListener(this._modalLayer, "mousedown", this._modalLayerMouseDownListener);
-        //this._container.appendChild(this._modalLayer);
         document.body.appendChild(this._modalLayer);
         
         this._getFrameBounds = this._getFrameBounds.bind(this);        
@@ -67,13 +82,11 @@ var tw_Frame = tw_BaseContainer.extend({
         tw_addEventListener(window, "resize", this._windowBoundsListener.bind(this));
         this.init(-1, props);
         
-        document.body.style.height = "100%";
-        document.body.style.padding = "0px";
-        document.body.style.margin = "0px";
-        document.body.style.border = "0px";
-        this._box.style.width = "100%";
-        this._box.style.height = "100%";
-        this._container.style.width = "100%";
+        var s = document.body.style;
+        s.height = "100%";
+        s.padding = "0px";
+        s.margin = "0px";
+        s.border = "0px";
         
         //NOTE: IE will fire this on load via the windowBoundListener
         if (!tw_isIE) this._getFrameBounds();

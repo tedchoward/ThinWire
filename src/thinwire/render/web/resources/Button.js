@@ -30,17 +30,35 @@ var tw_Button = tw_Component.extend({
     
     construct: function(id, containerId, props) {
         this.$.construct.apply(this, ["div", "button", id, containerId]);
+        var s = this._box.style;
+        s.border = "0px";
         
         var border = document.createElement("div");
-        border.className = "buttonBorder";
-        border.style.borderColor = tw_borderColor;
+        var s = border.style;
+        s.margin = "0px";
+        s.padding = "1px";    
+        s.border = "2px outset";
+        s.overflow = "hidden";
+        s.backgroundColor = "buttonface";    
+        s.borderColor = tw_borderColor;
         this._box.appendChild(border);
         
         var surface = document.createElement("a");
-        surface.className = "buttonSurface";    
+        var s = surface.style;
+        s.textAlign = "center";
+        s.backgroundRepeat = "no-repeat";
+        s.backgroundPosition = "center left";
+        s.fontFamily = "tahoma, sans-serif";
+        s.fontSize = "8pt";
+        s.color = "windowtext";
+        s.overflow = "hidden";
+        s.whiteSpace = "nowrap";
+        s.cursor = "default";
+        s.textDecoration = "none";
+        s.display = "block";        
         surface.appendChild(document.createTextNode(""));
         border.appendChild(surface);
-        this._focusBox = this._fontBox = surface;
+        this._backgroundBox = this._focusBox = this._fontBox = surface;
         
         tw_addEventListener(this._box, "mousedown", this._mouseDownListener.bind(this));    
         tw_addEventListener(this._box, ["mouseup", "mouseout"], this._mouseUpListener.bind(this));    

@@ -297,7 +297,7 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
                     renderChild(new Integer(((Row)source).getIndex()), (GridBox)newValue);
                 } else if (oldValue != null) {
                     GridBoxRenderer gbrChild = (GridBoxRenderer)childToRenderer.remove(oldValue);
-                    gbrChild.postClientEvent(DESTROY, null);
+                    gbrChild.postClientEvent(DESTROY);
                     gbrChild.destroy();
                 }
             }

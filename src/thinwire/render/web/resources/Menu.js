@@ -25,6 +25,7 @@
 var tw_menu_imageMenuItem = "?_twr_=menuItem.png";
 var tw_menu_imageMenuArrow = "url(?_twr_=menuArrow.png)";
 var tw_menu_imageMenuArrowInvert = "url(?_twr_=menuArrowInvert.png)";
+//FIX: Firefox does not display the menu arrow.
 
 var tw_Menu = tw_Component.extend({
     _menusAreVisible: false,
@@ -33,8 +34,24 @@ var tw_Menu = tw_Component.extend({
     
     construct: function(id, containerId, props) {
         this.$.construct.apply(this, ["div", "mainMenu", id, containerId]);
+        this._windowMenu = props.windowMenu;                
+        delete props.windowMenu;
 
-        this._box.style.borderColor = tw_borderColor;
+        var s = this._box.style;
+        s.overflow = "visible";
+        s.background = "threedface";
+        s.padding = "1px";
+        s.borderBottom = "2px groove";
+        s.marginBottom = "1px";
+        s.zIndex = "1";
+        s.borderColor = tw_borderColor;
+        
+        if (!this._windowMenu) {
+            s.borderWidth = "2px";
+            s.borderStyle = "outset";
+        } else {
+            s.position = "";
+        }
         
         this._mainMenuMouseOver = this._mainMenuMouseOver.bind(this);
         this._mainMenuMouseDown = this._mainMenuMouseDown.bind(this);
@@ -44,17 +61,9 @@ var tw_Menu = tw_Component.extend({
         this._itemMouseOver = this._itemMouseOver.bind(this);
         this._itemClick = this._itemClick.bind(this);        
 
-        this._windowMenu = props.windowMenu;                
         var initData = props.initData;
         delete props.initData;
-        delete props.windowMenu;
-        
-        if (!this._windowMenu) {
-            this._box.style.position = "absolute";
-            this._box.style.borderWidth = "2px";
-            this._box.style.borderStyle = "outset";
-        }
-        
+                
         this._load(this._box, initData);
         this.init(-1, props);
     },
@@ -324,34 +333,96 @@ var tw_Menu = tw_Component.extend({
                                                 
         var button = document.createElement("div");
         button.className = prefix + "enuButton";
-        
-        if (menu.className != "mainMenu") {                    
+                
+        if (menu.className != "mainMenu") {
+            var s = item.style;
+            s.position = "relative";
+            
+            var s = button.style;
+            s.position = "relative";
+            s.margin = "0px";
+            s.padding = "2px";
+            s.backgroundColor = "threedface";
+            s.fontFamily = "tahoma, sans-serif";
+            s.fontSize = "8pt";
+            
             var image = document.createElement("img");
             image.className = "menuButtonImage";
+            var s = image.style;
+            s.border = "0px";
+            s.margin = "0px";
+            s.padding = "0px";
+            s.height = "16px";
+            s.width = "16px";
+            s.backgroundRepeat = "no-repeat";
+            s.backgroundPosition = "center center";
+            
             image.src = tw_menu_imageMenuItem;        
             button.appendChild(image);
     
             var text = document.createElement("span");
             text.className = "menuButtonText";
+            var s = text.style;
+            s.position = "absolute";
+            s.top = "3px";
+            s.left = "20px";            
             button.appendChild(text);
             
             var shortcutText = document.createElement("span");
             shortcutText.className = "menuButtonSText";
+            var s = shortcutText.style;
+            s.position = "absolute";
+            s.top = "2px";
+            s.right = "20px";
             button.appendChild(shortcutText);                    
             
             var arrow = document.createElement("div");
             arrow.className = "menuButtonArrow";
+            var s = arrow.style;
+            s.position = "absolute";
+            s.border = "0px";
+            s.margin = "0px";
+            s.padding = "0px";
+            s.right = "1px";
+            s.height = "16px";
+            s.width = "16px";
+            s.backgroundRepeat = "no-repeat";
+            s.backgroundPosition = "center center";            
             button.appendChild(arrow);
             
             if (menu.className != "mainMenuItem")
                 this._setArrowVisible(menu, true);
+        } else {
+            var s = item.style;
+            s.styleFloat = "left";
+            
+            var s = button.style;
+            s.margin = "0px";
+            s.paddingTop = "2px";
+            s.paddingBottom = "2px";
+            s.paddingLeft = "5px";
+            s.paddingRight = "5px";
+            s.border = "1px solid threedface";
+            s.backgroundColor = "threedface";
+            s.fontFamily = "tahoma, sans-serif";
+            s.fontSize = "8pt";            
         }
     
         item.appendChild(button);
         
         var content = document.createElement("div");
         content.className = prefix + "enuContent";
-        content.style.borderColor = tw_borderColor;
+        var s = content.style;        
+        s.position = "absolute";
+        s.margin = "0px";
+        s.padding = "0px";
+        s.border = "2px outset";
+        s.backgroundColor = "threedface";
+        s.fontFamily = "tahoma, sans-serif";
+        s.fontSize = "8pt";
+        s.visibility = "hidden";
+        s.borderColor = tw_borderColor;
+        if (prefix == "m") s.top = "-2px";        
         content.tw_maxTextWidth = 0;
         content.tw_maxShortcutTextWidth = 0;
         item.appendChild(content);
@@ -417,6 +488,14 @@ var tw_Menu = tw_Component.extend({
     _addDivider: function(menu, index) {
         var item = document.createElement("div");
         item.className = "menuDivider";
+        var s = item.style;
+        s.border = "1px solid";
+        s.borderColor = "threedshadow threedface threedhighlight threedface";                
+        s.marginTop = "3px";
+        s.marginBottom = "3px";
+        s.marginLeft = "2px";
+        s.marginRight = "1px";
+        
         var parent = menu.lastChild;
         
         if (index == -1) {
