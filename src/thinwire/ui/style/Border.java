@@ -31,6 +31,7 @@ public class Border implements StyleGroup<Border> {
     public static final String PROPERTY_BORDER_COLOR = "borderColor";
     public static final String PROPERTY_BORDER_SIZE = "borderSize";
     public static final String PROPERTY_BORDER_TYPE = "borderType";
+    private static final ClassReflector<Border> reflect = new ClassReflector<Border>(Border.class, "PROPERTY_", "border");
 
     public enum Type {
         NONE, SOLID, DOUBLE, INSET, OUTSET, RIDGE, GROOVE, DASHED, DOTTED;
@@ -52,32 +53,25 @@ public class Border implements StyleGroup<Border> {
         if (defaultStyle != null) copy(defaultStyle.getBorder());
     }
     
-    public Object getValue(String propertyName) {
-        return getBorderValue(this, propertyName);
+    public Object getProperty(String propertyName) {
+        return reflect.getProperty(this, propertyName);
     }
     
-    public Object getDefaultValue(String propertyName) {
+    public void setProperty(String propertyName, Object value) {
+        reflect.setProperty(this, propertyName, value);
+    }
+    
+    public Object getPropertyDefault(String propertyName) {
         if (defaultStyle == null) throw new IllegalStateException("defaultStyle == null");        
-        return getBorderValue(defaultStyle.getBorder(), propertyName);
-    }
-    
-    private static Object getBorderValue(Border border, String propertyName) {
-        if (propertyName.equals(PROPERTY_BORDER_TYPE)) {
-            return border.getType();
-        } else if (propertyName.equals(PROPERTY_BORDER_SIZE)) {
-            return border.getSize();
-        } else if (propertyName.equals(PROPERTY_BORDER_COLOR)) {
-            return border.getColor();
-        } else {
-            throw new IllegalArgumentException("property '" + propertyName + "' is unknown");
-        }
-    }
+        return reflect.getProperty(defaultStyle.getBorder(), propertyName);
+    }    
         
     public void copy(Border border) {
         if (border == null) throw new IllegalArgumentException("border == null");
-        setType(border.getType());
-        setSize(border.getSize());
-        setColor(border.getColor());
+        
+        for (String name : reflect.getPropertyNames()) {
+            setProperty(name, border.getProperty(name));
+        }
     }
     
     public Style getParent() {

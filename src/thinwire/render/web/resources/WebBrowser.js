@@ -29,7 +29,7 @@ var tw_WebBrowser = tw_BaseBrowserLink.extend({
         this.init(-1, props);        
         //NOTE: This must happen after the component is added to the document otherwise
         //firefox ignores it.
-        s.backgroundColor = "window";                
+        s.backgroundColor = tw_COLOR_WINDOW;                
     },
     
     setLocation: function(location) {

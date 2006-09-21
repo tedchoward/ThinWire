@@ -43,6 +43,7 @@ import thinwire.ui.GridBox.Row;
 import thinwire.ui.event.ItemChangeEvent;
 import thinwire.ui.event.ItemChangeListener;
 import thinwire.ui.event.PropertyChangeEvent;
+import thinwire.ui.style.FX;
 
 /**
  * @author Joshua J. Gertzen
@@ -71,6 +72,7 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
     private Set<Integer> columnState = new HashSet<Integer>();
     private GridBox gb;
     private Map<GridBox, GridBoxRenderer> childToRenderer;
+    private int autoColumnWidth;
     DropDownGridBox dd;
     
     //TODO: Column indexes on the client side may differ if there is a hidden column between two visible columns
@@ -84,40 +86,6 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
 
         this.wr = wr;
         gb.addItemChangeListener(this);
-
-        StringBuffer checkedRows = new StringBuffer();
-        
-        synchronized (checkedRows) {
-            getCheckedRowIndices(checkedRows);
-        }
-        
-        StringBuffer colDefs = new StringBuffer();
-        
-        synchronized (colDefs) {            
-            List<Column> columns = gb.getColumns();
-            colDefs.append('[');
-
-            for (int i = 0, cnt = columns.size(); i < cnt; i++) {
-                Column col = (Column)columns.get(i);
-                columnState.add(System.identityHashCode(col));        
-    
-                if (col.isVisible()) {
-                    colDefs.append("{v:");
-                    getValues(col, col.getDisplayFormat(), colDefs);
-                    colDefs.append(",n:\"").append(getValue(col.getDisplayName(), null)).append("\"");
-                    colDefs.append(",w:").append(col.getWidth());
-                    colDefs.append(",a:\"").append(((AlignX)col.getAlignX()).name().toLowerCase()).append("\"");
-                    colDefs.append("},");
-                }
-            }
-
-            int len = colDefs.length();
-            
-            if (len == 1)
-                colDefs.append(']');
-            else
-                colDefs.setCharAt(len - 1, ']');
-        }        
         
         if (!(container instanceof ContainerRenderer)) {
             //a gridbox for a dropdown does not support the focus, enabled, x or y properties
@@ -135,7 +103,44 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
                 if (gb.getWidth() == 0) gb.setWidth(getCalcWidth());
                 if (gb.getHeight() == 0) gb.setHeight(getCalcHeight());
             }
-        } 
+        }         
+        
+        StringBuffer checkedRows = new StringBuffer();
+        
+        synchronized (checkedRows) {
+            getCheckedRowIndices(checkedRows);
+        }
+        
+        calcAutoColumnWidth();
+        StringBuffer colDefs = new StringBuffer();
+        
+        synchronized (colDefs) {            
+            List<Column> columns = gb.getColumns();
+            colDefs.append('[');
+
+            for (int i = 0, cnt = columns.size(); i < cnt; i++) {
+                Column col = (Column)columns.get(i);
+                columnState.add(System.identityHashCode(col));        
+    
+                if (col.isVisible()) {
+                    colDefs.append("{v:");
+                    getValues(col, col.getDisplayFormat(), colDefs);
+                    colDefs.append(",n:\"").append(getValue(col.getDisplayName(), null)).append("\"");
+                    int width = col.getWidth();
+                    if (width == -1) width = autoColumnWidth;
+                    colDefs.append(",w:").append(width);
+                    colDefs.append(",a:\"").append(((AlignX)col.getAlignX()).name().toLowerCase()).append("\"");
+                    colDefs.append("},");
+                }
+            }
+
+            int len = colDefs.length();
+            
+            if (len == 1)
+                colDefs.append(']');
+            else
+                colDefs.setCharAt(len - 1, ']');
+        }        
 
         addClientSideProperty(GridBox.Row.PROPERTY_ROW_CHECKED);
         addClientSideProperty(GridBox.Row.PROPERTY_ROW_SELECTED);
@@ -157,6 +162,31 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
             rowState.add(new Integer(System.identityHashCode(r)));
             GridBox child = r.getChild();            
             if (child != null) renderChild(i, child);
+        }
+    }
+    
+    private void calcAutoColumnWidth() {
+        int totalFixedWidth = 0;
+        int countAutoSize = 0;
+        
+        for (GridBox.Column c : gb.getColumns()) {
+            if (c.isVisible()) {
+                int width = c.getWidth();
+                
+                if (width == -1) {
+                    countAutoSize++;
+                } else {
+                    totalFixedWidth += width;
+                }
+            }
+        }
+        
+        if (countAutoSize > 0) {
+            //TODO: 21 is the scroll bar width, ideally this shouldn't be hard coded like this
+            autoColumnWidth = (int)Math.floor((gb.getWidth() - gb.getStyle().getBorder().getSize() - totalFixedWidth - 21) / countAutoSize);
+            if (autoColumnWidth < 0) autoColumnWidth = 0;
+        } else {
+            autoColumnWidth = 0;
         }
     }
 
@@ -271,16 +301,16 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
                 postClientEvent(SET_VISIBLE_CHECK_BOXES, newValue, newValue == Boolean.TRUE ? getCheckedRowIndices(null) : null);
             } else if (name.equals(GridBox.PROPERTY_FULL_ROW_CHECK_BOX)) {
                 postClientEvent(SET_FULL_ROW_CHECK_BOX, newValue);
-            } else if (dd != null) {
-                if (name.equals(Component.PROPERTY_WIDTH)) {
-                    Integer width = (Integer)newValue;
-                    width = width.intValue() < dd.getWidth() ? new Integer(dd.getWidth()) : width;
-                    postClientEvent(SET_WIDTH, width);
-                } else if (name.equals(Component.PROPERTY_HEIGHT)) {
-                    Integer height = (Integer)newValue;
-                    height = height.intValue() < MIN_SIZE ? new Integer(MIN_SIZE) : height;
-                    postClientEvent(SET_HEIGHT, height);
-                }
+            } else if (name.equals(Component.PROPERTY_WIDTH)) {
+                Integer width = (Integer)newValue;
+                if (dd != null) width = width.intValue() < dd.getWidth() ? dd.getWidth() : width;
+                setPropertyWithEffect(SET_WIDTH, width, pce.getOldValue(), SET_WIDTH, FX.PROPERTY_FX_SIZE_CHANGE);
+                calcAutoColumnWidth();
+                sendAutoColumnWidths(null);
+            } else if (name.equals(Component.PROPERTY_HEIGHT)) {
+                Integer height = (Integer)newValue;
+                if (dd != null) height = height.intValue() < MIN_SIZE ? MIN_SIZE : height;
+                setPropertyWithEffect(SET_HEIGHT, height, pce.getOldValue(), SET_HEIGHT, FX.PROPERTY_FX_SIZE_CHANGE);
             } else {
                 super.propertyChange(pce);
             }
@@ -304,11 +334,11 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
         } else if (source instanceof Column) {
             if (isPropertyChangeIgnored(name) || !columnState.contains(new Integer(System.identityHashCode(source)))) return;
             Column column = (Column)source;
-            Integer index = new Integer(column.getIndex());
+            int index = column.getIndex();
 
             if (name.equals(GridBox.Column.PROPERTY_COLUMN_VISIBLE)) {
                 if (((Boolean)newValue).booleanValue()) {
-                    addColumn(column);
+                    sendColumn(ADD_COLUMN, column);
                 } else {
                     removeColumn(index);
                 }
@@ -322,7 +352,7 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
                 } else if (name.equals(GridBox.Column.PROPERTY_COLUMN_ALIGN_X)) {
                     postClientEvent(SET_COLUMN_ALIGN_X, getVisibleIndex(index), ((AlignX)newValue).name().toLowerCase());
                 } else if (name.equals(GridBox.Column.PROPERTY_COLUMN_DISPLAY_FORMAT)) {
-                    setColumn(column);
+                    sendColumn(SET_COLUMN, column);
                 }
             }
         } else {
@@ -344,15 +374,15 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
             GridBox.Column oco = (GridBox.Column) oldValue;
 
             if (type == ItemChangeEvent.Type.REMOVE) {
-                if (((Column) oldValue).isVisible()) removeColumn(new Integer(columnIndex));
+                if (((Column) oldValue).isVisible()) removeColumn(columnIndex);
                 columnState.remove(new Integer(System.identityHashCode(oco)));
             } else if (type == ItemChangeEvent.Type.ADD) {
                 columnState.add(new Integer(System.identityHashCode(nco)));
-                if (nco.isVisible()) addColumn(nco);
+                if (nco.isVisible()) sendColumn(ADD_COLUMN, nco);
             } else {
                 columnState.remove(new Integer(System.identityHashCode(oco)));
                 columnState.add(new Integer(System.identityHashCode(nco)));
-                if (nco.isVisible()) setColumn(nco);
+                if (nco.isVisible()) sendColumn(SET_COLUMN, nco);
             }
         } else if (columnIndex == -1) { // Row Change
             GridBox.Row nro = (GridBox.Row) newValue;
@@ -412,7 +442,8 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
         } else if (name.equals(GridBox.Column.PROPERTY_COLUMN_WIDTH)) {
             setPropertyChangeIgnored(GridBox.Column.PROPERTY_COLUMN_WIDTH, true);
             String[] values = value.split(",");
-            gb.getColumns().get(Integer.parseInt(values[0])).setWidth(Integer.parseInt(values[1]));
+            GridBox.Column col = gb.getColumns().get(Integer.parseInt(values[0]));
+            if (col.getWidth() != -1) col.setWidth(Integer.parseInt(values[1]));
             setPropertyChangeIgnored(GridBox.Column.PROPERTY_COLUMN_WIDTH, false);
         } else {
             super.componentChange(event);
@@ -426,22 +457,40 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
         gbr.render(wr, gb, this, rowIndex);
     }
     
-    private void addColumn(Column c) {
-        postClientEvent(ADD_COLUMN, new Object[] {
-                new Integer(c.getIndex()),
+    private void sendColumn(String method, Column c) {
+        calcAutoColumnWidth();        
+        int width = c.getWidth();
+        if (width == -1) width = autoColumnWidth;
+        
+        postClientEvent(method, new Object[] {
+                getVisibleIndex(c.getIndex()),
                 getValues(c, c.getDisplayFormat(), null).toString(),
-                getValue(c.getDisplayName(), null), new Integer(c.getWidth()),
-                ((AlignX) c.getAlignX()).name().toLowerCase() });
+                getValue(c.getDisplayName(), null), width,
+                ((AlignX) c.getAlignX()).name().toLowerCase()});
+        
+        sendAutoColumnWidths(c);
     }
 
-    private void setColumn(Column c) {
-        postClientEvent(SET_COLUMN, new Object[] {
-                new Integer(c.getIndex()),
-                getValues(c, c.getDisplayFormat(), null).toString(),
-                getValue(c.getDisplayName(), null), new Integer(c.getWidth()),
-                ((AlignX) c.getAlignX()).name().toLowerCase() });
+    private void sendAutoColumnWidths(Column exclude) {
+        if (autoColumnWidth > 0) {
+            List<GridBox.Column> lst = gb.getColumns();
+            
+            for (int i = 0, cnt = lst.size(); i < cnt; i++) {
+                GridBox.Column c = lst.get(i);
+    
+                if (c != exclude && c.getWidth() == -1) {
+                    postClientEvent(SET_COLUMN_WIDTH, getVisibleIndex(i), autoColumnWidth);
+                }
+            }
+        }
     }
 
+    private void removeColumn(Integer index) {        
+        postClientEvent(REMOVE_COLUMN, getVisibleIndex(index));
+        calcAutoColumnWidth();
+        sendAutoColumnWidths(null);
+    }    
+    
     private int getVisibleIndex(int index) {
         int visibleIndex = -1;
         List<GridBox.Column> cols = gb.getColumns();
@@ -452,11 +501,7 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
         
         return visibleIndex;
     }
-    
-    private void removeColumn(Integer index) {
-        postClientEvent(REMOVE_COLUMN, index);
-    }
-    
+        
     static String getValue(Object o, GridBox.Column.Format format) {
         if (o == null) return "";
         if (format != null) o = format.format(o);

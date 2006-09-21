@@ -39,7 +39,7 @@ function tw_removeTimerTask(id) {
 
 //TODO: Is document.activeElement supported by Firefox?
 function tw_getActiveElement() {
-    return document.activeElement;
+    return document.activeElement == undefined ? null : document.activeElement;
 }
 
 //Should be a function of Frame, used by GridBox
@@ -187,8 +187,8 @@ function tw_getFontMetrics(family, size, bold, italic, underline) {
     if (!tw_isIE) s.overflow = "auto";
     if (!tw_isIE && !tw_isGecko) s.lineHeight = "0px";
     s.whiteSpace = "nowrap";
-    s.backgroundColor = "transparent";
-    s.color = "transparent";    
+    s.backgroundColor = tw_COLOR_TRANSPARENT;
+    s.color = tw_COLOR_TRANSPARENT;    
     s.fontSize = size + "pt";
     s.fontFamily = family;
     s.fontWeight = bold ? "bold" : "normal";
@@ -216,7 +216,6 @@ for (var i = 32; i < 256; i++) tw_fontChars.push(String.fromCharCode(i));
 // Initialize Logger Instance
 //var tw_log = new tw_Logger();
 
-var tw_borderColor = tw_isIE ? "" : "buttonface";
 var tw_sizeIncludesBorders = tw_isIE55; 
 
 //Remove scroll bars from browser
@@ -273,7 +272,7 @@ function tw_shutdownInstance(text) {
         s.width = "320px";
         s.top = ((tw_getVisibleHeight() - 200) / 2) + "px";
         s.left = ((tw_getVisibleWidth() - parseInt(s.width)) / 2) + "px";
-        s.backgroundColor = "threedface";
+        s.backgroundColor = tw_COLOR_THREEDFACE;
         s.border = "1px solid black";
         s.whiteSpace = "normal";
         s.fontSize = "14pt";
@@ -311,6 +310,8 @@ var tw_CALC_BORDER_SUB = tw_BORDER_WIDTH * 2;
 var tw_CALC_BORDER_PADDING_SUB = (tw_BORDER_WIDTH + tw_PADDING_WIDTH) * 2;
 
 var tw_timerMap = {};
+
+var tw_borderColor = tw_isIE ? "" : tw_COLOR_BUTTONFACE;
 
 var tw_em = new tw_EventManager();
 tw_em.start();

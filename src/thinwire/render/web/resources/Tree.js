@@ -35,16 +35,17 @@ var tw_Tree = tw_Component.extend({
     
     construct: function(id, containerId, props) {
         this.$.construct.apply(this, ["div", "tree", id, containerId]);
+        this._box.tw_isLeaf = false;
         var s = this._box.style;
-        s.backgroundColor = "window";
-        s.border = "2px inset";
         s.overflow = "auto";
         s.whiteSpace = "nowrap";
-        s.display = "block";
-        s.fontFamily = "tahoma, sans-serif";
-        s.fontSize = "8pt";
-        this._box.style.borderColor = tw_borderColor;
-        this._box.tw_isLeaf = false;
+        
+        this.setStyle("backgroundColor", tw_COLOR_WINDOW);
+        this.setStyle("borderSize", 2);
+        this.setStyle("borderType", "inset");
+        this.setStyle("borderColor", tw_borderColor);
+        this.setStyle("fontSize", 8);
+        this.setStyle("fontFamily", tw_FONT_FAMILY);        
         
         this._treeTop = document.createElement("span");
         this._box.appendChild(this._treeTop);
@@ -384,14 +385,14 @@ var tw_Tree = tw_Component.extend({
         if (item == null || this._currentItem === item) return;
         
         var s = item.textNode.style;
-        s.backgroundColor = "highlight";
-        s.color = "highlighttext";
+        s.backgroundColor = tw_COLOR_HIGHLIGHT;
+        s.color = tw_COLOR_HIGHLIGHTTEXT;
         s.zIndex = 1;
         
         if (this._currentItem != undefined) {
             var s = this._currentItem.textNode.style;
-            s.backgroundColor = "transparent";
-            s.color = "windowtext";
+            s.backgroundColor = tw_COLOR_TRANSPARENT;
+            s.color = tw_COLOR_WINDOWTEXT;
             s.zIndex = 0;
         }
         
@@ -520,24 +521,10 @@ var tw_Tree = tw_Component.extend({
         
         return false;
     },
-        
-    setWidth: function(width) {
-      this._width = width;
-      width = width - (tw_sizeIncludesBorders ? 0 : tw_CALC_BORDER_PADDING_SUB);
-      if (width < 0) width = 0;
-      this._box.style.width = width + "px";
-    },
-    
-    setHeight: function(height) {
-      this._height = height;
-      height = height - (tw_sizeIncludesBorders ? 0 : tw_CALC_BORDER_PADDING_SUB);
-      if (height < 0) height = 0;
-      this._box.style.height = height + "px";
-    },
     
     setEnabled: function(enabled) {
         this.$.setEnabled.apply(this, [enabled]);        
-        this._box.style.backgroundColor = enabled ? "window" : "threedface";                        
+        this._box.style.backgroundColor = enabled ? "window" : tw_COLOR_THREEDFACE;                        
         tw_setFocusCapable(this._box, enabled);        
     },
     

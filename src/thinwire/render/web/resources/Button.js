@@ -26,128 +26,103 @@
 //TODO: When a button or component is disabled it should be excluded from the tabbing order.
 //TODO: focus gain / lose does not work in firefox.
 var tw_Button = tw_Component.extend({
-    _standardBorderSize: 0,
+    _borderType: null,
     
     construct: function(id, containerId, props) {
         this.$.construct.apply(this, ["div", "button", id, containerId]);
         var s = this._box.style;
-        s.border = "0px";
+        s.borderStyle = "solid";
+        s.borderColor = tw_COLOR_BLACK;                        
+        s.borderWidth = "0px";
         
-        var border = document.createElement("div");
+        var border = this._borderBox = this._focusBox = document.createElement("div");
         var s = border.style;
-        s.margin = "0px";
-        s.padding = "1px";    
-        s.border = "2px outset";
-        s.overflow = "hidden";
-        s.backgroundColor = "buttonface";    
-        s.borderColor = tw_borderColor;
-        this._box.appendChild(border);
-        
-        var surface = document.createElement("a");
-        var s = surface.style;
-        s.textAlign = "center";
-        s.backgroundRepeat = "no-repeat";
-        s.backgroundPosition = "center left";
-        s.fontFamily = "tahoma, sans-serif";
-        s.fontSize = "8pt";
-        s.color = "windowtext";
+        s.cursor = "default";
         s.overflow = "hidden";
         s.whiteSpace = "nowrap";
-        s.cursor = "default";
-        s.textDecoration = "none";
-        s.display = "block";        
-        surface.appendChild(document.createTextNode(""));
-        border.appendChild(surface);
-        this._backgroundBox = this._focusBox = this._fontBox = surface;
+        s.paddingLeft = tw_Button.textPadding + "px";
+        s.paddingRight = tw_Button.textPadding + "px";    
+        s.textAlign = "center";
+        s.backgroundColor = tw_COLOR_TRANSPARENT;
+        s.backgroundRepeat = "no-repeat";
+        s.backgroundPosition = "center left";
+
+        this.setStyle("borderSize", 2);
+        this.setStyle("borderType", "outset");
+        this.setStyle("borderColor", tw_borderColor);
+        this.setStyle("fontSize", 8);
+        this.setStyle("fontFamily", tw_FONT_FAMILY);        
         
+        border.appendChild(document.createTextNode(""));        
+        this._box.appendChild(border);
+                
         tw_addEventListener(this._box, "mousedown", this._mouseDownListener.bind(this));    
         tw_addEventListener(this._box, ["mouseup", "mouseout"], this._mouseUpListener.bind(this));    
         tw_addEventListener(this._box, "click", this._clickListener.bind(this));
-        tw_addEventListener(surface, "focus", this._focusListener.bind(this));    
-        tw_addEventListener(surface, "blur", this._blurListener.bind(this));
+        tw_addEventListener(border, "focus", this._focusListener.bind(this));    
+        tw_addEventListener(border, "blur", this._blurListener.bind(this));
         
         this.init(-1, props);
-    },
-    
-    _setStandardStyle: function(state) {
-        if (state) {
-            this._box.style.border = "1px solid black";
-            this._standardBorderSize = 2;            
-        } else {
-            this._box.style.border = "0px";
-            this._standardBorderSize = 0;            
-        }
-
-        this.setWidth(this._width);
-        this.setHeight(this._height);
+        this.setStyle("backgroundColor", tw_COLOR_BUTTONFACE);
     },    
     
-    _mouseDownListener: function() {
-        if (!this.isEnabled()) return;
-        this._box.firstChild.style.border = "2px inset";
-        this._box.firstChild.style.borderColor = tw_borderColor;
+    _setStandardStyle: function(state) {
+        if (parseInt(this._box.style.borderWidth) == state) return;
+        this._boxSizeSub = state ? 2 : 0;
+        this._box.style.borderWidth = state ? "1px" : "0px";
+        this.setWidth(this.getWidth());
+        this.setHeight(this.getHeight());
     },
     
-    _mouseUpListener: function() {
-        if (!this.isEnabled()) return;
-        this._box.firstChild.style.border = "2px outset";
-        this._box.firstChild.style.borderColor = tw_borderColor;
+    _mouseDownListener: function(ev) {
+        if (!this.isEnabled() || tw_getEventButton(ev) != 1) return;
+        this._borderBox.style.borderStyle = "inset";
+    },
+    
+    _mouseUpListener: function(ev) {
+        if (!this.isEnabled() || tw_getEventButton(ev) != 1) return;
+        this._borderBox.style.borderStyle = this._borderType;
     },
 
     //TODO: Will simply returning false from click when disabled, work in Gecko?
-    _clickListener: function() {
+    _clickListener: function(ev) {
         if (!this.isEnabled()) return;
         this.setFocus(true);  
         this.fireAction("click");
+    },
+
+    setStyle: function(name, value) {        
+        if (name == "borderSize") {
+            this.$.setStyle.apply(this, [name, value]);
+        } else {
+            if (name == "borderType") this._borderType = value;
+            this.$.setStyle.apply(this, [name, value]);
+        }
     },
     
     fireClick: function() { this._clickListener(); },
 
     setWidth: function(width) {
-        this._width = width;
-
-        if (tw_sizeIncludesBorders) {
-            this._box.style.width = width + "px";
-            width -= this._standardBorderSize;
-            if (width < 0) width = 0;
-            this._box.firstChild.style.width = width + "px";
-        } else {
-            width -= this._standardBorderSize;
-            if (width < 0) width = 0;
-            this._box.style.width = width + "px";
-            width -= tw_CALC_BORDER_PADDING_SUB;
-            if (width < 0) width = 0;
-            this._box.firstChild.style.width = width + "px";
-        }    
+        this.$.setWidth.apply(this, [width]);
+        var s = this._borderBox.style;
+        width -= this._boxSizeSub;
+        if (!tw_sizeIncludesBorders) width -= parseInt(s.paddingLeft) + parseInt(s.paddingRight) + this._borderSizeSub;
+        if (width < 0) width = 0;
+        s.width = width + "px";
     },
     
     setHeight: function(height) {
-        this._height = height;
-        var s = this._box.firstChild.firstChild.style;
-
-        if (tw_sizeIncludesBorders) {
-            this._box.style.height = height + "px";     
-            height -= this._standardBorderSize;
-            if (height < 0) height = 0;
-            this._box.firstChild.style.height = height + "px";
-            height -= tw_CALC_BORDER_PADDING_SUB;
-            if (height < 0) height = 0;
-            s.lineHeight = s.height = height + "px";    
-        } else {
-            height -= this._standardBorderSize;
-            if (height < 0) height = 0;
-            this._box.style.height = height + "px";
-            height -= tw_CALC_BORDER_PADDING_SUB;
-            if (height < 0) height = 0;
-            this._box.firstChild.style.height = height + "px";
-            s.lineHeight = s.height = height + "px";    
-        }    
+        this.$.setHeight.apply(this, [height]);
+        var s = this._borderBox.style;
+        height -= this._boxSizeSub;
+        if (!tw_sizeIncludesBorders) height -= this._borderSizeSub;
+        if (height < 0) height = 0;
+        s.height = s.lineHeight = height + "px";
     },
     
     setEnabled: function(enabled) {
         this.$.setEnabled.apply(this, [enabled]);        
-        this._box.firstChild.firstChild.style.color = enabled ? "windowtext" : "graytext";            
-        tw_setFocusCapable(this._box.firstChild.firstChild, enabled);
+        this._fontBox.color = enabled ? tw_COLOR_WINDOWTEXT : tw_COLOR_GRAYTEXT;            
     },
     
     setFocus: function(focus) {
@@ -174,20 +149,23 @@ var tw_Button = tw_Component.extend({
     },
     
     setText: function(text) {
-        var b = this._box.firstChild.firstChild;         
+        var b = this._borderBox;         
         b.replaceChild(document.createTextNode(text), b.firstChild);
     },
     
     setImage: function(image) {
-        var s = this._box.firstChild.firstChild.style;
+        var s = this._borderBox.style;
     
         if (image.length > 0) {
             s.backgroundImage = "url(" + tw_BASE_PATH + "/resources/" + image + ")";
-            s.paddingLeft = 16 + 2 + "px";
+            s.paddingLeft = tw_Button.imagePadding + "px";
         } else {
             s.backgroundImage = "";
-            s.paddingLeft = "1px";
+            s.paddingLeft = tw_Button.textPadding + "px";
         }
+        
+        this.setWidth(this.getWidth());
+        this.setHeight(this.getHeight());
     },
 
     setStandard: function(state) {
@@ -216,3 +194,5 @@ var tw_Button = tw_Component.extend({
     }
 });
 
+tw_Button.textPadding = 1;
+tw_Button.imagePadding = 16;

@@ -54,3 +54,17 @@ function tw_include(name) {
     }       
 }
 
+var tw_COLOR_WINDOW = "window";
+var tw_COLOR_WINDOWTEXT = "windowtext";
+var tw_COLOR_HIGHLIGHT = "highlight";
+var tw_COLOR_HIGHLIGHTTEXT = "highlighttext";
+var tw_COLOR_GRAYTEXT = "graytext";
+var tw_COLOR_BUTTONFACE = "buttonface";
+var tw_COLOR_THREEDFACE = "threedface";
+var tw_COLOR_THREEDSHADOW = "threedshadow";
+var tw_COLOR_TRANSPARENT = "transparent";
+
+var tw_COLOR_BLACK = "black";
+
+var tw_FONT_FAMILY = "tahoma, sans-serif";
+

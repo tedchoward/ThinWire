@@ -26,7 +26,7 @@ var tw_BaseText = tw_Component.extend({
     _supportEditMask: false,
     _timerId: 0,
     _editor: null,
-    _subtractEditorWidth: 0,
+    _subtractEditorWidth: 1,
     _lastValue: "",
     _useToolTip: true,
     _editMask: "",
@@ -38,25 +38,28 @@ var tw_BaseText = tw_Component.extend({
     construct: function(tagNames, className, id, containerId, support) {
         this.$.construct.apply(this, [tagNames[0], className, id, containerId, support]);
         var s = this._box.style;
-        s.border = "2px inset";
-        s.backgroundColor = "transparent";
-        s.borderColor = tw_borderColor;        
+        s.backgroundColor = tw_COLOR_TRANSPARENT;
         
         var editor = document.createElement(tagNames[1]);    
         var s = editor.style;
         s.position = "absolute";
-        s.left = "0px";
+        s.left = "1px";
         s.top = "0px";
         s.margin = "0px";
         s.border = "0px";
-        s.padding = "1px";
-        s.fontFamily = "tahoma, sans-serif";
-        s.fontSize = "8pt";
-        s.backgroundColor = "window";
+        s.padding = "0px";
                 
         if (tagNames.length > 2) editor.type = tagNames[2];
         this._box.appendChild(editor);
         this._editor = this._focusBox = this._fontBox = this._backgroundBox = editor;
+        
+        this.setStyle("backgroundColor", tw_COLOR_WINDOW);
+        this.setStyle("borderSize", 2);
+        this.setStyle("borderType", "inset");
+        this.setStyle("borderColor", tw_borderColor);
+        this.setStyle("fontSize", 8);
+        this.setStyle("fontFamily", tw_FONT_FAMILY);        
+        
         this._focusListener = this._focusListener.bind(this);
         this._blurListener = this._blurListener.bind(this);
         
@@ -81,36 +84,23 @@ var tw_BaseText = tw_Component.extend({
         this._textStateChange(true);
     },
 
-    setWidth: function(width) {
-        this._width = width;
-                   
-        if (tw_sizeIncludesBorders) {    
-            this._box.style.width = width + "px";
-            var sub = tw_CALC_BORDER_SUB + this._subtractEditorWidth;
-        } else {
-            this._box.style.width = width <= tw_CALC_BORDER_SUB ? "0px" : (width - tw_CALC_BORDER_SUB + "px");            
-            var sub = tw_CALC_BORDER_PADDING_SUB + this._subtractEditorWidth;
-        }    
-                
-        this._editor.style.width = width <= sub ? "0px" : (width - sub + "px");
+    setStyle: function(name, value) {
+        if (name == "backgroundColor") this._box.style[name] = value;         
+        this.$.setStyle.apply(this, [name, value]);
+    },
+    
+    setWidth: function(width) {     
+        this.$.setWidth.apply(this, [width]);
+        width -= this._borderSizeSub + this._subtractEditorWidth;
+        if (width < 0) width = 0;
+        this._editor.style.width = width + "px";        
     },
     
     setHeight: function(height) {
-        this._height = height;
-        
-        if (tw_sizeIncludesBorders) {
-            this._box.style.height = height + "px";
-            height -= tw_CALC_BORDER_SUB;
-            if (heigth < 0) height = 0;
-            this._editor.style.height = height + "px";
-        } else {
-            height -= tw_CALC_BORDER_SUB;
-            if (height < 0) height = 0;
-            this._box.style.height = height + "px";
-            height -= (tw_PADDING_WIDTH * 2);
-            if (height < 0) height = 0;
-            this._editor.style.height = height + "px";
-        }
+        this.$.setHeight.apply(this, [height]);
+        height -= this._borderSizeSub;
+        if (height < 0) height = 0;
+        this._editor.style.height = height + "px";        
     },
         
     setText: function(text) {

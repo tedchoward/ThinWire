@@ -43,7 +43,7 @@ var tw_Dialog = tw_BaseContainer.extend({
         s.overflow = "visible";
         s.padding = "1px";
         s.border = "2px outset";
-        s.backgroundColor = "threedface";        
+        s.backgroundColor = tw_COLOR_THREEDFACE;        
         s.borderColor = tw_borderColor;
         
         var title = document.createElement("div");
@@ -56,7 +56,7 @@ var tw_Dialog = tw_BaseContainer.extend({
         s.overflow = "hidden";
         s.backgroundColor = "activecaption";
         s.color = "captiontext";
-        s.fontFamily = "tahoma, sans-serif";
+        s.fontFamily = tw_FONT_FAMILY;
         s.fontSize = "8pt";
         s.fontWeight = "bold";        
         title.appendChild(document.createTextNode(""));
@@ -71,7 +71,7 @@ var tw_Dialog = tw_BaseContainer.extend({
         s.padding = "1px";    
         s.border = "2px outset";
         s.overflow = "hidden";
-        s.backgroundColor = "buttonface";
+        s.backgroundColor = tw_COLOR_BUTTONFACE;
         s.borderColor = tw_borderColor;
         s.top = "3px";
         s.right = "3px";
@@ -87,7 +87,7 @@ var tw_Dialog = tw_BaseContainer.extend({
         var container = document.createElement("div");
         container.className = "container";
         var s = container.style;
-        s.backgroundColor = "threedface";
+        s.backgroundColor = tw_COLOR_THREEDFACE;
         s.position = "absolute";
         dialog.appendChild(container);
 

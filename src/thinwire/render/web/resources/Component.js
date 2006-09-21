@@ -35,6 +35,7 @@ function tw_newComponent(className, id, containerId, props) {
 //TODO: Opera, it's still possible to drag-highlight text.
 var tw_Component = Class.extend({
     _box: null,
+    _inited: false,
     _opacity: 100,
     _focusBox: null,
     _id: -1,
@@ -49,9 +50,11 @@ var tw_Component = Class.extend({
     _focusCapable: true,
     _backgroundBox: null,
     _borderBox: null,
+    _borderSizeSub: 0,
+    _boxSizeSub: 0,
     _fontBox: null,
     _enabledBackgroundColor: "",
-    _disabledBackgroundColor: "threedface",
+    _disabledBackgroundColor: tw_COLOR_THREEDFACE,
     
     construct: function(tagName, className, id, containerId, support) {
         var box = document.createElement(tagName);
@@ -107,8 +110,10 @@ var tw_Component = Class.extend({
     },    
 
     setWidth: function(width) {
-        if (width < 0) width = 0;
         this._width = width;
+        width -= this._boxSizeSub;        
+        if (this._box == this._borderBox) width -= this._borderSizeSub;
+        if (width < 0) this._width = width = 0;
         this._box.style.width = width + "px";
     },
     
@@ -117,9 +122,11 @@ var tw_Component = Class.extend({
     },
 
     setHeight: function(height) {
-        if (height < 0) height = 0;
         this._height = height;
-        this._box.style.height = height + "px";        
+        height -= this._boxSizeSub;
+        if (this._box == this._borderBox) height -= this._borderSizeSub;
+        if (height < 0) this._height = height = 0;
+        this._box.style.height = height + "px";
         if (this._supportLineHeight) this._box.style.lineHeight = this._box.style.height;
     },
     
@@ -210,47 +217,91 @@ var tw_Component = Class.extend({
         
         return false;
     },
-        
+    
     setStyle: function(name, value) {
-        if (name == "backgroundColor") {
+        var realName = tw_Component.styleNameMap[name];
+        if (realName == undefined) throw "attempt to set unknown property '" + name + "' to value '" + value + "'";
+        
+        if (this._backgroundBox != null && name == "backgroundColor") {
             if (this.isEnabled()) {
                 this._backgroundBox.style.backgroundColor = value;
             } else {
                 this._enabledBackgroundColor = value;
             }
-        } else if (name.indexOf("font") == 0) {
+        } else if (this._fontBox != null && name.indexOf("font") == 0) {
             if (name == "fontSize") {
                 value += "pt";
-            } else if (name == "fontBold") {
-                name = "fontWeight";
-                value = value.toLowerCase() == "true" ? "bold" : "normal";
-            } else if (name == "fontItalic") {
-                name = "fontStyle";
-                value = value.toLowerCase() == "true" ? "italic" : "normal";
-            } else if (name == "fontUnderline") {
-                name = "textDecoration";
-                value = value.toLowerCase() == "true" ? "underline" : "none";
-            } else if (name == "fontColor") {
-                name = "color";
-            } else if (name != "fontFamily") {
-                throw "attempt to set unknown property '" + name + "' to value '" + value + "'";
+            } else if (name != "fontFamily" && name != "fontColor") {
+                value = typeof(value) == "string" || value instanceof String ? value.toLowerCase() == "true" : value;
+            
+                if (name == "fontBold") {                
+                    value = value ? "bold" : "normal";
+                } else if (name == "fontItalic") {
+                    value = value ? "italic" : "normal";
+                } else if (name == "fontUnderline") {
+                    value = value ? "underline" : "none";
+                }
             }
             
-            this._fontBox.style[name] = value;
-        } else if (name.indexOf("border") == 0) {
-            if (name == "borderType") {
-                name = "borderStyle";
-            } else if (name == "borderSize") {
-                //value += "px";
-                return;                
-            } else if (name != "borderColor") {
-                throw "attempt to set unknown property '" + name + "' to value '" + value + "'";
+            this._fontBox.style[realName] = value;
+        } else if (this._borderBox != null && name.indexOf("border") == 0) {
+            if (name == "borderSize") {
+                this._borderSizeSub = tw_sizeIncludesBorders ? 0 : parseInt(value) * 2;                
+                value += "px";
+                this._borderBox.style[realName] = value;
+                
+                if (this._inited) {
+                    this.setWidth(this.getWidth());
+                    this.setHeight(this.getHeight());
+                }
+            } else {            
+                this._borderBox.style[realName] = value;
             }
-            
-            this._borderBox.style[name] = value;
         } else {
-            throw "attempt to set unknown property '" + name + "' to value '" + value + "'";
+            throw "attempt to set unsupported property '" + name + "' to value '" + value + "'";
         }
+    },
+    
+    getStyle: function(name) {
+        var realName = tw_Component.styleNameMap[name];
+        if (realName == undefined) throw "attempt to get unknown property '" + name + "'";
+        var value;
+        
+        if (this._backgroundBox != null && name == "backgroundColor") {
+            if (this.isEnabled()) {
+                value = this._backgroundBox.style.backgroundColor;
+            } else {
+                value = this._enabledBackgroundColor;
+            }
+            
+            var index = value.indexOf(" ");
+            value = index == -1 ? value : value.substring(0, index);
+        } else if (this._fontBox != null && name.indexOf("font") == 0) {
+            value = this._fontBox.style[realName];
+            
+            if (name == "fontSize") {
+                value = parseInt(value);
+            } else if (name == "fontBold") {
+                value = value == "bold" ? true : false;
+            } else if (name == "fontItalic") {
+                value = value == "italic" ? true : false;
+            } else if (name == "fontUnderline") {
+                value = value == "underline" ? true : false;
+            }
+        } else if (this._borderBox != null && name.indexOf("border") == 0) {
+            value = this._borderBox.style[realName];
+            
+            if (name == "borderSize") {
+                value = parseInt(value);
+            } else if (name == "borderType" || name == "borderColor") {
+                var index = value.indexOf(" ");
+                value = index == -1 ? value : value.substring(0, index);
+            }
+        } else {
+            throw "attempt to get unsupported property '" + name + "'";
+        }
+        
+        return value;
     },
 
     setText: function(text) {
@@ -475,6 +526,8 @@ var tw_Component = Class.extend({
         } else {
             document.body.appendChild(this._box);
         }
+        
+        this._inited = true;
     },
     
     destroy: function() {        
@@ -488,6 +541,27 @@ var tw_Component = Class.extend({
 tw_Component.zIndex = 0;
 tw_Component.instances = {};
 tw_Component.currentFocus = null;
+tw_Component.styleNameMap = {
+    backgroundColor: "backgroundColor",
+    fontSize: "fontSize",
+    fontBold: "fontWeight",
+    fontItalic: "fontStyle",
+    fontUnderline: "textDecoration",
+    fontColor: "color",
+    fontFamily: "fontFamily",
+    borderType: "borderStyle",
+    borderSize: "borderWidth",
+    borderColor: "borderColor"
+};
+
+tw_Component.getReverseBorderType = function(type) {
+    if (type == "groove") type = "ridge";
+    else if (type == "ridge") type = "groove";
+    else if (type == "inset") type = "outset";
+    else if (type == "outset") type = "inset";
+    return type;
+};
+
 //NOTE: This function is defined here so it can be shared by the unrelated classes: Image, Hyperlink, Label & BaseCheckRadio.
 tw_Component.keyPressNotifySpaceFireAction = function(keyPressCombo) {
     if (keyPressCombo == "Space") {

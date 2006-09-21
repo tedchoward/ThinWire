@@ -32,18 +32,19 @@ var tw_BaseCheckRadio = tw_Component.extend({
     construct: function(className, id, containerId) {
         this.$.construct.apply(this, ["a", className, id, containerId, "text,lineHeight"]);
         var s = this._box.style;
-        s.cursor = "default";
-        s.backgroundRepeat = "no-repeat";
-        s.backgroundPosition = "center left";
-        s.backgroundColor = "transparent";
-        s.textDecoration = "none";
-        s.fontFamily = "tahoma, sans-serif";
-        s.fontSize = "8pt";
-        s.color = "windowtext";
-        s.whiteSpace = "nowrap";
         s.display = "block";
-        s.paddingLeft = "18px";
+        s.cursor = "default";        
+        s.backgroundRepeat = "no-repeat";
+        s.backgroundPosition = "center left";        
+        s.backgroundColor = tw_COLOR_TRANSPARENT;        
+        s.textDecoration = "none";
         s.border = "0px";
+                
+        s.fontFamily = tw_FONT_FAMILY;
+        s.fontSize = "8pt";
+        s.color = tw_COLOR_WINDOWTEXT;
+        s.whiteSpace = "nowrap";
+        s.paddingLeft = "18px";
 
         this._backgroundBox = document.createElement("div");
         var s = this._backgroundBox.style; 
@@ -53,7 +54,7 @@ var tw_BaseCheckRadio = tw_Component.extend({
         s.overflow = "hidden";
         s.left = "4px";
         s.zIndex = 0;
-        s.backgroundColor = "window";
+        s.backgroundColor = tw_COLOR_WINDOW;
         this._box.appendChild(this._backgroundBox);               
         
         this._image = document.createElement("div");

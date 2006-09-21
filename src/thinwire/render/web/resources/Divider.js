@@ -26,7 +26,7 @@ var tw_Divider = tw_Component.extend({
     construct: function(id, containerId, props) {
         this.$.construct.apply(this, ["div", "divider", id, containerId]);
         var s = this._box.style;
-        s.backgroundColor = "transparent";
+        s.backgroundColor = tw_COLOR_TRANSPARENT;
         tw_addEventListener(this._box, "click", this._clickListener.bind(this));
 
         var tagLine = document.createElement("div");

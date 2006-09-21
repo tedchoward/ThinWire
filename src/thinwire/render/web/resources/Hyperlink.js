@@ -31,7 +31,7 @@ var tw_Hyperlink = tw_BaseBrowserLink.extend({
         this.$.construct.apply(this, ["a", "hyperlink", id, containerId, "text"]);
         var s = this._box.style;
         s.border = "0px";
-        s.fontFamily = "tahoma, sans-serif";
+        s.fontFamily = tw_FONT_FAMILY;
         s.fontSize = "8pt";
         s.whiteSpace = "nowrap";        
         tw_addEventListener(this._box, "click", this._clickListener.bind(this));
@@ -55,7 +55,7 @@ var tw_Hyperlink = tw_BaseBrowserLink.extend({
 
     setEnabled: function(enabled) {
         this.$.setEnabled.apply(this, [enabled]);
-        this._box.style.color = enabled ? "" : "graytext";
+        this._box.style.color = enabled ? "" : tw_COLOR_GRAYTEXT;
     }
 });
 

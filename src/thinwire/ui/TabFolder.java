@@ -26,10 +26,10 @@ package thinwire.ui;
 
 import thinwire.ui.event.ItemChangeEvent;
 import thinwire.ui.event.ItemChangeListener;
+import thinwire.ui.event.PropertyChangeEvent;
+import thinwire.ui.event.PropertyChangeListener;
 import thinwire.ui.event.ItemChangeEvent.Type;
-import thinwire.ui.style.Border;
-import thinwire.ui.style.Color;
-import thinwire.ui.style.Style;
+import thinwire.ui.style.*;
 
 /**
  * A container for Tab Sheets. A Tab folder could sit in a dialog and have
@@ -113,7 +113,17 @@ public class TabFolder extends AbstractContainer {
                 if (type == Type.REMOVE || type == Type.SET) oSheet.sizeChanged(0, 0);                
                 if (type == Type.ADD || type == Type.SET) nSheet.sizeChanged(getInnerWidth(), getInnerHeight());
             }
-        });        
+        });
+        
+        /*addPropertyChangeListener(new String[] {Border.PROPERTY_BORDER_COLOR, Border.PROPERTY_BORDER_SIZE, Border.PROPERTY_BORDER_TYPE,
+                Font.PROPERTY_FONT_BOLD, Font.PROPERTY_FONT_COLOR, Font.PROPERTY_FONT_FAMILY, Font.PROPERTY_FONT_ITALIC, Font.PROPERTY_FONT_SIZE, Font.PROPERTY_FONT_UNDERLINE}, new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent ev) {
+                String name = ev.getPropertyName();
+                Object value = ev.getNewValue();
+                
+                for ()
+            }
+        });*/
 	}
     
 	/**

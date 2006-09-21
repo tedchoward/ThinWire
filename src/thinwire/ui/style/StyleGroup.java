@@ -5,7 +5,8 @@ package thinwire.ui.style;
 
 interface StyleGroup<T> {
     void copy(T style);
-    Object getValue(String propertyName);
-    Object getDefaultValue(String propertyName);
+    Object getProperty(String propertyName);
+    void setProperty(String propertyName, Object value);
+    Object getPropertyDefault(String propertyName);
     Object getParent();
 }

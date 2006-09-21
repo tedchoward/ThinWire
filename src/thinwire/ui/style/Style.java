@@ -90,29 +90,43 @@ public class Style implements StyleGroup<Style> {
         getFX().copy(style.getFX());
     }
     
-    public Object getValue(String propertyName) {
+    public Object getProperty(String propertyName) {
         if (propertyName.startsWith("font")) {
-            return getFont().getValue(propertyName);
+            return getFont().getProperty(propertyName);
         } else if (propertyName.startsWith("background")) {
-            return getBackground().getValue(propertyName);
+            return getBackground().getProperty(propertyName);
         } else if (propertyName.startsWith("border")) {
-            return getBorder().getValue(propertyName);
+            return getBorder().getProperty(propertyName);
         } else if (propertyName.startsWith("fx")) {
-            return getFX().getValue(propertyName);
+            return getFX().getProperty(propertyName);
         } else {
             throw new IllegalArgumentException("property '" + propertyName + "' is unknown");
         }
     }
-
-    public Object getDefaultValue(String propertyName) {
+    
+    public void setProperty(String propertyName, Object value) {
         if (propertyName.startsWith("font")) {
-            return getFont().getDefaultValue(propertyName);
+            getFont().setProperty(propertyName, value);
         } else if (propertyName.startsWith("background")) {
-            return getBackground().getDefaultValue(propertyName);
+            getBackground().setProperty(propertyName, value);
         } else if (propertyName.startsWith("border")) {
-            return getBorder().getDefaultValue(propertyName);
+            getBorder().setProperty(propertyName, value);
+        } else if (propertyName.startsWith("fx")) {
+            getFX().setProperty(propertyName, value);
+        } else {
+            throw new IllegalArgumentException("property '" + propertyName + "' is unknown");
+        }        
+    }
+
+    public Object getPropertyDefault(String propertyName) {
+        if (propertyName.startsWith("font")) {
+            return getFont().getPropertyDefault(propertyName);
+        } else if (propertyName.startsWith("background")) {
+            return getBackground().getPropertyDefault(propertyName);
+        } else if (propertyName.startsWith("border")) {
+            return getBorder().getPropertyDefault(propertyName);
         } else if (propertyName.startsWith("effect")) {
-            return getFX().getDefaultValue(propertyName);
+            return getFX().getPropertyDefault(propertyName);
         } else {
             throw new IllegalArgumentException("property '" + propertyName + "' is unknown");
         }

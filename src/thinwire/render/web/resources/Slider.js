@@ -34,7 +34,7 @@ var tw_Slider = tw_Component.extend({
     construct: function(id, containerId, props) {
         this.$.construct.apply(this, ["div", "slider", id, containerId]);
         var s = this._box.style;
-        s.backgroundColor = "transparent";
+        s.backgroundColor = tw_COLOR_TRANSPARENT;
         
         var line = document.createElement("div");
         var s = line.style;
@@ -49,7 +49,7 @@ var tw_Slider = tw_Component.extend({
         s.position = "absolute";    
         s.border = "2px outset";
         s.overflow = "hidden";
-        s.backgroundColor = "buttonface";
+        s.backgroundColor = tw_COLOR_BUTTONFACE;
         this._cursorDrag = new tw_DragHandler(cursor, this._cursorDragListener.bind(this));
         this._box.appendChild(cursor);
         

@@ -137,8 +137,8 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
 	}
     
     void setStyle(String propertyName, boolean isNotDefault) {
-        Object value = comp.getStyle().getValue(propertyName);
-        if (isNotDefault && value.equals(comp.getStyle().getDefaultValue(propertyName))) return;
+        Object value = comp.getStyle().getProperty(propertyName);
+        if (isNotDefault && value.equals(comp.getStyle().getPropertyDefault(propertyName))) return;
         
         if (value instanceof Color) {
             value = ((Color)value).toRGBString();
@@ -300,8 +300,8 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         }
     }
 
-    private void setPropertyWithEffect(String propertyName, Object newValue, Object oldValue, String standardMethod, String styleProp) {
-        FX.Type type = (FX.Type)comp.getStyle().getValue(styleProp);
+    void setPropertyWithEffect(String propertyName, Object newValue, Object oldValue, String standardMethod, String styleProp) {
+        FX.Type type = (FX.Type)comp.getStyle().getProperty(styleProp);
         
         if (type == FX.Type.SMOOTH) {
             int time;

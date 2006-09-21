@@ -7,6 +7,7 @@ public class FX implements StyleGroup<FX> {
     public static final String PROPERTY_FX_POSITION_CHANGE = "fxPositionChange";
     public static final String PROPERTY_FX_SIZE_CHANGE = "fxSizeChange";
     public static final String PROPERTY_FX_VISIBLE_CHANGE = "fxVisibleChange";
+    private static final ClassReflector<FX> reflect = new ClassReflector<FX>(FX.class, "PROPERTY_", "fx");
     
     public enum Type {
         NONE, SMOOTH;
@@ -27,33 +28,26 @@ public class FX implements StyleGroup<FX> {
         this.defaultStyle = defaultStyle;        
         if (defaultStyle != null) copy(defaultStyle.getFX());        
     }    
-    
-    public Object getValue(String propertyName) {
-        return getFXValue(this, propertyName);
+        
+    public Object getProperty(String propertyName) {
+        return reflect.getProperty(this, propertyName);
     }
     
-    public Object getDefaultValue(String propertyName) {
+    public void setProperty(String propertyName, Object value) {
+        reflect.setProperty(this, propertyName, value);
+    }
+
+    public Object getPropertyDefault(String propertyName) {
         if (defaultStyle == null) throw new IllegalStateException("defaultStyle == null");
-        return getFXValue(defaultStyle.getFX(), propertyName);
-    }
-    
-    private static Object getFXValue(FX fx, String propertyName) {
-        if (propertyName.equals(PROPERTY_FX_POSITION_CHANGE)) {
-            return fx.getPositionChange();
-        } else if (propertyName.equals(PROPERTY_FX_SIZE_CHANGE)) {
-            return fx.getSizeChange();            
-        } else if (propertyName.equals(PROPERTY_FX_VISIBLE_CHANGE)) {
-            return fx.getVisibleChange();            
-        } else {
-            throw new IllegalArgumentException("property '" + propertyName + "' is unknown");
-        }
+        return reflect.getProperty(defaultStyle.getFX(), propertyName);
     }
         
     public void copy(FX fx) {
         if (fx == null) throw new IllegalArgumentException("fx == null");
-        setPositionChange(fx.getPositionChange());
-        setSizeChange(fx.getSizeChange());
-        setVisibleChange(fx.getVisibleChange());
+        
+        for (String name : reflect.getPropertyNames()) {
+            setProperty(name, fx.getProperty(name));
+        }
     }
         
     public Style getParent() {

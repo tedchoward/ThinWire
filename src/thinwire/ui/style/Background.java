@@ -29,7 +29,8 @@ package thinwire.ui.style;
  */
 public class Background implements StyleGroup<Background> {
     public static final String PROPERTY_BACKGROUND_COLOR = "backgroundColor";
-        
+    private static final ClassReflector<Background> reflect = new ClassReflector<Background>(Background.class, "PROPERTY_", "background");
+    
     private Style parent;
     private Style defaultStyle;
     private Color color;
@@ -40,26 +41,25 @@ public class Background implements StyleGroup<Background> {
         if (defaultStyle != null) copy(defaultStyle.getBackground());
     }
     
-    public Object getValue(String propertyName) {
-        return getBackgroundValue(this, propertyName);
+    public Object getProperty(String propertyName) {
+        return reflect.getProperty(this, propertyName);
     }
     
-    public Object getDefaultValue(String propertyName) {
+    public void setProperty(String propertyName, Object value) {
+        reflect.setProperty(this, propertyName, value);
+    }
+    
+    public Object getPropertyDefault(String propertyName) {
         if (defaultStyle == null) throw new IllegalStateException("defaultStyle == null");        
-        return getBackgroundValue(defaultStyle.getBackground(), propertyName);
-    }
-    
-    private static Object getBackgroundValue(Background background, String propertyName) {
-        if (propertyName.equals(PROPERTY_BACKGROUND_COLOR)) {
-            return background.getColor();
-        } else {
-            throw new IllegalArgumentException("property '" + propertyName + "' is unknown");
-        }
-    }
-     
+        return reflect.getProperty(defaultStyle.getBackground(), propertyName);
+    }    
+
     public void copy(Background background) {
         if (background == null) throw new IllegalArgumentException("background == null");
-        setColor(background.getColor());
+
+        for (String name : reflect.getPropertyNames()) {
+            setProperty(name, background.getProperty(name));
+        }
     }
     
     public Style getParent() {

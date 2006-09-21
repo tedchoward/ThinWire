@@ -26,19 +26,27 @@
 var tw_BaseContainer = tw_Component.extend({
     _container: null,
     _children: null,
+    _offsetX: 0,
+    _offsetY: 0,
     
     construct: function(className, id, containerId) {
         this.$.construct.apply(this, ["div", className, id, containerId]);
+        this._fontBox = null;
         this._container = this._box;
         this._children = [];
+        this.setStyle("borderSize", 0);
     },
     
     getContainer: function() {
         return this._container;
     },
-    
-    setStyle: function(name, value, processFont) {
-        if (processFont || name.indexOf("font") == -1) this.$.setStyle.apply(this, [name, value]);
+
+    getOffsetX: function() {
+        return this.getStyle("borderSize") + this._offsetX - this._box.scrollLeft;
+    },
+
+    getOffsetY: function() {
+        return this.getStyle("borderSize") + this._offsetY - this._box.scrollTop;
     },
     
     setScroll: function(scrollCode) {
@@ -52,7 +60,7 @@ var tw_BaseContainer = tw_Component.extend({
 
         this._container.style.overflow = overflow;
     },
-    
+        
     addComponent: function(insertAtIndex, comp) {
         if (insertAtIndex == -1 || insertAtIndex >= this._children.length) {
             this._container.appendChild(comp._box);

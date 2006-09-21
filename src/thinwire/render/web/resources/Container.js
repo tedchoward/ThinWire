@@ -27,7 +27,7 @@ var tw_Container = tw_BaseContainer.extend({
     construct: function(id, containerId, props) {
         this.$.construct.apply(this, ["container", id, containerId]);
         var s = this._box.style;
-        s.backgroundColor = "threedface";
+        s.backgroundColor = tw_COLOR_THREEDFACE;
         this.init(-1, props);
     }
 });

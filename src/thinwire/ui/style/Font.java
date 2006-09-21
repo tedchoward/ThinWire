@@ -40,6 +40,7 @@ public class Font implements StyleGroup<Font> {
     public static final String PROPERTY_FONT_SIZE = "fontSize";
     public static final String PROPERTY_FONT_COLOR = "fontColor";
     public static final String PROPERTY_FONT_FAMILY = "fontFamily";
+    private static final ClassReflector<Font> reflect = new ClassReflector<Font>(Font.class, "PROPERTY_", "font");
     
     public static enum Family {
         SERIF, SANS_SERIF, CURSIVE, FANTASY, MONOSPACE;
@@ -145,42 +146,26 @@ public class Font implements StyleGroup<Font> {
         
         return width;
     }
-    
-    public Object getValue(String propertyName) {
-        return getFontValue(this, propertyName);
+
+    public Object getProperty(String propertyName) {
+        return reflect.getProperty(this, propertyName);
     }
     
-    public Object getDefaultValue(String propertyName) {
+    public void setProperty(String propertyName, Object value) {
+        reflect.setProperty(this, propertyName, value);
+    }
+    
+    public Object getPropertyDefault(String propertyName) {
         if (defaultStyle == null) throw new IllegalStateException("defaultStyle == null");
-        return getFontValue(defaultStyle.getFont(), propertyName);
-    }
-    
-    private static Object getFontValue(Font font, String propertyName) {        
-        if (propertyName.equals(PROPERTY_FONT_FAMILY)) {
-            return font.getFamily();
-        } else if (propertyName.equals(PROPERTY_FONT_COLOR)) {
-            return font.getColor();
-        } else if (propertyName.equals(PROPERTY_FONT_SIZE)) {
-            return font.getSize();
-        } else if (propertyName.equals(PROPERTY_FONT_BOLD)) {
-            return font.isBold();
-        } else if (propertyName.equals(PROPERTY_FONT_ITALIC)) {
-            return font.isItalic();
-        } else if (propertyName.equals(PROPERTY_FONT_UNDERLINE)) {
-            return font.isUnderline();
-        } else {
-            throw new IllegalArgumentException("property '" + propertyName + "' is unknown");
-        }
+        return reflect.getProperty(defaultStyle.getFont(), propertyName);
     }
         
     public void copy(Font font) {
         if (font == null) throw new IllegalArgumentException("font == null");
-        setFamily(font.getFamily());
-        setColor(font.getColor());
-        setSize(font.getSize());
-        setBold(font.isBold());
-        setItalic(font.isItalic());
-        setUnderline(font.isUnderline());
+        
+        for (String name : reflect.getPropertyNames()) {
+            setProperty(name, font.getProperty(name));
+        }
     }
     
     public Style getParent() {

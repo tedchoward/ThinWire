@@ -40,7 +40,7 @@ var tw_Frame = tw_BaseContainer.extend({
         s.cursor = "default";    
         s.top = "0px";
         s.left = "0px";
-        s.backgroundColor = "window";
+        s.backgroundColor = tw_COLOR_WINDOW;
         s.width = "100%";
         s.height = "100%";
         
@@ -51,7 +51,7 @@ var tw_Frame = tw_BaseContainer.extend({
         this._backgroundBox = this._container = document.createElement("div");
         this._container.className = "container";
         var s = this._container.style;
-        s.backgroundColor = "window";
+        s.backgroundColor = tw_COLOR_WINDOW;
         s.position = "absolute";        
         s.overflow = "hidden";
         s.zIndex = "0";
@@ -64,7 +64,7 @@ var tw_Frame = tw_BaseContainer.extend({
         s.position = "absolute";
         s.height = "100%";
         s.width = "100%";
-        s.backgroundColor = "transparent";
+        s.backgroundColor = tw_COLOR_TRANSPARENT;
         s.zIndex = "1";        
         
         if (tw_isIE) {

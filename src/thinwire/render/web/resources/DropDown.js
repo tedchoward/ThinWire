@@ -23,38 +23,35 @@
  *                          http://www.thinwire.com
  */
 var tw_DropDownGridBox = tw_BaseText.extend({
-    _gridBox: null,
+    _ddComp: null,
     _button: null,
+    _buttonBorder: null,
     _editAllowed: true,
+    _buttonWidth: 16,
     
     construct: function(id, containerId, props) {
+        var button = this._button = document.createElement("div");
+        var buttonBorder = this._buttonBorder = document.createElement("div");
         this.$.construct.apply(this, [["div", "input", "text"], "dropDownGridBox", id, containerId, "editMask"]);
         this._box.style.fontSize = "1px";
-        this._subtractEditorWidth = 17;
+        this._subtractEditorWidth += this._buttonWidth;
         
-        var button = document.createElement("div");
         var s = button.style;
-        s.position = "absolute";
-        s.left = "0px";
-        s.top = "0px";
-        s.backgroundColor = "transparent";
         s.backgroundRepeat = "no-repeat";
         s.backgroundPosition = "center center";                
-        s.border = "2px outset";
-        s.borderColor = tw_borderColor;        
-        s.width = tw_sizeIncludesBorders ? "16px" : "12px";    
         s.backgroundImage = "url(?_twr_=tbArrowDown.png)";
-        this._button = button;
+
+        s.backgroundColor = tw_COLOR_BUTTONFACE;
+        s.borderStyle = "outset";
+        s.borderColor = tw_borderColor;        
         
-        var buttonBorder = document.createElement("div");
         var s = buttonBorder.style;
         s.position = "absolute";
         s.right = "0px";
-        s.backgroundColor = "buttonface";
+        s.backgroundColor = tw_COLOR_TRANSPARENT;
         s.borderStyle = "solid";
-        s.borderColor = "black";                        
+        s.borderColor = tw_COLOR_BLACK;                        
         s.borderWidth = "0px";
-        s.width = "16px";
         buttonBorder.appendChild(button);
         this._box.appendChild(buttonBorder);
                 
@@ -73,15 +70,20 @@ var tw_DropDownGridBox = tw_BaseText.extend({
     _buttonMouseDownListener: function(event) {
         if (!this.isEnabled() || tw_getEventButton(event) != 1) return; 
         var s = this._button.style;
-        s.border = "1px solid";
-        s.borderColor = "threedshadow";
-        s.padding = "1px";
+        s.borderStyle = "solid";
+        var pad = parseInt(s.borderWidth);
+        var width = Math.floor(pad / 2);
+        pad -= width;
+        s.borderWidth = width + "px"; 
+        s.borderColor = tw_COLOR_THREEDSHADOW;
+        s.padding = pad + "px";
     },
         
     _buttonMouseUpListener: function(event) {
         if (!this.isEnabled() || tw_getEventButton(event) != 1) return; 
         var s = this._button.style;
-        s.border = "2px outset";
+        s.borderStyle = "outset";
+        s.borderWidth = this._box.style.borderWidth;
         s.borderColor = tw_borderColor;
         s.padding = "0px";    
     },
@@ -89,19 +91,34 @@ var tw_DropDownGridBox = tw_BaseText.extend({
     _buttonClickListener: function(event) {
         if (!this.isEnabled()) return;
         
-        if (!this._gridBox.isVisible()) {
+        if (!this._ddComp.isVisible()) {
             this.setDropDownVisible(true);
         } else {
             this.setDropDownVisible(false);
             this._focusListener();
         }
     },
-        
+    
+    setWidth: function(width) {
+        this.$.setWidth.apply(this, [width]);
+        width = this._buttonWidth;
+        if (!tw_sizeIncludesBorders) width -= parseInt(this._buttonBorder.style.borderWidth) * 2;        
+        if (width < 0) width = 0; 
+        this._buttonBorder.style.width = width + "px";
+        width -= this._borderSizeSub;
+        if (width < 0) width = 0;        
+        this._button.style.width = width + "px"; 
+    },
+
     setHeight: function(height) {
         this.$.setHeight.apply(this, [height]);
-        this._box.lastChild.style.height = height - tw_CALC_BORDER_SUB + "px";        
-        this._button.style.height = height - 
-            (tw_sizeIncludesBorders ? tw_CALC_BORDER_SUB : tw_CALC_BORDER_SUB * 2) + "px";
+        height -= this._borderSizeSub;
+        if (!tw_sizeIncludesBorders) height -= parseInt(this._buttonBorder.style.borderWidth) * 2;
+        if (height < 0) height = 0;        
+        this._buttonBorder.style.height = height + "px";
+        height -= this._borderSizeSub;
+        if (height < 0) height = 0;        
+        this._button.style.height = height + "px"; 
     },
     
     setVisible: function(visible) {
@@ -116,35 +133,34 @@ var tw_DropDownGridBox = tw_BaseText.extend({
             
     setFocus: function(focus) {          
         if (!this.isEnabled() || !this.isVisible()) return false;
-               
-        if (!focus) {            
+        
+        if (!focus) {
             var active = tw_getActiveElement();
             
             if (active != null) {
-                if (active.className.substring(0, 8) == "dropDown") {
-                    while (active.className != "dropDownGridBox") active = active.parentNode;                    
-                    if (this._id == active.id) return false;
-                } else if (active.className.substring(0, 7) == "gridBox") {
-                    while (active.className != "gridBox") active = active.parentNode;                    
-                    if (this._gridBox._id == active.id || (active.tw_root != null && active.tw_root._id == this._gridBox._id)) return false;
-                }
+                while (active.id <= 0) active = active.parentNode;
+                if (active.id == this._ddComp._id) return false;
             }
             
-            this._gridBox.closeChildren();
-            this._gridBox.setVisible(false);
+            this._ddComp.setVisible(false);
         }
-                        
+        
         this._setFocusStyle(focus);        
         return this.$.setFocus.apply(this, [focus]);
     },
 
     setStyle: function(name, value) {
         this.$.setStyle.apply(this, [name, value]);
-        if (this._gridBox != null) this._gridBox.setStyle(name, value);
+        
+        if (name.indexOf("border") == 0) {
+            if (name == "borderSize") this._button.style.borderWidth = value + "px";
+        }
+        
+        if (this._ddComp != null) this._ddComp.setStyle(name, value);
     },
     
     keyPressNotify: function(keyPressCombo) {        
-        if (!this._gridBox.isVisible()) {
+        if (!this._ddComp.isVisible()) {
             if (keyPressCombo == "ArrowDown") {
                 this.setDropDownVisible(true);
                 return false;                
@@ -152,7 +168,7 @@ var tw_DropDownGridBox = tw_BaseText.extend({
                 return this.$.keyPressNotify.apply(this, [keyPressCombo]);                
             }
         } else {
-            return this._gridBox.keyPressNotify(keyPressCombo);
+            return this._ddComp.keyPressNotify(keyPressCombo);
         }
     },
     
@@ -162,52 +178,41 @@ var tw_DropDownGridBox = tw_BaseText.extend({
     },
     
     _setFocusStyle: function(state) {
-        var buttonBorder = this._box.lastChild;
-        if (parseInt(buttonBorder.style.borderWidth) == state) return; 
-        buttonBorder.style.borderWidth = state ? "1px" : "0px";
-        var offset = state ? -2 : 2; 
-    
-        if (!tw_sizeIncludesBorders) {
-            buttonBorder.style.width = parseInt(buttonBorder.style.width) + offset + "px"
-            buttonBorder.style.height = parseInt(buttonBorder.style.height) + offset + "px"
-        }    
-        
-        var button = this._button;
-        button.style.width = parseInt(button.style.width) + offset + "px";
-        button.style.height = parseInt(button.style.height) + offset + "px";
+        if (parseInt(this._buttonBorder.style.borderWidth) == state) return;
+        this._buttonBorder.style.borderWidth = state ? "1px" : "0px";
+        this.setWidth(this.getWidth());
+        this.setHeight(this.getHeight());
     },
 
     setDropDownVisible: function(state) {
-        if (this._gridBox == null) return;
+        if (this._ddComp == null) return;
         
         if (state) {
-            var gb = this._gridBox;
-            var container = this._box;
-            var offsetX = 0;
-            var offsetY = 0;                    
-            
-            while (container.className != "dialog" && container.className != "frame") {
-                offsetX += container.offsetLeft - container.scrollLeft;
-                offsetY += container.offsetTop - container.scrollTop;
-                container = container.offsetParent;
+            var parent = this.getParent(); 
+            var offsetX = this.getX();
+            var offsetY = this.getY();
+
+            while (parent != null) {
+                offsetX += parent.getX() + parent.getOffsetX();
+                offsetY += parent.getY() + parent.getOffsetY();
+                parent = parent.getParent();
             }
-                                    
-            var availableHeight = tw_getVisibleHeight() - gb._box.parentNode.offsetTop - offsetY - this._height;
-            offsetY += (availableHeight < gb._height ? -gb._height : this._height);               
             
-            gb.setY(offsetY);
-            gb.setX(offsetX);
-            gb.setVisible(true);
-            gb.setFocus(true);
+            var comp = this._ddComp;            
+            var availableHeight = tw_getVisibleHeight() - comp._box.parentNode.offsetTop - offsetY - this._height;
+            offsetY += (availableHeight < comp._height ? -comp._height : this._height);
+            comp.setY(offsetY);
+            comp.setX(offsetX);
+            comp.setVisible(true);
+            comp.setFocus(true);
         } else {
-            this._gridBox.closeChildren();
-            this._gridBox.setVisible(false);
+            this._ddComp.setVisible(false);
         }
     },
         
     destroy: function() {        
-        this._gridBox.destroy();
-        this._gridBox = this._button = null;
+        this._ddComp.destroy();
+        this._ddComp = this._button = this._buttonBorder = null;
         this.$.destroy.apply(this, []);
     }
 });
