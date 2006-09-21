@@ -51,6 +51,8 @@ public class SliderRenderer extends ComponentRenderer {
             postClientEvent("setCursorIndex", (Integer) newValue);
         } else if (name.equals(Slider.PROPERTY_LENGTH)) {
             postClientEvent("setLength", (Integer) newValue);
+        } else {
+            super.propertyChange(pce);
         }
     }
     
