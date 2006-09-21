@@ -25,6 +25,7 @@
 package thinwire.ui.layout;
 
 import thinwire.ui.Container;
+import thinwire.ui.Component;
 
 /**
  * @author Joshua J. Gertzen
@@ -32,7 +33,7 @@ import thinwire.ui.Container;
 public interface Layout {
     boolean isAutoLayout();
     void setAutoLayout(boolean autoLayout);
-    Container getContainer();
-    void setContainer(Container container);
+    Container<Component> getContainer();
+    void setContainer(Container<Component> container);
     void apply();
 }

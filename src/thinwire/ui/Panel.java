@@ -44,7 +44,7 @@ package thinwire.ui;
  * </p>
  * @author Joshua J. Gertzen
  */
-public class Panel extends AbstractContainer {
+public class Panel extends AbstractContainer<Component> {
     public Panel() {
         
     }

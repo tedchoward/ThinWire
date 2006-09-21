@@ -24,8 +24,6 @@
  */
 package thinwire.render.web;
 
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Set;
 import java.util.Map;
 import java.util.List;

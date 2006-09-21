@@ -76,7 +76,7 @@ import thinwire.ui.style.Style;
  * 
  * @author Joshua J. Gertzen
  */
-public class TabSheet extends AbstractContainer implements TextComponent, ImageComponent {
+public class TabSheet extends AbstractContainer<Component> implements TextComponent, ImageComponent {
 	private String text = "";
     private boolean allowSizeChange;
 	private Image.Detail imageDetail = new Image.Detail();

@@ -49,7 +49,7 @@ class ContainerRenderer extends ComponentRenderer implements ItemChangeListener 
         if (jsClass == null) init(CONTAINER_CLASS, wr, comp, container);            
         setPropertyChangeIgnored(Component.PROPERTY_FOCUS, true);
         setPropertyChangeIgnored(Component.PROPERTY_ENABLED, true);
-        Container c = (Container)comp;
+        Container<Component> c = (Container<Component>)comp;
         if (!isPropertyChangeIgnored(Container.PROPERTY_SCROLL)) addInitProperty(Container.PROPERTY_SCROLL, getScrollTypeCode(c.getScroll()));
         
         c.addItemChangeListener(this);
@@ -79,7 +79,7 @@ class ContainerRenderer extends ComponentRenderer implements ItemChangeListener 
     }
     
     void destroy() {
-        Container c = (Container)comp;
+        Container<Component> c = (Container<Component>)comp;
         c.removeItemChangeListener(this);
         super.destroy();
         
@@ -91,7 +91,7 @@ class ContainerRenderer extends ComponentRenderer implements ItemChangeListener 
         compToRenderer = null;
     }
     
-    void renderChildren(Container c) {
+    void renderChildren(Container<Component> c) {
         List<Component> children = c.getChildren();
         this.compToRenderer = new HashMap<Component, ComponentRenderer>(children.size());
         

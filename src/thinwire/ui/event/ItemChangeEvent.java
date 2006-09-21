@@ -28,7 +28,7 @@ import java.util.EventObject;
 
 /**
  * Sends a trigger to a listener when something changes in an item.
- * @author jjg
+ * @author Joshua J. Gertzen
  */
 public final class ItemChangeEvent extends EventObject {
     private Type type;

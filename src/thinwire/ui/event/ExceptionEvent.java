@@ -30,6 +30,9 @@ import java.util.EventObject;
 
 import thinwire.ui.Application;
 
+/**
+ * @author Joshua J. Gertzen
+ */
 public final class ExceptionEvent extends EventObject {
     private static final String DEFAULT_MESSAGE = "An exception has occurred in the application. " +
         "If you are unable to continue, please press F5 to restart the application.";

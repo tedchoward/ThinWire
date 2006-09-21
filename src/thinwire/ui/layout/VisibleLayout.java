@@ -81,7 +81,7 @@ public final class VisibleLayout implements Layout {
     };
     
     private boolean autoLayout = true;
-    private Container container;
+    private Container<Component> container;
     private List<Region> regions;
     private List<Region> visibleRegions;
     private Map<Component, Integer> compToY;
@@ -95,11 +95,11 @@ public final class VisibleLayout implements Layout {
         return autoLayout;
     }
     
-    public Container getContainer() {
+    public Container<Component> getContainer() {
         return container;
     }   
     
-    public void setContainer(Container container) {
+    public void setContainer(Container<Component> container) {
         if (this.container != null) {
             for (Component comp : this.container.getChildren()) {
                 comp.setY(compToY.remove(comp));

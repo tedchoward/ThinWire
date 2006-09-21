@@ -410,9 +410,9 @@ public interface Component {
     /**
      * Returns whether this <code>Component</code> has the input focus. If this is a <code>Container</code>, then this method
      * will return true if a child <code>Component</code> has the focus. In such a case, you can use the
-     * {@link thinwire.ui.AbstractContainer#getChildWithFocus()} method to get a reference to that child. Similarly, if you want to find the
+     * {@link thinwire.ui.Container#getChildWithFocus()} method to get a reference to that child. Similarly, if you want to find the
      * child <code>Component</code> that has the focus anywhere in the current <code>Frame</code> or <code>Dialog</code>, you
-     * can use the {@link thinwire.ui.AbstractContainer#getComponentWithFocus()} method.
+     * can use the {@link thinwire.ui.Container#getComponentWithFocus()} method.
      * <p>
      * <b>Default:</b> false. However, at rendering time, if no component in the window has focus, the first focus capable
      * component is given focus.
@@ -422,8 +422,8 @@ public interface Component {
      * </p>
      * @return true if this <code>Component</code> has the input focus, false otherwise.
      * @see #setFocus(boolean)
-     * @see thinwire.ui.AbstractContainer#getComponentWithFocus()
-     * @see thinwire.ui.AbstractContainer#getChildWithFocus()
+     * @see thinwire.ui.Container#getComponentWithFocus()
+     * @see thinwire.ui.Container#getChildWithFocus()
      */
     boolean isFocus();
 
@@ -487,8 +487,8 @@ public interface Component {
      * </p>
      * @param focus true to give this <code>Component</code> and it's parent containers focus, false otherwise.
      * @see #isFocus()
-     * @see thinwire.ui.AbstractContainer#getComponentWithFocus()
-     * @see thinwire.ui.AbstractContainer#getChildWithFocus()
+     * @see thinwire.ui.Container#getComponentWithFocus()
+     * @see thinwire.ui.Container#getChildWithFocus()
      * @throws IllegalStateException if this <code>Component</code> is not focus capable
      * @throws UnsupportedOperationException if the parent of this <code>Component</code> is not null and is not a <code>Container</code>
      */
@@ -698,7 +698,7 @@ public interface Component {
      * @param visible true to indicate this <code>Component</code> may be displayed, false otherwise
      * @see #isVisible()
      * @see #PROPERTY_VISIBLE
-     * @see thinwire.ui.AbstractContainer#getChildren()
+     * @see thinwire.ui.Container#getChildren()
      * @see thinwire.ui.event.PropertyChangeEvent
      */
     void setVisible(boolean visible);

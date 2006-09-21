@@ -36,7 +36,7 @@ import thinwire.ui.event.ItemChangeEvent.Type;
 /**
  * @author Joshua J. Gertzen
  */
-class AbstractHierarchyComponent<HI extends AbstractHierarchyComponent.Item> extends AbstractComponent implements HierarchyComponent<HI> {        
+abstract class AbstractHierarchyComponent<HI extends AbstractHierarchyComponent.Item> extends AbstractComponent implements HierarchyComponent<HI> {        
     private static class ChildList<I extends Item> extends AbstractList<I> {
         private List<I> l = new ArrayList<I>(3);
         private Item parent;

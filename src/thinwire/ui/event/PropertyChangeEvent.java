@@ -26,6 +26,9 @@ package thinwire.ui.event;
 
 import java.util.EventObject;
 
+/**
+ * @author Joshua J. Gertzen
+ */
 public final class PropertyChangeEvent extends EventObject {
     private String propertyName;
     private Object newValue;

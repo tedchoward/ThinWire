@@ -29,7 +29,7 @@ import java.util.EventListener;
 /**
  * This is an interface that extends java.util.EventListener and responds to actions that occur
  * 	(ex: click a button).
- * @author jjg
+ * @author Joshua J. Gertzen
  */
 public interface ActionListener extends EventListener {
     public void actionPerformed(ActionEvent ev);

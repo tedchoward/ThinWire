@@ -27,7 +27,7 @@ package thinwire.ui.event;
 import java.util.EventObject;
 
 /**
- * @author jjg
+ * @author Joshua J. Gertzen
  */
 public final class ActionEvent extends EventObject {
     private String action;

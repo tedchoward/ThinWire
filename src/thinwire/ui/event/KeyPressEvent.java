@@ -27,6 +27,9 @@ package thinwire.ui.event;
 import java.util.Arrays;
 import java.util.EventObject;
 
+/**
+ * @author Joshua J. Gertzen
+ */
 public class KeyPressEvent extends EventObject {    
     private static final String[] specialKeyNames; 
     static {

@@ -483,7 +483,7 @@ public final class GridBox extends AbstractComponent implements Grid<GridBox.Row
         Object o = gb.getParent();
         
         while (o != null) {
-            if (o instanceof AbstractContainer) {
+            if (o instanceof Container) {
                 break;
             } else if (o instanceof GridBox.Row) {
                 o = ((GridBox.Row)o).getParent();

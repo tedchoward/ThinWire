@@ -34,7 +34,7 @@ import java.util.List;
  * is placed in a <code>Container</code> with an X value of 10, will actually be positioned at X coordinate 15.
  * @author Joshua J. Gertzen
  */
-public interface Container extends ItemChangeEventComponent {
+public interface Container<T extends Component> extends ItemChangeEventComponent {
 
     /**
      * Contains the formal property name for the scroll type of the container.
@@ -61,7 +61,7 @@ public interface Container extends ItemChangeEventComponent {
      * Returns a list of components in the container.
      * @return this Container's children.
      */
-    List<Component> getChildren();
+    List<T> getChildren();
 
     /**
      * Get the child Component for this container that currently has the focus.
@@ -72,7 +72,7 @@ public interface Container extends ItemChangeEventComponent {
      * hiearchy that has the focus, use <code>getComponentWithFocus()</code>.
      * @return the child Component with focus, or null if there is no child with focus.
      */
-    Component getChildWithFocus();
+    T getChildWithFocus();
 
     /**
      * Get the Component at the bottom of the component hiearchy that has the focus.
@@ -81,7 +81,7 @@ public interface Container extends ItemChangeEventComponent {
      * hiearchy that has the focus.
      * @return the Component at the bottom of component hiearchy that has the focus, or null if no component does.
      */
-    Component getComponentWithFocus();
+    T getComponentWithFocus();
 
     /**
      * Returns the usable inner width of the Container.

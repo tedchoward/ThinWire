@@ -38,7 +38,7 @@ import thinwire.ui.event.*;
 public class SplitLayout implements Layout {
     public enum SplitType {VERTICAL, HORIZONTAL};
         
-    private static final String RES_PATH = "class:///thinwire.ui.layout.SplitLayout/resources/";
+    private static final String RES_PATH = "class:///" + SplitLayout.class.getName() + "/resources/";
     private static final String CLIENT_SIDE_LIB = RES_PATH + "SplitLayout.js";
     
     private PropertyChangeListener pcl = new PropertyChangeListener() {
@@ -54,7 +54,7 @@ public class SplitLayout implements Layout {
     };
             
     private boolean autoLayout;
-    private Container container;
+    private Container<Component> container;
     private SplitType split;
     private int dividerSize;
     private Label divider;
@@ -62,7 +62,7 @@ public class SplitLayout implements Layout {
     private int maximized;
     private boolean layoutInProgress;
         
-    public SplitLayout(Container container, SplitType split, double size) {
+    public SplitLayout(Container<Component> container, SplitType split, double size) {
         final WebApplication app = (WebApplication)Application.current();        
         app.clientSideIncludeFile(CLIENT_SIDE_LIB);
         divider = new Label();
@@ -95,11 +95,11 @@ public class SplitLayout implements Layout {
         });                
     }
         
-    public Container getContainer() {
+    public Container<Component> getContainer() {
         return container;
     }
     
-    public void setContainer(Container container) {
+    public void setContainer(Container<Component> container) {
         if (this.container != null) {
             this.container.removeItemChangeListener(icl);
             this.container.removePropertyChangeListener(pcl);

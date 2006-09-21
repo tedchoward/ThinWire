@@ -29,7 +29,7 @@ import java.util.List;
 /**
  * @author Joshua J. Gertzen
  */
-abstract class AbstractWindow extends AbstractContainer implements Window {
+abstract class AbstractWindow extends AbstractContainer<Component> implements Window {
     static final int MENU_BAR_HEIGHT = 23;
     
     String title = "";

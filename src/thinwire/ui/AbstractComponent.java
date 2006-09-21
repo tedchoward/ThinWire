@@ -248,7 +248,7 @@ abstract class AbstractComponent implements Component {
         Object o = this.getParent();
         
         while (o != null) {
-            if (o instanceof AbstractContainer) {
+            if (o instanceof Container) {
                 c = (Container)o;
                 break;
             } else if (o instanceof Component) {
@@ -308,16 +308,16 @@ abstract class AbstractComponent implements Component {
     public void setFocus(boolean focus) {
         if (!this.isFocusCapable()) throw new IllegalStateException("!this.isFocusCapable()");
             
-        if (parent instanceof AbstractContainer || parent == null) {
+        if (parent instanceof Container || parent == null) {
             if (this.focus == focus) return;
             
             if (focus) {
                 if (parent != null) {
-                    AbstractContainer container = (AbstractContainer)parent;                    
+                    Container container = (Container)parent;                    
                     Component childWithFocus = container.getChildWithFocus();
                     
                     while (childWithFocus == null) {
-                        container = (AbstractContainer)container.getParent();
+                        container = (Container)container.getParent();
                         if (container == null) break;
                         childWithFocus = container.getChildWithFocus();
                     }
@@ -335,7 +335,7 @@ abstract class AbstractComponent implements Component {
             } else {
                 app.setPriorFocus(this);
                 
-                if (this instanceof AbstractContainer) {
+                if (this instanceof Container) {
                     Component childWithFocus = ((Container)this).getChildWithFocus();                      
                     if (childWithFocus != null) childWithFocus.setFocus(false);
                 } else if (parent != null) {

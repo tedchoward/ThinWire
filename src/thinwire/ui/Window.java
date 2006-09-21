@@ -27,7 +27,7 @@ package thinwire.ui;
 /**
  * @author Joshua J. Gertzen
  */
-public interface Window extends Container {
+public interface Window extends Container<Component> {
     public static final String PROPERTY_MENU = "menu";
     public static final String PROPERTY_TITLE = "title";
     public static final String PROPERTY_WAIT_FOR_WINDOW = "waitForWindow";

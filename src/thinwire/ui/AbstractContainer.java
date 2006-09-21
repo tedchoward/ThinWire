@@ -35,17 +35,17 @@ import thinwire.ui.style.Style;
 /**
  * @author Joshua J. Gertzen
  */
-abstract class AbstractContainer extends AbstractComponent implements Container {
-    private class ItemChangeList extends AbstractList<Component> {
-        private ArrayList<Component> l = new ArrayList<Component>();
+abstract class AbstractContainer<T extends Component> extends AbstractComponent implements Container<T> {
+    private class ItemChangeList extends AbstractList<T> {
+        private ArrayList<T> l = new ArrayList<T>();
 
-        private void processRemove(Component c) {
+        private void processRemove(T c) {
             ((AbstractComponent)c).setParent(null);
             if (standardButton == c) updateStandardButton((Button)c, false);
             if (childWithFocus == c) AbstractContainer.this.setChildWithFocus(null);            
         }
 
-        private void processAdd(Component c) {
+        private void processAdd(T c) {
             if (c == AbstractContainer.this) throw new IllegalArgumentException("cannot add component to itself");
             if (c.getParent() != null)
                 throw new IllegalArgumentException("cannot add component to multiple containers or twice to the same container");
@@ -61,10 +61,10 @@ abstract class AbstractContainer extends AbstractComponent implements Container 
             
             if (c.isFocus()) {
                 if (!c.isFocus()) c.setFocus(true);
-                AbstractContainer container = AbstractContainer.this;
+                Container<T> container = AbstractContainer.this;
                 
                 while (childWithFocus == null) {
-                    container = (AbstractContainer)container.getParent();
+                    container = (Container<T>)container.getParent();
                     if (container == null) break;
                     childWithFocus = container.getChildWithFocus();
                 }
@@ -75,26 +75,26 @@ abstract class AbstractContainer extends AbstractComponent implements Container 
 	        }
         }
 
-        public Component get(int index) {
+        public T get(int index) {
             return l.get(index);
         }
 
-        public void add(int index, Component o) {
+        public void add(int index, T o) {
             l.add(index, o);
             processAdd(o);
             icei.fireItemChange(this, Type.ADD, new Integer(index), null, o);
         }
 
-        public Component remove(int index) {
-            Component ret = l.get(index);
+        public T remove(int index) {
+            T ret = l.get(index);
             l.remove(index);
             processRemove(ret);
             icei.fireItemChange(this, Type.REMOVE, new Integer(index), ret, null);
             return ret;
         }
 
-        public Component set(int index, Component o) {
-            Component ret = l.set(index, o);
+        public T set(int index, T o) {
+            T ret = l.set(index, o);
             processRemove(ret);
             processAdd(o);
             icei.fireItemChange(this, Type.SET, new Integer(index), ret, o);
@@ -118,8 +118,8 @@ abstract class AbstractContainer extends AbstractComponent implements Container 
 
     private ScrollType scroll = ScrollType.NONE;
     private EventListenerImpl<ItemChangeListener> icei = new EventListenerImpl<ItemChangeListener>();
-    private List<Component> children;
-    private Component childWithFocus;
+    private List<T> children;
+    private T childWithFocus;
     private Button standardButton;
     
     AbstractContainer() {        
@@ -176,33 +176,33 @@ abstract class AbstractContainer extends AbstractComponent implements Container 
         icei.removeListener(listener);
     }
 
-    public List<Component> getChildren() {
+    public List<T> getChildren() {
         return children;
     }
 
-    void setChildWithFocus(Component childWithFocus) {
+    void setChildWithFocus(T childWithFocus) {
         this.childWithFocus = childWithFocus;
     }
 
-    public Component getChildWithFocus() {
+    public T getChildWithFocus() {
         return childWithFocus;
     }
     
-    public Component getComponentWithFocus() {
-        Component ret = null;
+    public T getComponentWithFocus() {
+        T ret = null;
         Object root = this;
         Object parent;
         
         //Walk up the tree to the root container
-        while (root instanceof AbstractContainer && (parent = ((AbstractContainer)root).getParent()) != null)
+        while (root instanceof Container && (parent = ((Container)root).getParent()) != null)
             root = parent;
 
         //If the root is a container, walk down the children with focus to get the component with focus.
-        if (root instanceof AbstractContainer) {
-            ret = (AbstractContainer)root;
+        if (root instanceof Container) {
+            ret = (T)root;
                         
-	        while (ret instanceof AbstractContainer)
-	            ret = ((Container)ret).getChildWithFocus();
+	        while (ret instanceof Container)
+	            ret = ((Container<T>)ret).getChildWithFocus();
     	}
     
         return ret;

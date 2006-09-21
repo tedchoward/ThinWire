@@ -80,7 +80,7 @@ import thinwire.ui.style.*;
  * 
  * @author Joshua J. Gertzen
  */
-public class TabFolder extends AbstractContainer {        
+public class TabFolder extends AbstractContainer<TabSheet> {        
     public static final String PROPERTY_CURRENT_INDEX = "currentIndex";
     private static final int TABS_HEIGHT = 20;
     
