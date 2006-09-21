@@ -97,12 +97,7 @@ import thinwire.ui.style.Style;
  */
 public class Slider extends AbstractComponent implements SelectionComponent { 
     static {
-        Style s = new Style(getDefaultStyle(Component.class));
-        Border b = s.getBorder();
-        b.setSize(1);
-        b.setType(Border.Type.INSET);
-        b.setColor(Color.THREEDHIGHLIGHT);
-        setDefaultStyle(Slider.class, s);
+        setDefaultStyle(Slider.class, new Style(getDefaultStyle(Component.class)));
     }
     
     private int cursorIndex;
@@ -124,21 +119,7 @@ public class Slider extends AbstractComponent implements SelectionComponent {
     public int getCursorIndex() {
         return cursorIndex;
     }
-
-    public int getLength() {
-        return length;
-    }
-
-    public int getSelectionBeginIndex() {
-        // TODO Implement Selection Range Capability
-        return getCursorIndex();
-    }
-
-    public int getSelectionEndIndex() {
-        // TODO Implement Selection Range Capability
-        return getCursorIndex();
-    }
-
+    
     public void setCursorIndex(int cursorIndex) {
         if (cursorIndex < 0 || cursorIndex >= length) throw new IllegalArgumentException("cursorIndex < 0 || cursorIndex >= length");
         int oldIndex = this.cursorIndex;
@@ -146,17 +127,32 @@ public class Slider extends AbstractComponent implements SelectionComponent {
         firePropertyChange(this, PROPERTY_CURSOR_INDEX, oldIndex, this.cursorIndex);
     }
     
+    public int getLength() {
+        return length;
+    }
+    
     public void setLength(int length) {
+        if (length < 1) throw new IllegalArgumentException("length < 1");
         int oldLength = this.length;
         this.length = length;
         firePropertyChange(this, PROPERTY_LENGTH, oldLength, this.length);
     }
 
+    public int getSelectionBeginIndex() {
+        // TODO Implement Selection Range Capability
+        return getCursorIndex();
+    }
+    
     public void setSelectionBeginIndex(int selectionBeginIndex) {
         // TODO Implement Selection Range Capability
         throw new UnsupportedOperationException();
     }
 
+    public int getSelectionEndIndex() {
+        // TODO Implement Selection Range Capability
+        return getCursorIndex();
+    }
+    
     public void setSelectionEndIndex(int selectionEndIndex) {
         // TODO Implement Selection Range Capability
         throw new UnsupportedOperationException();

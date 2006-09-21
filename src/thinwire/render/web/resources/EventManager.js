@@ -75,6 +75,7 @@ var tw_EventManager = Class.extend({
                     this._activityInd.style.display = "block";
                 }                
             } else {
+                if (this._activityIndTimer != 0) clearTimeout(this._activityIndTimer);
                 this._activityIndTimer = setTimeout(this._hideActivityInd, 300);
             }
         }
