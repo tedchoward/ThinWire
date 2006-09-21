@@ -24,8 +24,6 @@
  */
 package thinwire.ui;
 
-import thinwire.ui.style.Border;
-import thinwire.ui.style.Color;
 import thinwire.ui.style.Style;
 
 /**
@@ -34,11 +32,13 @@ import thinwire.ui.style.Style;
  * then the Slider is horizontal, otherwise it is vertical.
  * <p>
  * <b>Example:</b> <br>
- * <img src="doc-files/Divider-1.png"> <br>
+ * <img src="doc-files/Slider-1.png"> <br>
  * 
  * <pre>
  * Frame f = Application.current().getFrame();
  * f.setTitle(&quot;Slider Test&quot;);
+ * Dialog d = new Dialog(&quot;Slider Test&quot;);
+ * d.setBounds(10, 10, 250, 150);
  * final Slider s = new Slider(5, 3);
  * s.setBounds(10, 10, 100, 20);
  * s.addPropertyChangeListener(Slider.PROPERTY_CURSOR_INDEX, new PropertyChangeListener() {
@@ -46,11 +46,11 @@ import thinwire.ui.style.Style;
  *         tf.setText(String.valueOf((Integer) ev.getNewValue()));
  *     }
  * });
- * f.getChildren().add(s);
+ * d.getChildren().add(s);
  * final TextField tf = new TextField();
  * tf.setBounds(10, 40, 50, 20);
  * tf.setText(String.valueOf(s.getCursorIndex()));
- * f.getChildren().add(tf);
+ * d.getChildren().add(tf);
  * Button b = new Button(&quot;SetValue&quot;);
  * b.setBounds(70, 35, 60, 30);
  * b.addActionListener(Button.ACTION_CLICK, new ActionListener() {
@@ -58,7 +58,8 @@ import thinwire.ui.style.Style;
  *         s.setCursorIndex(Integer.parseInt(tf.getText()));
  *     }
  * });
- * f.getChildren().add(b);
+ * d.getChildren().add(b);
+ * f.getChildren().add(d);
  * </pre>
  * 
  * </p>
@@ -103,14 +104,27 @@ public class Slider extends AbstractComponent implements SelectionComponent {
     private int cursorIndex;
     private int length;
     
+    /**
+     * Constructs a new <code>Slider</code> with a length of 100 and initial cursorIndex of 0.
+     *
+     */
     public Slider() {
         this(100);
     }
     
+    /**
+     * Constructs a new <code>Slider</code> with the specified length and an initial cursorIndex of 0.
+     * @param length the number of increments on the Slider
+     */
     public Slider(int length) {
         this(length, 0);
     }
     
+    /**
+     * Constructs a new <code>Slider</code> with the specifed length and initial cursorIndex.
+     * @param length the number of increments on the Slider
+     * @param cursorIndex the initial position of the cursor
+     */
     public Slider(int length, int cursorIndex) {
         setLength(length);
         setCursorIndex(cursorIndex);
@@ -131,6 +145,18 @@ public class Slider extends AbstractComponent implements SelectionComponent {
         return length;
     }
     
+    /**
+     * Sets the length of the possible selectable area.  The length of a <code>Slider</code> is the total number
+     * of increments on the <code>Slider</code>.<br>
+     * <b>Events:</b>
+     * <p>
+     * If the prior values and new values differ, setting this property causes a <code>PropertyChangeEvent</code> ( propertyName = PROPERTY_LENGTH ) to be generated.
+     * </p>
+     * @param length the number of increments on the <code>Slider</code>
+     * @see #getLength()
+     * @see #PROPERTY_LENGTH
+     * @see thinwire.ui.event.PropertyChangeEvent
+     */
     public void setLength(int length) {
         if (length < 1) throw new IllegalArgumentException("length < 1");
         int oldLength = this.length;
