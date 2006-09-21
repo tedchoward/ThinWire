@@ -1,3 +1,7 @@
+/*
+ #LICENSE_HEADER#
+ #VERSION_HEADER#
+ */
 function tw_Logger() {
     //
     //Private Fields

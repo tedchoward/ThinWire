@@ -1,26 +1,6 @@
 /*
- *                      ThinWire(TM) RIA Ajax Framework
- *              Copyright (C) 2003-2006 Custom Credit Systems
- * 
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 2 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
- * Place, Suite 330, Boston, MA 02111-1307 USA
- *
- * Users wishing to use this library in proprietary products which are not 
- * themselves to be released under the GNU Public License should contact Custom
- * Credit Systems for a license to do so.
- * 
- *               Custom Credit Systems, Richardson, TX 75081, USA.
- *                          http://www.thinwire.com
+ #LICENSE_HEADER#
+ #VERSION_HEADER#
  */
 package thinwire.ui;
 
@@ -145,15 +125,19 @@ public final class DropDownGridBox extends DropDown<GridBox> {
             if (gb == null) throw new IllegalStateException("gridBox == null");
             String delimiter;
             int columnIndex;
+            //#IFDEF V1_1_COMPAT
             
             if (gb.view == null) {
+            //#ENDIF
                 delimiter = this.delimiter;
                 columnIndex = this.columnIndex;
+            //#IFDEF V1_1_COMPAT
             } else {
                 DefaultView view = (DefaultView)gb.view;
                 delimiter = view.delimiter;
                 columnIndex = view.columnIndex;
             }
+            //#ENDIF
             
             if (columnIndex >= gb.getColumns().size()) throw new IllegalStateException("columnIndex >= gridBox.getColumns().size()");
             String s;
@@ -183,15 +167,19 @@ public final class DropDownGridBox extends DropDown<GridBox> {
 
             String delimiter;
             int columnIndex;
+            //#IFDEF V1_1_COMPAT
             
             if (gb.view == null) {
-                delimiter = this.delimiter;
-                columnIndex = this.columnIndex;
+            //#ENDIF
+            delimiter = this.delimiter;
+            columnIndex = this.columnIndex;
+            //#IFDEF V1_1_COMPAT
             } else {
                 DefaultView view = (DefaultView)gb.view;
                 delimiter = view.delimiter;
                 columnIndex = view.columnIndex;
             }          
+            //#ENDIF
             
             if (columnIndex >= gb.getColumns().size()) throw new IllegalStateException("columnIndex >= gridBox.getColumns().size()");
             String s;
@@ -272,13 +260,13 @@ public final class DropDownGridBox extends DropDown<GridBox> {
         ((DefaultView)getView()).init(this, this.getComponent());
 	    if (text != null) setText(text);        
 	}	
-                      
-	/**
+    //#IFDEF V1_1_COMPAT
+
+    /**
 	 * Returns the GridBox part of the drop down.
 	 * @return a GridBox
      * @deprecated use getComponent instead
 	 */
-    @Deprecated
 	public GridBox getGridBox() {
         if (!isCompatModeOn()) throw new IllegalStateException("this method is deprecated as of v1.2 and cannot be called unless compat mode is on, use getComponent() instead.");
 	    return getComponent();
@@ -289,7 +277,6 @@ public final class DropDownGridBox extends DropDown<GridBox> {
      * @param gridBox the new gridbox.
      * @deprecated use setComponent instead
      */
-    @Deprecated
     public void setGridBox(GridBox gridBox) {
         if (!isCompatModeOn()) throw new IllegalStateException("this method is deprecated as of v1.2 and cannot be called unless compat mode is on, use setComponent() instead.");
         setComponent(gridBox);
@@ -302,7 +289,6 @@ public final class DropDownGridBox extends DropDown<GridBox> {
 	 * @return the delimiter separating values in the text field 
      * @deprecated switch to getGridBox().getView().getDelimiter(), this will be removed in a future update.
 	 */
-    @Deprecated
 	public String getTextDelimiter() {
         if (!isCompatModeOn()) throw new IllegalStateException("this method is deprecated as of v1.2 and cannot be called unless compat mode is on, use getView().getDelimiter() instead.");
 	    return ((DefaultView)getView()).getDelimiter();
@@ -315,7 +301,6 @@ public final class DropDownGridBox extends DropDown<GridBox> {
 	 * @throws IllegalArgumentException if textDelimiter is null or empty
      * @deprecated switch to getGridBox().getView().setDelimiter(), this will be removed in a future update.
 	 */
-    @Deprecated    
 	public void setTextDelimiter(String textDelimiter) {
         if (!isCompatModeOn()) throw new IllegalStateException("this method is deprecated as of v1.2 and cannot be called unless compat mode is on, use getView().setDelimiter() instead.");
         ((DefaultView)getView()).setDelimiter(textDelimiter);        
@@ -326,7 +311,6 @@ public final class DropDownGridBox extends DropDown<GridBox> {
 	 * @return the number of the displayed column
      * @deprecated switch to getGridBox().getView().getColumnIndex(), this will be removed in a future update.
 	 */
-    @Deprecated
 	public int getTextColumnIndex() {
         if (!isCompatModeOn()) throw new IllegalStateException("this method is deprecated as of v1.2 and cannot be called unless compat mode is on, use getView().getColumnIndex() instead.");
 	    return ((DefaultView)getView()).getColumnIndex();
@@ -339,9 +323,9 @@ public final class DropDownGridBox extends DropDown<GridBox> {
      *   columns in the GridBox.
      * @deprecated switch to getGridBox().getView().setColumnIndex(), this will be removed in a future update.
 	 */
-    @Deprecated
     public void setTextColumnIndex(int textColumnIndex) {
         if (!isCompatModeOn()) throw new IllegalStateException("this method is deprecated as of v1.2 and cannot be called unless compat mode is on, use getView().setColumnIndex() instead.");
         ((DefaultView)getView()).setColumnIndex(textColumnIndex);
 	}
+    //#ENDIF
 }

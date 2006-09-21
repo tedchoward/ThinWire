@@ -1,26 +1,6 @@
 /*
- *                      ThinWire(TM) RIA Ajax Framework
- *              Copyright (C) 2003-2006 Custom Credit Systems
- * 
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 2 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
- * Place, Suite 330, Boston, MA 02111-1307 USA
- *
- * Users wishing to use this library in proprietary products which are not 
- * themselves to be released under the GNU Public License should contact Custom
- * Credit Systems for a license to do so.
- * 
- *               Custom Credit Systems, Richardson, TX 75081, USA.
- *                          http://www.thinwire.com
+ #LICENSE_HEADER#
+ #VERSION_HEADER#
  */
 package thinwire.render.web;
 
@@ -137,8 +117,47 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
 	}
     
     void setStyle(String propertyName, boolean isNotDefault) {
-        Object value = comp.getStyle().getProperty(propertyName);
-        if (isNotDefault && value.equals(comp.getStyle().getPropertyDefault(propertyName))) return;
+        if (propertyName.startsWith("fx")) return;
+        Style s = comp.getStyle();
+        Style ds = comp.getStyle().getDefaultStyle();
+        Object value;
+        Object defaultValue;
+        
+        if (propertyName.equals(Background.PROPERTY_BACKGROUND_COLOR)) {
+            value = s.getBackground().getColor();
+            defaultValue = ds.getBackground().getColor(); 
+        } else if (propertyName.equals(Border.PROPERTY_BORDER_COLOR)) {
+            value = s.getBorder().getColor();
+            defaultValue = ds.getBorder().getColor(); 
+        } else if (propertyName.equals(Border.PROPERTY_BORDER_SIZE)) {
+            value = s.getBorder().getSize();
+            defaultValue = ds.getBorder().getSize(); 
+        } else if (propertyName.equals(Border.PROPERTY_BORDER_TYPE)) {
+            value = s.getBorder().getType();
+            defaultValue = ds.getBorder().getType(); 
+        } else if (propertyName.equals(Font.PROPERTY_FONT_FAMILY)) {
+            value = s.getFont().getFamily();
+            defaultValue = ds.getFont().getFamily(); 
+        } else if (propertyName.equals(Font.PROPERTY_FONT_SIZE)) {
+            value = s.getFont().getSize();
+            defaultValue = ds.getFont().getSize(); 
+        } else if (propertyName.equals(Font.PROPERTY_FONT_COLOR)) {
+            value = s.getFont().getColor();
+            defaultValue = ds.getFont().getColor(); 
+        } else if (propertyName.equals(Font.PROPERTY_FONT_BOLD)) {
+            value = s.getFont().isBold();
+            defaultValue = ds.getFont().isBold(); 
+        } else if (propertyName.equals(Font.PROPERTY_FONT_ITALIC)) {
+            value = s.getFont().isItalic();
+            defaultValue = ds.getFont().isItalic(); 
+        } else if (propertyName.equals(Font.PROPERTY_FONT_UNDERLINE)) {
+            value = s.getFont().isUnderline();
+            defaultValue = ds.getFont().isUnderline(); 
+        } else {
+            throw new IllegalArgumentException("unknown property '" + propertyName + "'");
+        }
+        
+        if (isNotDefault && value.equals(defaultValue)) return;
         
         if (value instanceof Color) {
             value = ((Color)value).toRGBString();
@@ -301,7 +320,16 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     }
 
     void setPropertyWithEffect(String propertyName, Object newValue, Object oldValue, String standardMethod, String styleProp) {
-        FX.Type type = (FX.Type)comp.getStyle().getProperty(styleProp);
+        FX.Type type;
+        FX fx = comp.getStyle().getFX();
+        
+        if (styleProp.equals(FX.PROPERTY_FX_VISIBLE_CHANGE)) {
+            type = fx.getVisibleChange();
+        } else if (styleProp.equals(FX.PROPERTY_FX_POSITION_CHANGE)) {
+            type = fx.getPositionChange();
+        } else {
+            type = fx.getSizeChange();
+        }
         
         if (type == FX.Type.SMOOTH) {
             int time;

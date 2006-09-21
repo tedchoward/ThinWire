@@ -1,33 +1,13 @@
 /*
- *                      ThinWire(TM) RIA Ajax Framework
- *              Copyright (C) 2003-2006 Custom Credit Systems
- * 
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 2 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
- * Place, Suite 330, Boston, MA 02111-1307 USA
- *
- * Users wishing to use this library in proprietary products which are not 
- * themselves to be released under the GNU Public License should contact Custom
- * Credit Systems for a license to do so.
- * 
- *               Custom Credit Systems, Richardson, TX 75081, USA.
- *                          http://www.thinwire.com
+ #LICENSE_HEADER#
+ #VERSION_HEADER#
  */
 package thinwire.ui.style;
 
 /**
  * @author Joshua J. Gertzen
  */
-public class Style implements StyleGroup<Style> {  
+public class Style {  
     private static final Style DEFAULT_STYLE;
     static {
         Style s = new Style();
@@ -59,6 +39,7 @@ public class Style implements StyleGroup<Style> {
     private Background background;
     private Border border;
     private FX fx;
+    Style defaultStyle;
     
     public Style() {
         this(null, null);
@@ -71,10 +52,11 @@ public class Style implements StyleGroup<Style> {
     protected Style(Style defaultStyle, Object parent) {
         this.parent = parent;        
         if (defaultStyle == null) defaultStyle = DEFAULT_STYLE;
-        this.font = new Font(this, defaultStyle);
-        this.background = new Background(this, defaultStyle);
-        this.border = new Border(this, defaultStyle);
-        this.fx = new FX(this, defaultStyle);
+        this.defaultStyle = defaultStyle;
+        this.font = new Font(this);
+        this.background = new Background(this);
+        this.border = new Border(this);
+        this.fx = new FX(this);
     }
 
     //NOTE: This is overridden by Component so it can receive these property change notifications
@@ -90,46 +72,8 @@ public class Style implements StyleGroup<Style> {
         getFX().copy(style.getFX());
     }
     
-    public Object getProperty(String propertyName) {
-        if (propertyName.startsWith("font")) {
-            return getFont().getProperty(propertyName);
-        } else if (propertyName.startsWith("background")) {
-            return getBackground().getProperty(propertyName);
-        } else if (propertyName.startsWith("border")) {
-            return getBorder().getProperty(propertyName);
-        } else if (propertyName.startsWith("fx")) {
-            return getFX().getProperty(propertyName);
-        } else {
-            throw new IllegalArgumentException("property '" + propertyName + "' is unknown");
-        }
-    }
-    
-    public void setProperty(String propertyName, Object value) {
-        if (propertyName.startsWith("font")) {
-            getFont().setProperty(propertyName, value);
-        } else if (propertyName.startsWith("background")) {
-            getBackground().setProperty(propertyName, value);
-        } else if (propertyName.startsWith("border")) {
-            getBorder().setProperty(propertyName, value);
-        } else if (propertyName.startsWith("fx")) {
-            getFX().setProperty(propertyName, value);
-        } else {
-            throw new IllegalArgumentException("property '" + propertyName + "' is unknown");
-        }        
-    }
-
-    public Object getPropertyDefault(String propertyName) {
-        if (propertyName.startsWith("font")) {
-            return getFont().getPropertyDefault(propertyName);
-        } else if (propertyName.startsWith("background")) {
-            return getBackground().getPropertyDefault(propertyName);
-        } else if (propertyName.startsWith("border")) {
-            return getBorder().getPropertyDefault(propertyName);
-        } else if (propertyName.startsWith("effect")) {
-            return getFX().getPropertyDefault(propertyName);
-        } else {
-            throw new IllegalArgumentException("property '" + propertyName + "' is unknown");
-        }
+    public Style getDefaultStyle() {
+        return defaultStyle;
     }
     
     public Object getParent() {

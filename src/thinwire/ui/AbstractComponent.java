@@ -1,26 +1,6 @@
 /*
- *                      ThinWire(TM) RIA Ajax Framework
- *              Copyright (C) 2003-2006 Custom Credit Systems
- * 
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 2 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
- * Place, Suite 330, Boston, MA 02111-1307 USA
- *
- * Users wishing to use this library in proprietary products which are not 
- * themselves to be released under the GNU Public License should contact Custom
- * Credit Systems for a license to do so.
- * 
- *               Custom Credit Systems, Richardson, TX 75081, USA.
- *                          http://www.thinwire.com
+ #LICENSE_HEADER#
+ #VERSION_HEADER#
  */
 package thinwire.ui;
 
@@ -37,12 +17,14 @@ import thinwire.ui.style.*;
  * @author Joshua J. Gertzen
  */
 abstract class AbstractComponent implements Component {
+    //#IFDEF V1_1_COMPAT    
     private static final String COMPAT_MODE_PROP = Application.class.getName() + ".compatMode";
     static boolean isCompatModeOn() {
         String value = System.getProperty(COMPAT_MODE_PROP);
         return value != null && value.toUpperCase().equals("TRUE");        
     }
     
+    //#ENDIF
     private static Map<Class, Style> defaultStyles = new HashMap<Class, Style>();
     
     static {
@@ -122,7 +104,7 @@ abstract class AbstractComponent implements Component {
     String getStandardPropertyUnsupportedMsg(String propertyName, boolean read) {
         return this.getClass().getName() + " does not support " + (read ? "reading from" : "writing to") + " the property: " + propertyName;
     }
-    
+    //#IFDEF V1_1_COMPAT
 
     /**
      * Adds a specific PropertyChangeListener to the component dependent on this component's type.
@@ -160,7 +142,6 @@ abstract class AbstractComponent implements Component {
      * @see #addPropertyChangeListener(String, PropertyChangeListener)
      * @deprecated for performance concerns.  Use {@link #addPropertyChangeListener(String, PropertyChangeListener)} instead.
      */
-    @Deprecated
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         if (!isCompatModeOn()) {
             throw new IllegalStateException("this method is deprecated as of v1.2 and cannot be called unless compat mode is on, use the addPropertyChangeListener(propertyName, listener) form instead");
@@ -178,6 +159,7 @@ abstract class AbstractComponent implements Component {
             throw new IllegalStateException("this method is deprecated as of v1.2; compat mode is on, but you are trying to listent to an unsupported component.  Use the addPropertyChangeListener(propertyName, listener) form instead.");
         }        
     }
+    //#ENDIF
 
     public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
         pcei.addListener(propertyName, listener);

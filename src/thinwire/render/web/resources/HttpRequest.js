@@ -1,3 +1,7 @@
+/*
+ #LICENSE_HEADER#
+ #VERSION_HEADER#
+ */
 var tw_HttpRequest = Class.extend({
     _comm: null,
     _ready: true,

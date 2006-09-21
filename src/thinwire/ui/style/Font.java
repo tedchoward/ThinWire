@@ -1,26 +1,6 @@
 /*
- *                      ThinWire(TM) RIA Ajax Framework
- *              Copyright (C) 2003-2006 Custom Credit Systems
- * 
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 2 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
- * Place, Suite 330, Boston, MA 02111-1307 USA
- *
- * Users wishing to use this library in proprietary products which are not 
- * themselves to be released under the GNU Public License should contact Custom
- * Credit Systems for a license to do so.
- * 
- *               Custom Credit Systems, Richardson, TX 75081, USA.
- *                          http://www.thinwire.com
+ #LICENSE_HEADER#
+ #VERSION_HEADER#
  */
 package thinwire.ui.style;
 
@@ -33,14 +13,13 @@ import thinwire.ui.Application;
 /**
  * @author Joshua J. Gertzen
  */
-public class Font implements StyleGroup<Font> {
+public class Font {
     public static final String PROPERTY_FONT_UNDERLINE = "fontUnderline";
     public static final String PROPERTY_FONT_ITALIC = "fontItalic";
     public static final String PROPERTY_FONT_BOLD = "fontBold";
     public static final String PROPERTY_FONT_SIZE = "fontSize";
     public static final String PROPERTY_FONT_COLOR = "fontColor";
     public static final String PROPERTY_FONT_FAMILY = "fontFamily";
-    private static final ClassReflector<Font> reflect = new ClassReflector<Font>(Font.class, "PROPERTY_", "font");
     
     public static enum Family {
         SERIF, SANS_SERIF, CURSIVE, FANTASY, MONOSPACE;
@@ -87,7 +66,6 @@ public class Font implements StyleGroup<Font> {
     }
     
     private Style parent;
-    private Style defaultStyle;
     private Family family;
     private Color color;
     private int size;
@@ -96,10 +74,9 @@ public class Font implements StyleGroup<Font> {
     private int underline = -1;
     private String computedState;
     
-    Font(Style parent, Style defaultStyle) {
+    Font(Style parent) {
         this.parent = parent;
-        this.defaultStyle = defaultStyle;        
-        if (defaultStyle != null) copy(defaultStyle.getFont());
+        if (parent.defaultStyle != null) copy(parent.defaultStyle.getFont());
     }
     
     private String getComputedState() {
@@ -146,26 +123,15 @@ public class Font implements StyleGroup<Font> {
         
         return width;
     }
-
-    public Object getProperty(String propertyName) {
-        return reflect.getProperty(this, propertyName);
-    }
-    
-    public void setProperty(String propertyName, Object value) {
-        reflect.setProperty(this, propertyName, value);
-    }
-    
-    public Object getPropertyDefault(String propertyName) {
-        if (defaultStyle == null) throw new IllegalStateException("defaultStyle == null");
-        return reflect.getProperty(defaultStyle.getFont(), propertyName);
-    }
         
     public void copy(Font font) {
         if (font == null) throw new IllegalArgumentException("font == null");
-        
-        for (String name : reflect.getPropertyNames()) {
-            setProperty(name, font.getProperty(name));
-        }
+        setFamily(font.getFamily());
+        setColor(font.getColor());
+        setSize(font.getSize());
+        setBold(font.isBold());
+        setItalic(font.isItalic());
+        setUnderline(font.isUnderline());
     }
     
     public Style getParent() {
@@ -177,7 +143,7 @@ public class Font implements StyleGroup<Font> {
     }
     
     public void setFamily(Family family) {        
-        if (family == null && defaultStyle != null) family = defaultStyle.getFont().getFamily();
+        if (family == null && parent.defaultStyle != null) family = parent.defaultStyle.getFont().getFamily();
         if (family == null) throw new IllegalArgumentException("family == null");
         Family oldFamily = this.family;
         this.computedState = null;
@@ -191,7 +157,7 @@ public class Font implements StyleGroup<Font> {
     }
     
     public void setColor(Color color) {
-        if (color == null && defaultStyle != null) color = defaultStyle.getFont().getColor();        
+        if (color == null && parent.defaultStyle != null) color = parent.defaultStyle.getFont().getColor();        
         if (color == null) throw new IllegalArgumentException("color == null");
         Color oldColor = this.color;
         this.color = color;        
@@ -204,7 +170,7 @@ public class Font implements StyleGroup<Font> {
     }
     
     public void setSize(int size) {
-        if (size <= 0 && defaultStyle != null) size = defaultStyle.getFont().getSize();
+        if (size <= 0 && parent.defaultStyle != null) size = parent.defaultStyle.getFont().getSize();
         if (size <= 0 || size > 128) throw new IllegalArgumentException("size <= 0 || size > 128");
         int oldSize = this.size;
         this.computedState = null;        

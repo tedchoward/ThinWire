@@ -1,26 +1,6 @@
 /*
- *                      ThinWire(TM) RIA Ajax Framework
- *              Copyright (C) 2003-2006 Custom Credit Systems
- * 
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 2 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
- * Place, Suite 330, Boston, MA 02111-1307 USA
- *
- * Users wishing to use this library in proprietary products which are not 
- * themselves to be released under the GNU Public License should contact Custom
- * Credit Systems for a license to do so.
- * 
- *               Custom Credit Systems, Richardson, TX 75081, USA.
- *                          http://www.thinwire.com
+ #LICENSE_HEADER#
+ #VERSION_HEADER#
  */
 package thinwire.ui;
 
@@ -82,7 +62,7 @@ import thinwire.ui.style.Style;
  */
 public class Button extends AbstractTextComponent implements ImageComponent, ActionEventComponent {
     public static final String PROPERTY_STANDARD = "standard";
-    
+        
     static {
         Style s = new Style(getDefaultStyle(Component.class)); //inherit defaults from Component class
         s.getBackground().setColor(Color.BUTTONFACE);
@@ -177,19 +157,20 @@ public class Button extends AbstractTextComponent implements ImageComponent, Act
 	    }
 	    
 	    firePropertyChange(this, PROPERTY_STANDARD, oldStandard, standard);
-	}	
-	
+	}
+    //#IFDEF V1_1_COMPAT
+    
 	/**
 	 * Add an actionListener that receives "click" notification from this object.
      * Equivalent to addActionListener("click", listener);
 	 * @param listener the listener to add
 	 * @deprecated for performance reasons, this form as been deprecated.  Use the named action form instead.
 	 */
-    @Deprecated
 	public void addActionListener(ActionListener listener) {
         if (!isCompatModeOn()) throw new IllegalStateException("this method is deprecated as of v1.2 and cannot be called unless compat mode is on, use addActionListener(action, listener) instead.");        
         aei.addListener(ACTION_CLICK, listener);
 	}
+    //#ENDIF
 
     /**
      * Add an actionListener which associates an action (ex: "click") with some method call.

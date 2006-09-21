@@ -1,26 +1,6 @@
 /*
- *                      ThinWire(TM) RIA Ajax Framework
- *              Copyright (C) 2003-2006 Custom Credit Systems
- * 
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 2 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
- * Place, Suite 330, Boston, MA 02111-1307 USA
- *
- * Users wishing to use this library in proprietary products which are not 
- * themselves to be released under the GNU Public License should contact Custom
- * Credit Systems for a license to do so.
- * 
- *               Custom Credit Systems, Richardson, TX 75081, USA.
- *                          http://www.thinwire.com
+ #LICENSE_HEADER#
+ #VERSION_HEADER#
  */
 package thinwire.ui;
 
@@ -219,7 +199,9 @@ public final class GridBox extends AbstractComponent implements Grid<GridBox.Row
                 if (checked) gb.checkedRows.add(this);
         		
                 if (gb.firePropertyChange(this, PROPERTY_ROW_CHECKED, oldChecked, checked)) {
+                    //#IFDEF V1_1_COMPAT                    
                     if (gb.compatModeOn) gb.firePropertyChange(this, "checked", oldChecked, checked);
+                    //#ENDIF
                     DropDownGridBox dd = getDropDown(gb);
                     if (dd != null) dd.setText(dd.getView().getValue().toString());
                 }
@@ -259,7 +241,9 @@ public final class GridBox extends AbstractComponent implements Grid<GridBox.Row
             }
             
     		gb.firePropertyChange(this, PROPERTY_ROW_SELECTED, oldSelected, selected);
+            //#IFDEF V1_1_COMPAT
             if (gb.compatModeOn) gb.firePropertyChange(this, "selected", oldSelected, selected);
+            //#ENDIF
         }
         
         /**
@@ -312,7 +296,7 @@ public final class GridBox extends AbstractComponent implements Grid<GridBox.Row
         }    
         
         //Visible used to default to false, which creates confusion when using this component.
-        private boolean visible = isCompatModeOn() ? false : true;
+        private boolean visible = true;
         private int width = -1;
         private AlignX alignX = AlignX.LEFT;
         private Format displayFormat = null;
@@ -322,7 +306,10 @@ public final class GridBox extends AbstractComponent implements Grid<GridBox.Row
          * Construct a Column.
          */
         public Column() {
-
+            
+            //#IFDEF V1_1_COMPAT
+            if (isCompatModeOn()) visible = false;
+            //#ENDIF
         }
 
         /**
@@ -505,7 +492,9 @@ public final class GridBox extends AbstractComponent implements Grid<GridBox.Row
     private boolean visibleHeader;
     private boolean visibleCheckBoxes;
     private boolean fullRowCheckBox;
-    private boolean compatModeOn;    
+    //#IFDEF V1_1_COMPAT
+    private boolean compatModeOn;
+    //#ENDIF
     private int selectedRowIndex = -1;
     private Column sortedColumn;
     private Column.SortOrder sortedColumnOrder; 
@@ -584,7 +573,9 @@ public final class GridBox extends AbstractComponent implements Grid<GridBox.Row
         roCheckedRows = Collections.unmodifiableSortedSet(checkedRows);
         rowsWithChildren = new TreeSet<Row>(indexOrder);
         roRowsWithChildren = Collections.unmodifiableSortedSet(rowsWithChildren);        
-        compatModeOn = isCompatModeOn();       
+        //#IFDEF V1_1_COMPAT
+        compatModeOn = isCompatModeOn();
+        //#ENDIF
 	}
     
     void setRenderer(Renderer r) {
@@ -619,6 +610,7 @@ public final class GridBox extends AbstractComponent implements Grid<GridBox.Row
 	public void removeItemChangeListener(ItemChangeListener listener) {
         icei.removeListener(listener);
 	}	
+    //#IFDEF V1_1_COMPAT
 	
     /**
      * Adds a listener which will perform a certain action when a specific action occurs
@@ -626,11 +618,11 @@ public final class GridBox extends AbstractComponent implements Grid<GridBox.Row
      * @param listener the listener to add
      * @deprecated for performance reasons, this form as been deprecated.  Use the named action form instead. 
      */
-    @Deprecated
     public void addActionListener(ActionListener listener) {
         if (!isCompatModeOn()) throw new IllegalStateException("this method is deprecated as of v1.2 and cannot be called unless compat mode is on, use addActionListener(action, listener) instead.");        
         aei.addListener(ACTION_CLICK, listener);
     }
+    //#ENDIF
 
     public void addActionListener(String action, ActionListener listener) {
         aei.addListener(action, listener);
@@ -795,10 +787,13 @@ public final class GridBox extends AbstractComponent implements Grid<GridBox.Row
         if (getParent() instanceof DropDownGridBox) throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_Y, false));
         super.setY(y);
     }
+    //#IFDEF V1_1_COMPAT
     
     DropDown.View<GridBox> view;     
 
-    @Deprecated
+    /**
+     * @deprecated
+     */
     public DropDown.View<GridBox> getView() {
         if (!isCompatModeOn()) throw new IllegalStateException("this method is deprecated as of v1.2 and cannot be called unless compat mode is on, use DropDown.getView() instead; GridBox's no longer hold a reference to a view.");
 
@@ -812,4 +807,5 @@ public final class GridBox extends AbstractComponent implements Grid<GridBox.Row
         
         return view;
     }
+    //#ENDIF
 }

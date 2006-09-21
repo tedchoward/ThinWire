@@ -1,26 +1,6 @@
 /*
- *                      ThinWire(TM) RIA Ajax Framework
- *              Copyright (C) 2003-2006 Custom Credit Systems
- * 
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 2 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
- * Place, Suite 330, Boston, MA 02111-1307 USA
- *
- * Users wishing to use this library in proprietary products which are not 
- * themselves to be released under the GNU Public License should contact Custom
- * Credit Systems for a license to do so.
- * 
- *               Custom Credit Systems, Richardson, TX 75081, USA.
- *                          http://www.thinwire.com
+ #LICENSE_HEADER#
+ #VERSION_HEADER#
  */
 package thinwire.ui;
 
@@ -121,13 +101,13 @@ abstract class AbstractHierarchyComponent<HI extends AbstractHierarchyComponent.
             H hier = getHierarchy();
             if (hier != null) hier.firePropertyChange(this, PROPERTY_ITEM_USER_OBJECT, oldValue, this.userObject);
         }
+        //#IFDEF V1_1_COMPAT
         
         /**
          * @return value from getUserObject()
          * @deprecated in favor of getUserObject
          * @see #getUserObject()
          */
-        @Deprecated
         public Object getValue() {
             if (!isCompatModeOn()) throw new IllegalStateException("this method is deprecated as of v1.2 and cannot be called unless compat mode is on, use getUserObject() instead.");            
             return getUserObject();
@@ -138,11 +118,11 @@ abstract class AbstractHierarchyComponent<HI extends AbstractHierarchyComponent.
          * @deprecated in favor of setUserObject
          * @see #setUserObject(Object)
          */
-        @Deprecated
         public void setValue(Object value) {
             if (!isCompatModeOn()) throw new IllegalStateException("this method is deprecated as of v1.2 and cannot be called unless compat mode is on, use setUserObject() instead.");            
             setUserObject(value);
         }
+        //#ENDIF
         
         public int getIndex() {
             if (parent == null) throw new IllegalStateException("getParent() == null");
@@ -201,7 +181,8 @@ abstract class AbstractHierarchyComponent<HI extends AbstractHierarchyComponent.
 
     public void removeItemChangeListener(ItemChangeListener listener) {
         icei.removeListener(listener);
-    }
+    }    
+    //#IFDEF V1_1_COMPAT
     
     /**
      * Register an ActionListener that will be notified when a Menu action occurs. Actions: Menu.ACTION_CLICK - Fired when a
@@ -209,11 +190,11 @@ abstract class AbstractHierarchyComponent<HI extends AbstractHierarchyComponent.
      * @param listener the listener that is to be notified when a Menu action occurs.
      * @deprecated for performance reasons, this form as been deprecated.  Use the named action form instead.
      */
-    @Deprecated
     public void addActionListener(ActionListener listener) {
         if (!isCompatModeOn()) throw new IllegalStateException("this method is deprecated as of v1.2 and cannot be called unless compat mode is on, use addActionListener(action, listener) instead.");        
         aei.addListener(ACTION_CLICK, listener);
     }
+    //#ENDIF
 
     public void addActionListener(String action, ActionListener listener) {
         aei.addListener(action, listener);

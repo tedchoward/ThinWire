@@ -1,31 +1,10 @@
 /*
- *                      ThinWire(TM) RIA Ajax Framework
- *              Copyright (C) 2003-2006 Custom Credit Systems
- * 
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 2 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
- * Place, Suite 330, Boston, MA 02111-1307 USA
- *
- * Users wishing to use this library in proprietary products which are not 
- * themselves to be released under the GNU Public License should contact Custom
- * Credit Systems for a license to do so.
- * 
- *               Custom Credit Systems, Richardson, TX 75081, USA.
- *                          http://www.thinwire.com
+ #LICENSE_HEADER#
+ #VERSION_HEADER#
  */
 package thinwire.ui;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -120,24 +99,26 @@ public abstract class Application {
      * Displays a version detail dialog.
      * @param args
      */
-    public static void main(String[] args) {        
-        StringBuffer sb = new StringBuffer();
+    public static void main(String[] args) throws Exception {
+        BufferedReader r = new BufferedReader(new InputStreamReader(Application.class.getResourceAsStream("resources/licenseHeader.txt")));        
+        java.io.PrintStream ps = System.out;        
+        String line = r.readLine();
+        
+        while (line != null) {
+            ps.println(line);
+            line = r.readLine();
+        }
+
+        ps.println("\nPress any key to continue");        
+        System.in.read();
+        ps.println("\nDetails from Application.current().getPlatformVersionInfo()\n");
         
         for (Map.Entry<String, String> e : getPlatformVersionInfo().entrySet()) {
-            sb.append(e.getKey() + "=" + e.getValue() + "\n");
+            ps.println(e.getKey() + "=" + e.getValue());
         }
-                
-        final java.awt.Frame frame = new java.awt.Frame(Application.class.getName() + ".getPlatformVersionInfo()");
-        final java.awt.TextArea ta = new java.awt.TextArea(sb.toString());
-        ta.setEditable(false);
-        frame.add(ta);
-        frame.setSize(640, 480);
-        frame.setVisible(true);
-        frame.addWindowListener(new java.awt.event.WindowAdapter() {
-            public void windowClosing(java.awt.event.WindowEvent ev) {
-                frame.dispose();
-            }            
-        });        
+
+        ps.println("\nPress any key to continue");        
+        System.in.read();
     }
     
     /**
