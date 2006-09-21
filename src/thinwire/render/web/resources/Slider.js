@@ -22,19 +22,16 @@
  *               Custom Credit Systems, Richardson, TX 75081, USA.
  *                          http://www.thinwire.com
  */
-var tw_Slider = tw_Component.extend({
+var tw_Slider = tw_BaseRange.extend({
     _cursorDrag: null,
     _max: null,
-    _length: null,
-    _multiplier: null,
-    _cursorIndex: null,
-    _vertical: false,
     _clickListener: null,
+    _line: null,
    
     construct: function(id, containerId, props) {
         this.$.construct.apply(this, ["div", "slider", id, containerId]);
         var s = this._box.style;
-        s.backgroundColor = tw_COLOR_TRANSPARENT;
+        s.backgroundColor = "transparent";
         
         var line = document.createElement("div");
         var s = line.style;
@@ -42,88 +39,79 @@ var tw_Slider = tw_Component.extend({
         s.border = "1px solid";
         s.borderColor = "buttonshadow buttonhighlight buttonhighlight buttonshadow";
         s.lineHeight = "0px";
-        this._box.appendChild(line);
+        this._box.insertBefore(line, this._selection);
+        this._line = line;
         
-        var cursor = document.createElement("div");
-        var s = cursor.style;
-        s.position = "absolute";    
-        s.border = "2px outset";
-        s.overflow = "hidden";
-        s.backgroundColor = tw_COLOR_BUTTONFACE;
-        this._cursorDrag = new tw_DragHandler(cursor, this._cursorDragListener.bind(this));
-        this._box.appendChild(cursor);
+        this._borderBox = this._selection;
+        this.setStyle("backgroundColor", tw_COLOR_BUTTONFACE);
+        this.setStyle("borderSize", 2);
+        this.setStyle("borderType", "outset");
+        this.setStyle("borderColor", tw_COLOR_BUTTONFACE);
+        this._cursorDrag = new tw_DragHandler(this._selection, this._cursorDragListener.bind(this));
         
-        this.setLength(props.length);
-        this.setCursorIndex(props.cursorIndex);
         tw_addEventListener(this._box, "click", this._clickListener.bind(this));
         tw_setFocusCapable(this._box, true);
         this.init(-1, props);
     },
     
     _cursorDragListener: function(ev) {
+        var s = this._selection.style;
         if (ev.type == 1) {
-            var s = this._box.getElementsByTagName("div")[1].style;
-            if (this._vertical) {
-                var y = parseInt(s.top) + ev.changeInY;
-                if (y < 0) y = 0;
-                if (y > this._max) y = this._max
-                s.top = y + "px";
-            } else {
-                var x = parseInt(s.left) + ev.changeInX;
-                if (x < 0) x = 0;
-                if (x > this._max) x = this._max
-                s.left = x + "px";
-            }
+            var pos_prop = this._vertical ? "top" : "left";
+            var change_prop = this._vertical ? "changeInY" : "changeInX";
+            var x = parseInt(s[pos_prop]) + ev[change_prop];
+            if (x < 0) x = 0;
+            if (x > this.getMax()) x = this.getMax();
+            s[pos_prop] = x + "px";
         } else if (ev.type == 2) {
-            var s = this._box.getElementsByTagName("div")[1].style;
             var newValue = 0;
             if (this._vertical) {
-                newValue = Math.round((this._max - parseFloat(s.top)) / this._multiplier);
+                newValue = Math.round((this.getMax() - parseFloat(s.top)) / this._multiplier);
             } else {
                 newValue = Math.round(parseFloat(s.left) / this._multiplier);
             }
-            this.setCursorIndex(newValue);
-            this.firePropertyChange("cursorIndex", newValue);
+            this.setCurrentIndex(newValue);
+            this.firePropertyChange("currentIndex", newValue);
         }
     },
     
     _recalc: function() {
-        if (this._width != -1 && this._height != -1) {
-            var children = this._box.getElementsByTagName("div");
+        if (this.getWidth() != -1 && this.getHeight() != -1) {
             
             if (this.getWidth() > this.getHeight()) {
-                this._vertical = false;    
-                var l = children[0].style;    //line
+                var l = this._line.style;
                 l.left = "0px";
                 l.top = Math.floor(this.getHeight() / 2) + "px";
-                l.width = this._width + "px";
+                l.width = this.getWidth() + "px";
                 l.height = "0px";
                 
-                var c = children[1].style;    //cursor
-                c.height = "15px";
+                var c = this._selection.style;
+                c.top = "0px";
                 c.width = "5px";
-                c.top = (Math.floor(this.getHeight() / 2) - Math.floor((parseInt(c.height) + tw_CALC_BORDER_SUB) / 2)) + "px";
-                c.left = "0px";
+                c.height = this.getHeight() > this.getStyle("borderSize") ? this.getHeight() - (this.getStyle("borderSize") * 2) + "px" : "0px";
                 
-                this._max = this.getWidth() - (parseInt(c.width) + tw_CALC_BORDER_SUB);
+                this._max = this.getWidth() - (parseInt(c.width) + (this.getStyle("borderSize") * 2));
             } else {
-                this._vertical = true;
-                var l = children[0].style;
+                
+                var l = this._line.style;
                 l.left = Math.floor(this.getWidth() / 2) + "px";
                 l.top = "0px";
                 l.width = "0px";
-                l.height = this._height + "px";
+                l.height = this.getHeight() + "px";
                 
-                var c = children[1].style;
-                c.top = "0px";
+                var c = this._selection.style;
+                c.left = "0px";
+                c.width = this.getWidth() > this.getStyle("borderSize") ? this.getWidth() - (this.getStyle("borderSize") * 2) + "px" : "0px";
                 c.height = "5px";
-                c.width = "15px";
-                c.left = (Math.floor(this.getWidth() / 2) - Math.floor((parseInt(c.width) + tw_CALC_BORDER_SUB) / 2)) + "px";
-                this._max = this.getHeight() - (parseInt(c.height) + tw_CALC_BORDER_SUB);
+                
+                this._max = this.getHeight() - (parseInt(c.height) + this.getStyle("borderSize") * 2);
             }
-            this.setLength();
-            this.setCursorIndex();
+            this.$._recalc.apply(this, []);
         }
+    },
+    
+    _updateSelection: function() {
+        this.$._updateSelection.apply(this, ["left"]);
     },
     
     _clickListener: function() {
@@ -131,52 +119,31 @@ var tw_Slider = tw_Component.extend({
        this.setFocus(true);
     },
     
-    setWidth: function(width) {
-        this.$.setWidth.apply(this, [width]);
-        this._recalc();
-    },
-    
-    setHeight: function(height) {
-        this.$.setHeight.apply(this, [height]);
-        this._recalc();
-    },
-    
-    setCursorIndex: function(cursorIndex) {
-        if (cursorIndex != null) this._cursorIndex = cursorIndex;
-        var s = this._box.getElementsByTagName("div")[1].style;
-        if (this._vertical) {
-            s.top = Math.floor(this._max - (this._cursorIndex * this._multiplier)) + "px";
-        } else {
-            s.left = Math.floor(this._cursorIndex * this._multiplier) + "px";
-        }
-    },
-    
-    setLength: function(length) {
-        if (length != null) this._length = length;
-        this._multiplier = this._max / (this._length - 1);
-    },
-    
-    keyPressNotify: function(keyPressCombo) {
-        if ((keyPressCombo == "ArrowDown" && this._vertical) || (keyPressCombo == "ArrowLeft" && !this._vertical)) {
-            if (this._cursorIndex > 0) {
-                this.setCursorIndex(--this._cursorIndex);
-                this.firePropertyChange("cursorIndex", this._cursorIndex);
-            }
-            return false;
-        } else if ((keyPressCombo == "ArrowUp" && this._vertical) || (keyPressCombo == "ArrowRight" && !this._vertical)) {
-            if (this._cursorIndex < this._length - 1) {
-                this.setCursorIndex(++this._cursorIndex);
-                this.firePropertyChange("cursorIndex", this._cursorIndex);
-            }
-            return false;
-        } else {
-            return this.$.keyPressNotify.apply(this, [keyPressCombo]);
-        }
+    getMax: function() {
+        return this._max;
     },
     
     setEnabled: function(enabled) {
        if (enabled == this.isEnabled()) return;
        this.$.setEnabled.apply(this, [enabled]);
        tw_setFocusCapable(this._box, enabled);
+    },
+    
+    keyPressNotify: function(keyPressCombo) {
+        if ((keyPressCombo == "ArrowDown" && this._vertical) || (keyPressCombo == "ArrowLeft" && !this._vertical)) {
+            if (this.getCurrentIndex() > 0) {
+                this.setCurrentIndex(this.getCurrentIndex() - 1);
+                this.firePropertyChange("currentIndex", this.getCurrentIndex());
+            }
+            return false;
+        } else if ((keyPressCombo == "ArrowUp" && this._vertical) || (keyPressCombo == "ArrowRight" && !this._vertical)) {
+            if (this.getCurrentIndex() < this._length - 1) {
+                this.setCurrentIndex(this.getCurrentIndex() + 1);
+                this.firePropertyChange("currentIndex", this.getCurrentIndex());
+            }
+            return false;
+        } else {
+            return this.$.keyPressNotify.apply(this, [keyPressCombo]);
+        }
     }
 });
