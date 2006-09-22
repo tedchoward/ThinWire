@@ -50,7 +50,7 @@ var tw_Dialog = tw_BaseContainer.extend({
         s.backgroundColor = bs.backgroundColor;
         s.color = bs.fontColor;
         s.borderStyle = bs.borderType;
-        s.borderColor = tw_Component.getIEBorderColor(bs.borderColor);
+        s.borderColor = this._getBorderColor(bs.borderColor, bs.borderType);
         closeButton.appendChild(document.createTextNode("X"));
         
         title.appendChild(closeButton);    

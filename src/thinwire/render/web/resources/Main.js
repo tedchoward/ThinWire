@@ -3,12 +3,47 @@
  #VERSION_HEADER#
  */
 // Determine Standards Compliance
-var tw_userAgent = navigator.userAgent.toLowerCase();
-var tw_isOpera = tw_userAgent.indexOf("opera") >= 0;
-var tw_isGecko = !tw_isOpera && tw_userAgent.indexOf("gecko") >= 0;
-var tw_isIE = !tw_isOpera && !tw_isGecko && tw_userAgent.indexOf("msie") >= 0;
-var tw_isIE55 = tw_isIE && tw_userAgent.indexOf("msie 5.5") >= 0;
-if (!tw_isIE && !tw_isIE55 && !tw_isGecko && !tw_isOpera) alert("This browser is not officially supported:" + tw_userAgent);
+var tw_isOpera = false;
+var tw_isSafari = false;
+var tw_isFirefox = false;
+var tw_isIE = false;
+var tw_isGecko = false;
+var tw_bVer = 0;
+
+function parseBrowserType(ua) {
+    var msg = "This browser is not officially supported";
+    var agent = ua.toLowerCase();
+
+    function parseBrowser(browser, ver) {
+        var index = agent.indexOf(browser);
+        
+        if (index >= 0) {
+            index += browser.length + 1;
+            while (index < agent.length && !/[\d.]/.test(agent.charAt(index))) index++;
+            var end = index;
+            while (end < agent.length && /[\d.]/.test(agent.charAt(end++)));
+            end++;
+            tw_bVer = parseFloat(agent.substring(index, end));
+            if (tw_bVer >= ver) msg = null;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    if (tw_isOpera = parseBrowser("opera", 8)) {}
+    else if (tw_isSafari = parseBrowser("safari", 412)) {}
+    else if (tw_isFirefox = tw_isGecko = parseBrowser("firefox", 1)) {}
+    else if (tw_isIE = parseBrowser("msie", 5.5)) {}
+    else if (tw_isGecko = parseBrowser("gecko", 20050512)) {};
+    
+    if (msg != null) alert(msg + ":\n" + ua);
+}
+
+parseBrowserType(navigator.userAgent);
+var tw_isWin = navigator.userAgent.indexOf("Windows") > 0;
+var tw_sizeIncludesBorders = tw_isIE && tw_bVer < 6;
+var tw_useSmartTab = tw_isWin && ((tw_isIE && tw_bVer >= 6) || (tw_isFirefox && tw_bVer >= 1.5));
 
 function tw_include(name) {
     try {

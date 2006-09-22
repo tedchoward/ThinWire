@@ -125,8 +125,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
 	}
     
     void setStyle(String propertyName, boolean isNotDefault) {
-        if (propertyName.startsWith("fx")) return;
-        if (isPropertyChangeIgnored(propertyName)) return;
+        if (propertyName.startsWith("fx") || isPropertyChangeIgnored(propertyName)) return;
         Style s = comp.getStyle();
         Style ds = wr.ai.getDefaultStyle(comp.getClass());
         Object value;

@@ -6,8 +6,6 @@
 //TODO: When a button or component is disabled it should be excluded from the tabbing order.
 //TODO: focus gain / lose does not work in firefox.
 var tw_Button = tw_Component.extend({
-    _borderType: null,
-    
     construct: function(id, containerId, props) {
         this.$.construct.apply(this, ["div", "button", id, containerId]);
         var s = this._box.style;
@@ -17,19 +15,33 @@ var tw_Button = tw_Component.extend({
         
         var border = this._borderBox = this._focusBox = document.createElement("div");
         var s = border.style;
-        s.cursor = "default";
+        //s.cursor = "default";
         s.overflow = "hidden";
-        s.whiteSpace = "nowrap";
-        s.paddingLeft = tw_Button.textPadding + "px";
-        s.paddingRight = tw_Button.textPadding + "px";    
-        s.textAlign = "center";
+        //s.whiteSpace = "nowrap";
+        //s.paddingLeft = tw_Button.textPadding + "px";
+        //s.paddingRight = tw_Button.textPadding + "px";    
+        //s.textAlign = "center";
         s.backgroundColor = tw_COLOR_TRANSPARENT;
+        //s.backgroundRepeat = "no-repeat";
+        //s.backgroundPosition = "center left";
+        //border.appendChild(document.createTextNode(""));        
+        this._box.appendChild(border);
+
+        var surface = this._fontBox = document.createElement("a");
+        var s = surface.style;
+        s.display = "block";        
+        s.overflow = "hidden";
+        s.cursor = "default";
+        s.whiteSpace = "nowrap";
+        s.textAlign = "center";
+        s.paddingLeft = tw_Button.textPadding + "px";
+        s.paddingRight = tw_Button.textPadding + "px";            
         s.backgroundRepeat = "no-repeat";
         s.backgroundPosition = "center left";
+        surface.appendChild(document.createTextNode(""));
+        border.appendChild(surface);
+        this._fontBox = surface;
         
-        border.appendChild(document.createTextNode(""));        
-        this._box.appendChild(border);
-                
         tw_addEventListener(this._box, "mousedown", this._mouseDownListener.bind(this));    
         tw_addEventListener(this._box, ["mouseup", "mouseout"], this._mouseUpListener.bind(this));    
         tw_addEventListener(this._box, "click", this._clickListener.bind(this));
@@ -63,21 +75,12 @@ var tw_Button = tw_Component.extend({
         this.setFocus(true);  
         this.fireAction("click");
     },
-
-    setStyle: function(name, value) {        
-        if (name == "borderSize") {
-            this.$.setStyle.apply(this, [name, value]);
-        } else {
-            if (name == "borderType") this._borderType = value;
-            this.$.setStyle.apply(this, [name, value]);
-        }
-    },
     
     fireClick: function() { this._clickListener(); },
 
     setWidth: function(width) {
         this.$.setWidth.apply(this, [width]);
-        var s = this._borderBox.style;
+        var s = this._fontBox.style;
         width -= this._boxSizeSub;
         if (!tw_sizeIncludesBorders) width -= parseInt(s.paddingLeft) + parseInt(s.paddingRight) + this._borderSizeSub;
         if (width < 0) width = 0;
@@ -86,7 +89,7 @@ var tw_Button = tw_Component.extend({
     
     setHeight: function(height) {
         this.$.setHeight.apply(this, [height]);
-        var s = this._borderBox.style;
+        var s = this._fontBox.style;
         height -= this._boxSizeSub;
         if (!tw_sizeIncludesBorders) height -= this._borderSizeSub;
         if (height < 0) height = 0;
@@ -96,6 +99,7 @@ var tw_Button = tw_Component.extend({
     setEnabled: function(enabled) {
         this.$.setEnabled.apply(this, [enabled]);        
         this._fontBox.color = enabled ? tw_COLOR_BUTTONTEXT : tw_COLOR_GRAYTEXT;
+        tw_setFocusCapable(this._fontBox, enabled);        
     },
     
     setFocus: function(focus) {
@@ -123,12 +127,12 @@ var tw_Button = tw_Component.extend({
     },
     
     setText: function(text) {
-        var b = this._borderBox;         
+        var b = this._fontBox;         
         b.replaceChild(document.createTextNode(text), b.firstChild);
     },
     
     setImage: function(image) {
-        var s = this._borderBox.style;
+        var s = this._fontBox.style;
     
         if (image.length > 0) {
             s.backgroundImage = "url(" + tw_BASE_PATH + "/resources/" + image + ")";

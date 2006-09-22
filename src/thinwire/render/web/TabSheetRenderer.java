@@ -8,6 +8,7 @@ import thinwire.ui.Component;
 import thinwire.ui.TabFolder;
 import thinwire.ui.TabSheet;
 import thinwire.ui.event.PropertyChangeEvent;
+import thinwire.ui.style.Border;
 
 /**
  * @author Joshua J. Gertzen
@@ -23,6 +24,9 @@ class TabSheetRenderer extends ContainerRenderer {
         setPropertyChangeIgnored(Component.PROPERTY_WIDTH, true);
         setPropertyChangeIgnored(Component.PROPERTY_HEIGHT, true);
         setPropertyChangeIgnored(Component.PROPERTY_ENABLED, true);
+        setPropertyChangeIgnored(Border.PROPERTY_BORDER_TYPE, true);
+        setPropertyChangeIgnored(Border.PROPERTY_BORDER_COLOR, true);
+        setPropertyChangeIgnored(Border.PROPERTY_BORDER_SIZE, true);
         TabSheet ts = (TabSheet)c;
         addInitProperty(TabSheet.PROPERTY_TEXT, ts.getText());
         addInitProperty(TabSheet.PROPERTY_IMAGE, getRemoteNameForLocalFile(ts.getImage()));

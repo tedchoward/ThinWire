@@ -57,7 +57,7 @@ import java.util.List;
  */
 public class TabSheet extends AbstractContainer<Component> implements TextComponent, ImageComponent {
 	private String text = "";
-    private boolean allowSizeChange;
+    private boolean allowBoundsChange;
 	private Image.Detail imageDetail = new Image.Detail();
     
 	/**
@@ -117,63 +117,86 @@ public class TabSheet extends AbstractContainer<Component> implements TextCompon
 		firePropertyChange(this, PROPERTY_TEXT, oldText, this.text);
 	}
     
-    void sizeChanged(int width, int height) {
+    void boundsChanged(int x, int y, int width, int height) {
         try {
-            allowSizeChange = true;
-            super.setSize(width, height);
+            allowBoundsChange = true;
+            super.setBounds(x, y, width, height);
         } finally {
-            allowSizeChange = false;
+            allowBoundsChange = false;
         }
     }
     
-    @Override
+    public int getInnerHeight() {
+        int innerHeight = super.getInnerHeight() - TabFolder.TABS_HEIGHT;
+        return innerHeight < 0 ? 0 : innerHeight;
+    }    
+
     public void setWidth(int width) {
-        if (allowSizeChange) {
+        if (allowBoundsChange) {
             super.setWidth(width);
         } else {
-            //#IFDEF V1_1_COMPAT
-            if (!isCompatModeOn())
-            //#ENDIF
-            throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_WIDTH, false));
+            TabFolder tf = (TabFolder)getParent();
+            
+            if (tf != null) {
+                //#IFDEF V1_1_COMPAT        
+                if (!isCompatModeOn())
+                //#ENDIF
+                throw new IllegalStateException("You must first add a TabSheet to a TabFolder before you can set the 'width' property");
+            } else {
+                tf.setWidth(width);
+            }
         }
     }
-
-    @Override
+    
     public void setHeight(int height) {
-        if (allowSizeChange) {
+        if (allowBoundsChange) {
             super.setHeight(height);
         } else {
-            //#IFDEF V1_1_COMPAT
-            if (!isCompatModeOn())
-            //#ENDIF
-            throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_HEIGHT, false));
+            TabFolder tf = (TabFolder)getParent();
+            
+            if (tf == null) {
+                //#IFDEF V1_1_COMPAT        
+                if (!isCompatModeOn())
+                //#ENDIF
+                throw new IllegalStateException("You must first add a TabSheet to a TabFolder before you can set the 'height' property");
+            } else {
+                tf.setHeight(height);
+            }
         }
-    }    
-    
-    @Override
-    public int getX() {
-        throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_X, true));        
     }
     
-    @Override
     public void setX(int x) {
-        //#IFDEF V1_1_COMPAT        
-        if (!isCompatModeOn())
-        //#ENDIF
-        throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_X, false));
+        if (allowBoundsChange) {
+            super.setX(x);
+        } else {
+            TabFolder tf = (TabFolder)getParent();
+            
+            if (tf == null) {
+                //#IFDEF V1_1_COMPAT        
+                if (!isCompatModeOn())
+                //#ENDIF
+                throw new IllegalStateException("You must first add a TabSheet to a TabFolder before you can set the 'x' property");
+            } else {
+                tf.setX(x);
+            }
+        }
     }
 
-    @Override
-    public int getY() {
-        throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_Y, true));        
-    }
-
-    @Override
     public void setY(int y) {
-        //#IFDEF V1_1_COMPAT
-        if (!isCompatModeOn())
-        //#ENDIF
-        throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_Y, false));
+        if (allowBoundsChange) {
+            super.setY(y);
+        } else {
+            TabFolder tf = (TabFolder)getParent();
+            
+            if (tf == null) {
+                //#IFDEF V1_1_COMPAT        
+                if (!isCompatModeOn())
+                //#ENDIF
+                throw new IllegalStateException("You must first add a TabSheet to a TabFolder before you can set the 'y' property");
+            } else {
+                tf.setY(y);
+            }
+        }
     }   
     
     public void setVisible(boolean visible) {

@@ -67,7 +67,8 @@ import thinwire.ui.style.Style;
  */
 public class TabFolder extends AbstractContainer<TabSheet> {        
     public static final String PROPERTY_CURRENT_INDEX = "currentIndex";
-    private static final int TABS_HEIGHT = 20;
+    static final int TABS_HEIGHT = 20;
+    private static final String[] BOUNDS_PROPERTIES = new String[] {Component.PROPERTY_X, Component.PROPERTY_Y, Component.PROPERTY_WIDTH, Component.PROPERTY_HEIGHT};
     
 	private int currentIndex = -1;
 	
@@ -81,12 +82,12 @@ public class TabFolder extends AbstractContainer<TabSheet> {
                 TabSheet nSheet = (TabSheet)ev.getNewValue();                
                 
                 if (type == Type.REMOVE || type == Type.SET) {
-                    oSheet.sizeChanged(0, 0);
+                    oSheet.boundsChanged(0, 0, 0, 0);
                     if (getChildren().size() == 0) setCurrentIndex(-1);
                 }
                 
                 if (type == Type.ADD || type == Type.SET) {
-                    nSheet.sizeChanged(getInnerWidth(), getInnerHeight());
+                    nSheet.boundsChanged(getX(), getY(), getWidth(), getHeight());
                     Style ss = nSheet.getStyle();
                     Style s = getStyle();
                     ss.getBorder().copy(s.getBorder(), false);
@@ -94,6 +95,16 @@ public class TabFolder extends AbstractContainer<TabSheet> {
                     ss.getFont().copy(s.getFont(), true);
                     ss.getFX().copy(s.getFX(), true);
                     if (getChildren().size() == 1) setCurrentIndex(0); 
+                }
+            }
+        });
+        
+        addPropertyChangeListener(BOUNDS_PROPERTIES, new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent ev) {
+                int x = getX(), y = getY(), width = getWidth(), height = getHeight();
+                
+                for (TabSheet ts : getChildren()) {
+                    ts.boundsChanged(x, y, width, height);
                 }
             }
         });
@@ -131,33 +142,10 @@ public class TabFolder extends AbstractContainer<TabSheet> {
         return innerHeight < 0 ? 0 : innerHeight;
     }
 
-    private void updateTabSheetSize() {        
-        int innerWidth = getInnerWidth();
-        int innerHeight = getInnerHeight();
-        
-        for (Component ts : getChildren()) {
-            ((TabSheet)ts).sizeChanged(innerWidth, innerHeight);
-        }
-    }
-
-    @Override
-    public void setWidth(int width) {
-        super.setWidth(width);
-        updateTabSheetSize();
-    }
-    
-    @Override
-    public void setHeight(int height) {
-        super.setHeight(height);
-        updateTabSheetSize();
-    }
-        
-    @Override
     public void setScroll(ScrollType scrollType) {
         throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_SCROLL, false));        
     }
 
-    @Override
     public ScrollType getScroll() {
         throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_SCROLL, true));        
     }

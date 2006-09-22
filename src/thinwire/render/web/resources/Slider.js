@@ -21,7 +21,7 @@ var tw_Slider = tw_BaseRange.extend({
         var ds = tw_Component.defaultStyles["Divider"];
         s.borderWidth = ds.borderSize + "px";
         s.borderStyle = ds.borderType;
-        s.borderColor = tw_Component.getIEBorderColor(ds.borderColor);
+        s.borderColor = this._getBorderColor(ds.borderColor, ds.borderType);
         this._box.insertBefore(line, this._selection);
         this._line = line;
         

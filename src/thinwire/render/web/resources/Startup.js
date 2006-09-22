@@ -196,10 +196,8 @@ for (var i = 32; i < 256; i++) tw_fontChars.push(String.fromCharCode(i));
 // Initialize Logger Instance
 //var tw_log = new tw_Logger();
 
-var tw_sizeIncludesBorders = tw_isIE55; 
-
 //Remove scroll bars from browser
-if (!tw_isIE55) {
+if (tw_isIE && tw_bVer >= 6) {
     document.documentElement.style.overflow = "hidden";
 } else {
     document.body.style.overflow = "hidden";

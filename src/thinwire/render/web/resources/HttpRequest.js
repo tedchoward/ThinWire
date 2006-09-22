@@ -17,7 +17,7 @@ var tw_HttpRequest = Class.extend({
                 this._comm = new XMLHttpRequest();
                 if (tw_isIE) this._usingMSHttpRequest = true;
             } catch (e) {
-                this._comm = new ActiveXObject(tw_isIE55 ? "Microsoft.XMLHTTP" : "Msxml2.XMLHTTP");
+                this._comm = new ActiveXObject(tw_bVer < 6 ? "Microsoft.XMLHTTP" : "Msxml2.XMLHTTP");
                 this._usingMSHttpRequest = true;
             }
         } catch (e) {

@@ -30,6 +30,8 @@ var tw_Component = Class.extend({
     _focusCapable: true,
     _backgroundBox: null,
     _borderBox: null,
+    _borderColor: null,
+    _borderType: false,
     _borderSizeSub: 0,
     _boxSizeSub: 0,
     _fontBox: null,
@@ -206,6 +208,11 @@ var tw_Component = Class.extend({
         return false;
     },
     
+    _getBorderColor: function(color, type) {
+        if (tw_isIE && (type == "inset" || type == "outset") && (color == "buttonface" || color == "threedface")) color = "";
+        return color;
+    },
+    
     setStyle: function(name, value) {
         var realName = tw_Component.styleNameMap[name];
         if (realName == undefined) throw "attempt to set unknown property '" + name + "' to value '" + value + "'";
@@ -242,10 +249,13 @@ var tw_Component = Class.extend({
                     this.setWidth(this.getWidth());
                     this.setHeight(this.getHeight());
                 }
+            } else if (name == "borderColor") {
+                this._borderColor = value;
+                this._borderBox.style[realName] = this._getBorderColor(value, this._borderType);
             } else {
-                //NOTE: IE Specific, allows 3D borders to be drawn with two colors
-                if (tw_isIE && name == "borderColor") value = tw_Component.getIEBorderColor(value);                
+                this._borderType = value;
                 this._borderBox.style[realName] = value;
+                if (tw_isIE && this._borderColor != null) this.setStyle("borderColor", this._getBorderColor(this._borderColor, this._borderType));
             }
         }
     },
@@ -281,9 +291,9 @@ var tw_Component = Class.extend({
             
             if (name == "borderSize") {
                 value = parseInt(value);
+            } else if (name == "borderColor") {
+                return this._borderColor;
             } else {
-                //NOTE: IE Specific, allows 3D borders to be drawn with two colors
-                if (tw_isIE && name == "borderColor" && value == "") value = "threedface";
                 var index = value.indexOf(" ");
                 value = index == -1 ? value : value.substring(0, index);
             }
@@ -360,13 +370,6 @@ var tw_Component = Class.extend({
         if (parent != null) {
             var index = this._parentIndex;
             
-            //If we are currently focused on a container, then transition into the container
-            /*if (this instanceof tw_BaseContainer && this._children.length > 0) {
-                if (this instanceof tw_TabFolder && this._currentIndex >= 0) parent = this._children[this._currentIndex];
-                else parent = this;                
-                index = -1;
-            }*/
-            
             if (this instanceof tw_TabFolder && this._currentIndex >= 0) {
                 parent = this._children[this._currentIndex];
                 index = -1;
@@ -380,13 +383,6 @@ var tw_Component = Class.extend({
                     if (parent._parent != null) {                        
                         index = parent._parentIndex + 1;
                         parent = parent._parent;
-                        
-                        //TODO: find a better solution to the double-nested tabfolder setup so we 
-                        //don't have to code specifially for the tabfolder.
-                        /*if (parent instanceof tw_TabFolder) {                            
-                            index = parent._parentIndex + 1;
-                            parent = parent._parent;
-                        }*/
                     } else {
                         index = 0;
                     }
@@ -415,23 +411,9 @@ var tw_Component = Class.extend({
         
         if (parent != null) {
             var index = this._parentIndex;
-                
-            //If we are currently focused on a container, then transition into the container
-            /*if (this instanceof tw_BaseContainer && this._children.length > 0) {
-                if (this instanceof tw_TabFolder && this._currentIndex >= 0) parent = this._children[this._currentIndex];
-                else parent = this;                
-                index = -1;
-            } */                       
             
             do {
                 index--;
-                    
-                //if (index < 0) {                    
-                    //Go to the prior container, if that fails, to last component of this container
-                  //  parent = parent.getPriorComponent(usable);
-                    //if (!(parent instanceof tw_BaseContainer) || parent._children.length == 0) parent = this._parent;
-                    //index = parent._children.length - 1;
-                //}
                 
                 while (index < 0) {                    
                     //Go to the prior container, if that fails, to last component of this container                    
@@ -444,7 +426,6 @@ var tw_Component = Class.extend({
                         if (parent instanceof tw_TabFolder) {
                             index = parent._parentIndex - 1;
                             parent = parent._parent;
-                            //alert(parent instanceof tw_Frame);
                         }
                     } else {
                         index = parent._children.length - 1;
@@ -472,15 +453,13 @@ var tw_Component = Class.extend({
     //return true if the key should propagate up to other listeners
     keyPressNotify: function(keyPressCombo) {
         if ((keyPressCombo == "Tab" || keyPressCombo == "Shift-Tab") && this._parent instanceof tw_BaseContainer) {
-            //Opera does not allows us to cancel the Tab or Shift-Tab keys, so we can't do this spiffy tab-transition
-            //TODO: Check safari.
-            if (tw_isOpera) {
-                return false;
-            } else {
+            if (tw_useSmartTab) {
                 var comp = keyPressCombo == "Tab" ? this.getNextComponent(true) : this.getPriorComponent(true);
                 if (comp == null) comp = this;
                 comp.setFocus(true);
                 return false;
+            } else {
+                return true;
             }
         } else if (this._eventNotifiers != null) {
             var keyPressNotifiers = this._eventNotifiers["keyPress"]; 
@@ -500,8 +479,8 @@ var tw_Component = Class.extend({
         var styleClass = props.styleClass;
         var style = tw_Component.defaultStyles[styleClass];
         delete props.styleClass;
-        this.setStyle("borderSize", style["borderSize"]);
         this.setStyle("borderType", style["borderType"]);
+        this.setStyle("borderSize", style["borderSize"]);
         this.setStyle("borderColor", style["borderColor"]);
         this.setStyle("fontFamily", style["fontFamily"]);
         this.setStyle("fontColor", style["fontColor"]);
@@ -563,11 +542,6 @@ tw_Component.styleNameMap = {
 tw_Component.defaultStyles = { };
 tw_Component.setDefaultStyle = function(styleName, style) {
     tw_Component.defaultStyles[styleName] = style;
-};
-
-tw_Component.getIEBorderColor = function(value) {
-    if (value == "buttonface" || value == "threedface") value = "";
-    return value;
 };
 
 //NOTE: This function is defined here so it can be shared by the unrelated classes: Image, Hyperlink, Label & BaseCheckRadio.

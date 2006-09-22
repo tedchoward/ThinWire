@@ -723,7 +723,7 @@ var tw_GridBox = tw_Component.extend({
     setRowIndexCheckState: function(index, state) {
         if (!this._visibleCheckBoxes || index < 0) return;
         var style = this._content.firstChild.childNodes.item(index).style;
-        if (state == -1) state = style.backgroundImage == tw_GridBox.imageUnchecked;
+        if (state == -1) state = style.backgroundImage.indexOf("gbUnchecked") >= 0;
         style.backgroundImage = state ? tw_GridBox.imageChecked : tw_GridBox.imageUnchecked;
         return state;
     },
@@ -744,7 +744,7 @@ var tw_GridBox = tw_Component.extend({
         s.borderWidth = this.getStyle("borderSize") + "px";        
         s.backgroundColor = bs.backgroundColor;
         s.borderStyle = bs.borderType; 
-        s.borderColor = tw_Component.getIEBorderColor(bs.borderColor);
+        s.borderColor = this._getBorderColor(bs.borderColor, bs.borderType);
         
         columnHeader.appendChild(document.createTextNode(name));
                 

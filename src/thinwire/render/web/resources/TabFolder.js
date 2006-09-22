@@ -36,6 +36,12 @@ var tw_TabFolder = tw_BaseContainer.extend({
     setStyle: function(name, value) {
         this.$.setStyle.apply(this, [name, value]);
         if (name == "borderSize") this._offsetX = this._offsetY = parseInt(value);
+        
+        if (name.indexOf("border") == 0) {
+            for (var i in this._children) {
+                this._children[i].setStyle(name, value);
+            }
+        }
     },    
     
     getOffsetY: function() {

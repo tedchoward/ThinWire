@@ -24,7 +24,7 @@ var tw_DropDownGridBox = tw_BaseText.extend({
         var bs = tw_Component.defaultStyles["Button"];        
         s.backgroundColor = bs.backgroundColor;
         s.borderStyle = bs.borderType;
-        s.borderColor = tw_Component.getIEBorderColor(bs.borderColor);        
+        s.borderColor = this._getBorderColor(bs.borderColor, bs.borderType);        
         
         var s = buttonBorder.style;
         s.position = "absolute";
@@ -66,7 +66,7 @@ var tw_DropDownGridBox = tw_BaseText.extend({
         var bs = tw_Component.defaultStyles["Button"];
         s.borderStyle = bs.borderType;
         s.borderWidth = this._box.style.borderWidth;
-        s.borderColor = tw_Component.getIEBorderColor(bs.borderColor);
+        s.borderColor = this._getBorderColor(bs.borderColor, bs.borderType);
         s.padding = "0px";    
     },
     
