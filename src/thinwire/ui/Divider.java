@@ -79,6 +79,6 @@ public final class Divider extends AbstractComponent implements ActionEventCompo
      * @param action the action name
      */
     public void fireAction(String action) {
-        aei.fireAction(action, this);
+        aei.fireAction(this, action);
     }
 }

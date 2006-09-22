@@ -191,6 +191,6 @@ public class Button extends AbstractTextComponent implements ImageComponent, Act
 	 * @param action the action name
 	 */
 	public void fireAction(String action) {
-        aei.fireAction(action, this);
+        aei.fireAction(this, action);
 	}
 }

@@ -127,7 +127,7 @@ public final class Image extends AbstractComponent implements ImageComponent, Ac
      * @param action the action name
      */
     public void fireAction(String action) {
-        aei.fireAction(action, this);
+        aei.fireAction(this, action);
     }    
 	
 	static void updateImageDetail(Detail detail, String image) {        
@@ -609,7 +609,7 @@ final class ImageInfo {
                 {
                     int extensionType = read();
                     if (collectComments && extensionType == 0xfe) {
-                        StringBuffer sb = new StringBuffer();
+                        StringBuilder sb = new StringBuilder();
                         int n;
                         do
                         {
@@ -1188,10 +1188,10 @@ final class ImageInfo {
     }
 
     private String readLine() throws IOException {
-        return readLine(new StringBuffer());
+        return readLine(new StringBuilder());
     }
 
-    private String readLine(StringBuffer sb) throws IOException {
+    private String readLine(StringBuilder sb) throws IOException {
         boolean finished;
         do {
             int value = read();

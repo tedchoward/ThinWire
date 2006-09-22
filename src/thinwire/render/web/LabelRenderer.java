@@ -18,8 +18,6 @@ final class LabelRenderer extends ComponentRenderer {
     
 	void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         init(LABEL_CLASS, wr, c, container);
-        //TODO: Since Label can be clicked, it should support having it's enabled state toggled
-        setPropertyChangeIgnored(Component.PROPERTY_ENABLED, true);                
 		Label l = (Label)c;
         addInitProperty(Label.PROPERTY_TEXT, l.getText());
         addInitProperty(Label.PROPERTY_ALIGN_X, l.getAlignX().name().toLowerCase());

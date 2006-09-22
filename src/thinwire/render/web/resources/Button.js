@@ -6,6 +6,8 @@
 //TODO: When a button or component is disabled it should be excluded from the tabbing order.
 //TODO: focus gain / lose does not work in firefox.
 var tw_Button = tw_Component.extend({
+    _fontColor: null,
+        
     construct: function(id, containerId, props) {
         this.$.construct.apply(this, ["div", "button", id, containerId]);
         var s = this._box.style;
@@ -35,7 +37,8 @@ var tw_Button = tw_Component.extend({
         s.whiteSpace = "nowrap";
         s.textAlign = "center";
         s.paddingLeft = tw_Button.textPadding + "px";
-        s.paddingRight = tw_Button.textPadding + "px";            
+        s.paddingRight = tw_Button.textPadding + "px";
+        s.backgroundColor = tw_COLOR_TRANSPARENT;
         s.backgroundRepeat = "no-repeat";
         s.backgroundPosition = "center left";
         surface.appendChild(document.createTextNode(""));
@@ -78,6 +81,12 @@ var tw_Button = tw_Component.extend({
     
     fireClick: function() { this._clickListener(); },
 
+    setStyle: function(name, value) {
+        this.$.setStyle.apply(this, [name, value]);
+        if (name == "backgroundColor") this._disabledBackgroundColor = value;
+        if (name == "fontColor") this._fontColor = value;
+    },
+    
     setWidth: function(width) {
         this.$.setWidth.apply(this, [width]);
         var s = this._fontBox.style;
@@ -97,9 +106,9 @@ var tw_Button = tw_Component.extend({
     },
     
     setEnabled: function(enabled) {
-        this.$.setEnabled.apply(this, [enabled]);        
-        this._fontBox.color = enabled ? tw_COLOR_BUTTONTEXT : tw_COLOR_GRAYTEXT;
-        tw_setFocusCapable(this._fontBox, enabled);        
+        this.$.setEnabled.apply(this, [enabled]);
+        this._fontBox.style.color = enabled ? this._fontColor : tw_COLOR_GRAYTEXT; 
+        tw_setFocusCapable(this._fontBox, enabled);
     },
     
     setFocus: function(focus) {

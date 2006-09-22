@@ -56,9 +56,9 @@ var tw_BaseCheckRadio = tw_Component.extend({
     _clickListener: function() {
         if (!this.isEnabled()) return;
         this.setFocus(true)
-        var checked = this._image.style.backgroundImage == this._imageChecked;
-        this.setChecked(!checked);
-        this.firePropertyChange("checked", !checked);
+        var checked = !this.isChecked();
+        this.setChecked(checked);
+        this.firePropertyChange("checked", checked);
     },
 
     setWidth: function(width) {
@@ -83,14 +83,14 @@ var tw_BaseCheckRadio = tw_Component.extend({
     setEnabled: function(enabled) {
         if (enabled == this.isEnabled()) return;
         this.$.setEnabled.apply(this, [enabled]);
+        tw_setFocusCapable(this._fontBox, enabled);
         this.setChecked(this.isChecked()); //Toggles image to disabled image
     },
     
     keyPressNotify: tw_Component.keyPressNotifySpaceFireAction,
    
     isChecked: function() {
-        var image = this._image.style.backgroundImage;
-        return  image == this._imageChecked || image == this._imageDisabledChecked;
+        return this._image.style.backgroundImage.indexOf("Unchecked") == -1;
     },
     
     setChecked: function(checked) {

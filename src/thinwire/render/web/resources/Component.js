@@ -29,13 +29,14 @@ var tw_Component = Class.extend({
     _enabled: true,
     _focusCapable: true,
     _backgroundBox: null,
+    _backgroundColor: "",
+    _disabledBackgroundColor: null,
     _borderBox: null,
     _borderColor: null,
     _borderType: false,
     _borderSizeSub: 0,
     _boxSizeSub: 0,
     _fontBox: null,
-    _enabledBackgroundColor: "",
     
     construct: function(tagName, className, id, containerId, support) {
         var box = document.createElement(tagName);
@@ -140,14 +141,7 @@ var tw_Component = Class.extend({
     
     setEnabled: function(enabled) {
         this._enabled = enabled;
-        
-        if (enabled) {
-            this.setStyle("backgroundColor", this._enabledBackgroundColor);
-        } else {
-            this._enabledBackgroundColor = this._backgroundBox.style.backgroundColor;
-            this.setStyle("backgroundColor", "transparent");
-            //alert("set backgroundcolor to transparent: " + this._backgroundBox.style.backgroundColor);
-        }
+        this._backgroundBox.style.backgroundColor = enabled ? this._backgroundColor : (this._disabledBackgroundColor == null ? this.getParent().getStyle("backgroundColor") : this._disabledBackgroundColor);
     },
         
     setFocusCapable: function(focusCapable) {
@@ -208,21 +202,13 @@ var tw_Component = Class.extend({
         return false;
     },
     
-    _getBorderColor: function(color, type) {
-        if (tw_isIE && (type == "inset" || type == "outset") && (color == "buttonface" || color == "threedface")) color = "";
-        return color;
-    },
-    
     setStyle: function(name, value) {
         var realName = tw_Component.styleNameMap[name];
         if (realName == undefined) throw "attempt to set unknown property '" + name + "' to value '" + value + "'";
         
         if (this._backgroundBox != null && name == "backgroundColor") {
-            if (this.isEnabled()) {
-                this._backgroundBox.style.backgroundColor = value;
-            } else {
-                this._enabledBackgroundColor = value;
-            }
+            this._backgroundColor = value;
+            if (this.isEnabled()) this._backgroundBox.style.backgroundColor = value;
         } else if (this._fontBox != null && name.indexOf("font") == 0) {
             if (name == "fontSize") {
                 value += "pt";
@@ -251,11 +237,16 @@ var tw_Component = Class.extend({
                 }
             } else if (name == "borderColor") {
                 this._borderColor = value;
-                this._borderBox.style[realName] = this._getBorderColor(value, this._borderType);
+                this._borderBox.style[realName] = tw_Component.getIEBorder(value, this._borderType);
             } else {
                 this._borderType = value;
                 this._borderBox.style[realName] = value;
-                if (tw_isIE && this._borderColor != null) this.setStyle("borderColor", this._getBorderColor(this._borderColor, this._borderType));
+                
+                if (tw_isIE && this._borderColor != null) {
+                    var keep = this._borderColor;
+                    this.setStyle("borderColor", tw_Component.getIEBorder(keep, this._borderType));
+                    this._borderColor = keep;
+                }
             }
         }
     },
@@ -266,14 +257,7 @@ var tw_Component = Class.extend({
         var value;
         
         if (this._backgroundBox != null && name == "backgroundColor") {
-            if (this.isEnabled()) {
-                value = this._backgroundBox.style.backgroundColor;
-            } else {
-                value = this._enabledBackgroundColor;
-            }
-            
-            var index = value.indexOf(" ");
-            value = index == -1 ? value : value.substring(0, index);
+            value = this._backgroundColor;
         } else if (this._fontBox != null && name.indexOf("font") == 0) {
             value = this._fontBox.style[realName];
             
@@ -479,6 +463,7 @@ var tw_Component = Class.extend({
         var styleClass = props.styleClass;
         var style = tw_Component.defaultStyles[styleClass];
         delete props.styleClass;
+        this.setStyle("backgroundColor", style["backgroundColor"]);
         this.setStyle("borderType", style["borderType"]);
         this.setStyle("borderSize", style["borderSize"]);
         this.setStyle("borderColor", style["borderColor"]);
@@ -500,8 +485,8 @@ var tw_Component = Class.extend({
                 } else {
                     this._parent.addComponent(insertAtIndex, this);
                 }
-            } else if (this._parent instanceof tw_DropDownGridBox || this._parent instanceof tw_GridBox) {
-                this._parent.getBaseWindow().getBox().appendChild(this._box);
+            } else if (this._parent instanceof tw_DropDown || this._parent instanceof tw_GridBox) {
+                this._parent.getBaseWindow()._box.appendChild(this._box);
             } else {
                 alert("No known way to attach this component:" + this._box.className + " to the DOM");
             }
@@ -509,16 +494,19 @@ var tw_Component = Class.extend({
             document.body.appendChild(this._box);
         }
         
+        //TODO: We shouldn't have to call this a second time, but it appears that either a browser
+        //bug is requiring that we do, or there is a glitch in the framework.
         this.setStyle("backgroundColor", style["backgroundColor"]);
         this._inited = true;
     },
     
     destroy: function() {        
+        this._inited = false;
         delete tw_Component.instances[this._id];                   
         this._box = this._focusBox = this._eventNotifiers = this._backgroundBox = 
             this._borderBox = this._fontBox = this._parent = null;
         if (tw_Component.priorFocus === this) tw_Component.priorFocus = null;
-        if (tw_Component.currentFocus === this) tw_Component.currentFocus = null; 
+        if (tw_Component.currentFocus === this) tw_Component.currentFocus = null;
     }
 });
 
@@ -542,6 +530,18 @@ tw_Component.styleNameMap = {
 tw_Component.defaultStyles = { };
 tw_Component.setDefaultStyle = function(styleName, style) {
     tw_Component.defaultStyles[styleName] = style;
+};
+
+tw_Component.getIEBorder = function(color, type) {
+    if (tw_isIE && (type == "inset" || type == "outset" || type == "groove" || type == "ridge") && (color == tw_COLOR_BUTTONFACE || color == tw_COLOR_THREEDFACE)) color = "";
+    return color;
+};
+
+tw_Component.setSystemColors = function(systemColors) {
+    for (var name in systemColors) {
+        varName = "tw_COLOR_" + name.toUpperCase();
+        window[varName] = systemColors[name];
+    }
 };
 
 //NOTE: This function is defined here so it can be shared by the unrelated classes: Image, Hyperlink, Label & BaseCheckRadio.

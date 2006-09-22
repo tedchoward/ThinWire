@@ -15,8 +15,6 @@ final class DividerRenderer extends ComponentRenderer {
 
     public void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         init(DIVIDER_CLASS, wr, c, container);
-        //TODO: Since Divider can be clicked, it should support having it's enabled state toggled        
-        setPropertyChangeIgnored(Component.PROPERTY_ENABLED, true);
         super.render(wr, c, container);
 	}
     

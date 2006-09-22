@@ -56,7 +56,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     
     private Map<String, Object> ignoredProperties = new HashMap<String, Object>(3);
     private List<String> remoteFiles;
-    private StringBuffer initProps = new StringBuffer();
+    private StringBuilder initProps = new StringBuilder();
     private Map<String, String> clientSideProps = new HashMap<String, String>();    
     String jsClass;
     Component comp;
@@ -103,16 +103,16 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
             initProps = null;
         }
         
-        setStyle(Background.PROPERTY_BACKGROUND_COLOR, true);
-        setStyle(Border.PROPERTY_BORDER_COLOR, true);
-        setStyle(Border.PROPERTY_BORDER_SIZE, true);
-        setStyle(Border.PROPERTY_BORDER_TYPE, true);
-        setStyle(Font.PROPERTY_FONT_FAMILY, true);
-        setStyle(Font.PROPERTY_FONT_SIZE, true);
-        setStyle(Font.PROPERTY_FONT_COLOR, true);
-        setStyle(Font.PROPERTY_FONT_BOLD, true);
-        setStyle(Font.PROPERTY_FONT_ITALIC, true);
-        setStyle(Font.PROPERTY_FONT_UNDERLINE, true);
+        setStyle(Background.PROPERTY_BACKGROUND_COLOR, true, null);
+        setStyle(Border.PROPERTY_BORDER_COLOR, true, null);
+        setStyle(Border.PROPERTY_BORDER_SIZE, true, null);
+        setStyle(Border.PROPERTY_BORDER_TYPE, true, null);
+        setStyle(Font.PROPERTY_FONT_FAMILY, true, null);
+        setStyle(Font.PROPERTY_FONT_SIZE, true, null);
+        setStyle(Font.PROPERTY_FONT_COLOR, true, null);
+        setStyle(Font.PROPERTY_FONT_BOLD, true, null);
+        setStyle(Font.PROPERTY_FONT_ITALIC, true, null);
+        setStyle(Font.PROPERTY_FONT_UNDERLINE, true, null);
         
         if (visibleChange == FX.Type.SMOOTH && !isPropertyChangeIgnored(Component.PROPERTY_VISIBLE) && comp.isVisible() && cr != null && cr.isFullyRendered())
             setPropertyWithEffect(Component.PROPERTY_VISIBLE, Boolean.TRUE, Boolean.FALSE, SET_VISIBLE, FX.PROPERTY_FX_VISIBLE_CHANGE);
@@ -124,7 +124,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         wr.ai.flushRenderCallbacks(comp, id);        
 	}
     
-    void setStyle(String propertyName, boolean isNotDefault) {
+    void setStyle(String propertyName, boolean isNotDefault, Object oldValue) {
         if (propertyName.startsWith("fx") || isPropertyChangeIgnored(propertyName)) return;
         Style s = comp.getStyle();
         Style ds = wr.ai.getDefaultStyle(comp.getClass());
@@ -135,14 +135,15 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
             value = s.getBackground().getColor();
             defaultValue = ds.getBackground().getColor(); 
         } else if (propertyName.equals(Border.PROPERTY_BORDER_COLOR)) {
+            if (s.getBorder().getType() == Border.Type.NONE) return;
             value = s.getBorder().getColor();
             defaultValue = ds.getBorder().getColor(); 
         } else if (propertyName.equals(Border.PROPERTY_BORDER_SIZE)) {
             value = s.getBorder().getSize();
             defaultValue = ds.getBorder().getSize(); 
-        } else if (propertyName.equals(Border.PROPERTY_BORDER_TYPE)) {
+        } else if (propertyName.equals(Border.PROPERTY_BORDER_TYPE)) {            
             value = s.getBorder().getType();
-            defaultValue = ds.getBorder().getType(); 
+            defaultValue = ds.getBorder().getType();            
         } else if (propertyName.equals(Font.PROPERTY_FONT_FAMILY)) {
             value = s.getFont().getFamily();
             defaultValue = ds.getFont().getFamily(); 
@@ -168,7 +169,14 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         if (isNotDefault && value.equals(defaultValue)) return;
         
         if (value instanceof Color) {
-            value = ((Color)value).toRGBString();
+            value = wr.ai.getColorValue((Color)value, propertyName.equals(Border.PROPERTY_BORDER_COLOR));
+        } else if (value instanceof Border.Type) {
+            if (value == Border.Type.NONE) {
+                value = Border.Type.SOLID;
+                postClientEvent(SET_STYLE, Border.PROPERTY_BORDER_COLOR, wr.ai.getColorValue(s.getBackground().getColor(), true));
+            } else if (oldValue == Border.Type.NONE) {
+                postClientEvent(SET_STYLE, Border.PROPERTY_BORDER_COLOR, wr.ai.getColorValue(s.getBorder().getColor(), true));
+            }
         } else {
             value = value.toString();
         }
@@ -185,7 +193,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         comp = null;
         wr = null;
         id = null;
-        initProps = new StringBuffer();
+        initProps = new StringBuilder();
         ignoredProperties = new HashMap<String, Object>(3);
         
         if (remoteFiles != null) {
@@ -390,7 +398,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
             setPropertyWithEffect(name, pce.getNewValue(), pce.getOldValue(), SET_VISIBLE, FX.PROPERTY_FX_VISIBLE_CHANGE);
         } else {
             Object source = pce.getSource();            
-            if (source instanceof Background || source instanceof Font || source instanceof Border) setStyle(pce.getPropertyName(), false);
+            if (source instanceof Background || source instanceof Font || source instanceof Border) setStyle(pce.getPropertyName(), false, pce.getOldValue());
         }
     }
 

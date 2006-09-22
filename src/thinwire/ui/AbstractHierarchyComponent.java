@@ -216,6 +216,6 @@ abstract class AbstractHierarchyComponent<HI extends AbstractHierarchyComponent.
     public void fireAction(String action, HI item) {
         if (action == null || !action.equals(ACTION_CLICK)) throw new IllegalArgumentException("the specified action is not supported");                
         if (item == null) throw new IllegalArgumentException("item == null");
-        aei.fireAction(action, item);
+        aei.fireAction(item, action);
     }
 }

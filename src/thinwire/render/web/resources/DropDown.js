@@ -2,7 +2,7 @@
  #LICENSE_HEADER#
  #VERSION_HEADER#
  */
-var tw_DropDownGridBox = tw_BaseText.extend({
+var tw_DropDown = tw_BaseText.extend({
     _ddComp: null,
     _button: null,
     _buttonBorder: null,
@@ -19,12 +19,11 @@ var tw_DropDownGridBox = tw_BaseText.extend({
         var s = button.style;
         s.backgroundRepeat = "no-repeat";
         s.backgroundPosition = "center center";                
-        s.backgroundImage = "url(?_twr_=tbArrowDown.png)";
 
         var bs = tw_Component.defaultStyles["Button"];        
         s.backgroundColor = bs.backgroundColor;
         s.borderStyle = bs.borderType;
-        s.borderColor = this._getBorderColor(bs.borderColor, bs.borderType);        
+        s.borderColor = tw_Component.getIEBorder(bs.borderColor, bs.borderType);        
         
         var s = buttonBorder.style;
         s.position = "absolute";
@@ -66,7 +65,7 @@ var tw_DropDownGridBox = tw_BaseText.extend({
         var bs = tw_Component.defaultStyles["Button"];
         s.borderStyle = bs.borderType;
         s.borderWidth = this._box.style.borderWidth;
-        s.borderColor = this._getBorderColor(bs.borderColor, bs.borderType);
+        s.borderColor = tw_Component.getIEBorder(bs.borderColor, bs.borderType);
         s.padding = "0px";    
     },
     
@@ -110,6 +109,7 @@ var tw_DropDownGridBox = tw_BaseText.extend({
 
     setEnabled: function(enabled) {
         this.$.setEnabled.apply(this, [enabled]);
+        this._button.style.backgroundImage = enabled ? "url(?_twr_=ddButton.png)" : "url(?_twr_=ddDisabledButton.png)";
         if (enabled && !this._editAllowed) this._editor.readOnly = true;
     },
             
@@ -169,13 +169,17 @@ var tw_DropDownGridBox = tw_BaseText.extend({
             var offsetX = this.getX();
             var offsetY = this.getY();
 
-            while (parent != null) {
+            while (!(parent instanceof tw_Frame || parent instanceof tw_Dialog)) {
                 offsetX += parent.getX() + parent.getOffsetX();
                 offsetY += parent.getY() + parent.getOffsetY();
                 parent = parent.getParent();
             }
             
-            var comp = this._ddComp;            
+            var borderSize = parent instanceof tw_Dialog ? parent.getStyle("borderSize") : 0;
+            offsetX += parent.getOffsetX() - borderSize;
+            offsetY += parent.getOffsetY() - borderSize;
+            
+            var comp = this._ddComp;
             var availableHeight = tw_getVisibleHeight() - comp._box.parentNode.offsetTop - offsetY - this._height;
             offsetY += (availableHeight < comp._height ? -comp._height : this._height);
             comp.setY(offsetY);

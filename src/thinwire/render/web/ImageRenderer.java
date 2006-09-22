@@ -17,8 +17,6 @@ final class ImageRenderer extends ComponentRenderer {
     void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         init(IMAGE_CLASS, wr, c, container);
         addInitProperty(Image.PROPERTY_IMAGE, getRemoteNameForLocalFile(((Image)c).getImage()));
-        //TODO: Since Image can be clicked, it should support having it's enabled state toggled
-        setPropertyChangeIgnored(Component.PROPERTY_ENABLED, true);        
         super.render(wr, c, container);                
     }
     

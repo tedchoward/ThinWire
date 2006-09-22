@@ -110,10 +110,10 @@ var tw_Frame = tw_BaseContainer.extend({
     
     _mouseDownListener: function(event) {
         var target = tw_getEventTarget(event);
-        if (target.className == undefined) return;
-        while (target.className != "dialog" && target.className != "frame" && target.className != "mainMenu") target = target.parentNode;       
+        if (target == null || target.className == undefined) return;
+        while (target != null && target.className != "dialog" && target.className != "frame" && target.className != "mainMenu") target = target.parentNode;       
         
-        if (target.className != "dialog" && target.parentNode.className != "dialog") {
+        if (target != null && target.className != "dialog" && target.parentNode.className != "dialog") {
             if (tw_Dialog.active != null) tw_Dialog.active.setActive(false);
             if (tw_Frame.active.getMenu() != null && target.className != "mainMenu") tw_Frame.active.getMenu().close();
         }

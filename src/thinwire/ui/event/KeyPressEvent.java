@@ -74,7 +74,7 @@ public class KeyPressEvent extends EventObject {
      * @return a key press combo string representing the elements specified per the rules above.
      */
     public static String encodeKeyPressCombo(boolean ctrl, boolean alt, boolean shift, String key) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         if (ctrl) sb.append("Ctrl-");
         if (alt) sb.append("Alt-");
         if (shift) sb.append("Shift-");

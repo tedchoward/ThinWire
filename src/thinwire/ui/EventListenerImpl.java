@@ -164,16 +164,16 @@ class EventListenerImpl<E extends EventListener> {
         if (hasListeners()) fireEvent(pce, propertyName);        
     }
         
-    void fireAction(String action, Object source) {
+    void fireAction(Object source, String action) {
         if (action == null || !action.equals(ActionEventComponent.ACTION_CLICK)) throw new IllegalArgumentException("the specified action is not supported");        
         if (!hasListeners()) return;
         ActionEvent ae = new ActionEvent(source, action);
         fireEvent(ae, action);
     }
     
-    void fireKeyPress(String keyPressCombo) {
+    void fireKeyPress(Object source, String keyPressCombo) {
         if (!hasListeners()) return;
-        KeyPressEvent kpe = new KeyPressEvent(this, keyPressCombo);
+        KeyPressEvent kpe = new KeyPressEvent(source, keyPressCombo);
         fireEvent(kpe, kpe.getKeyPressCombo());        
     }
         

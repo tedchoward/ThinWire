@@ -5,6 +5,7 @@
 //TODO: In firefox, when you click a hyperlink, the focus gain / focus lose event gets stuck
 //in a loop.
 var tw_Hyperlink = tw_BaseBrowserLink.extend({
+    _fontColor: null,
     _location: "",
     
     construct: function(id, containerId, props) {
@@ -26,6 +27,11 @@ var tw_Hyperlink = tw_BaseBrowserLink.extend({
     
     keyPressNotify: tw_Component.keyPressNotifySpaceFireAction,
     
+    setStyle: function(name, value) {
+        this.$.setStyle.apply(this, [name, value]);
+        if (name == "fontColor") this._fontColor = value;
+    },
+    
     setLocation: function(location) {
         this._location = location;
         this._box.href = "javascript:void('" + tw_BaseBrowserLink.expandLocation(this._location) + "')";
@@ -33,7 +39,8 @@ var tw_Hyperlink = tw_BaseBrowserLink.extend({
 
     setEnabled: function(enabled) {
         this.$.setEnabled.apply(this, [enabled]);
-        this._box.style.color = enabled ? "" : tw_COLOR_GRAYTEXT;
+        this._box.style.cursor = enabled ? "hand" : "default";
+        this._fontBox.style.color = enabled ? this._fontColor : tw_COLOR_GRAYTEXT; 
     }
 });
 

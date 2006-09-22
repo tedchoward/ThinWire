@@ -428,7 +428,7 @@ public final class GridBox extends AbstractComponent implements Grid<GridBox.Row
         
         public SortOrder getSortOrder() {
             GridBox gb = (GridBox)getParent();
-            return gb == null ? SortOrder.NONE : gb.sortedColumnOrder;
+            return gb == null || gb.sortedColumn != this ? SortOrder.NONE : gb.sortedColumnOrder;
         }
         
         public void setSortOrder(SortOrder sortOrder) {
@@ -438,7 +438,7 @@ public final class GridBox extends AbstractComponent implements Grid<GridBox.Row
             
             GridBox.Column oldSortedColumn = gb.sortedColumn;
             SortOrder oldSortedColumnOrder = gb.sortedColumnOrder;                      
-            gb.sortedColumn = this;
+            gb.sortedColumn = oldSortedColumn == this && sortOrder == SortOrder.NONE ? null : this;
             gb.sortedColumnOrder = sortOrder;
             gb.sort();
             
@@ -479,7 +479,7 @@ public final class GridBox extends AbstractComponent implements Grid<GridBox.Row
     //#ENDIF
     private int selectedRowIndex = -1;
     private Column sortedColumn;
-    private Column.SortOrder sortedColumnOrder; 
+    private Column.SortOrder sortedColumnOrder = GridBox.Column.SortOrder.NONE; 
     
     private EventListenerImpl<ItemChangeListener> icei = new EventListenerImpl<ItemChangeListener>();
     private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>();
@@ -514,6 +514,8 @@ public final class GridBox extends AbstractComponent implements Grid<GridBox.Row
                             } else {
                                 GridBox.this.selectedRowIndex = -1;                              
                             }
+                        } else if (rowIndex <= selectedRowIndex) {
+                            if (GridBox.this.selectedRowIndex - 1 >= 0) GridBox.this.selectedRowIndex--;
                         }
                     } else if (type == ItemChangeEvent.Type.ADD) {
                         GridBox.Row newRow = (GridBox.Row)newValue;
@@ -524,11 +526,14 @@ public final class GridBox extends AbstractComponent implements Grid<GridBox.Row
                             if (GridBox.this.getColumns().size() > 0) {
                                 newRow.setSelected(true);
                             } else {
+                                //TODO: We should allow this state to occur
                                 GridBox.this.selectedRowIndex = 0;
                             }
                         } else if (rowIndex <= GridBox.this.selectedRowIndex) {
                             if (GridBox.this.selectedRowIndex + 1 < size) GridBox.this.selectedRowIndex++;
                         }
+                        
+                        if (GridBox.this.sortedColumn != null) GridBox.this.sortedColumn.setSortOrder(GridBox.Column.SortOrder.NONE);
                     }
                 }
                 
@@ -566,7 +571,7 @@ public final class GridBox extends AbstractComponent implements Grid<GridBox.Row
     }
     
     private void sort() {
-        if (sortedColumnOrder == GridBox.Column.SortOrder.NONE) return;
+        if (sortedColumnOrder == GridBox.Column.SortOrder.NONE || sortedColumn == null) return;
         final int index = sortedColumn.getIndex();
         final Comparator<Object> sortComparator = sortedColumn.getSortComparator();
         
@@ -637,7 +642,7 @@ public final class GridBox extends AbstractComponent implements Grid<GridBox.Row
         }
 
         row.setSelected(true);        
-        aei.fireAction(action, row);
+        aei.fireAction(row, action);
     }
 	
 	public List<GridBox.Column> getColumns() {

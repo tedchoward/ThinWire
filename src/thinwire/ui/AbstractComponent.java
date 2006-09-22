@@ -175,7 +175,7 @@ abstract class AbstractComponent implements Component {
     }
     
     public void fireKeyPress(String keyPressCombo) {
-        kpei.fireKeyPress(keyPressCombo);
+        kpei.fireKeyPress(this, keyPressCombo);
     }
     
     public Object getParent() {

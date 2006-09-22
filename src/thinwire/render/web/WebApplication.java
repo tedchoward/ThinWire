@@ -104,14 +104,16 @@ public final class WebApplication extends Application {
     
     private final String id;
 
-    private StringBuffer sbClientEvents;
+    Map<String, Color> systemColors;
+
+    private StringBuilder sbClientEvents;
     private List<WebComponentEvent> eventQueue;
     private Map<String, Timer> timerMap;
     private Map<String, Class<ComponentRenderer>> nameToRenderer;
     private Map<Window, WindowRenderer> windowToRenderer;
     private Map<Integer, WebComponentListener> webComponentListeners;
     private Set<String> clientSideIncludes;    
-    private Map<Component, Object> renderCallbacks; 
+    private Map<Component, Object> renderCallbacks;
     private String[] syncCallResponse = new String[1];
     private WebFileChooser fileChooser;
     private boolean threadCaptured;
@@ -156,7 +158,7 @@ public final class WebApplication extends Application {
         windowToRenderer = new HashMap<Window, WindowRenderer>();
         eventQueue = new ArrayList<WebComponentEvent>();
         timerMap = new HashMap<String, Timer>();
-        sbClientEvents = new StringBuffer(4096);
+        sbClientEvents = new StringBuilder(4096);
         sbClientEvents.append('[');
         webComponentListeners = new HashMap<Integer, WebComponentListener>();        
         id = httpSession.getId();
@@ -290,6 +292,17 @@ public final class WebApplication extends Application {
             if (!styleSheet.startsWith("class:///")) styleSheet = this.getRelativeFile(styleSheet).getAbsolutePath();
             props.load(new ByteArrayInputStream(RemoteFileMap.INSTANCE.loadLocalData(styleSheet)));
             loadStyleSheet(props);
+            systemColors = getSystemColors();
+            
+            StringBuilder sb = new StringBuilder();
+            sb.append('{');
+            
+            for (Map.Entry<String, Color> e : systemColors.entrySet()) {
+                sb.append(e.getKey()).append(":\"").append(e.getValue()).append("\",");
+            }
+            
+            sb.setCharAt(sb.length() - 1, '}');
+            clientSideMethodCall("tw_Component", "setSystemColors", sb);
         } catch (Exception e) {
             if (e instanceof RuntimeException) throw (RuntimeException)e;
             throw new RuntimeException(e);
@@ -298,18 +311,23 @@ public final class WebApplication extends Application {
         appThread.start();
     }
     
+    String getColorValue(Color color, boolean border) {
+        if (color.isSystemColor()) color = systemColors.get(color.toString());
+        return color.toRGBString();
+    }    
+    
     Integer getNextComponentId() {
         nextCompId = nextCompId == Integer.MAX_VALUE ? 1 : nextCompId + 1;
         return new Integer(nextCompId);
     }
     
     private void sendStyleClass(String styleName, Style s) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append('{');
-        sb.append("backgroundColor:\"").append(s.getBackground().getColor().toRGBString()).append("\",");
+        sb.append("backgroundColor:\"").append(getColorValue(s.getBackground().getColor(), false)).append("\",");
         Font f = s.getFont();
         sb.append("fontFamily:\"").append(f.getFamily()).append("\",");
-        sb.append("fontColor:\"").append(f.getColor().toRGBString()).append("\",");
+        sb.append("fontColor:\"").append(getColorValue(f.getColor(), false)).append("\",");
         sb.append("fontSize:").append(f.getSize()).append(",");
         sb.append("fontItalic:").append(f.isItalic()).append(",");
         sb.append("fontBold:").append(f.isBold()).append(",");
@@ -317,7 +335,7 @@ public final class WebApplication extends Application {
         Border b = s.getBorder();
         sb.append("borderSize:").append(b.getSize()).append(",");
         sb.append("borderType:\"").append(b.getType()).append("\",");
-        sb.append("borderColor:\"").append(b.getColor().toRGBString()).append("\"");
+        sb.append("borderColor:\"").append(getColorValue(b.getColor(), true)).append("\"");
         sb.append('}');
         clientSideMethodCall("tw_Component", "setDefaultStyle", styleName, sb);
     }
@@ -457,7 +475,7 @@ public final class WebApplication extends Application {
         }
     }
     
-    static void encodeObject(StringBuffer sb, Object o) {
+    static void encodeObject(StringBuilder sb, Object o) {
         if (o == null) {
             sb.append("null");
         } else if (o instanceof Integer) {
@@ -466,7 +484,7 @@ public final class WebApplication extends Application {
             sb.append(String.valueOf(((Number) o).doubleValue()));
         } else if (o instanceof Boolean) {
             sb.append(String.valueOf(((Boolean) o).booleanValue()));
-        } else if (o instanceof StringBuffer) {
+        } else if (o instanceof StringBuilder) {
             sb.append(o.toString());
         } else {
             String s = o.toString();
@@ -478,7 +496,7 @@ public final class WebApplication extends Application {
     }
     
     private String clientSideCallImpl(boolean sync, Object objectId, String name, Object[] args) {
-        StringBuffer sb = sbClientEvents;
+        StringBuilder sb = sbClientEvents;
         String ret = null;
 
         synchronized (sb) {
@@ -532,7 +550,7 @@ public final class WebApplication extends Application {
                         
                         if (syncCallResponse[0] == null) {
                             long afterWait = System.currentTimeMillis();
-                            StringBuffer sbscr = new StringBuffer();
+                            StringBuilder sbscr = new StringBuilder();
                             sbscr.append("sendClientEvent did not respond within 120 seconds, methodName=");
                             sbscr.append(name);
                             sbscr.append(",timeBeforeWait=");
@@ -799,7 +817,7 @@ public final class WebApplication extends Application {
 	private void endPlayBack(){
 		log.entering("ThinWireApplication", "endPlayBack");
 		this.playBackDuration = new Date().getTime() - this.playBackStart;
-		StringBuffer sb = new StringBuffer(EOL + EOL);
+        StringBuilder sb = new StringBuilder(EOL + EOL);
 		sb.append(Thread.currentThread().getName()
 				+ " Playback Statistics" + EOL);
 		sb.append("-----------------------------------------------------" + EOL);

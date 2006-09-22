@@ -50,18 +50,18 @@ var tw_Dialog = tw_BaseContainer.extend({
         s.backgroundColor = bs.backgroundColor;
         s.color = bs.fontColor;
         s.borderStyle = bs.borderType;
-        s.borderColor = this._getBorderColor(bs.borderColor, bs.borderType);
+        s.borderColor = tw_Component.getIEBorder(bs.borderColor, bs.borderType);
         closeButton.appendChild(document.createTextNode("X"));
         
         title.appendChild(closeButton);    
         dialog.appendChild(title);
              
-        var container = document.createElement("div");
-        container.className = "container";
-        var s = container.style;
+        this._container = document.createElement("div");
+        this._container.className = "container";
+        var s = this._container.style;
         s.position = "absolute";
         s.backgroundColor = tw_COLOR_TRANSPARENT;
-        dialog.appendChild(container);
+        dialog.appendChild(this._container);
 
         tw_Frame.active.setModalLayerVisible(true, this);
         
@@ -70,7 +70,6 @@ var tw_Dialog = tw_BaseContainer.extend({
         tw_addEventListener(closeButton, "click", this._closeButtonClickListener.bind(this));
         this.setActive = this.setActive.bind(this);
         this.setActive(true);
-        this._container = container;
 
         this.init(-1, props);
     },
@@ -160,7 +159,7 @@ var tw_Dialog = tw_BaseContainer.extend({
     },
     
     getOffsetY: function() {
-        return this.$.getOffsetY.apply(this) + (this.getMenu() != null ? tw_Dialog.menuBarHeight : 0);
+        return this.$.getOffsetY.apply(this) + tw_Dialog.titleBarHeight + (this.getMenu() != null ? tw_Dialog.menuBarHeight : 0);
     },     
         
     setY: function(y) {
@@ -183,7 +182,7 @@ var tw_Dialog = tw_BaseContainer.extend({
     
     setHeight: function(height) {
         this.$.setHeight.apply(this, [height]);        
-        height -= tw_Dialog.titleBarHeight - (this._menu == null ? 0 : tw_Dialog.menuBarHeight) - this.getStyle("borderSize") * 2;
+        height -= tw_Dialog.titleBarHeight + (this._menu == null ? 0 : tw_Dialog.menuBarHeight) + this.getStyle("borderSize") * 2;
         if (height < 0) height = 0;
         this._container.style.height = height + "px";
     },

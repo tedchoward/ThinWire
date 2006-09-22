@@ -495,7 +495,6 @@ var tw_Tree = tw_Component.extend({
     
     setEnabled: function(enabled) {
         this.$.setEnabled.apply(this, [enabled]);        
-        this._box.style.backgroundColor = enabled ? "window" : tw_COLOR_THREEDFACE;                        
         tw_setFocusCapable(this._box, enabled);        
     },
     

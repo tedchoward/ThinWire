@@ -115,7 +115,7 @@ public final class Hyperlink extends AbstractTextComponent implements ActionEven
      * @param action the action name
      */
     public void fireAction(String action) {
-        aei.fireAction(action, this);
+        aei.fireAction(this, action);
     }    
     
     public void setLocation(String location) {

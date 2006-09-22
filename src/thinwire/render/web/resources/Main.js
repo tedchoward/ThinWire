@@ -45,6 +45,12 @@ var tw_isWin = navigator.userAgent.indexOf("Windows") > 0;
 var tw_sizeIncludesBorders = tw_isIE && tw_bVer < 6;
 var tw_useSmartTab = tw_isWin && ((tw_isIE && tw_bVer >= 6) || (tw_isFirefox && tw_bVer >= 1.5));
 
+var tw_BASE_PATH = new String(location);
+var tw_APP_URL = tw_BASE_PATH.substring(0, tw_BASE_PATH.indexOf("/", tw_BASE_PATH.indexOf("//") + 2));
+tw_BASE_PATH = tw_BASE_PATH.substring(tw_BASE_PATH.indexOf("/", tw_BASE_PATH.indexOf("//") + 2));
+if (tw_BASE_PATH.indexOf("?") >= 0) tw_BASE_PATH = tw_BASE_PATH.substring(0, tw_BASE_PATH.indexOf("?")); 
+tw_APP_URL += tw_BASE_PATH;
+
 function tw_include(name) {
     try {
         if (tw_include.tw_request == undefined) tw_include.tw_request = new tw_HttpRequest();
@@ -68,23 +74,4 @@ function tw_include(name) {
         }
     }       
 }
-
-var tw_COLOR_ACTIVECAPTION = "activecaption";
-var tw_COLOR_CAPTIONTEXT= "captiontext";
-var tw_COLOR_INACTIVECAPTION = "inactivecaption";
-var tw_COLOR_INACTIVECAPTIONTEXT= "inactivecaptiontext";
-var tw_COLOR_WINDOW = "window";
-var tw_COLOR_WINDOWTEXT = "windowtext";
-var tw_COLOR_HIGHLIGHT = "highlight";
-var tw_COLOR_HIGHLIGHTTEXT = "highlighttext";
-var tw_COLOR_GRAYTEXT = "graytext";
-var tw_COLOR_BUTTONTEXT = "buttontext";
-var tw_COLOR_BUTTONFACE = "buttonface";
-var tw_COLOR_THREEDFACE = "threedface";
-var tw_COLOR_THREEDSHADOW = "threedshadow";
-var tw_COLOR_WINDOWFRAME = "windowframe";
-var tw_COLOR_MENUTEXT = "menutext";
-var tw_COLOR_TRANSPARENT = "transparent";
-
-var tw_FONT_FAMILY = "tahoma, sans-serif";
 

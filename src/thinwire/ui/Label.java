@@ -117,7 +117,7 @@ public final class Label extends AbstractTextComponent implements AlignTextCompo
      * @param action the action name
      */
     public void fireAction(String action) {
-        aei.fireAction(action, this);
+        aei.fireAction(this, action);
     }    
     
     /*

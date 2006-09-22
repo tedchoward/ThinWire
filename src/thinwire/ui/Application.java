@@ -154,7 +154,8 @@ public abstract class Application {
     private EventListenerImpl<PropertyChangeListener> gpcei;
     private WeakReference<Component> priorFocus;
     private Frame frame;
-    private Map<String, String> fileMap;    
+    private Map<String, String> fileMap;
+    private Map<String, Color> systemColors;
     private Map<Class<? extends Component>, Style> compTypeToStyle;
     
     protected Application() {
@@ -396,6 +397,7 @@ public abstract class Application {
             ClassReflector<FX> fxReflect = new ClassReflector<FX>(FX.class, "PROPERTY_", "fx");
             
             compTypeToStyle = new HashMap<Class<? extends Component>, Style>();
+            systemColors = new HashMap<String, Color>();
 
             Style defaultStyle = new Style();
             compTypeToStyle.put(null, defaultStyle);
@@ -423,24 +425,42 @@ public abstract class Application {
                 int lastIndex = key.lastIndexOf('.');
                 String prefix = key.substring(0, lastIndex); 
                 key = key.substring(lastIndex + 1);
-                Class<? extends Component> clazz = (Class<? extends Component>)Class.forName(prefix);
-                Style style = compTypeToStyle.get(clazz);
-                if (style == null) compTypeToStyle.put(clazz, style = new Style(defaultStyle));
-                
-                if (key.startsWith("background")) {
-                    backgroundReflect.setProperty(style.getBackground(), key, value);
-                } else if (key.startsWith("font")) {
-                    fontReflect.setProperty(style.getFont(), key, value);            
-                } else if (key.startsWith("border")) {
-                    borderReflect.setProperty(style.getBorder(), key, value);            
-                } else if (key.startsWith("fx")) {
-                    fxReflect.setProperty(style.getFX(), key, value);
+
+                if (prefix.equals("systemColor")) {
+                    Color color = Color.valueOf(key); //Just verify that the specified systemColor is valid;
+                    if (!color.isSystemColor()) throw new UnsupportedOperationException("You can only override system colors in the style sheet: " + key);
+                    systemColors.put(color.toString(), Color.valueOf(value));
+                } else {
+                    Class<? extends Component> clazz = (Class<? extends Component>)Class.forName(prefix);
+                    Style style = compTypeToStyle.get(clazz);
+                    if (style == null) compTypeToStyle.put(clazz, style = new Style(defaultStyle));
+                    
+                    if (key.startsWith("background")) {
+                        backgroundReflect.setProperty(style.getBackground(), key, value);
+                    } else if (key.startsWith("font")) {
+                        fontReflect.setProperty(style.getFont(), key, value);            
+                    } else if (key.startsWith("border")) {
+                        borderReflect.setProperty(style.getBorder(), key, value);            
+                    } else if (key.startsWith("fx")) {
+                        fxReflect.setProperty(style.getFX(), key, value);
+                    }
+                }
+            }
+            
+            for (Color c : Color.values()) {
+                if (c.isSystemColor()) {
+                    String name = c.toString();
+                    if (systemColors.get(name) == null) systemColors.put(name, c);
                 }
             }
         } catch (Exception e) {
             if (e instanceof RuntimeException) throw (RuntimeException)e;
             throw new RuntimeException(e);
         }
+    }
+    
+    protected Map<String, Color> getSystemColors() {
+        return systemColors;
     }
     
     public Style getDefaultStyle(Class<? extends Component> clazz) {

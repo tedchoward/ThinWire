@@ -143,16 +143,13 @@ public final class DropDownGridBox extends DropDown<GridBox> {
             String s;
             
             if (gb.isVisibleCheckBoxes()) {
-                StringBuffer sb = new StringBuffer();
+                StringBuilder sb = new StringBuilder();
                 
-                //NOTE: synchronized StringBuffer once for increase speed.
-                synchronized (sb) {                    
-                    for (GridBox.Row r : gb.getCheckedRows()) {
-                        if (r.isChecked()) sb.append(r.get(columnIndex)).append(delimiter);
-                    }
-                    
-                    s = sb.length() > 0 ? sb.substring(0, sb.length() - 1) : "";
+                for (GridBox.Row r : gb.getCheckedRows()) {
+                    if (r.isChecked()) sb.append(r.get(columnIndex)).append(delimiter);
                 }
+                
+                s = sb.length() > 0 ? sb.substring(0, sb.length() - 1) : "";
             } else {
                 s = gb.getSelectedRow().get(columnIndex).toString();
             }
@@ -193,20 +190,16 @@ public final class DropDownGridBox extends DropDown<GridBox> {
             }
             
             if (gb.isVisibleCheckBoxes()) {
-                StringBuffer sb = new StringBuffer();
+                StringBuilder sb = new StringBuilder();
+                sb.append(delimiter).append(s).append(delimiter);
+                s = sb.toString();
+                sb.setLength(0);
                 
-                //NOTE: synchronized StringBuffer once for increase speed.
-                synchronized (sb) {
-                    sb.append(delimiter).append(s).append(delimiter);
-                    s = sb.toString();
+                for (List l : gb.getRows()) {
+                    GridBox.Row r = (GridBox.Row)l;
+                    sb.append(delimiter).append(r.get(columnIndex)).append(delimiter);
+                    r.setChecked(s.indexOf(sb.toString()) != -1);
                     sb.setLength(0);
-                    
-                    for (List l : gb.getRows()) {
-                        GridBox.Row r = (GridBox.Row)l;
-                        sb.append(delimiter).append(r.get(columnIndex)).append(delimiter);
-                        r.setChecked(s.indexOf(sb.toString()) != -1);
-                        sb.setLength(0);
-                    }
                 }
             } else {
                 List<GridBox.Row> rows = gb.getRows();

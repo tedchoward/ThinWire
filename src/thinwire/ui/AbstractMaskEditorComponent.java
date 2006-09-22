@@ -47,7 +47,7 @@ abstract class AbstractMaskEditorComponent extends AbstractEditorComponent imple
 
     String getUnformattedText(String text) {
         if (!formatText && text.length() > 0) {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             
             if (editMask.indexOf('#') >= 0) {
                 boolean hasDot = false;

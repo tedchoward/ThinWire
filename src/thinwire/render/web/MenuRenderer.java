@@ -32,7 +32,7 @@ final class MenuRenderer extends ComponentRenderer implements ItemChangeListener
     private static final String ITEM_SET_ENABLED = "itemSetEnabled";
     private Menu menu;
     private Map<Menu.Item, KeyPressListener> itemToKeyPressListeners;
-    private StringBuffer sb;
+    private StringBuilder sb;
 	
 	void render(WindowRenderer wr, Component c, ComponentRenderer container) {        
         init(MENU_CLASS, wr, c, container);
@@ -51,7 +51,7 @@ final class MenuRenderer extends ComponentRenderer implements ItemChangeListener
         setPropertyChangeIgnored(Component.PROPERTY_FOCUS, true);
 
 		menu = (Menu)c;
-        sb = new StringBuffer();
+        sb = new StringBuilder();
         buildMenuChildrenInit((Menu.Item)menu.getRootItem(), true);
         menu.addItemChangeListener(this);
         addInitProperty("initData", sb);        
@@ -178,62 +178,56 @@ final class MenuRenderer extends ComponentRenderer implements ItemChangeListener
     }
     
 	private void buildMenuInit(Menu.Item item, int index, boolean isRoot) {
-        synchronized (sb) {        
-    		sb.append('{');
-    		sb.append("en:").append(item.isEnabled());
-    		String text = getEscapedText(item.getText());		
-    		if (text.length() > 0) sb.append(",t:\"").append(text.replaceAll("\"", "\\\"")).append('"');
-            String keyPressCombo = item.getKeyPressCombo();
-            
-            if (keyPressCombo.length() > 0) {
-                sb.append(",k:\"").append(keyPressCombo).append('"');
-                setupKeyPressListener(item);
-            }
-            
-    		if (index != -1) sb.append(",x:").append(index);
-    		
-    		if (item.getChildren().size() > 0) {
-    			sb.append(",c:");
-    			buildMenuChildrenInit(item, false);
-    		}
-    		
-    		String img = item.getImage();
-    		if (img.length() > 0) sb.append(",g:\"").append(getRemoteNameForLocalFile(item.getImage())).append('"');		
-    		sb.append('}');
-        }            
+		sb.append('{');
+		sb.append("en:").append(item.isEnabled());
+		String text = getEscapedText(item.getText());		
+		if (text.length() > 0) sb.append(",t:\"").append(text.replaceAll("\"", "\\\"")).append('"');
+        String keyPressCombo = item.getKeyPressCombo();
+        
+        if (keyPressCombo.length() > 0) {
+            sb.append(",k:\"").append(keyPressCombo).append('"');
+            setupKeyPressListener(item);
+        }
+        
+		if (index != -1) sb.append(",x:").append(index);
+		
+		if (item.getChildren().size() > 0) {
+			sb.append(",c:");
+			buildMenuChildrenInit(item, false);
+		}
+		
+		String img = item.getImage();
+		if (img.length() > 0) sb.append(",g:\"").append(getRemoteNameForLocalFile(item.getImage())).append('"');		
+		sb.append('}');
 	}
 	
 	private void buildMenuChildrenInit(Menu.Item menu, boolean isRoot) {
-        synchronized (sb) {        
-    		sb.append('[');
-    		List<Menu.Item> content = menu.getChildren();
-    		
-    		for (int i = 0, cnt = content.size(); i < cnt; i++) {
-    			Menu.Item c = content.get(i);			
-    
-    			if (isRoot || c.getText().length() > 0) { 
-    				buildMenuInit(c, -1, isRoot);
-    				sb.append(',');
-    			} else {
-    				buildDividerInit(c, -1);
-    				sb.append(',');
-    			}
-    		}
-    		
-    		if (sb.charAt(sb.length() - 1) == '[')
-    			sb.append(']');
-    		else
-    			sb.setCharAt(sb.length() - 1, ']');
-        }
+		sb.append('[');
+		List<Menu.Item> content = menu.getChildren();
+		
+		for (int i = 0, cnt = content.size(); i < cnt; i++) {
+			Menu.Item c = content.get(i);			
+
+			if (isRoot || c.getText().length() > 0) { 
+				buildMenuInit(c, -1, isRoot);
+				sb.append(',');
+			} else {
+				buildDividerInit(c, -1);
+				sb.append(',');
+			}
+		}
+		
+		if (sb.charAt(sb.length() - 1) == '[')
+			sb.append(']');
+		else
+			sb.setCharAt(sb.length() - 1, ']');
 	}
 
 	private void buildDividerInit(Menu.Item menu, int index) {
-        synchronized (sb) {        
-    		sb.append("{");
-    		sb.append("en:").append(menu.isEnabled());
-    		if (index != -1) sb.append(",x:").append(index);
-    		sb.append('}');
-        }
+		sb.append("{");
+		sb.append("en:").append(menu.isEnabled());
+		if (index != -1) sb.append(",x:").append(index);
+		sb.append('}');
 	}
 
 	private static Menu.Item fullIndexItem(Menu root, String value) {

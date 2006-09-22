@@ -18,7 +18,6 @@ var tw_BaseText = tw_Component.extend({
     construct: function(tagNames, className, id, containerId, support) {
         this.$.construct.apply(this, [tagNames[0], className, id, containerId, support]);
         var s = this._box.style;
-        s.backgroundColor = tw_COLOR_TRANSPARENT;
         
         var editor = document.createElement(tagNames[1]);    
         var s = editor.style;
@@ -28,10 +27,14 @@ var tw_BaseText = tw_Component.extend({
         s.margin = "0px";
         s.border = "0px";
         s.padding = "0px";
+        
+        s.backgroundColor = tw_COLOR_TRANSPARENT;
+
                 
         if (tagNames.length > 2) editor.type = tagNames[2];
         this._box.appendChild(editor);
-        this._editor = this._focusBox = this._fontBox = this._backgroundBox = editor;
+        //this._editor = this._focusBox = this._fontBox = this._backgroundBox = editor;
+        this._editor = this._focusBox = this._fontBox = editor;
         
         this._focusListener = this._focusListener.bind(this);
         this._blurListener = this._blurListener.bind(this);
@@ -55,11 +58,6 @@ var tw_BaseText = tw_Component.extend({
     _mouseUpListener: function(event) {
         if (!this.isEnabled()) return;
         this._textStateChange(true);
-    },
-
-    setStyle: function(name, value) {
-        if (name == "backgroundColor") this._box.style[name] = value;         
-        this.$.setStyle.apply(this, [name, value]);
     },
     
     setWidth: function(width) {     

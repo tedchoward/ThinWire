@@ -30,17 +30,15 @@ final class TreeRenderer extends ComponentRenderer implements ItemChangeListener
 	void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         init(TREE_CLASS, wr, c, container);
         tree = (Tree)c;
-        StringBuffer sb = new StringBuffer();
-        
-        synchronized (sb) {
-            prepareInitData(sb);
-        }
-
+        StringBuilder sb = new StringBuilder();
+        prepareInitData(sb);
         addClientSideProperty(Tree.Item.PROPERTY_ITEM_EXPANDED);
         addClientSideProperty(Tree.Item.PROPERTY_ITEM_SELECTED);
         addInitProperty("initData", sb);        
         tree.addItemChangeListener(this);
         super.render(wr, c, container);
+        Tree.Item item = tree.getSelectedItem();
+        if (item != null) postClientEvent(ITEM_SELECT, fullIndex((Tree.Item)item));
 	}
     
     void destroy() {
@@ -145,7 +143,7 @@ final class TreeRenderer extends ComponentRenderer implements ItemChangeListener
 
 	private static String fullIndex(Tree.Item item) {
 		if (item == item.getHierarchy().getRootItem()) return "rootItem";
-		StringBuffer sb = new StringBuffer(String.valueOf(item.getIndex()));
+        StringBuilder sb = new StringBuilder(String.valueOf(item.getIndex()));
 		Object root = item.getHierarchy().getRootItem();
         
 		while (item.getParent() != root) {
@@ -156,7 +154,7 @@ final class TreeRenderer extends ComponentRenderer implements ItemChangeListener
 		return sb.toString();  
 	}
     
-	private void prepareInitData(StringBuffer sb) {
+	private void prepareInitData(StringBuilder sb) {
         Tree.Item ri = (Tree.Item)tree.getRootItem();
 	    sb.append("{ch:").append(tree.getHeight());
 	    sb.append(",cw:").append(tree.getWidth());
@@ -170,7 +168,7 @@ final class TreeRenderer extends ComponentRenderer implements ItemChangeListener
         sb.append('}');
 	}
 	
-	private void prepareInitData(StringBuffer sb, Tree.Item tn) {
+	private void prepareInitData(StringBuilder sb, Tree.Item tn) {
 	    List<Tree.Item> l = tn.getChildren();
 	    sb.append("ti:[");
         

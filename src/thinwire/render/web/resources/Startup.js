@@ -56,7 +56,7 @@ function tw_getVisibleHeight() {
 //Allow buttons in mozilla to get focus, but prevent click noise in IE
 function tw_setFocusCapable(comp, state) {
     if (tw_isGecko) {
-        comp.href = state ? "javascript:void(false)" : null;
+        comp.href = "javascript:void(false)";
     } else {
         comp.tabIndex = state ? 0 : -1;
     }
@@ -112,7 +112,7 @@ function tw_getEventOffsetX(event) {
     if (tw_isGecko) {
         return event.layerX;
     } else {
-        return event.offsetX;// + tw_BORDER_WIDTH;
+        return event.offsetX;
     }
 }
 
@@ -250,7 +250,7 @@ function tw_shutdownInstance(text) {
         s.width = "320px";
         s.top = ((tw_getVisibleHeight() - 200) / 2) + "px";
         s.left = ((tw_getVisibleWidth() - parseInt(s.width)) / 2) + "px";
-        s.backgroundColor = tw_COLOR_THREEDFACE;
+        s.backgroundColor = "threedface";
         s.border = "1px solid black";
         s.whiteSpace = "normal";
         s.fontSize = "14pt";
@@ -275,21 +275,7 @@ function tw_shutdownInstance(text) {
 //TODO: Opera doesn't fire an unload event so proper shutdown isn't currently possible.
 tw_addEventListener(window, "unload", tw_shutdownInstance);
 
-
-var tw_BASE_PATH = new String(location);
-var tw_APP_URL = tw_BASE_PATH.substring(0, tw_BASE_PATH.indexOf("/", tw_BASE_PATH.indexOf("//") + 2));
-tw_BASE_PATH = tw_BASE_PATH.substring(tw_BASE_PATH.indexOf("/", tw_BASE_PATH.indexOf("//") + 2));
-if (tw_BASE_PATH.indexOf("?") >= 0) tw_BASE_PATH = tw_BASE_PATH.substring(0, tw_BASE_PATH.indexOf("?")); 
-tw_APP_URL += tw_BASE_PATH; 
-
-var tw_BORDER_WIDTH = 2;
-var tw_PADDING_WIDTH = 1;
-var tw_CALC_BORDER_SUB = tw_BORDER_WIDTH * 2;
-var tw_CALC_BORDER_PADDING_SUB = (tw_BORDER_WIDTH + tw_PADDING_WIDTH) * 2;
-
 var tw_timerMap = {};
-
-var tw_borderColor = tw_isIE ? "" : tw_COLOR_BUTTONFACE;
 
 var tw_em = new tw_EventManager();
 tw_em.start();

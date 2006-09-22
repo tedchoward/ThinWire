@@ -13,17 +13,13 @@ var tw_Slider = tw_BaseRange.extend({
         var s = this._box.style;
         s.backgroundColor = tw_COLOR_TRANSPARENT;
         
-        var line = document.createElement("div");
+        var line = this._line = document.createElement("div");
         var s = line.style;
         s.position = "absolute";
         s.lineHeight = "0px";
-        
         var ds = tw_Component.defaultStyles["Divider"];
-        s.borderWidth = ds.borderSize + "px";
         s.borderStyle = ds.borderType;
-        s.borderColor = this._getBorderColor(ds.borderColor, ds.borderType);
         this._box.insertBefore(line, this._selection);
-        this._line = line;
         
         this._borderBox = this._selection;
         this._cursorDrag = new tw_DragHandler(this._selection, this._cursorDragListener.bind(this));
@@ -33,7 +29,21 @@ var tw_Slider = tw_BaseRange.extend({
         this.init(-1, props);
     },
     
+    setStyle: function(name, value) {
+        this.$.setStyle.apply(this, [name, value]);
+        var s = this._line.style;
+        
+        if (name == "borderColor") {
+            s[name] = tw_Component.getIEBorder(value, this.getStyle("borderType"));
+        } else if (name == "borderSize") {
+            value = Math.floor(parseInt(value) / 2);
+            if (value < 1) value = 1;
+            s[tw_Component.styleNameMap[name]] = value + "px";
+        }
+    },
+    
     _cursorDragListener: function(ev) {
+        if (!this.isEnabled()) return;
         var s = this._selection.style;
         if (ev.type == 1) {
             var pos_prop = this._vertical ? "top" : "left";

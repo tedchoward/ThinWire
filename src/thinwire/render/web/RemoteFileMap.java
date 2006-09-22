@@ -109,7 +109,7 @@ final class RemoteFileMap {
                         ext = fileInfo.remoteName.substring(lastIndex);
                     }
                     
-                    StringBuffer sb = new StringBuffer();
+                    StringBuilder sb = new StringBuilder();
                     int i = 0;
                     
                     do {

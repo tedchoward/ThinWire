@@ -49,9 +49,11 @@ var tw_Animation = Class.extend({
             this._lastTime = thisTime;
         }
         
-        this._obj[this._setter](this._obj[this._getter]() + (this._neg ? -this._unitSize : this._unitSize));
-        this._dist -= this._unitSize;
-        if (this._dist > 0) setTimeout(this._run, this._unitTime);
+        if (this._obj instanceof tw_Component && this._obj._inited) {
+            this._obj[this._setter](this._obj[this._getter]() + (this._neg ? -this._unitSize : this._unitSize));
+            this._dist -= this._unitSize;
+            if (this._dist > 0) setTimeout(this._run, this._unitTime);
+        }
     }
 });
 

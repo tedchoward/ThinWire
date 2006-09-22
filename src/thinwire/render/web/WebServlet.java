@@ -39,7 +39,7 @@ public final class WebServlet extends HttpServlet {
         private String mixedCaseName;
         
         private InitParam() {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             String[] parts = name().split("_");
             sb.append(parts[0].toLowerCase());
             
@@ -335,7 +335,7 @@ public final class WebServlet extends HttpServlet {
         response.getOutputStream().write(getPlatformResource("MainPage.html"));        
 
         List<String> args = new ArrayList<String>();
-        StringBuffer sb = new StringBuffer();        
+        StringBuilder sb = new StringBuilder();        
         
         for (Map.Entry<String, String[]> e : ((Map<String, String[]>)request.getParameterMap()).entrySet()) {
             String key = e.getKey();

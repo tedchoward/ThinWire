@@ -12,12 +12,12 @@ import thinwire.ui.event.PropertyChangeEvent;
  * @author Joshua J. Gertzen
  */
 final class DropDownRenderer extends MaskEditorComponentRenderer {
-    private static final String DROPDOWNGRIDBOX_CLASS = "tw_DropDownGridBox";
+    private static final String DROPDOWN_CLASS = "tw_DropDown";
     private static final String SET_EDIT_ALLOWED = "setEditAllowed";
     private ComponentRenderer ddcr;
 
 	void render(WindowRenderer wr, Component c, ComponentRenderer container) {
-	    init(DROPDOWNGRIDBOX_CLASS, wr, c, container);
+	    init(DROPDOWN_CLASS, wr, c, container);
 	    DropDown dd = (DropDown)c;        
         addInitProperty(DropDown.PROPERTY_EDIT_ALLOWED, dd.isEditAllowed());
         super.render(wr, c, container);

@@ -2,11 +2,6 @@
  #LICENSE_HEADER#
  #VERSION_HEADER#
  */
-var tw_menu_imageMenuItem = "?_twr_=menuItem.png";
-var tw_menu_imageMenuArrow = "url(?_twr_=menuArrow.png)";
-var tw_menu_imageMenuArrowInvert = "url(?_twr_=menuArrowInvert.png)";
-//FIX: Firefox does not display the menu arrow.
-
 var tw_Menu = tw_Component.extend({
     _menusAreVisible: false,
     _activeMenuItem: null,
@@ -20,23 +15,17 @@ var tw_Menu = tw_Component.extend({
         var s = this._box.style;
         s.overflow = "visible";
         s.padding = "1px";
-        s.marginBottom = "1px";
         s.zIndex = "1";
 
-        s.background = tw_COLOR_THREEDFACE;
-        s.fontFamily = tw_FONT_FAMILY;
-        s.fontSize = "8pt";
-        s.fontColor = tw_COLOR_MENUTEXT;
-        s.borderColor = tw_borderColor;
-
         if (this._windowMenu) {
-            s.borderBottom = "2px groove";
+            s.borderStyle = "groove";
+            s.borderWidth = "0px";
+            s.borderBottomWidth = "2px";
+            s.marginBottom = "1px";
             s.position = "";
-            this._borderBox = null;
-        } else {
-            s.borderWidth = "2px";
-            s.borderStyle = "outset";
         }
+
+        this._boxSizeSub = tw_sizeIncludesBorders ? 0 : parseInt(s.padding) * 2; 
         
         this._mainMenuMouseOver = this._mainMenuMouseOver.bind(this);
         this._mainMenuMouseDown = this._mainMenuMouseDown.bind(this);
@@ -49,8 +38,52 @@ var tw_Menu = tw_Component.extend({
         var initData = props.initData;
         delete props.initData;
                 
-        this._load(this._box, initData);
         this.init(-1, props);
+        this._load(this._box, initData);
+    },
+    
+    setHeight: function(height) {
+        this.$.setHeight.apply(this, [height]);
+        this._mainItemSub = this._borderSizeSub + this._boxSizeSub;
+        
+        if (!tw_sizeIncludesBorders) {
+            var borderWidth = 1;
+            var paddingTop = 2;
+            var paddingBottom = 2;
+            this._mainItemSub += borderWidth * 2 + paddingTop + paddingBottom;
+        }
+        
+        var nodes = this._box.childNodes;
+        
+        for (var i = nodes.length; --i >= 0;) {
+            nodes.item(i).firstChild.style.lineHeight = this.getHeight() - this._mainItemSub + "px";
+        }
+    },
+    
+    setStyle: function(name, value) {
+        if (this._windowMenu && (name == "borderSize" || name == "borderStyle")) return;
+        this.$.setStyle.apply(this, [name, value]);
+        
+        if (name == "backgroundColor" || name.indexOf("border") == 0) {
+            var nodes = this._box.childNodes;
+            if (name == "borderSize") value += "px";
+            else if (name == "borderColor") value = tw_Component.getIEBorder(value, this.getStyle("borderType"));
+            name = tw_Component.styleNameMap[name];
+                        
+            for (var i = nodes.length; --i >= 0;) {
+                var item = nodes.item(i);
+                this._setHighlight(item, false);
+                this.applyStyle(item.lastChild, name, value);
+            }
+        }
+    },
+    
+    applyStyle: function(content, name, value) {
+        content.style[name] = value;
+        
+        for (var i = content.childNodes.length; --i >= 0;) {
+            this.applyStyle(content.childNodes.item(i).lastChild, name, value);
+        }
     },
             
     _mainMenuMouseOver: function(event) {
@@ -189,15 +222,10 @@ var tw_Menu = tw_Component.extend({
     },
     
     _setArrowVisible: function(item, visible) {
-        if (visible) {
-            var invertArrow = false;
-            
-            if (item.firstChild.tw_invertArrow)
-                invertArrow = true;
-                
-            item.firstChild.lastChild.style.backgroundImage = invertArrow ? tw_menu_imageMenuArrowInvert : tw_menu_imageMenuArrow;
-        } else
-            item.firstChild.lastChild.style.backgroundImage = "";
+        var b = item.firstChild;
+        var img = "";
+        if (visible) img = b.tw_invertArrow ? "url(?_twr_=menuArrowInvert.png)" : "url(?_twr_=menuArrow.png)";
+        if (b.style.backgroundImage != img) b.style.backgroundImage = img;
     },    
     
     _open: function(item) {
@@ -223,12 +251,12 @@ var tw_Menu = tw_Component.extend({
                 button.tw_invertArrow = true;
                 button.style.color = tw_COLOR_HIGHLIGHTTEXT;
                 button.style.backgroundColor = tw_COLOR_HIGHLIGHT;
-                if (this._activeMenuItem != null && this._activeMenuItem !== item) this._setHighlight(this._activeMenuItem, false);
+                if (this._activeMenuItem != null && this._fullIndex(item).indexOf(this._fullIndex(this._activeMenuItem)) != 0) this.close(this._activeMenuItem);
                 this._activeMenuItem = item;
             } else {                
                 button.tw_invertArrow = false;
-                button.style.color = this.getStyle("fontColor");
-                button.style.backgroundColor = this.getStyle("backgroundColor");
+                button.style.color = "";
+                button.style.backgroundColor = "";
             }
             
             this._setArrowVisible(item, item.lastChild.childNodes.length > 0);
@@ -239,12 +267,11 @@ var tw_Menu = tw_Component.extend({
             }
 
             if (highlight) {
-                if (this._menusAreVisible)
-                    button.style.borderColor = "threedshadow threedhighlight threedhighlight threedshadow";
-                else
-                    button.style.borderColor = "threedhighlight threedshadow threedshadow threedhighlight";                    
+                button.style.borderStyle = this._menusAreVisible ? "inset" : "outset"; 
+                button.style.borderColor = tw_Component.getIEBorder(this.getStyle("borderColor"), "outset");
             } else {
-                button.style.borderColor = tw_COLOR_THREEDFACE;
+                button.style.borderStyle = "solid";
+                button.style.borderColor = this.getStyle("backgroundColor");
             }
         }        
     },
@@ -325,21 +352,18 @@ var tw_Menu = tw_Component.extend({
             
             var s = button.style;
             s.position = "relative";
-            s.margin = "0px";
             s.padding = "2px";
-            
-            var image = document.createElement("img");
+            s.paddingRight = "18px";
+            s.backgroundRepeat = "no-repeat";
+            s.backgroundPosition = "center right";
+
+            var image = document.createElement("div");
             image.className = "menuButtonImage";
             var s = image.style;
-            s.border = "0px";
-            s.margin = "0px";
-            s.padding = "0px";
             s.height = "16px";
             s.width = "16px";
             s.backgroundRepeat = "no-repeat";
             s.backgroundPosition = "center center";
-            
-            image.src = tw_menu_imageMenuItem;        
             button.appendChild(image);
     
             var text = document.createElement("span");
@@ -358,33 +382,21 @@ var tw_Menu = tw_Component.extend({
             s.right = "20px";
             button.appendChild(shortcutText);                    
             
-            var arrow = document.createElement("div");
-            arrow.className = "menuButtonArrow";
-            var s = arrow.style;
-            s.position = "absolute";
-            s.border = "0px";
-            s.margin = "0px";
-            s.padding = "0px";
-            s.right = "1px";
-            s.height = "16px";
-            s.width = "16px";
-            s.backgroundRepeat = "no-repeat";
-            s.backgroundPosition = "center center";            
-            button.appendChild(arrow);
-            
-            if (menu.className != "mainMenuItem")
-                this._setArrowVisible(menu, true);
+            if (menu.className != "mainMenuItem") this._setArrowVisible(menu, true);
         } else {
             var s = item.style;
             s.styleFloat = "left";
             
             var s = button.style;
-            s.margin = "0px";
+            s.whiteSpace = "nowrap";
             s.paddingTop = "2px";
             s.paddingBottom = "2px";
+            s.borderWidth = "1px";
+            s.borderStyle = "solid";
+            s.borderColor = this.getStyle("backgroundColor");
             s.paddingLeft = "5px";
             s.paddingRight = "5px";
-            s.border = "1px solid threedface";
+            s.lineHeight = this.getHeight() - this._mainItemSub + "px";
         }
     
         item.appendChild(button);
@@ -395,12 +407,14 @@ var tw_Menu = tw_Component.extend({
         s.position = "absolute";
         s.margin = "0px";
         s.padding = "0px";
-        s.border = "2px outset";
-
-        s.backgroundColor = tw_COLOR_THREEDFACE;
-
         s.visibility = "hidden";
-        s.borderColor = tw_borderColor;
+        
+        s.backgroundColor = this.getStyle("backgroundColor");
+        s.borderWidth = this.getStyle("borderSize") + "px";
+        var borderType = this.getStyle("borderType");
+        s.borderStyle = borderType;
+        s.borderColor = tw_Component.getIEBorder(this.getStyle("borderColor"), borderType);
+
         if (prefix == "m") s.top = "-2px";        
         content.tw_maxTextWidth = 0;
         content.tw_maxShortcutTextWidth = 0;

@@ -100,7 +100,6 @@ class ClassReflector<T> {
         try {
             prop.set.invoke(obj, convertValue);
         } catch (Exception e) {
-            System.out.println("Error setting property=" + propertyName + ", value=" + value + ", convertValue=" + convertValue);
             if (e instanceof RuntimeException) throw (RuntimeException)e;
             throw new RuntimeException(e);
         }        
