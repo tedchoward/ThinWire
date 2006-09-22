@@ -9,11 +9,6 @@ import thinwire.ui.event.ItemChangeListener;
 import thinwire.ui.event.PropertyChangeEvent;
 import thinwire.ui.event.PropertyChangeListener;
 import thinwire.ui.event.ItemChangeEvent.Type;
-import thinwire.ui.style.Background;
-import thinwire.ui.style.Border;
-import thinwire.ui.style.Color;
-import thinwire.ui.style.FX;
-import thinwire.ui.style.Font;
 import thinwire.ui.style.Style;
 
 /**

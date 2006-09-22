@@ -53,8 +53,8 @@ var tw_HttpRequest = Class.extend({
         this._comm.open(method, url, this._userAsyncFunc != null);
 
         if (method == "POST") {
-            this._comm.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
-            this._comm.setRequestHeader("Content-Length", data.length);                                
+            this._comm.setRequestHeader("Content-Type", "text/plain");
+            this._comm.setRequestHeader("Content-Length", data.length);
         }
         
         if (this._userAsyncFunc != null) {

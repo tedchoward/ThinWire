@@ -27,7 +27,6 @@ var tw_Frame = tw_BaseContainer.extend({
         
         tw_Frame.active = this;
         this._modalDialogIds = [];
-        tw_setSelectionEnabled(false);
                 
         this._backgroundBox = this._container = document.createElement("div");
         this._container.className = "container";
@@ -171,7 +170,6 @@ var tw_Frame = tw_BaseContainer.extend({
         this._menu = menu;
         
         if (menu instanceof tw_Menu) {
-            menu._box.style.height = tw_Dialog.menuBarHeight - (tw_sizeIncludesBorders ? 0 : 5) + "px";
             this._box.insertBefore(menu._box, this._container);
             this._container.style.height = parseInt(this._container.style.height) - tw_Dialog.menuBarHeight + "px";
         }

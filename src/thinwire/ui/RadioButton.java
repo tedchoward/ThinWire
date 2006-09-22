@@ -65,7 +65,7 @@ public class RadioButton extends AbstractTextComponent implements CheckedCompone
 	public static class Group extends AbstractList<RadioButton> {
 	    private RadioButton checked;
 	    private List<RadioButton> l = new ArrayList<RadioButton>(3);
-	    
+        
 	    public void add(int index, RadioButton o) {
             RadioButton rb = (RadioButton)o;            
 		    if (rb.getGroup() != null) throw new IllegalStateException("rb.getGroup() != null");		               
@@ -267,7 +267,9 @@ public class RadioButton extends AbstractTextComponent implements CheckedCompone
     public static final String PROPERTY_GROUP = "group";
     
 	private boolean checked;
+    //#IFDEF V1_1_COMPAT
 	private Object value = "";
+    //#ENDIF
 	private Group group;	
 
 	/**
@@ -293,8 +295,66 @@ public class RadioButton extends AbstractTextComponent implements CheckedCompone
     public RadioButton(String text, boolean checked) {
         setText(text);
         setChecked(checked);
+    }  
+    
+    /**
+     * Constructs a new RadioButton with the specified text, false checked state and group.
+     * @param group the RadioButton.Group for the RadioButton
+     * @param text the text to display on the right side of the RadioButton.
+     * @throws IllegalArgumentException if <code>group</code> is null
+     */
+    public RadioButton(RadioButton.Group group, String text) {
+        this(group, text, false);
     }    
-	
+    
+    /**
+     * Constructs a new RadioButton with the specified text, initial checked state and group.
+     * @param group the RadioButton.Group for the RadioButton
+     * @param text the text to display on the right side of the RadioButton.
+     * @param checked the initial checked state
+     * @throws IllegalArgumentException if <code>group</code> is null
+     */
+    public RadioButton(RadioButton.Group group, String text, boolean checked) {
+        if (group == null) throw new IllegalArgumentException("group == null");
+        setText(text);
+        setChecked(checked);
+        group.add(this);
+    }    
+
+    /**
+     * Constructs a new RadioButton with the specified text, false checked state and group.
+     * @param sibling a RadioButton that has a group this RadioButton should become a member of.  
+     * @param text the text to display on the right side of the RadioButton.
+     * @throws IllegalArgumentException if <code>sibling</code> is null
+     */
+    public RadioButton(RadioButton sibling, String text) {
+        this(sibling, text, false);
+    }
+    
+    /**
+     * Constructs a new RadioButton with the specified text, initial checked state and group.
+     * NOTE: If the specified <code>sibling</code> is not a member of a <code>RadioButton.Group</code>
+     *       then a RadioButton.Group will be constructed and both the <code>sibling</code> and <code>this</code>
+     *       RadioButton will be added to it.
+     * @param sibling a RadioButton that has a group this RadioButton should become a member of.  
+     * @param text the text to display on the right side of the RadioButton.
+     * @param checked the initial checked state
+     * @throws IllegalArgumentException if <code>sibling</code> is null
+     */
+    public RadioButton(RadioButton sibling, String text, boolean checked) {
+        if (sibling == null) throw new IllegalArgumentException("sibling == null");
+        setText(text);
+        setChecked(checked);
+        RadioButton.Group group = sibling.getGroup();
+        
+        if (group == null) {
+            group = new RadioButton.Group();
+            group.add(sibling);
+        }
+        
+        group.add(this);
+    }    
+    
 	/**
 	 * Returns the Group that this radio button is a part of.
 	 * @return a radio button Group
@@ -303,10 +363,6 @@ public class RadioButton extends AbstractTextComponent implements CheckedCompone
 	    return group;
 	}
 	
-	/**
-	 * Assigns this radio button to a specific group.
-	 * @param group the Group
-	 */
 	private void setGroup(Group group) {
         Group oldGroup = this.group;
 	    this.group = group;

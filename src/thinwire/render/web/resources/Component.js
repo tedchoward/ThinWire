@@ -33,7 +33,8 @@ var tw_Component = Class.extend({
     _disabledBackgroundColor: null,
     _borderBox: null,
     _borderColor: null,
-    _borderType: false,
+    _borderType: null,
+    _borderSize: 0,
     _borderSizeSub: 0,
     _boxSizeSub: 0,
     _fontBox: null,
@@ -140,6 +141,11 @@ var tw_Component = Class.extend({
     },
     
     setEnabled: function(enabled) {
+        if (this === tw_Component.currentFocus) {
+            var nextComp = this.getNextComponent(true);
+            if (nextComp != null && nextComp !== this) nextComp.setFocus(true);
+        }
+        
         this._enabled = enabled;
         this._backgroundBox.style.backgroundColor = enabled ? this._backgroundColor : (this._disabledBackgroundColor == null ? this.getParent().getStyle("backgroundColor") : this._disabledBackgroundColor);
     },
@@ -160,7 +166,7 @@ var tw_Component = Class.extend({
     },
     
     _focusListener: function() {
-        this.setFocus(true);        
+        this.setFocus(true);
     },
     
     _blurListener: function() {
@@ -168,25 +174,27 @@ var tw_Component = Class.extend({
     },
         
     setFocus: function(focus) {
-        if (!this.isEnabled() || !this.isVisible()) return false;
+        if (!this.isEnabled() || !this.isVisible()) return;
         
         if (focus) {
             if (tw_Component.currentFocus !== this) {
+                //We don't need to send a false event to the server, because a true event on the current
+                //component will trigger a false event on the prior.
                 if (tw_Component.currentFocus != null) {
                     tw_Component.currentFocus.setFocus(false);
-                    tw_Component.currentFocus.firePropertyChange("focus", false);
-                }
 
-                try {
-                    if (tw_Component.currentFocus._focusBox.blur) tw_Component.currentFocus._focusBox.blur();
-                } catch (e) {
-                    //Firefox sometimes throws an error when attemptting to set focus.
-                    //ignore the error for now until solution is found.
+                    try {
+                        if (tw_Component.currentFocus._focusBox.blur) tw_Component.currentFocus._focusBox.blur();
+                    } catch (e) {
+                        //Firefox sometimes throws an error when attemptting to set focus.
+                        //ignore the error for now until solution is found.
+                    }
                 }
                 
                 tw_Component.priorFocus = tw_Component.currentFocus; 
                 tw_Component.currentFocus = this;
-                this.firePropertyChange("focus", true);
+                tw_em.removeQueuedViewStateChange("focus");
+                this.firePropertyChange("focus", true, "focus");
                 
                 try {
                     if (this._focusBox.focus) this._focusBox.focus();
@@ -195,11 +203,18 @@ var tw_Component = Class.extend({
                     //ignore the error for now until solution is found.
                 }
                 
-                return true;
+                var isPriorButton = tw_Component.priorFocus instanceof tw_Button;
+                var isButton = this instanceof tw_Button;
+                
+                if (!isButton && isPriorButton) {
+                    var sButton = this.getBaseWindow().getStandardButton();
+                    if (sButton != null && sButton.isEnabled()) sButton._setStandardStyle(true);
+                } else if (!isPriorButton && isButton) {
+                    var sButton = this.getBaseWindow().getStandardButton();
+                    if (sButton != null && this !== sButton) sButton._setStandardStyle(false);
+                }
             }
         }
-        
-        return false;
     },
     
     setStyle: function(name, value) {
@@ -227,7 +242,8 @@ var tw_Component = Class.extend({
             this._fontBox.style[realName] = value;
         } else if (this._borderBox != null && name.indexOf("border") == 0) {
             if (name == "borderSize") {
-                this._borderSizeSub = tw_sizeIncludesBorders ? 0 : parseInt(value) * 2;                
+                this._borderSize = parseInt(value);
+                this._borderSizeSub = tw_sizeIncludesBorders ? 0 : this._borderSize * 2;                
                 value += "px";
                 this._borderBox.style[realName] = value;
                 
@@ -271,15 +287,12 @@ var tw_Component = Class.extend({
                 value = value == "underline" ? true : false;
             }
         } else if (this._borderBox != null && name.indexOf("border") == 0) {
-            value = this._borderBox.style[realName];
-            
             if (name == "borderSize") {
-                value = parseInt(value);
+                return this._borderSize;
             } else if (name == "borderColor") {
                 return this._borderColor;
             } else {
-                var index = value.indexOf(" ");
-                value = index == -1 ? value : value.substring(0, index);
+                return this._borderType;
             }
         } else {
             throw "attempt to get unsupported property '" + name + "'";
@@ -336,15 +349,15 @@ var tw_Component = Class.extend({
         }
     },
     
-    firePropertyChange: function(name, value) {
+    firePropertyChange: function(name, value, key) {
         var props = undefined;
         if (this._eventNotifiers != null) props = this._eventNotifiers["propertyChange"];                        
 
         if (props != undefined && props[name] === true) {
             tw_em.postViewStateChanged(this._id, name, value);
         } else {
-            tw_em.queueViewStateChanged(this._id, name, value);
-        }                           
+            tw_em.queueViewStateChanged(this._id, name, value, key);
+        }                          
     },
         
     getNextComponent: function(usable) {
@@ -463,6 +476,18 @@ var tw_Component = Class.extend({
         var styleClass = props.styleClass;
         var style = tw_Component.defaultStyles[styleClass];
         delete props.styleClass;
+        
+        var styleProps = props.styleProps;
+        if (styleProps != undefined) {
+            delete props.styleProps;
+            
+            for (var name in style) {
+                if (styleProps[name] == undefined) styleProps[name] = style[name]; 
+            }
+            
+            style = styleProps;
+        }
+        
         this.setStyle("backgroundColor", style["backgroundColor"]);
         this.setStyle("borderType", style["borderType"]);
         this.setStyle("borderSize", style["borderSize"]);
@@ -473,6 +498,11 @@ var tw_Component = Class.extend({
         this.setStyle("fontItalic", style["fontItalic"]);
         this.setStyle("fontBold", style["fontBold"]);
         this.setStyle("fontUnderline", style["fontUnderline"]);
+        
+        if (props.insertAtIndex != undefined) {
+            insertAtIndex = props.insertAtIndex;
+            delete props.insertAtIndex;
+        }
         
         for (var prop in props) {
             this[this.__setters__[prop]](props[prop]);

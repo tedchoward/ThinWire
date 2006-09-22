@@ -33,7 +33,7 @@ var tw_EventManager = Class.extend({
     _inboundEventListener: function(calls) {
         if (calls.length > 0) {
             try {
-                eval("calls = " + calls);                
+                eval("calls = " + calls);
                 this._inboundEvents = this._inboundEvents.concat(calls);                
                 this._resetTimer(0);
             } catch (e) {
@@ -53,7 +53,7 @@ var tw_EventManager = Class.extend({
                 } else {
                     this._activityInd.style.zIndex = ++tw_Component.zIndex;
                     this._activityInd.style.display = "block";
-                }                
+                }
             } else {
                 if (this._activityIndTimer != 0) clearTimeout(this._activityIndTimer);
                 this._activityIndTimer = setTimeout(this._hideActivityInd, 300);
@@ -76,8 +76,7 @@ var tw_EventManager = Class.extend({
                 var msg = this._outboundEvents.join(":");                
                 this._outboundEvents = [];
                 this._vsEventOrder = {};
-                msg = "data=" + encodeURIComponent(msg);
-                this._inboundEventListener(this._comm.send("POST", tw_APP_URL, msg));
+                this._comm.send("POST", tw_APP_URL, msg);           
             }
             
             if (this._inboundEvents.length > 0) {
@@ -141,9 +140,20 @@ var tw_EventManager = Class.extend({
         this._postOutboundEvent(this._EVENT_WEB_COMPONENT, value);
     },
     
-    queueViewStateChanged: function(id, name, value) {
+    removeQueuedViewStateChange: function(key) {
+        var order = this._vsEventOrder[key];
+        
+        if (order != undefined) {
+            delete this._vsEventOrder[key];
+            this._outboundEvents[order - 1] = this._EVENT_GET_EVENTS;
+            this._outboundEvents[order] = 0;
+            this._outboundEvents[order + 1] = "";
+        }
+    },
+    
+    queueViewStateChanged: function(id, name, value, key) {
         value = id + ":" + name + (value == null ? ":0:" : ":" + new String(value).length + ":" + value);
-        var key = id + ":" + name;
+        if (key == null) key = id + ":" + name;
         var order = this._vsEventOrder[key];
                                         
         if (order == undefined) {            
@@ -156,7 +166,7 @@ var tw_EventManager = Class.extend({
     },
         
     postLogMessage: function(levelName, msg) { this._postOutboundEvent(this._EVENT_LOG_MESSAGE, levelName + ":" + new String(msg).length + ":" + msg); },
-    sendGetEvents: function() { this._sendOutboundEvent(this._EVENT_GET_EVENTS, ""); },    
+    sendGetEvents: function() { this._sendOutboundEvent(this._EVENT_GET_EVENTS, null); },    
     sendRunTimer: function(id) { this._sendOutboundEvent(this._EVENT_RUN_TIMER, id + ":"); },    
     
     sendSyncResponse: function(value, postOnly) {

@@ -3,10 +3,9 @@
  #VERSION_HEADER#
  */
 //TODO: After removing a tab, if current index is no longer valid, then the server-model must be notified.
-//TODO: Once the real estabe for tabs is exahasted, the tabs don't stack or scroll.
+//TODO: Once the real estate for tabs is exahasted, the tabs don't stack or scroll.
 //TODO: What should the 'scroll' property do on a TabFolder?
 //TODO: Enabled is not handled on a TabFolder currently.
-//TODO: No real keyboard navigation for TabFolder or tabs.
 var tw_TabFolder = tw_BaseContainer.extend({
     _currentIndex: -1,
     _tabs: null,
@@ -142,18 +141,22 @@ var tw_TabFolder = tw_BaseContainer.extend({
             }
 
             this.setCurrentIndex(index, true);
-            this.setFocus(true);
             return false;
         } else {
             return this.$.keyPressNotify.apply(this, [keyPressCombo]);            
         }
     },    
 
-    setCurrentIndex: function(index, notify) {
+    setCurrentIndex: function(index, sendEvent) {
         this._setTabActive(this._currentIndex, false);
-        this._currentIndex = index;    
+        if (sendEvent && this._currentIndex == index) sendEvent = false;            
+        this._currentIndex = index;
         this._setTabActive(this._currentIndex, true);
-        if (notify) this.firePropertyChange("currentIndex", index);            
+        
+        if (sendEvent) {
+            this.setFocus(true);
+            this.firePropertyChange("currentIndex", index);
+        }
     },
     
     destroy: function() {

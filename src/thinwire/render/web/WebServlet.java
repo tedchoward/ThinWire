@@ -110,7 +110,7 @@ public final class WebServlet extends HttpServlet {
         HttpSession httpSession = request.getSession();        
         WebApplication app = (WebApplication)httpSession.getAttribute("instance");
         if (app == null) return;
-        InputStream is = new ByteArrayInputStream(request.getParameter("data").getBytes());
+        InputStream is = request.getInputStream();
         ByteArrayOutputStream baos = new ByteArrayOutputStream(is.available());
         
         do {

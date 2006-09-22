@@ -18,6 +18,10 @@ final class DialogRenderer extends WindowRenderer {
 	void render(WindowRenderer wr, Component c, ComponentRenderer container) {        
         init(DIALOG_CLASS, wr, c, container);
         addInitProperty(Dialog.PROPERTY_RESIZE_ALLOWED, ((Dialog)c).isResizeAllowed());
+        addClientSideProperty(Component.PROPERTY_X);
+        addClientSideProperty(Component.PROPERTY_Y);
+        addClientSideProperty(Component.PROPERTY_WIDTH);
+        addClientSideProperty(Component.PROPERTY_HEIGHT);
         super.render(wr, c, container);
 	}
     

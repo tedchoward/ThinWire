@@ -12,7 +12,7 @@ var tw_BaseCheckRadio = tw_Component.extend({
     construct: function(className, id, containerId) {
         this.$.construct.apply(this, ["a", className, id, containerId, "text,lineHeight"]);
         this._borderBox = null;
-        this._box.href = "javascript:void(false)";
+
         var s = this._box.style;
         s.display = "block";
         s.cursor = "default";        
@@ -57,8 +57,7 @@ var tw_BaseCheckRadio = tw_Component.extend({
         if (!this.isEnabled()) return;
         this.setFocus(true)
         var checked = !this.isChecked();
-        this.setChecked(checked);
-        this.firePropertyChange("checked", checked);
+        this.setChecked(checked, true);
     },
 
     setWidth: function(width) {
@@ -81,9 +80,9 @@ var tw_BaseCheckRadio = tw_Component.extend({
     },
     
     setEnabled: function(enabled) {
+        tw_setFocusCapable(this._box, enabled);
         if (enabled == this.isEnabled()) return;
         this.$.setEnabled.apply(this, [enabled]);
-        tw_setFocusCapable(this._fontBox, enabled);
         this.setChecked(this.isChecked()); //Toggles image to disabled image
     },
     
@@ -93,12 +92,14 @@ var tw_BaseCheckRadio = tw_Component.extend({
         return this._image.style.backgroundImage.indexOf("Unchecked") == -1;
     },
     
-    setChecked: function(checked) {
+    setChecked: function(checked, sendEvent) {
         if (this.isEnabled()) {
             this._image.style.backgroundImage = checked ? this._imageChecked : this._imageUnchecked;
         } else {
             this._image.style.backgroundImage = checked ? this._imageDisabledChecked : this._imageDisabledUnchecked;
-        }        
+        }
+
+        if (sendEvent) this.firePropertyChange("checked", checked);
     },
     
     destroy: function() {

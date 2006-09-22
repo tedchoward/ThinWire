@@ -66,14 +66,21 @@ public abstract class Application {
     
     public static class Local<T> {
         public void set(T value) {
-            Application.current().appLocal.put(this, value);
+            Map<Local, Object> map = Application.current().appLocal;
+            
+            synchronized (map) {
+                map.put(this, value);
+            }
         }
         
         public T get() {
             Map<Local, Object> map = Application.current().appLocal;
-            T value = (T)map.get(this);
-            if (value == null && !map.containsKey(this)) map.put(this, value = initialValue());
-            return value;
+
+            synchronized (map) {
+                T value = (T)map.get(this);
+                if (value == null && !map.containsKey(this)) map.put(this, value = initialValue());
+                return value;
+            }
         }
         
         protected T initialValue() {

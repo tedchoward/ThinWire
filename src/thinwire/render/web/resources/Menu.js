@@ -16,14 +16,7 @@ var tw_Menu = tw_Component.extend({
         s.overflow = "visible";
         s.padding = "1px";
         s.zIndex = "1";
-
-        if (this._windowMenu) {
-            s.borderStyle = "groove";
-            s.borderWidth = "0px";
-            s.borderBottomWidth = "2px";
-            s.marginBottom = "1px";
-            s.position = "";
-        }
+        if (this._windowMenu) s.position = "";
 
         this._boxSizeSub = tw_sizeIncludesBorders ? 0 : parseInt(s.padding) * 2; 
         
@@ -37,7 +30,6 @@ var tw_Menu = tw_Component.extend({
 
         var initData = props.initData;
         delete props.initData;
-                
         this.init(-1, props);
         this._load(this._box, initData);
     },
@@ -61,15 +53,25 @@ var tw_Menu = tw_Component.extend({
     },
     
     setStyle: function(name, value) {
-        if (this._windowMenu && (name == "borderSize" || name == "borderStyle")) return;
         this.$.setStyle.apply(this, [name, value]);
-        
+
         if (name == "backgroundColor" || name.indexOf("border") == 0) {
+            if (this._windowMenu) {
+                var s = this._box.style;
+                s.borderWidth = "0px";
+                s.borderTopWidth = "1px";
+                s.borderTopStyle = "solid";
+                s.borderTopColor = this.getStyle("backgroundColor");
+                s.paddingBottom = "2px";
+                s.borderBottomWidth = "2px";
+                s.borderBottomStyle = "groove";
+            }       
+
             var nodes = this._box.childNodes;
             if (name == "borderSize") value += "px";
             else if (name == "borderColor") value = tw_Component.getIEBorder(value, this.getStyle("borderType"));
             name = tw_Component.styleNameMap[name];
-                        
+            
             for (var i = nodes.length; --i >= 0;) {
                 var item = nodes.item(i);
                 this._setHighlight(item, false);
@@ -82,10 +84,36 @@ var tw_Menu = tw_Component.extend({
         content.style[name] = value;
         
         for (var i = content.childNodes.length; --i >= 0;) {
-            this.applyStyle(content.childNodes.item(i).lastChild, name, value);
+            var item = content.childNodes.item(i);
+            
+            if (item.className == "menuDivider") {
+                var s = item.style;
+
+                if (name == "borderColor") {
+                    s[name] = value;
+                } else if (name == "borderWidth") {
+                    var borderSize = parseInt(value) / 2;        
+                    s.borderTopWidth = Math.floor(borderSize) + "px";
+                    s.borderRightWidth = "0px";
+                    s.borderLeftWidth = "0px";
+                    s.borderBottomWidth = (borderSize < 1 ? 1 : Math.floor(borderSize)) + "px";
+                } else if (name == "borderStyle") {
+                    s[name].borderStyle = this._getReverseBorderStyle(value);
+                }
+            } else {
+                this.applyStyle(item.lastChild, name, value);
+            }
         }
     },
-            
+
+    _getReverseBorderStyle: function(borderStyle) {
+        if (borderStyle == "inset") borderStyle = "outset";
+        else if (borderStyle == "outset") borderStyle = "inset";
+        else if (borderStyle == "groove") borderStyle = "ridge";
+        else if (borderStyle == "ridge") borderStyle = "groove";
+        return borderStyle;        
+    },    
+    
     _mainMenuMouseOver: function(event) {
         var overItem = tw_getEventTarget(event, "menuItem");
         
@@ -396,7 +424,9 @@ var tw_Menu = tw_Component.extend({
             s.borderColor = this.getStyle("backgroundColor");
             s.paddingLeft = "5px";
             s.paddingRight = "5px";
-            s.lineHeight = this.getHeight() - this._mainItemSub + "px";
+            var lineHeight = this.getHeight() - this._mainItemSub;
+            if (lineHeight < 0) lineHeight = 0;
+            s.lineHeight = lineHeight + "px";
         }
     
         item.appendChild(button);
@@ -405,8 +435,6 @@ var tw_Menu = tw_Component.extend({
         content.className = prefix + "enuContent";
         var s = content.style;        
         s.position = "absolute";
-        s.margin = "0px";
-        s.padding = "0px";
         s.visibility = "hidden";
         
         s.backgroundColor = this.getStyle("backgroundColor");
@@ -476,18 +504,24 @@ var tw_Menu = tw_Component.extend({
             var item = this._fullIndexItem(value.slice(0, idx));
             item._remove(item, value.slice(idx + 1));
         }
-    },    
+    },
     
     _addDivider: function(menu, index) {
         var item = document.createElement("div");
         item.className = "menuDivider";
         var s = item.style;
-        s.border = "1px solid";
-        s.borderColor = "threedshadow threedface threedhighlight threedface";                
         s.marginTop = "3px";
         s.marginBottom = "3px";
         s.marginLeft = "2px";
         s.marginRight = "1px";
+        
+        var borderSize = parseInt(this.getStyle("borderSize")) / 2;        
+        s.borderTopWidth = Math.floor(borderSize) + "px";
+        s.borderRightWidth = s.borderLeftWidth = "0px";
+        s.borderBottomWidth = (borderSize < 1 ? 1 : Math.floor(borderSize)) + "px";
+        var borderStyle = this._getReverseBorderStyle(this.getStyle("borderType"));
+        s.borderStyle = borderStyle;
+        s.borderColor = tw_Component.getIEBorder(this.getStyle("borderColor"), borderStyle);
         
         var parent = menu.lastChild;
         

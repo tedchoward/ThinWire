@@ -91,7 +91,47 @@ public interface Component {
      * @see #getUserObject()
      */
     public static final String PROPERTY_USER_OBJECT = "userObject";
+    //#IFDEF V1_1_COMPAT
 
+    /**
+     * Adds a specific PropertyChangeListener to the component dependent on this component's type.
+     * This method is DEPRECATED as of v1.2 and should no longer be used because the original design
+     * has the potential of causing performance issues.  The table below
+     * outlines the details of this method so that you can craft the appropriate replacement.
+     * NOTE: This method will throw an exception under all situations unless compat mode is on.
+     * 
+     * <table border="1">
+     *     <tr><td>COMPONENT TYPE(S)</td>
+     *         <td>LISTENS TO</td>
+     *     </tr>
+     *     <tr><td>{@link thinwire.ui.TextField}, 
+     *             {@link thinwire.ui.DropDownGridBox},
+     *             {@link thinwire.ui.TextArea}</td>
+     *         <td>PROPERTY_FOCUS, PROPERTY_TEXT</td>
+     *     </tr>
+     *     <tr><td>{@link thinwire.ui.CheckBox},
+     *             {@link thinwire.ui.RadioButton}</td>
+     *         <td>PROPERTY_CHECKED</td>
+     *     </tr>
+     *     <tr><td>{@link thinwire.ui.GridBox}</td>
+     *         <td>PROPERTY_SELECTED</td>
+     *     </tr>
+     *     <tr><td>{@link thinwire.ui.TabFolder}</td>
+     *         <td>PROPERTY_CURRENT_INDEX</td>
+     *     </tr>
+     *     <tr><td>{@link thinwire.ui.Window}</td>
+     *         <td>PROPERTY_VISIBLE</td>
+     *     </tr>
+     * </table>
+     * @param listener the listener that will receive <code>PropertyChangeEvent</code> objects upon the property changing.
+     * @throws IllegalStateException if compat mode is NOT on, or you invoke this method on a component not listed in the table above.
+     * @throws IllegalArgumentException if <code>listener</code> is null.
+     * @see #addPropertyChangeListener(String, PropertyChangeListener)
+     * @deprecated for performance concerns.  Use {@link #addPropertyChangeListener(String, PropertyChangeListener)} instead.
+     */
+    public void addPropertyChangeListener(PropertyChangeListener listener);    
+    //#ENDIF
+    
     /**
      * Adds a <code>PropertyChangeListener</code> that will be notified when the specified property changes. Adding a property
      * listener to a component allows your code to react to a state change within the component. <br>

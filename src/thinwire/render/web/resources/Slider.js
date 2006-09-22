@@ -25,7 +25,6 @@ var tw_Slider = tw_BaseRange.extend({
         this._cursorDrag = new tw_DragHandler(this._selection, this._cursorDragListener.bind(this));
         
         tw_addEventListener(this._box, "click", this._clickListener.bind(this));
-        tw_setFocusCapable(this._box, true);
         this.init(-1, props);
     },
     
@@ -113,9 +112,9 @@ var tw_Slider = tw_BaseRange.extend({
     },
     
     setEnabled: function(enabled) {
+       tw_setFocusCapable(this._box, enabled);
        if (enabled == this.isEnabled()) return;
        this.$.setEnabled.apply(this, [enabled]);
-       tw_setFocusCapable(this._box, enabled);
     },
     
     keyPressNotify: function(keyPressCombo) {

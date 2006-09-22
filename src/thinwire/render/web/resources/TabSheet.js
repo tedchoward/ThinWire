@@ -2,7 +2,7 @@
  #LICENSE_HEADER#
  #VERSION_HEADER#
  */
-//TODO: No proper support for tabsheet setVisible or setEnabled.
+//TODO: No proper support for tabsheet setEnabled.
 var tw_TabSheet = tw_BaseContainer.extend({
     _tab: null,
     
@@ -21,7 +21,6 @@ var tw_TabSheet = tw_BaseContainer.extend({
         s.whiteSpace = "nowrap";
         s.styleFloat = "left"; //Doesn't work in FF.
         s.display = "block";
-        //  s.lineHeight = s.height = tw_TabFolder._tabsHeight - (tw_sizeIncludesBorders ? 2 : 4) + "px";
 
         var tabImage = document.createElement("div");
         tabImage.className = "floatDivLeft"; //hack for FF
@@ -51,7 +50,6 @@ var tw_TabSheet = tw_BaseContainer.extend({
         for (var i = children.length; --i >= 0;) {
             if (children[i] == this) {
                 this._parent.setCurrentIndex(i, true);
-                this._parent.setFocus(true);
                 break;
             }
         }
@@ -81,14 +79,14 @@ var tw_TabSheet = tw_BaseContainer.extend({
         if (active) {
             var margin = 0;
             bs.zIndex = 1;
-            bs.visibility = "visible";
+            bs.display = "block";
             s.height = tw_TabFolder._tabsHeight + (tw_sizeIncludesBorders ? borderSize : margin) + "px";
             s.paddingLeft = "4px";
             s.paddingRight = "4px";
         } else {
             var margin = 2;
             bs.zIndex = 0;
-            bs.visibility = "hidden";
+            bs.display = "none";
             s.height = tw_TabFolder._tabsHeight - (tw_sizeIncludesBorders ? borderSize : borderSize + margin) + "px";
             s.paddingLeft = "2px";
             s.paddingRight = "2px";
@@ -107,7 +105,7 @@ var tw_TabSheet = tw_BaseContainer.extend({
             var borderSize = this.getStyle("borderSize");
             this._tab.style.lineHeight = tw_TabFolder._tabsHeight - (tw_sizeIncludesBorders ? borderSize : borderSize * 2) + "px";
             this._borderBox.style.borderBottomWidth = "0px";
-            this.setActiveStyle(this._box.style.visibility == "visible");
+            this.setActiveStyle(this._box.style.display == "block");
         }
     },
     

@@ -19,7 +19,6 @@ var tw_TextArea = tw_BaseText.extend({
     },
     
     keyPressNotify: function(keyPressCombo) {
-        //return keyPressCombo == "Enter" ? false : this.$.keyPressNotify.apply(this, [keyPressCombo]);
         return this.$.keyPressNotify.apply(this, [keyPressCombo]);
     },
         

@@ -127,17 +127,6 @@ var tw_Tree = tw_Component.extend({
     },
     
     _setExpanded: function(node, state, sendEvent) {
-        //If the node is on the rootItem branch, change the 
-        // visibility of the treeTop div.
-        /*var tempNode = this._isRootItemParent(node);
-        
-        if (tempNode != null) {
-            if (tempNode.tw_expanded == state) return;
-            tempNode.tw_expanded = state;
-            tempNode.nextSibling.style.display = state ? "block" : "none";
-            return;
-        }*/
-        
         while (node.className != "treeRow") node = node.parentNode;
         if (node.tw_isLeaf || node.tw_expanded == state) return;
         node.tw_expanded = state;
@@ -150,12 +139,13 @@ var tw_Tree = tw_Component.extend({
         
         node.subNodes.style.display = state ? "block" : "none";            
         if (this._treeTop.firstChild == node) this._makeTopImage();
-        if (sendEvent) this.firePropertyChange("itemExpanded", (state ? "t" : "f") + this._fullIndex(node));
+        
+        if (sendEvent) {
+            var fullIndex = this._fullIndex(node);
+            this.firePropertyChange("itemExpanded", (state ? "t" : "f") + fullIndex, "itemExpanded" + fullIndex);
+        }
     },
     
-    /* Return the rootItem if the node is a descendant of the root item.
-       Otherwise return null.
-    */
     _isRootItemParent: function(rnode) {
         while (rnode !== this._rootItem && rnode.className != "tree") {
             rnode = rnode.parentNode;
@@ -173,15 +163,6 @@ var tw_Tree = tw_Component.extend({
         } 
     },
     
-    /*
-     * Add a row to a parent row.
-     *
-     * Parameters:
-     * SpanElement basenode:  the span holding the parent row's children rows.
-     * string text:  the new row's text.
-     * string itemImg:  the name of the new row's assigned image.
-     * string index:  the position of the new row relative to its siblings.
-     */
     _add: function(basenode, text, itemImg, index) {
         var node;
         var bottom = false;
@@ -348,10 +329,6 @@ var tw_Tree = tw_Component.extend({
         }
     },
     
-    /*
-     * Parameters:
-     * node:  a row's text node. 
-     */
     _select: function(item, sendEvent) {
         if (item == null || this._currentItem === item) return;
         
@@ -577,5 +554,4 @@ tw_Tree.imageExpandBottom = "?_twr_=treeExpandBottom.png";
 tw_Tree.imageUnexpand = "?_twr_=treeUnexpand.png";
 tw_Tree.imageUnexpandBottom = "?_twr_=treeUnexpandBottom.png";
 tw_Tree.imageEmpty = "?_twr_=treeEmpty.png";
-
 

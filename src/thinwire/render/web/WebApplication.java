@@ -334,8 +334,16 @@ public final class WebApplication extends Application {
         sb.append("fontUnderline:").append(f.isUnderline()).append(",");
         Border b = s.getBorder();
         sb.append("borderSize:").append(b.getSize()).append(",");
-        sb.append("borderType:\"").append(b.getType()).append("\",");
-        sb.append("borderColor:\"").append(getColorValue(b.getColor(), true)).append("\"");
+        Border.Type borderType = b.getType();
+        Color borderColor = b.getColor();
+            
+        if (borderType == Border.Type.NONE) {
+            borderType = Border.Type.SOLID;
+            borderColor = s.getBackground().getColor();
+        }
+
+        sb.append("borderType:\"").append(borderType).append("\",");
+        sb.append("borderColor:\"").append(getColorValue(borderColor, true)).append("\"");
         sb.append('}');
         clientSideMethodCall("tw_Component", "setDefaultStyle", styleName, sb);
     }

@@ -109,16 +109,16 @@ abstract class AbstractComponent implements Component {
         } else if (this instanceof TextField || this instanceof DropDownGridBox || this instanceof TextArea) {
             addPropertyChangeListener(new String[]{PROPERTY_FOCUS, EditorComponent.PROPERTY_TEXT}, listener);
         } else if (this instanceof CheckBox || this instanceof RadioButton) {
-            addPropertyChangeListener(CheckBox.PROPERTY_CHECKED, listener);
+            addPropertyChangeListener(CheckedComponent.PROPERTY_CHECKED, listener);
         } else if (this instanceof GridBox) {
-            addPropertyChangeListener(GridBox.Row.PROPERTY_ROW_SELECTED, listener);
+            addPropertyChangeListener(new String[]{GridBox.Row.PROPERTY_ROW_SELECTED}, listener);
         } else if (this instanceof TabFolder) {
             addPropertyChangeListener(TabFolder.PROPERTY_CURRENT_INDEX, listener);
         } else if (this instanceof Window) {
             addPropertyChangeListener(PROPERTY_VISIBLE, listener);
         } else {
-            throw new IllegalStateException("this method is deprecated as of v1.2; compat mode is on, but you are trying to listent to an unsupported component.  Use the addPropertyChangeListener(propertyName, listener) form instead.");
-        }        
+            throw new IllegalStateException("this method is deprecated as of v1.2; compat mode is on, but you are trying to listen to an unsupported component.  Use the addPropertyChangeListener(propertyName, listener) form instead.");
+        }
     }
     //#ENDIF
 

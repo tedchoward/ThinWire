@@ -7,7 +7,7 @@ package thinwire.ui;
 /**
  * @author Joshua J. Gertzen
  */
-interface CheckedComponent extends TextComponent {
+public interface CheckedComponent extends TextComponent {
     public static final String PROPERTY_CHECKED = "checked";
     
     /**

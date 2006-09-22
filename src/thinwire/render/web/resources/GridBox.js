@@ -191,7 +191,6 @@ var tw_GridBox = tw_Component.extend({
         if (columnHeader.className != "gridBoxColumnHeader" && columnHeader.className != "gridBoxHeader") return;
         if (columnHeader.className == this._header.className) this._header.style.cursor = "";    
         var offsetX = tw_getEventOffsetX(event);    
-            
         var container = columnHeader;
         var clientLeft = 0;
         
@@ -700,7 +699,7 @@ var tw_GridBox = tw_Component.extend({
         var gbWidth = this.getWidth() - this._borderSizeSub;        
         if (totalFixedWidth < gbWidth) totalFixedWidth = gbWidth;      
         header.style.width = totalFixedWidth + "px";        
-        if (width > 0 && sendEvent) this.firePropertyChange("columnWidth", index + "," + width);
+        if (width > 0 && sendEvent) this.firePropertyChange("columnWidth", index + "," + width, "columnWidth" + index);
     },
 
     setColumnAlignX: function(index, alignX) {
@@ -741,7 +740,7 @@ var tw_GridBox = tw_Component.extend({
         var style = this._content.firstChild.childNodes.item(index).style;
         if (state == -1) state = style.backgroundImage.indexOf("gbUnchecked") >= 0;
         style.backgroundImage = state ? tw_GridBox.imageChecked : tw_GridBox.imageUnchecked;
-        if (sendEvent) this.firePropertyChange("rowChecked", (state ? "t" : "f") + index);
+        if (sendEvent) this.firePropertyChange("rowChecked", (state ? "t" : "f") + index, "rowChecked" + index);
     },
 
     addColumn: function(index, values, name, width, alignX, sortOrder) {
@@ -843,7 +842,7 @@ var tw_GridBox = tw_Component.extend({
                 column.appendChild(cell);
         }
         
-        this.setRowIndexCheckState(index, checked == 1, false);        
+        if (checked == 1) this.setRowIndexCheckState(index, true, false);        
         var size = this._getRowCount();
         
         if (size == 1) {

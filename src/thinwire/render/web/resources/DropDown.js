@@ -8,12 +8,13 @@ var tw_DropDown = tw_BaseText.extend({
     _buttonBorder: null,
     _editAllowed: true,
     _buttonWidth: 16,
+    _buttonBorderWidth: 0,
     
     construct: function(id, containerId, props) {
         var button = this._button = document.createElement("div");
         var buttonBorder = this._buttonBorder = document.createElement("div");
         this.$.construct.apply(this, [["div", "input", "text"], "dropDownGridBox", id, containerId, "editMask"]);
-        this._box.style.fontSize = "1px";
+        this._box.style.fontSize = "1px"; //Hack to work around IE height sizing issue
         this._subtractEditorWidth += this._buttonWidth;
         
         var s = button.style;
@@ -83,8 +84,8 @@ var tw_DropDown = tw_BaseText.extend({
     setWidth: function(width) {
         this.$.setWidth.apply(this, [width]);
         width = this._buttonWidth;
-        if (!tw_sizeIncludesBorders) width -= parseInt(this._buttonBorder.style.borderWidth) * 2;        
-        if (width < 0) width = 0; 
+        if (!tw_sizeIncludesBorders) width -= this._buttonBorderWidth * 2;        
+        if (width < 0) width = 0;
         this._buttonBorder.style.width = width + "px";
         width -= this._borderSizeSub;
         if (width < 0) width = 0;        
@@ -94,7 +95,7 @@ var tw_DropDown = tw_BaseText.extend({
     setHeight: function(height) {
         this.$.setHeight.apply(this, [height]);
         height -= this._borderSizeSub;
-        if (!tw_sizeIncludesBorders) height -= parseInt(this._buttonBorder.style.borderWidth) * 2;
+        if (!tw_sizeIncludesBorders) height -= this._buttonBorderWidth * 2;
         if (height < 0) height = 0;        
         this._buttonBorder.style.height = height + "px";
         height -= this._borderSizeSub;
@@ -155,8 +156,9 @@ var tw_DropDown = tw_BaseText.extend({
     },
     
     _setFocusStyle: function(state) {
-        if (parseInt(this._buttonBorder.style.borderWidth) == state) return;
-        this._buttonBorder.style.borderWidth = state ? "1px" : "0px";
+        if (this._buttonBorderWidth == state) return;
+        this._buttonBorderWidth = state ? 1 : 0;
+        this._buttonBorder.style.borderWidth = this._buttonBorderWidth + "px";
         this.setWidth(this.getWidth());
         this.setHeight(this.getHeight());
     },

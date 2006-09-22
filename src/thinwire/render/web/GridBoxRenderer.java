@@ -373,9 +373,12 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
 
             if (type == ItemChangeEvent.Type.ADD) {
                 rowState.add(new Integer(System.identityHashCode(nro)));
-                postClientEvent(ADD_ROW, rowIndex, getValues((List)newValue, gb.getColumns(), null).toString(), nro.isChecked() ? 1 : 0);
-                GridBox gbc = nro.getChild();
-                if (gbc != null) renderChild(rowIndex, gbc);
+                
+                if (nro.size() > 0) {
+                    postClientEvent(ADD_ROW, rowIndex, getValues(nro, gb.getColumns(), null).toString(), nro.isChecked() ? 1 : 0);
+                    GridBox gbc = nro.getChild();
+                    if (gbc != null) renderChild(rowIndex, gbc);
+                }
             } else if (type == ItemChangeEvent.Type.REMOVE) {
                 rowState.remove(new Integer(System.identityHashCode(oro)));                
                 postClientEvent(REMOVE_ROW, rowIndex);
@@ -386,7 +389,7 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
                 GridBox gbc = oro.getChild();               
                 if (gbc != null) ((GridBoxRenderer)childToRenderer.remove(gbc)).destroy();
                 rowState.add(new Integer(System.identityHashCode(nro)));
-                postClientEvent(SET_ROW, rowIndex, getValues((List)newValue, gb.getColumns(), null).toString(), nro.isChecked() ? 1 : 0);
+                postClientEvent(SET_ROW, rowIndex, getValues(nro, gb.getColumns(), null).toString(), nro.isChecked() ? 1 : 0);
                 gbc = nro.getChild();
                 if (gbc != null) renderChild(rowIndex, gbc);
             }

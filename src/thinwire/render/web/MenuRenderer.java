@@ -43,7 +43,6 @@ final class MenuRenderer extends ComponentRenderer implements ItemChangeListener
             setPropertyChangeIgnored(Component.PROPERTY_X, true);
             setPropertyChangeIgnored(Component.PROPERTY_Y, true);
             setPropertyChangeIgnored(Component.PROPERTY_WIDTH, true);
-            setPropertyChangeIgnored(Component.PROPERTY_HEIGHT, true);
             setPropertyChangeIgnored(Component.PROPERTY_VISIBLE, true);
         }
 

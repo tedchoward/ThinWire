@@ -40,7 +40,6 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     static final String SET_HEIGHT = "setHeight";
     static final String SET_VISIBLE = "setVisible";
     static final String SET_PROPERTY_WITH_EFFECT = "setPropertyWithEffect";
-    static final String PROPERTY_STYLE_CLASS = "styleClass";
 
     //Shared by other renderers
     static final String DESTROY = "destroy";
@@ -91,9 +90,17 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
                 visibleChange != FX.Type.NONE && cr != null && cr.isFullyRendered() ? Boolean.FALSE : comp.isVisible());                
         if (!isPropertyChangeIgnored(Component.PROPERTY_ENABLED)) addInitProperty(Component.PROPERTY_ENABLED, comp.isEnabled());
         if (!comp.isFocusCapable()) addInitProperty(Component.PROPERTY_FOCUS_CAPABLE, false);         
-        addInitProperty(PROPERTY_STYLE_CLASS, getSimpleClassName(comp.getClass()));
+        
+        
+        addInitProperty("styleClass", getSimpleClassName(comp.getClass()));
+        StringBuilder styleProps = getInitialStyleInfo();
+        if (styleProps.length() > 0) addInitProperty("styleProps", styleProps);
+        
         if (comp.isFocus()) addInitProperty(Component.PROPERTY_FOCUS, true);
-                
+
+        Object parent = comp.getParent();
+        if (parent instanceof Container) addInitProperty("insertAtIndex", ((Container)parent).getChildren().indexOf(comp));
+        
         if (jsClass != null) {
             initProps.insert(0, '{');            
             initProps.setCharAt(initProps.length() - 1, '}');            
@@ -102,17 +109,6 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
                     initProps);
             initProps = null;
         }
-        
-        setStyle(Background.PROPERTY_BACKGROUND_COLOR, true, null);
-        setStyle(Border.PROPERTY_BORDER_COLOR, true, null);
-        setStyle(Border.PROPERTY_BORDER_SIZE, true, null);
-        setStyle(Border.PROPERTY_BORDER_TYPE, true, null);
-        setStyle(Font.PROPERTY_FONT_FAMILY, true, null);
-        setStyle(Font.PROPERTY_FONT_SIZE, true, null);
-        setStyle(Font.PROPERTY_FONT_COLOR, true, null);
-        setStyle(Font.PROPERTY_FONT_BOLD, true, null);
-        setStyle(Font.PROPERTY_FONT_ITALIC, true, null);
-        setStyle(Font.PROPERTY_FONT_UNDERLINE, true, null);
         
         if (visibleChange == FX.Type.SMOOTH && !isPropertyChangeIgnored(Component.PROPERTY_VISIBLE) && comp.isVisible() && cr != null && cr.isFullyRendered())
             setPropertyWithEffect(Component.PROPERTY_VISIBLE, Boolean.TRUE, Boolean.FALSE, SET_VISIBLE, FX.PROPERTY_FX_VISIBLE_CHANGE);
@@ -123,50 +119,108 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         
         wr.ai.flushRenderCallbacks(comp, id);        
 	}
+
+    private StringBuilder getInitialStyleInfo() {
+        Style s = comp.getStyle();
+        Style ds = wr.ai.getDefaultStyle(comp.getClass());
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("{");
+        Object value;
+        Object defaultValue;
+        
+        value = s.getBackground().getColor();
+        defaultValue = ds.getBackground().getColor();
+        if (!value.equals(defaultValue)) sb.append("backgroundColor:\"").append(wr.ai.getColorValue((Color)value, false)).append("\",");
+
+        value = s.getBorder().getType();
+        defaultValue = ds.getBorder().getType();            
+        
+        if (!value.equals(defaultValue)) {
+            Color borderColor = s.getBorder().getColor();
+            
+            if (value == Border.Type.NONE) {
+                value = Border.Type.SOLID;
+                borderColor = s.getBackground().getColor();
+            } else if (borderColor.equals(ds.getBorder().getColor())) {
+                borderColor = null;
+            }
+
+            sb.append("borderType:\"").append(value).append("\",");
+            if (borderColor != null) sb.append("borderColor:\"").append(wr.ai.getColorValue((Color)borderColor, true)).append("\",");
+        } else {
+            value = s.getBorder().getColor();
+            defaultValue = ds.getBorder().getColor();
+            if (!value.equals(defaultValue)) sb.append("borderColor:\"").append(wr.ai.getColorValue((Color)value, true)).append("\",");
+        }
+        
+        value = s.getBorder().getSize();
+        defaultValue = ds.getBorder().getSize(); 
+        if (!value.equals(defaultValue)) sb.append("borderSize:").append(value).append(",");
+        
+        value = s.getFont().getFamily();
+        defaultValue = ds.getFont().getFamily(); 
+        if (!value.equals(defaultValue)) sb.append("fontFamily:\"").append(value).append("\",");
+            
+        value = s.getFont().getSize();
+        defaultValue = ds.getFont().getSize(); 
+        if (!value.equals(defaultValue)) sb.append("fontSize:").append(value).append(",");
+            
+        value = s.getFont().getColor();
+        defaultValue = ds.getFont().getColor(); 
+        if (!value.equals(defaultValue)) sb.append("fontColor:\"").append(wr.ai.getColorValue((Color)value, false)).append("\",");
+            
+        value = s.getFont().isBold();
+        defaultValue = ds.getFont().isBold(); 
+        if (!value.equals(defaultValue)) sb.append("fontBold:").append(value).append(","); 
+            
+        value = s.getFont().isItalic();
+        defaultValue = ds.getFont().isItalic(); 
+        if (!value.equals(defaultValue)) sb.append("fontItalic:").append(value).append(","); 
+            
+        value = s.getFont().isUnderline();
+        defaultValue = ds.getFont().isUnderline(); 
+        if (!value.equals(defaultValue)) sb.append("fontUnderline:").append(value).append(",");
+        
+        if (sb.length() > 1) {
+            sb.setCharAt(sb.length() - 1, '}');
+        } else {
+            sb.setLength(0);
+        }
+        
+        return sb;
+    }
     
-    void setStyle(String propertyName, boolean isNotDefault, Object oldValue) {
+    private void setStyle(String propertyName, Object oldValue) {
         if (propertyName.startsWith("fx") || isPropertyChangeIgnored(propertyName)) return;
         Style s = comp.getStyle();
         Style ds = wr.ai.getDefaultStyle(comp.getClass());
         Object value;
-        Object defaultValue;
         
         if (propertyName.equals(Background.PROPERTY_BACKGROUND_COLOR)) {
             value = s.getBackground().getColor();
-            defaultValue = ds.getBackground().getColor(); 
         } else if (propertyName.equals(Border.PROPERTY_BORDER_COLOR)) {
             if (s.getBorder().getType() == Border.Type.NONE) return;
             value = s.getBorder().getColor();
-            defaultValue = ds.getBorder().getColor(); 
         } else if (propertyName.equals(Border.PROPERTY_BORDER_SIZE)) {
             value = s.getBorder().getSize();
-            defaultValue = ds.getBorder().getSize(); 
         } else if (propertyName.equals(Border.PROPERTY_BORDER_TYPE)) {            
             value = s.getBorder().getType();
-            defaultValue = ds.getBorder().getType();            
         } else if (propertyName.equals(Font.PROPERTY_FONT_FAMILY)) {
             value = s.getFont().getFamily();
-            defaultValue = ds.getFont().getFamily(); 
         } else if (propertyName.equals(Font.PROPERTY_FONT_SIZE)) {
             value = s.getFont().getSize();
-            defaultValue = ds.getFont().getSize(); 
         } else if (propertyName.equals(Font.PROPERTY_FONT_COLOR)) {
             value = s.getFont().getColor();
-            defaultValue = ds.getFont().getColor(); 
         } else if (propertyName.equals(Font.PROPERTY_FONT_BOLD)) {
             value = s.getFont().isBold();
-            defaultValue = ds.getFont().isBold(); 
         } else if (propertyName.equals(Font.PROPERTY_FONT_ITALIC)) {
             value = s.getFont().isItalic();
-            defaultValue = ds.getFont().isItalic(); 
         } else if (propertyName.equals(Font.PROPERTY_FONT_UNDERLINE)) {
             value = s.getFont().isUnderline();
-            defaultValue = ds.getFont().isUnderline(); 
         } else {
             throw new IllegalArgumentException("unknown property '" + propertyName + "'");
         }
-        
-        if (isNotDefault && value.equals(defaultValue)) return;
         
         if (value instanceof Color) {
             value = wr.ai.getColorValue((Color)value, propertyName.equals(Border.PROPERTY_BORDER_COLOR));
@@ -398,7 +452,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
             setPropertyWithEffect(name, pce.getNewValue(), pce.getOldValue(), SET_VISIBLE, FX.PROPERTY_FX_VISIBLE_CHANGE);
         } else {
             Object source = pce.getSource();            
-            if (source instanceof Background || source instanceof Font || source instanceof Border) setStyle(pce.getPropertyName(), false, pce.getOldValue());
+            if (source instanceof Background || source instanceof Font || source instanceof Border) setStyle(pce.getPropertyName(), pce.getOldValue());
         }
     }
 

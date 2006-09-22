@@ -24,12 +24,6 @@ var tw_WebBrowser = tw_BaseBrowserLink.extend({
         if (location != "") location = tw_BaseBrowserLink.expandLocation(location);
         //NOTE: this line throws an error in firefox, but it still works.
         this._box.src = location;
-    },
-    
-    setFocus: function(focus) {
-        var ret = this.$.setFocus.apply(this, [focus]);        
-        if (ret) tw_setSelectionEnabled(focus);
-        return ret;
-    }    
+    }
 });
 

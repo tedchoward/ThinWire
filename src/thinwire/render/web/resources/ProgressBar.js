@@ -2,7 +2,6 @@
  #LICENSE_HEADER#
  #VERSION_HEADER#
  */
-
 var tw_ProgressBar = tw_BaseRange.extend({
     construct: function(id, containerId, props) {
         this.$.construct.apply(this, ["div", "progressBar", id, containerId]);

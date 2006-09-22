@@ -55,11 +55,9 @@ function tw_getVisibleHeight() {
 //Should be a function of Component
 //Allow buttons in mozilla to get focus, but prevent click noise in IE
 function tw_setFocusCapable(comp, state) {
-    if (tw_isGecko) {
-        comp.href = "javascript:void(false)";
-    } else {
-        comp.tabIndex = state ? 0 : -1;
-    }
+    if (comp.tagName != "A") return; 
+    if (tw_isGecko) comp.href = "javascript:void(false)";
+    comp.tabIndex = state ? 0 : -1;
 }
 
 function tw_addEventListener(obj, type, handler, capture) {
@@ -68,7 +66,7 @@ function tw_addEventListener(obj, type, handler, capture) {
             tw_addEventListener(obj, type[i], handler, capture);
         }        
     } else {    
-        if (tw_isGecko)
+        if (obj.addEventListener)
             obj.addEventListener(type, handler, capture);
         else
             obj.attachEvent("on" + type, handler);
@@ -81,7 +79,7 @@ function tw_removeEventListener(obj, type, handler, capture) {
             tw_removeEventListener(obj, type[i], handler, capture);
         }        
     } else {    
-        if (tw_isGecko)
+        if (obj.removeEventListener)
             obj.removeEventListener(type, handler, capture);
         else
             obj.detachEvent("on" + type, handler);
@@ -105,15 +103,11 @@ function tw_getEventTarget(event, className, alt) {
 }
 
 function tw_getEventButton(event) {
-    return tw_isGecko ? event.which : event.button;
+    return event.which ? event.which : event.button;
 }
 
 function tw_getEventOffsetX(event) {
-    if (tw_isGecko) {
-        return event.layerX;
-    } else {
-        return event.offsetX;
-    }
+    return event.layerX ? event.layerX : event.offsetX;
 }
 
 function tw_getEventKeyCode(event) {
@@ -165,7 +159,7 @@ function tw_getFontMetrics(family, size, bold, italic, underline) {
     s.top = "0px";
     s.left = "0px";
     if (!tw_isIE) s.overflow = "auto";
-    if (!tw_isIE && !tw_isGecko) s.lineHeight = "0px";
+    if (tw_isOpera) s.lineHeight = "0px";
     s.whiteSpace = "nowrap";
     s.backgroundColor = tw_COLOR_TRANSPARENT;
     s.color = tw_COLOR_TRANSPARENT;    
@@ -193,9 +187,6 @@ function tw_getFontMetrics(family, size, bold, italic, underline) {
 var tw_fontChars = [];
 for (var i = 32; i < 256; i++) tw_fontChars.push(String.fromCharCode(i));
 
-// Initialize Logger Instance
-//var tw_log = new tw_Logger();
-
 //Remove scroll bars from browser
 if (tw_isIE && tw_bVer >= 6) {
     document.documentElement.style.overflow = "hidden";
@@ -206,24 +197,20 @@ if (tw_isIE && tw_bVer >= 6) {
 var tw_kbm = new tw_KeyboardManager();
 tw_kbm.start();
 
-
-//This only applies to Gecko based browsers
-function tw_setSelectionEnabled(state) {
-    if (tw_isGecko) tw_Frame.active.getBox().style.MozUserSelect = state ? "text" : "none";
-}
-
 function tw_selectStartListener(event) {
     var comp = tw_getEventTarget(event);
     return comp.tagName == "TEXTAREA" || comp.tagName == "INPUT";
 }
 
-//Add Selection Prevention eventlistener for IE, Gecko is handled within each component
-if (tw_isIE) tw_addEventListener(document, "selectstart", tw_selectStartListener);
-
+//Add Selection Prevention eventlistener
+if (tw_isIE) {
+    tw_addEventListener(document, "selectstart", tw_selectStartListener);
+} else {
+    document.onmousedown = tw_selectStartListener;
+}
 
 //Prevent context menu from showing on right click
 document.oncontextmenu = function() { return false; };
-
 
 var tw_shutdownInProgress = false;
 
@@ -260,7 +247,13 @@ function tw_shutdownInstance(text) {
     }
     
     tw_kbm.stop();
-    if (tw_isIE) tw_removeEventListener(document, "selectstart", tw_selectStartListener);
+    
+    if (tw_isIE) {
+        tw_removeEventListener(document, "selectstart", tw_selectStartListener);
+    } else {
+        document.onmousedown = null;
+    }
+    
     document.oncontextmenu = null;
     
     for (var id in tw_timerMap) {
@@ -279,5 +272,4 @@ var tw_timerMap = {};
 
 var tw_em = new tw_EventManager();
 tw_em.start();
-
 

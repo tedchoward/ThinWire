@@ -89,7 +89,7 @@ var tw_Dialog = tw_BaseContainer.extend({
             this.setX(x);
             this.setY(y);
         } else if (ev.type == 2) {            
-            tw_em.sendViewStateChanged(this._id, "position", this.getX() + "," + this.getY());
+            this.firePropertyChange("position", this.getX() + "," + this.getY());
         }
     },
     
@@ -102,7 +102,7 @@ var tw_Dialog = tw_BaseContainer.extend({
             this.setWidth(width);
             this.setHeight(height);
         } else if (ev.type == 2) {            
-            tw_em.sendViewStateChanged(this._id, "size", this.getWidth() + "," + this.getHeight());
+            this.firePropertyChange("size", this.getWidth() + "," + this.getHeight());
         }
     },
     
@@ -121,6 +121,15 @@ var tw_Dialog = tw_BaseContainer.extend({
     _closeButtonClickListener: function(ev) {
         tw_em.sendViewStateChanged(this._id, "closeClick", null);
     },    
+    
+    registerEventNotifier: function(type, subType) {
+        this.$.registerEventNotifier.apply(this, [type, subType]);
+        
+        if (type == "propertyChange") {
+            if (subType == "x" || subType == "y") this.$.registerEventNotifier.apply(this, [type, "position"]);
+            else if (subType == "width" || subType == "height") this.$.registerEventNotifier.apply(this, [type, "size"]);
+        } 
+    },
 
     setResizeAllowed: function(resizeAllowed) {
         if (resizeAllowed) {
@@ -194,7 +203,6 @@ var tw_Dialog = tw_BaseContainer.extend({
         this._menu = menu;   
         
         if (menu instanceof tw_Menu) {
-            menu._box.style.height = tw_Dialog.menuBarHeight - (tw_sizeIncludesBorders ? 0 : 5) + "px";    
             this._box.insertBefore(menu._box, this._container);
             this.setHeight(this._height);
         }

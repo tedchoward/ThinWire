@@ -17,19 +17,11 @@ var tw_Button = tw_Component.extend({
         
         var border = this._borderBox = this._focusBox = document.createElement("div");
         var s = border.style;
-        //s.cursor = "default";
         s.overflow = "hidden";
-        //s.whiteSpace = "nowrap";
-        //s.paddingLeft = tw_Button.textPadding + "px";
-        //s.paddingRight = tw_Button.textPadding + "px";    
-        //s.textAlign = "center";
         s.backgroundColor = tw_COLOR_TRANSPARENT;
-        //s.backgroundRepeat = "no-repeat";
-        //s.backgroundPosition = "center left";
-        //border.appendChild(document.createTextNode(""));        
         this._box.appendChild(border);
 
-        var surface = this._fontBox = document.createElement("a");
+        var surface = this._fontBox = this._focusBox = document.createElement("a");
         var s = surface.style;
         s.display = "block";        
         s.overflow = "hidden";
@@ -106,6 +98,7 @@ var tw_Button = tw_Component.extend({
     },
     
     setEnabled: function(enabled) {
+        if (!enabled) this._setStandardStyle(false);
         this.$.setEnabled.apply(this, [enabled]);
         this._fontBox.style.color = enabled ? this._fontColor : tw_COLOR_GRAYTEXT; 
         tw_setFocusCapable(this._fontBox, enabled);
@@ -113,16 +106,7 @@ var tw_Button = tw_Component.extend({
     
     setFocus: function(focus) {
         if (!this.isEnabled() || !this.isVisible()) return false;
-        var sButton = this.getBaseWindow().getStandardButton();        
-        
-        if (focus) {                
-            if (sButton != null) sButton._setStandardStyle(false);        
-            this._setStandardStyle(true);
-        } else {
-            this._setStandardStyle(false);
-            if (sButton != null) sButton._setStandardStyle(true);
-        }
-        
+        this._setStandardStyle(focus);
         return this.$.setFocus.apply(this, [focus]);
     },
     

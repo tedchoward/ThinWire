@@ -137,7 +137,7 @@ public class TabSheet extends AbstractContainer<Component> implements TextCompon
         } else {
             TabFolder tf = (TabFolder)getParent();
             
-            if (tf != null) {
+            if (tf == null) {
                 //#IFDEF V1_1_COMPAT        
                 if (!isCompatModeOn())
                 //#ENDIF

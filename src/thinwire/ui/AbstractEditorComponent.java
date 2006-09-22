@@ -73,10 +73,6 @@ abstract class AbstractEditorComponent extends AbstractTextComponent implements 
         firePropertyChange(this, PROPERTY_CURSOR_INDEX, oldCursorIndex, cursorIndex);                
     }
     
-    public int getLength() {
-        return getText().length();
-    }    
-    
     public void setMaxLength(int maxLength) {
         int oldMaxLength = this.maxLength;
         maxLength = ((maxLength < 0) ? 0 : maxLength);

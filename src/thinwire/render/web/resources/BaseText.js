@@ -33,7 +33,6 @@ var tw_BaseText = tw_Component.extend({
                 
         if (tagNames.length > 2) editor.type = tagNames[2];
         this._box.appendChild(editor);
-        //this._editor = this._focusBox = this._fontBox = this._backgroundBox = editor;
         this._editor = this._focusBox = this._fontBox = editor;
         
         this._focusListener = this._focusListener.bind(this);
@@ -91,13 +90,11 @@ var tw_BaseText = tw_Component.extend({
             var ret = this.$.setFocus.apply(this, [focus]);        
             this._valueOnFocus = this._editor.value;
             this._textStateChange();
-            //this._editor.focus();
         } else {
             this._textStateChange(false, true);
             var ret = this.$.setFocus.apply(this, [focus]);            
         }
         
-        tw_setSelectionEnabled(focus);                    
         return ret;
     },    
     
