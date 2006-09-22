@@ -128,7 +128,6 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
         addInitProperty("checkedRows", checkedRows.toString());
         addInitProperty("columnData", colDefs);
         super.render(wr, c, container);
-        
         List<Row> rows = gb.getRows();
 
         for (int i = 0, cnt = rows.size(); i < cnt; i++) {
@@ -157,7 +156,8 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
         
         if (countAutoSize > 0) {
             //TODO: 21 is the scroll bar width, ideally this shouldn't be hard coded like this
-            autoColumnWidth = (int)Math.floor((gb.getWidth() - gb.getStyle().getBorder().getSize() - totalFixedWidth - 21) / countAutoSize);
+            int childColumnWidth = gb.getRowsWithChildren().size() > 0 ? 12 : 0;
+            autoColumnWidth = (int)Math.floor((gb.getWidth() - gb.getStyle().getBorder().getSize() - totalFixedWidth - 21 - childColumnWidth) / countAutoSize);
             if (autoColumnWidth < 0) autoColumnWidth = 0;
         } else {
             autoColumnWidth = 0;
@@ -203,7 +203,7 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
                         String value = cell.toString();
                         int len = value.length();
                         String upperValue = value.toUpperCase();
-                        if (value.equals(upperValue)) len = len / 7 + 1;
+                        if (value.equals(upperValue)) len += len / 7 + 1;
                         if (len < 4) len++;
                         cnt += len;
                     }

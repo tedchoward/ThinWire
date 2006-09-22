@@ -11,6 +11,7 @@ var tw_Slider = tw_BaseRange.extend({
     construct: function(id, containerId, props) {
         this.$.construct.apply(this, ["div", "slider", id, containerId]);
         var s = this._box.style;
+        s.fontSize = "1px"; //Hack to work around IE height sizing issue
         s.backgroundColor = tw_COLOR_TRANSPARENT;
         
         var line = this._line = document.createElement("div");

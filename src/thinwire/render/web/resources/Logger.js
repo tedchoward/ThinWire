@@ -6,7 +6,7 @@ function tw_Logger() {
     //
     //Private Fields
     //      
-	var _logLevel = 0;
+	var _logLevel = 3;
     var _DOMObjectIntervalId = 0;
 	 
     //

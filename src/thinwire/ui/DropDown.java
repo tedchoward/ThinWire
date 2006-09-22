@@ -50,6 +50,29 @@ public class DropDown<T extends Component> extends AbstractMaskEditorComponent {
             s.getFX().setVisibleChange((FX.Type)o);
         }
     }
+
+    static void copyDropDownStyle(Component parent, Component child, boolean halfBorder) {
+        Style cs = child.getStyle();
+        Style ps = parent.getStyle();
+        Border csb = cs.getBorder();
+        Border dcsb = Application.current().getDefaultStyle(child.getClass()).getBorder();
+        int borderSize = ps.getBorder().getSize();
+        if (halfBorder) borderSize = DropDown.calcDropDownBorderSize(borderSize);
+            
+        if (csb.getColor().equals(dcsb.getColor())) csb.setColor(Color.WINDOWFRAME);
+        if (csb.getType().equals(dcsb.getType())) csb.setType(Border.Type.SOLID);
+        if (csb.getSize() == dcsb.getSize()) csb.setSize(borderSize);
+        
+        cs.getBackground().copy(ps.getBackground(), true);
+        cs.getFont().copy(ps.getFont(), true);
+        cs.getFX().copy(ps.getFX(), true);        
+    }
+    
+    static int calcDropDownBorderSize(int size) {
+        size /= 2;
+        if (size < 1) size = 1;
+        return size;        
+    }    
     
     public static interface View<T extends Component> {
         DropDown<T> getDropDown();
@@ -77,12 +100,6 @@ public class DropDown<T extends Component> extends AbstractMaskEditorComponent {
                 setStyleValue(s, propertyName, o);
             }
         });
-    }
-    
-    private int calcDropDownBorderSize(int size) {
-        size /= 2;
-        if (size < 1) size = 1;
-        return size;        
     }
         
     public void setText(String text) {
@@ -121,18 +138,7 @@ public class DropDown<T extends Component> extends AbstractMaskEditorComponent {
         if (oldComp != null) ((AbstractComponent)oldComp).setParent(null);        
         this.comp = comp;
         ((AbstractComponent)comp).setParent(this);
-        Style cs = comp.getStyle();
-        Style s = getStyle();
-        Border csb = cs.getBorder();
-        Border dcsb = Application.current().getDefaultStyle(comp.getClass()).getBorder();
-
-        if (csb.getColor().equals(dcsb.getColor())) csb.setColor(Color.WINDOWFRAME);
-        if (csb.getType().equals(dcsb.getType())) csb.setType(Border.Type.SOLID);
-        if (csb.getSize() == dcsb.getSize()) csb.setSize(calcDropDownBorderSize(s.getBorder().getSize()));
-        
-        cs.getBackground().copy(s.getBackground(), true);
-        cs.getFont().copy(s.getFont(), true);
-        cs.getFX().copy(s.getFX(), true);        
+        copyDropDownStyle(this, comp, true);
         firePropertyChange(this, PROPERTY_COMPONENT, oldComp, comp);
     }
     

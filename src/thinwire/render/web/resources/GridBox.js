@@ -114,7 +114,7 @@ var tw_GridBox = tw_Component.extend({
                     column.style.width = tw_GridBox.childColumnWidth + "px";                
                                 
                     for (var i = parentContent.firstChild.childNodes.length; --i >= 0;) {
-                        column.appendChild(this._newCell("", 1));
+                        column.appendChild(container._newCell("", 1));
                     }
                     
                     parentContent.insertBefore(column, parentContent.childNodes.item(parentContent.childNodes.length - 1));
@@ -124,7 +124,7 @@ var tw_GridBox = tw_Component.extend({
                     container._toggleHighlight(container._currentIndex, true);
                 }
                 
-                this._box.style.display = "none";
+                this.setVisible(false);
                 var cell = container._lastColumn().childNodes.item(parentIndex);
                 
                 //Destroy existing child GridBox if it exists
@@ -342,7 +342,7 @@ var tw_GridBox = tw_Component.extend({
             var cell = this._lastColumn().childNodes.item(index);
             var gbc = cell.tw_child;
             
-            if (gbc != undefined) {            
+            if (gbc != undefined) {
                 var y = cell.offsetTop - this._content.parentNode.scrollTop;
                 if (this._visibleHeader) y += tw_GridBox.rowHeight + this.getStyle("borderSize") * 2;
                 var available = tw_getVisibleHeight() - this._box.parentNode.offsetTop - parseInt(this._box.style.top) - y - 5;
@@ -362,7 +362,7 @@ var tw_GridBox = tw_Component.extend({
                         
                 }
                 
-                gbc._box.style.display = "block";
+                gbc.setVisible(true);
                 this._childOpen = true;
                 gbc.setFocus(true);
             }
@@ -451,7 +451,7 @@ var tw_GridBox = tw_Component.extend({
             
             if (this._root._dropDown == null && this._root._id == this._parent._id) {
                 var win = this.getBaseWindow();
-                if (win instanceof tw_Dialog) y += tw_Dialog.titleBarHeight + tw_BORDER_WIDTH;
+                if (win instanceof tw_Dialog) y += win.getOffsetY();
             }
         }    
         
@@ -558,13 +558,13 @@ var tw_GridBox = tw_Component.extend({
                     if (this._childGridBoxes != null && this._lastColumn().childNodes.item(this._currentIndex).tw_child != undefined) {
                         this.setRowIndexSelected(this._currentIndex, isDropDown);
                         this.fireAction("click", this._currentIndex);
-                        this._setChildVisible(this._currentIndex, true);                    
+                        this._setChildVisible(this._currentIndex, true);
                     } else if (keyPressCombo == "Enter" && this._root._dropDown != null && this.isVisible()) {
                         this.setRowIndexSelected(this._currentIndex, isDropDown);
                         this.fireAction("click", this._currentIndex);
                         var dd = this._root._dropDown
                         dd.setDropDownVisible(false);
-                        dd.setFocus(true);                
+                        dd.setFocus(true);
                     }
                     
                     break;

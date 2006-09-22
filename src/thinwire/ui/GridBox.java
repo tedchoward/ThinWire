@@ -19,7 +19,12 @@ import thinwire.ui.DropDownGridBox.DefaultView;
 import thinwire.ui.event.ActionListener;
 import thinwire.ui.event.ItemChangeEvent;
 import thinwire.ui.event.ItemChangeListener;
+import thinwire.ui.event.PropertyChangeEvent;
+import thinwire.ui.event.PropertyChangeListener;
 import thinwire.ui.event.ItemChangeEvent.Type;
+import thinwire.ui.style.Border;
+import thinwire.ui.style.Color;
+import thinwire.ui.style.Style;
 import thinwire.util.ArrayGrid;
 import thinwire.util.Grid;
 
@@ -249,12 +254,17 @@ public final class GridBox extends AbstractComponent implements Grid<GridBox.Row
     		
             if (gb != null) {
                 if (oldChild != null) gb.rowsWithChildren.remove(this);
-                if (child != null) gb.rowsWithChildren.add(this);
+                
+                if (child != null) {
+                    gb.rowsWithChildren.add(this);
+                    DropDown.copyDropDownStyle(gb, child, gb.getParent() instanceof DropDown);
+                }
+                
                 gb.firePropertyChange(this, PROPERTY_ROW_CHILD, oldChild, child);                
             }
         }
     }
-
+    
     public static final class Column extends ArrayGrid.Column {
         public static final String PROPERTY_COLUMN_NAME = "columnName";
         public static final String PROPERTY_COLUMN_ALIGN_X = "columnAlignX";
@@ -521,7 +531,11 @@ public final class GridBox extends AbstractComponent implements Grid<GridBox.Row
                         }
                     } else if (type == ItemChangeEvent.Type.ADD) {
                         GridBox.Row newRow = (GridBox.Row)newValue;
-                        if (newRow.getChild() != null) GridBox.this.rowsWithChildren.add(newRow);
+                        if (newRow.getChild() != null) {
+                            GridBox.this.rowsWithChildren.add(newRow);
+                            DropDown.copyDropDownStyle(GridBox.this, newRow.getChild(), getParent() instanceof DropDown);
+                        }
+                        
                         if (newRow.isChecked()) GridBox.this.checkedRows.add(newRow);
                         
                         if (size == 1) {
@@ -557,6 +571,18 @@ public final class GridBox extends AbstractComponent implements Grid<GridBox.Row
                 }
             }            
         };
+        
+        addPropertyChangeListener(DropDown.STYLE_PROPERTIES, new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent ev) {
+                String propertyName = ev.getPropertyName();
+                Object o = ev.getNewValue();
+
+                for (GridBox.Row row : getRowsWithChildren()) {
+                    Style s = row.getChild().getStyle();
+                    DropDown.setStyleValue(s, propertyName, o);                    
+                }
+            }
+        });
         
         checkedRows = new TreeSet<Row>(indexOrder);
         roCheckedRows = Collections.unmodifiableSortedSet(checkedRows);
@@ -737,7 +763,7 @@ public final class GridBox extends AbstractComponent implements Grid<GridBox.Row
      * Returns any rows that have children.
      * @return an unmodifiableSortedSet of rows with children in index top-down order.
      */
-    public SortedSet getRowsWithChildren() {
+    public SortedSet<Row> getRowsWithChildren() {
         return roRowsWithChildren;
     }
            
