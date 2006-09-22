@@ -279,8 +279,7 @@ var tw_GridBox = tw_Component.extend({
         
         if (this._visibleCheckBoxes) {
             if (this._fullRowCheckBox || (tw_getEventOffsetX(event) < 16 && this._content.childNodes.item(0) == column)) {
-                var state = this.setRowIndexCheckState(index, -1);
-                this.firePropertyChange("rowChecked", (state ? "t" : "f") + index);
+                this.setRowIndexCheckState(index, -1, true);
             }
     
             this.fireAction("click", index);
@@ -551,8 +550,7 @@ var tw_GridBox = tw_Component.extend({
                     break;
             
                 case "Space":
-                    var state = this.setRowIndexCheckState(this._currentIndex, -1);
-                    this.firePropertyChange("rowChecked", (state ? "t" : "f") + this._currentIndex);
+                    this.setRowIndexCheckState(this._currentIndex, -1, true);
                     break;
         
                 case "Enter":                
@@ -738,12 +736,12 @@ var tw_GridBox = tw_Component.extend({
         if (sendEvent) this.firePropertyChange("rowSelected", index);
     },
 
-    setRowIndexCheckState: function(index, state) {
+    setRowIndexCheckState: function(index, state, sendEvent) {
         if (!this._visibleCheckBoxes || index < 0) return;
         var style = this._content.firstChild.childNodes.item(index).style;
         if (state == -1) state = style.backgroundImage.indexOf("gbUnchecked") >= 0;
         style.backgroundImage = state ? tw_GridBox.imageChecked : tw_GridBox.imageUnchecked;
-        return state;
+        if (sendEvent) this.firePropertyChange("rowChecked", (state ? "t" : "f") + index);
     },
 
     addColumn: function(index, values, name, width, alignX, sortOrder) {
@@ -829,7 +827,7 @@ var tw_GridBox = tw_Component.extend({
         }
     },
     
-    addRow: function(index, values) {
+    addRow: function(index, values, checked) {
         var content = this._content;
         eval("values = " + values);
         var state = this._visibleCheckBoxes ? 0 : -1;
@@ -845,6 +843,7 @@ var tw_GridBox = tw_Component.extend({
                 column.appendChild(cell);
         }
         
+        this.setRowIndexCheckState(index, checked == 1, false);        
         var size = this._getRowCount();
         
         if (size == 1) {
@@ -883,7 +882,7 @@ var tw_GridBox = tw_Component.extend({
         }
     },
     
-    setRow: function(index, values) {
+    setRow: function(index, values, checked) {
         var content = this._content;    
         if (!(values instanceof Array)) eval("values = " + values);
         
@@ -891,6 +890,8 @@ var tw_GridBox = tw_Component.extend({
             var cell = content.childNodes.item(i).childNodes.item(index);
             cell.replaceChild(document.createTextNode(values[i]), cell.firstChild);
         }
+        
+        this.setRowIndexCheckState(index, checked == 1, false);
     },
 
     //TODO: extra messages are being sent from the server.  This is caused by gb.rows.add(new Row()) which then

@@ -373,7 +373,7 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
 
             if (type == ItemChangeEvent.Type.ADD) {
                 rowState.add(new Integer(System.identityHashCode(nro)));
-                postClientEvent(ADD_ROW, rowIndex, getValues((List)newValue, gb.getColumns(), null).toString());
+                postClientEvent(ADD_ROW, rowIndex, getValues((List)newValue, gb.getColumns(), null).toString(), nro.isChecked() ? 1 : 0);
                 GridBox gbc = nro.getChild();
                 if (gbc != null) renderChild(rowIndex, gbc);
             } else if (type == ItemChangeEvent.Type.REMOVE) {
@@ -386,7 +386,7 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
                 GridBox gbc = oro.getChild();               
                 if (gbc != null) ((GridBoxRenderer)childToRenderer.remove(gbc)).destroy();
                 rowState.add(new Integer(System.identityHashCode(nro)));
-                postClientEvent(SET_ROW, rowIndex, getValues((List)newValue, gb.getColumns(), null).toString());
+                postClientEvent(SET_ROW, rowIndex, getValues((List)newValue, gb.getColumns(), null).toString(), nro.isChecked() ? 1 : 0);
                 gbc = nro.getChild();
                 if (gbc != null) renderChild(rowIndex, gbc);
             }
@@ -422,6 +422,7 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
         } else if (name.equals(VIEW_STATE_COLUMN_SORT)) {
             Column col = gb.getColumns().get(Integer.parseInt(value));
             col.setSortOrder(col.getSortOrder() == Column.SortOrder.ASC ? Column.SortOrder.DESC : Column.SortOrder.ASC); 
+            postClientEvent(SET_ROW_INDEX_SELECTED, gb.getSelectedRow().getIndex(), Boolean.FALSE);
         } else if (name.equals(GridBox.Column.PROPERTY_COLUMN_WIDTH)) {
             setPropertyChangeIgnored(GridBox.Column.PROPERTY_COLUMN_WIDTH, true);
             String[] values = value.split(",");

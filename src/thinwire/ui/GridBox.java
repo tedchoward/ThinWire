@@ -435,6 +435,7 @@ public final class GridBox extends AbstractComponent implements Grid<GridBox.Row
             GridBox gb = (GridBox)getParent();
             if (gb == null) throw new IllegalStateException("the column must be added to a GridBox before you can sort by it");            
             if (sortOrder == null) sortOrder = SortOrder.NONE;
+            GridBox.Row selectedRow = gb.getSelectedRow();
             
             GridBox.Column oldSortedColumn = gb.sortedColumn;
             SortOrder oldSortedColumnOrder = gb.sortedColumnOrder;                      
@@ -444,6 +445,7 @@ public final class GridBox extends AbstractComponent implements Grid<GridBox.Row
             
             if (oldSortedColumn != null && oldSortedColumn != this) gb.firePropertyChange(oldSortedColumn, PROPERTY_COLUMN_SORT_ORDER, oldSortedColumnOrder, SortOrder.NONE);
             gb.firePropertyChange(this, PROPERTY_COLUMN_SORT_ORDER, oldSortedColumn == this ? oldSortedColumnOrder : SortOrder.NONE, sortOrder);
+            gb.selectedRowIndex = selectedRow.getIndex();
         }
     }
     
