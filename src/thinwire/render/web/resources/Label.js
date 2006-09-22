@@ -21,6 +21,19 @@ var tw_Label = tw_Component.extend({
     
     setAlignX: function(alignX) {
         this._box.style.textAlign = alignX;
+    },
+    
+    setWrapText: function(wrapText) {
+        var s = this._box.style;
+        if (wrapText) {
+            s.whiteSpace = "";
+            s.lineHeight = "";
+            this._supportLineHeight = false;
+        } else {
+            s.whiteSpace = "nowrap";
+            this._supportLineHeight = true;
+            this.setHeight(this.getHeight());
+        }
     }
 });
 

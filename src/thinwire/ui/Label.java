@@ -56,10 +56,12 @@ import thinwire.ui.event.ActionListener;
  */
 public final class Label extends AbstractTextComponent implements AlignTextComponent, ActionEventComponent {
     public static final String PROPERTY_LABEL_FOR = "labelFor";
+    public static final String PROPERTY_WRAP_TEXT = "wrapText";
     
     private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>();
     private AlignX alignX = AlignX.LEFT;
     private Component labelFor = null;
+    private boolean wrapText;
 
     /**
      * Constructs a new Label with no text.
@@ -75,6 +77,7 @@ public final class Label extends AbstractTextComponent implements AlignTextCompo
     public Label(String text) {
         if (text != null) setText(text);
         setFocusCapable(false);
+        setWrapText(false);
     }
         
     void setRenderer(Renderer r) {
@@ -155,5 +158,15 @@ public final class Label extends AbstractTextComponent implements AlignTextCompo
         this.labelFor = labelFor;
         if (labelFor != null) ((AbstractComponent)labelFor).setLabel(this);
         firePropertyChange(this, PROPERTY_LABEL_FOR, oldLabelFor, labelFor);
+    }
+    
+    public boolean isWrapText() {
+        return wrapText;
+    }
+    
+    public void setWrapText(boolean wrapText) {
+        boolean oldWrap = this.wrapText;
+        this.wrapText = wrapText;
+        if (this.wrapText != oldWrap) firePropertyChange(this, PROPERTY_WRAP_TEXT, oldWrap, this.wrapText);
     }
 }
