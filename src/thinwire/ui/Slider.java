@@ -4,8 +4,6 @@
  */
 package thinwire.ui;
 
-import thinwire.ui.style.Style;
-
 /**
  * A Slider is a screen element that has a cursor that can be set to any position between zero and a specified length.
  * Sliders are either horizontal or vertical depending on their dimensions.  If the width is greater than the height,
@@ -76,11 +74,7 @@ import thinwire.ui.style.Style;
  * 
  * @author Ted C. Howard
  */
-public class Slider extends AbstractRangeComponent { 
-    static {
-        setDefaultStyle(Slider.class, new Style(getDefaultStyle(Component.class)));
-    }
-    
+public class Slider extends AbstractRangeComponent {     
     /**
      * Constructs a new <code>Slider</code> with a length of 100 and initial currentIndex of 0.
      *

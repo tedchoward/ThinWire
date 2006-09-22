@@ -4,10 +4,6 @@
  */
 package thinwire.ui;
 
-import thinwire.ui.style.Border;
-import thinwire.ui.style.Color;
-import thinwire.ui.style.Style;
-
 /**
  * This is a text field screen element.
  * <p>
@@ -60,16 +56,6 @@ import thinwire.ui.style.Style;
  */
 public final class TextField extends AbstractMaskEditorComponent {
     public static final String PROPERTY_INPUT_HIDDEN = "inputHidden";
-
-    static {
-        Style s = new Style(getDefaultStyle(Component.class)); //inherit defaults from Component class
-        s.getBackground().setColor(Color.WINDOW);
-        Border b = s.getBorder();
-        b.setSize(2);
-        b.setType(Border.Type.INSET);
-        b.setColor(Color.THREEDFACE);        
-        setDefaultStyle(TextField.class, s);
-    }    
        
 	private boolean inputHidden = false;	
     

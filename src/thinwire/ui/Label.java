@@ -6,7 +6,6 @@ package thinwire.ui;
 
 import thinwire.render.Renderer;
 import thinwire.ui.event.ActionListener;
-import thinwire.ui.style.Style;
 
 /**
  * A <code>Label</code> is the text that appears next to a control on a
@@ -57,11 +56,6 @@ import thinwire.ui.style.Style;
  */
 public final class Label extends AbstractTextComponent implements AlignTextComponent, ActionEventComponent {
     public static final String PROPERTY_LABEL_FOR = "labelFor";
-    
-    static {
-        Style s = new Style(getDefaultStyle(Component.class)); //inherit defaults from Component class
-        setDefaultStyle(Label.class, s);
-    }
     
     private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>();
     private AlignX alignX = AlignX.LEFT;

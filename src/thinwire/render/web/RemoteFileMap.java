@@ -36,44 +36,49 @@ final class RemoteFileMap {
     private RemoteFileMap(int initialMapSize) {
         remoteToFileInfo = new HashMap<String, RemoteFileInfo>(initialMapSize);
         localToFileInfo = new HashMap<String, RemoteFileInfo>(initialMapSize);
-    }        
+    }
+    
+    final byte[] loadLocalData(String localName) {
+        try {
+            InputStream is;
+            
+            //"class:///thinwire.ui.layout.SplitLayout/resources/Image.png"                
+            if (localName.startsWith("class:///")) {                    
+                int endIndex = localName.indexOf('/', 9);
+                String className = localName.substring(9, endIndex);
+                String resource = localName.substring(endIndex + 1);
+                Class clazz = Class.forName(className);
+                is = clazz.getResourceAsStream(resource);
+            } else {                   
+                is = new BufferedInputStream(new FileInputStream(localName));
+            }
+            
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            byte[] bytes = new byte[128];
+            int size;
+            
+            while ((size = is.read(bytes)) != -1)
+                os.write(bytes, 0, size);
+            
+            byte[] data = os.toByteArray();        
+            os.close();
+            is.close();
+            return data;
+        } catch (Exception e) {
+            if (!(e instanceof RuntimeException)) e = new RuntimeException(e);
+            throw (RuntimeException)e;
+        }
+    }
 
     final byte[] load(String remoteName) {
         RemoteFileInfo fileInfo = remoteToFileInfo.get(remoteName);
         
         if (fileInfo != null) {
-            try {
-                InputStream is;
-                
-                //"class:///thinwire.ui.layout.SplitLayout/resources/Image.png"                
-                if (fileInfo.localName.startsWith("class:///")) {                    
-                    int endIndex = fileInfo.localName.indexOf('/', 9);
-                    String className = fileInfo.localName.substring(9, endIndex);
-                    String resource = fileInfo.localName.substring(endIndex + 1);
-                    Class clazz = Class.forName(className);
-                    is = clazz.getResourceAsStream(resource);
-                } else {                   
-                    is = new BufferedInputStream(new FileInputStream(fileInfo.localName));
-                }
-                
-                ByteArrayOutputStream os = new ByteArrayOutputStream();
-                byte[] bytes = new byte[128];
-                int size;
-                
-                while ((size = is.read(bytes)) != -1)
-                    os.write(bytes, 0, size);
-                
-                byte[] data = os.toByteArray();
-                os.close();
-                is.close();
-                if (log.isLoggable(LEVEL)) log.log(LEVEL, "Loaded file data for local file: localName='" + 
-                        fileInfo.localName + "', remoteName='" + fileInfo.remoteName + "', refCount='" + 
-                        fileInfo.refCount + "', data.length='" + data.length + "'");                        
-                return data;
-            } catch (Exception e) {
-                if (!(e instanceof RuntimeException)) e = new RuntimeException(e);
-                throw (RuntimeException)e;
-            }
+            byte[] data = loadLocalData(fileInfo.localName);
+            if (log.isLoggable(LEVEL)) log.log(LEVEL, "Loaded file data for local file: localName='" + 
+                    fileInfo.localName + "', remoteName='" + fileInfo.remoteName + "', refCount='" + 
+                    fileInfo.refCount + "', data.length='" + data.length + "'");                        
+            return data;
         } else {        
             throw new RuntimeException(new FileNotFoundException("The specified remote file '" + remoteName + "' does not have a mapping to a local file"));
         }

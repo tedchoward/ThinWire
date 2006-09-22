@@ -20,9 +20,6 @@ import thinwire.ui.event.ActionListener;
 import thinwire.ui.event.ItemChangeEvent;
 import thinwire.ui.event.ItemChangeListener;
 import thinwire.ui.event.ItemChangeEvent.Type;
-import thinwire.ui.style.Border;
-import thinwire.ui.style.Color;
-import thinwire.ui.style.Style;
 import thinwire.util.ArrayGrid;
 import thinwire.util.Grid;
 
@@ -104,22 +101,7 @@ import thinwire.util.Grid;
  * 
  * @author Joshua J. Gertzen
  */
-public final class GridBox extends AbstractComponent implements Grid<GridBox.Row, GridBox.Column>, ActionEventComponent, ItemChangeEventComponent {
-    // TODO Should have an additional style for setting the style for the
-    // GridBox header's.
-    // By default, the header style should be the same as the default button
-    // style.
-    // Also, it would be nice to control the highlight color.
-    static {
-        Style s = new Style(getDefaultStyle(Component.class)); //inherit defaults from Component class
-        s.getBackground().setColor(Color.WINDOW);
-        Border b = s.getBorder();
-        b.setSize(2);
-        b.setType(Border.Type.INSET);
-        b.setColor(Color.THREEDFACE);
-        setDefaultStyle(GridBox.class, s);
-    }
-        
+public final class GridBox extends AbstractComponent implements Grid<GridBox.Row, GridBox.Column>, ActionEventComponent, ItemChangeEventComponent {        
     public static final class CellPosition {
         private int rowIndex;
         private int columnIndex;

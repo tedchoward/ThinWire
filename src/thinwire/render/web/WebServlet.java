@@ -34,7 +34,7 @@ public final class WebServlet extends HttpServlet {
     private static final int EVENT_RUN_TIMER = 4;
     
     private static enum InitParam {
-        MAIN_CLASS, EXTRA_ARGUMENTS;
+        MAIN_CLASS, EXTRA_ARGUMENTS, STYLE_SHEET;
 
         private String mixedCaseName;
         
@@ -395,7 +395,7 @@ public final class WebServlet extends HttpServlet {
             sb.setLength(0);
         }
         
-        app = new WebApplication(this, httpSession, getInitParameter(InitParam.MAIN_CLASS.mixedCaseName()), args.toArray(new String[args.size()]));
+        app = new WebApplication(this, httpSession, getInitParameter(InitParam.MAIN_CLASS.mixedCaseName()), getInitParameter(InitParam.STYLE_SHEET.mixedCaseName()), args.toArray(new String[args.size()]));
         httpSession.setAttribute("instance", app);        
     }    
 }

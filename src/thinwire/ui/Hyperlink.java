@@ -7,7 +7,6 @@ package thinwire.ui;
 import thinwire.render.Renderer;
 import thinwire.render.web.WebApplication;
 import thinwire.ui.event.ActionListener;
-import thinwire.ui.style.*;
 
 /**
  * A <code>Hyperlink</code> is a screen component that acts like a standard
@@ -48,16 +47,6 @@ public final class Hyperlink extends AbstractTextComponent implements ActionEven
             return 0;
         }
     };
-    
-    static {
-        Style s = new Style(getDefaultStyle(Component.class)); //inherit defaults from Component class
-        
-        Font f = s.getFont();
-        f.setColor(Color.BLUE);
-        f.setUnderline(true);
-        
-        setDefaultStyle(Hyperlink.class, s);
-    }
     
     public static final String PROPERTY_LOCATION = "location";
 

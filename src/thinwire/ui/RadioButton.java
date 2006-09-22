@@ -9,9 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import thinwire.ui.event.PropertyChangeListener;
-import thinwire.ui.style.Border;
-import thinwire.ui.style.Color;
-import thinwire.ui.style.Style;
 
 /**
  * A RadioButton is a screen element that usually appears in groups. Radio buttons can be either checked or cleared, but only one
@@ -65,20 +62,6 @@ import thinwire.ui.style.Style;
  * @author Joshua J. Gertzen
  */
 public class RadioButton extends AbstractTextComponent implements CheckedComponent {
-    static {
-        Style s = new Style(getDefaultStyle(Component.class)); //inherit defaults from Component class
-        s.getBackground().setColor(Color.WINDOW);
-               
-        //TODO: You can't set the border values for a RadioButton because the Button is an image.  But at least this will reflect
-        //  the way the image is displayed.
-        Border b = s.getBorder();
-        b.setSize(2);
-        b.setType(Border.Type.INSET);
-        b.setColor(Color.BUTTONFACE);
-        
-        setDefaultStyle(RadioButton.class, s);
-    }    
-    
 	public static class Group extends AbstractList<RadioButton> {
 	    private RadioButton checked;
 	    private List<RadioButton> l = new ArrayList<RadioButton>(3);

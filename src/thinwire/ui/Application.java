@@ -7,7 +7,6 @@ package thinwire.ui;
 import java.io.*;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +23,7 @@ import thinwire.ui.event.ExceptionEvent;
 import thinwire.ui.event.ExceptionListener;
 import thinwire.ui.event.PropertyChangeEvent;
 import thinwire.ui.event.PropertyChangeListener;
+import thinwire.ui.style.*;
 
 /**
  * The Application class represents an instance of a ThinWire application.  Methods in this class are
@@ -32,8 +32,7 @@ import thinwire.ui.event.PropertyChangeListener;
  */
 public abstract class Application {
 	private static final Logger log = Logger.getLogger(Application.class.getName());	
-	private static final Map<Thread, Application> instanceForThread = Collections.synchronizedMap(new HashMap<Thread, Application>());
-
+    
     private static final Map<String, String> versionInfo;
     static {
         Properties props = new Properties();
@@ -54,6 +53,15 @@ public abstract class Application {
         }
     }            
     
+    protected static abstract class AppThread extends Thread {
+        private Application app;
+        
+        public AppThread(Application app, String id) {
+            super("ThinWire AppThread-" + id);
+            this.app = app;
+        }
+    }
+    
     private Map<Local, Object> appLocal = new WeakHashMap<Local, Object>();
     
     public static class Local<T> {
@@ -72,7 +80,7 @@ public abstract class Application {
             return null;
         }
     }
-    
+        
     /**
      * Returns the current version info details for the platform.
      * The returned Map is read-only and contains the following keys:
@@ -100,41 +108,54 @@ public abstract class Application {
      * @param args
      */
     public static void main(String[] args) throws Exception {
+        StringBuilder sb = new StringBuilder();
         BufferedReader r = new BufferedReader(new InputStreamReader(Application.class.getResourceAsStream("resources/licenseHeader.txt")));        
-        java.io.PrintStream ps = System.out;        
         String line = r.readLine();
         
         while (line != null) {
-            ps.println(line);
+            sb.append(line).append('\n');
             line = r.readLine();
         }
 
-        ps.println("\nPress any key to continue");        
-        System.in.read();
-        ps.println("\nDetails from Application.current().getPlatformVersionInfo()\n");
+        sb.append("\nContents of the Application.getPlatformVersionInfo() map:\n\n");
         
         for (Map.Entry<String, String> e : getPlatformVersionInfo().entrySet()) {
-            ps.println(e.getKey() + "=" + e.getValue());
+            sb.append(e.getKey()).append("=").append(e.getValue()).append('\n');
         }
 
-        ps.println("\nPress any key to continue");        
-        System.in.read();
+        final java.awt.Frame frame = new java.awt.Frame("ThinWire(TM) RIA Ajax Framework v" + getPlatformVersionInfo().get("productVersion"));
+        final java.awt.TextArea ta = new java.awt.TextArea(sb.toString());
+        ta.setEditable(false);
+        frame.add(ta);
+        frame.setSize(640, 480);
+        frame.setVisible(true);
+        frame.addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent ev) {
+                frame.dispose();
+            }            
+        });        
     }
     
     /**
      * @return the current instance of the application
      */
 	public static Application current() {
-		return (Application)instanceForThread.get(Thread.currentThread());
+        Thread t = Thread.currentThread();
+        
+        if (t instanceof AppThread) {
+            return ((AppThread)t).app;
+        } else {
+            throw new IllegalArgumentException("You may only get the current application instance from a UI thread");
+        }
 	}
     
     private String baseFolder;
-    private Thread executionThread;
     private List<ExceptionListener> exceptionListeners;
     private EventListenerImpl<PropertyChangeListener> gpcei;
     private WeakReference<Component> priorFocus;
     private Frame frame;
     private Map<String, String> fileMap;    
+    private Map<Class<? extends Component>, Style> compTypeToStyle;
     
     protected Application() {
         exceptionListeners = new ArrayList<ExceptionListener>();
@@ -367,6 +388,92 @@ public abstract class Application {
         return priorFocus.get();
     }
     
+    protected void loadStyleSheet(Properties props) {
+        try {
+            ClassReflector<Background> backgroundReflect = new ClassReflector<Background>(Background.class, "PROPERTY_", "background");
+            ClassReflector<Font> fontReflect = new ClassReflector<Font>(Font.class, "PROPERTY_", "font");
+            ClassReflector<Border> borderReflect = new ClassReflector<Border>(Border.class, "PROPERTY_", "border");
+            ClassReflector<FX> fxReflect = new ClassReflector<FX>(FX.class, "PROPERTY_", "fx");
+            
+            compTypeToStyle = new HashMap<Class<? extends Component>, Style>();
+
+            Style defaultStyle = new Style();
+            compTypeToStyle.put(null, defaultStyle);
+            
+            for (String key : backgroundReflect.getPropertyNames()) {
+                backgroundReflect.setProperty(defaultStyle.getBackground(), key, props.getProperty("default." + key));
+            }
+
+            for (String key : fontReflect.getPropertyNames()) {
+                fontReflect.setProperty(defaultStyle.getFont(), key, props.getProperty("default." + key));
+            }
+
+            for (String key : borderReflect.getPropertyNames()) {
+                borderReflect.setProperty(defaultStyle.getBorder(), key, props.getProperty("default." + key));
+            }
+
+            for (String key : fxReflect.getPropertyNames()) {
+                fxReflect.setProperty(defaultStyle.getFX(), key, props.getProperty("default." + key));
+            }
+            
+            for (Map.Entry<Object, Object> e : props.entrySet()) {
+                String key = (String)e.getKey();
+                if (key.startsWith("default.")) continue;
+                String value = (String)e.getValue();
+                int lastIndex = key.lastIndexOf('.');
+                String prefix = key.substring(0, lastIndex); 
+                key = key.substring(lastIndex + 1);
+                Class<? extends Component> clazz = (Class<? extends Component>)Class.forName(prefix);
+                Style style = compTypeToStyle.get(clazz);
+                if (style == null) compTypeToStyle.put(clazz, style = new Style(defaultStyle));
+                
+                if (key.startsWith("background")) {
+                    backgroundReflect.setProperty(style.getBackground(), key, value);
+                } else if (key.startsWith("font")) {
+                    fontReflect.setProperty(style.getFont(), key, value);            
+                } else if (key.startsWith("border")) {
+                    borderReflect.setProperty(style.getBorder(), key, value);            
+                } else if (key.startsWith("fx")) {
+                    fxReflect.setProperty(style.getFX(), key, value);
+                }
+            }
+        } catch (Exception e) {
+            if (e instanceof RuntimeException) throw (RuntimeException)e;
+            throw new RuntimeException(e);
+        }
+    }
+    
+    public Style getDefaultStyle(Class<? extends Component> clazz) {
+        if (clazz == null) throw new IllegalArgumentException("clazz == null");
+        Style style = compTypeToStyle.get(clazz);
+        
+        if (style == null) {
+            List<Class> lst = new ArrayList<Class>();
+            Class findClazz = clazz; 
+            
+            do {                                        
+                Class sc = findClazz.getSuperclass();
+                if (sc != null && Component.class.isAssignableFrom(sc)) lst.add(sc);
+                
+                for (Class i : findClazz.getInterfaces()) {
+                    if (Component.class.isAssignableFrom(i)) lst.add(i);
+                }
+                
+                findClazz = lst.remove(0);
+                Style parentStyle = compTypeToStyle.get(findClazz);
+                
+                if (parentStyle != null) {
+                    compTypeToStyle.put(clazz, style = new Style(compTypeToStyle.get(null)));
+                    style.copy(parentStyle);
+                    break;
+                }
+            } while (lst.size() > 0);
+        }
+
+        if (style == null) compTypeToStyle.put(clazz, style = new Style(compTypeToStyle.get(null)));
+        return style;   
+    }
+    
     void setPriorFocus(Component comp) {
         priorFocus = new WeakReference<Component>(comp);    
     }
@@ -444,25 +551,6 @@ public abstract class Application {
         
         ret = (ret == null ? s : ret);
         return ret;
-    }
-	
-	protected final void setExecutionThread(Thread executionThread) {
-        if (this.executionThread != null)
-        instanceForThread.remove(this.executionThread);        
-        this.executionThread = executionThread;        
-        if (executionThread != null) instanceForThread.put(executionThread, this);
-	}
-    
-	protected final Thread getExecutionThread() {
-	    return executionThread;
-	}
-    
-    protected static final Application[] getApplications() {
-        synchronized (instanceForThread) {
-            Collection<Application> coll = instanceForThread.values();
-            Application[] apps = coll.toArray(new Application[coll.size()]);
-            return apps;
-        }
     }
         
     protected void setPackagePrivateMember(String memberName, Component comp, Object value) {

@@ -4,10 +4,6 @@
  */
 package thinwire.ui;
 
-import thinwire.ui.style.Border;
-import thinwire.ui.style.Color;
-import thinwire.ui.style.Style;
-
 /**
  * @author Joshua J. Gertzen
  */
@@ -21,20 +17,6 @@ public class DropDown<T extends Component> extends AbstractMaskEditorComponent {
         Object getValue();
         void setValue(Object value);
     }   
-    
-
-    //TODO: DropDown should have a second style for defining what the Button looks like.
-    //      Also, the DropDown's Button should inherit from the Button.class style so that all
-    //      Buttons look the same by default.
-    static {
-        Style s = new Style(getDefaultStyle(Component.class)); //inherit defaults from Component class
-        s.getBackground().setColor(Color.WINDOW);
-        Border b = s.getBorder();
-        b.setSize(2);
-        b.setType(Border.Type.INSET);
-        b.setColor(Color.THREEDFACE);        
-        setDefaultStyle(DropDown.class, s);
-    }    
     
     private boolean editAllowed = true;
     private DropDown.View<T> view;

@@ -6,9 +6,6 @@ package thinwire.ui;
 
 import thinwire.render.Renderer;
 import thinwire.ui.event.ActionListener;
-import thinwire.ui.style.Border;
-import thinwire.ui.style.Color;
-import thinwire.ui.style.Style;
 
 /**
  * A Button is a component that typically causes an action when activated.
@@ -62,17 +59,7 @@ import thinwire.ui.style.Style;
  */
 public class Button extends AbstractTextComponent implements ImageComponent, ActionEventComponent {
     public static final String PROPERTY_STANDARD = "standard";
-        
-    static {
-        Style s = new Style(getDefaultStyle(Component.class)); //inherit defaults from Component class
-        s.getBackground().setColor(Color.BUTTONFACE);
-        Border b = s.getBorder();
-        b.setSize(2);
-        b.setType(Border.Type.OUTSET);
-        b.setColor(Color.BUTTONFACE);
-        setDefaultStyle(Button.class, s);
-    }    
-    
+
     private boolean standard;
 	private Image.Detail imageDetail = new Image.Detail();
     private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>();
@@ -80,7 +67,7 @@ public class Button extends AbstractTextComponent implements ImageComponent, Act
 	/**
 	 * Constructs a new Button with no text or image.
 	 */
-	public Button() {
+	public Button() {        
 	    this(null, null);
 	}
 	

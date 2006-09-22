@@ -1,7 +1,5 @@
 package thinwire.ui;
 
-import thinwire.ui.style.Style;
-
 /**
  * A ProgressBar is a screen element that has a visible selection that can be set to any size between zero and a specified length.
  * ProgressBars are either horizontal or vertical depending on their dimensions.  If the width is greater than the height,
@@ -39,11 +37,6 @@ import thinwire.ui.style.Style;
  *
  */
 public class ProgressBar extends AbstractRangeComponent {
-    
-    static {
-        setDefaultStyle(ProgressBar.class, new Style(getDefaultStyle(Component.class)));
-    }
-    
     /**
      * Constructs a new <code>ProgressBar</code> with a length of 100 and a currentIndex of 0.
      *

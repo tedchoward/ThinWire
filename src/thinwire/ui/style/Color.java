@@ -253,34 +253,32 @@ public class Color {
     private int blue;
     
     private Color(String name, int red, int green, int blue) {                
-        if (red >= 0 && green >= 0 && blue >= 0) {
-            if (name != null && name.length() > 0) {
-                synchronized (NAMED_COLORS) {
-                    NAMED_COLORS.put(name, this);
+        if (name != null && name.length() > 0) {
+            synchronized (NAMED_COLORS) {
+                this.ordinal = nextOrdinal++;            
+                
+                if (red >=0 && green >= 0 && blue >= 0) {
+                    this.red = red;
+                    this.green = green;
+                    this.blue = blue;
+                    this.name = name;
+                    rgbString = "rgb(" + this.red + "," + this.green + "," + this.blue + ")";
+                    hexString = "#" + Integer.toString(this.red, 16) + Integer.toString(this.green, 16) + Integer.toString(this.blue, 16);                    
+                } else {
+                    this.red = this.green = this.blue = -1;
+                    this.name = rgbString = hexString = name;
                 }
                 
-                this.ordinal = nextOrdinal++;
-                this.name = name;
-            } else {
-                this.ordinal = -1;
-                this.name = "";
+                NAMED_COLORS.put(name, this);
             }
-            
+        } else if (red >= 0 && green >= 0 && blue >= 0) {
+            this.ordinal = -1;
+            this.name = "";            
             this.red = red;
             this.green = green;
             this.blue = blue;                    
             rgbString = "rgb(" + this.red + "," + this.green + "," + this.blue + ")";
             hexString = "#" + Integer.toString(this.red, 16) + Integer.toString(this.green, 16) + Integer.toString(this.blue, 16);
-        } else if (name != null && name.length() > 0) {
-            synchronized (NAMED_COLORS) {
-                NAMED_COLORS.put(name, this);
-            }
-            
-            this.ordinal = nextOrdinal++;            
-            this.red = -1;
-            this.green = -1;
-            this.blue = -1;
-            this.name = rgbString = hexString = name;
         } else {
             throw new IllegalArgumentException("either a name, RGB pair or Hex number must be specified");
         }                
@@ -323,7 +321,7 @@ public class Color {
     }
     
     public boolean equals(Object o) {
-        if (!(o instanceof Color)) {
+        if (o == null || !(o instanceof Color)) {
             return false;
         } else {
             Color c = (Color)o;

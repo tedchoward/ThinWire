@@ -4,10 +4,6 @@
  */
 package thinwire.ui;
 
-import thinwire.ui.style.Border;
-import thinwire.ui.style.Color;
-import thinwire.ui.style.Style;
-
 /**
  * A <code>WebBrowser</code> inserts a web browser object in your application.
  * <p>
@@ -43,18 +39,6 @@ import thinwire.ui.style.Style;
 // i.e. Browser like functionality.
 public final class WebBrowser extends AbstractComponent {
     public static final String PROPERTY_LOCATION = "location";
-    
-    //NOTE: Not sure how many of these settings actually have an effect since we use an IFRAME to render the WebBrowser
-    //control.  For instance the background color will mean nothing.
-    static {
-        Style s = new Style(getDefaultStyle(Component.class)); //inherit defaults from Component class
-        s.getBackground().setColor(Color.WINDOW);
-        Border b = s.getBorder();
-        b.setSize(2);
-        b.setType(Border.Type.INSET);
-        b.setColor(Color.THREEDFACE);
-        setDefaultStyle(Tree.class, s);
-    }    
     
     private String location = "";
  

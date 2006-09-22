@@ -4,10 +4,6 @@
  */
 package thinwire.ui;
 
-import thinwire.ui.style.Border;
-import thinwire.ui.style.Color;
-import thinwire.ui.style.Style;
-
 /**
  * A Dialog is a window with a title that is usually associated to a Frame.
  * <p>
@@ -78,25 +74,9 @@ import thinwire.ui.style.Style;
  */
 public class Dialog extends AbstractWindow {
     public static final String PROPERTY_RESIZE_ALLOWED = "resizeAllowed";
-
+    
     private static final int TITLE_BAR_HEIGHT = 18 + 1;
-    
-    // TODO: There should be two additional styles that can be set. One to control the title bar and one
-    // to control the "X" button on the titlebar. Ideally the "X" button style class would inherit from
-    // Button since they should look the same by default.
-    static {
-        Style s = new Style(getDefaultStyle(Component.class)); //inherit defaults from Component class
         
-        s.getBackground().setColor(Color.THREEDFACE);
-        
-        Border b = s.getBorder();
-        b.setSize(2);
-        b.setType(Border.Type.OUTSET);
-        b.setColor(Color.THREEDFACE);
-        
-        setDefaultStyle(Dialog.class, s);
-    }    
-    
     private boolean resizeAllowed;
     
     /**

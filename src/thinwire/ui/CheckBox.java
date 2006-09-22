@@ -4,10 +4,6 @@
  */
 package thinwire.ui;
 
-import thinwire.ui.style.Border;
-import thinwire.ui.style.Color;
-import thinwire.ui.style.Style;
-
 /**
  * A CheckBox is a screen element that can either be checked or cleared, and operates independently of other elements.
  * <p>
@@ -54,19 +50,6 @@ import thinwire.ui.style.Style;
  */
 public class CheckBox extends AbstractTextComponent implements CheckedComponent {
     public static final String PROPERTY_CHECKED = "checked";
-    
-    static {
-        Style s = new Style(getDefaultStyle(Component.class)); //inherit defaults from Component class
-        s.getBackground().setColor(Color.WINDOW);
-               
-        //TODO: You can't set the border values for a CheckBox because the Button is an image.  But at least this will reflect the way the image is displayed.
-        Border b = s.getBorder();
-        b.setSize(2);
-        b.setType(Border.Type.INSET);
-        b.setColor(Color.BUTTONFACE);
-        
-        setDefaultStyle(CheckBox.class, s);
-    }    
     
     private boolean checked;
 	

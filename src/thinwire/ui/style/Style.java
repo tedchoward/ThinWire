@@ -46,17 +46,24 @@ public class Style {
     }
     
     public Style(Style defaultStyle) {
-       this(null, defaultStyle); 
+       this(defaultStyle, null); 
     }
     
     protected Style(Style defaultStyle, Object parent) {
-        this.parent = parent;        
-        if (defaultStyle == null) defaultStyle = DEFAULT_STYLE;
-        this.defaultStyle = defaultStyle;
+        this.parent = parent;
+        
+        if (defaultStyle == null) {
+            this.defaultStyle = DEFAULT_STYLE;        
+        } else {
+            this.defaultStyle = new Style();
+            this.defaultStyle.copy(defaultStyle);
+        }
+        
         this.font = new Font(this);
         this.background = new Background(this);
         this.border = new Border(this);
         this.fx = new FX(this);
+        if (this.defaultStyle != null) this.copy(this.defaultStyle);
     }
 
     //NOTE: This is overridden by Component so it can receive these property change notifications
@@ -70,10 +77,6 @@ public class Style {
         getBackground().copy(style.getBackground());
         getBorder().copy(style.getBorder());
         getFX().copy(style.getFX());
-    }
-    
-    public Style getDefaultStyle() {
-        return defaultStyle;
     }
     
     public Object getParent() {

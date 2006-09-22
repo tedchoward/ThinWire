@@ -6,7 +6,6 @@ package thinwire.ui;
 
 import thinwire.render.Renderer;
 import thinwire.ui.event.ActionListener;
-import thinwire.ui.style.*;
 
 /**
  * A Divider provides a visual separation between two sections of a container.
@@ -33,18 +32,7 @@ import thinwire.ui.style.*;
  * </p>
  * @author Joshua J. Gertzen
  */
-public final class Divider extends AbstractComponent implements ActionEventComponent {
-    static {
-        Style s = new Style(getDefaultStyle(Component.class)); //inherit defaults from Component class
-        
-        Border b = s.getBorder();
-        b.setSize(1);
-        b.setType(Border.Type.INSET);
-        b.setColor(Color.THREEDHIGHLIGHT);
-        
-        setDefaultStyle(Divider.class, s);
-    }    
-    
+public final class Divider extends AbstractComponent implements ActionEventComponent {    
     private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>();    
     
     /**

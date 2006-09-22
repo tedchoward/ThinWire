@@ -10,7 +10,6 @@ import java.util.List;
 
 import thinwire.ui.event.ItemChangeListener;
 import thinwire.ui.event.ItemChangeEvent.Type;
-import thinwire.ui.style.Style;
 
 /**
  * @author Joshua J. Gertzen
@@ -84,11 +83,6 @@ abstract class AbstractContainer<T extends Component> extends AbstractComponent 
         public int size() {
             return l.size();
         }
-    }
-
-    static {
-        Style s = new Style(getDefaultStyle(Component.class)); //inherit defaults from Component class
-        setDefaultStyle(Container.class, s);
     }
     
     static final int BORDER_WIDTH = 2;

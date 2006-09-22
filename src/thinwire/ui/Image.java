@@ -14,7 +14,6 @@ import java.util.List;
 
 import thinwire.render.Renderer;
 import thinwire.ui.event.ActionListener;
-import thinwire.ui.style.Style;
 
 /**
  * A component that displays an image. Only PNG, JPEG or GIF are supported.
@@ -74,13 +73,6 @@ public final class Image extends AbstractComponent implements ImageComponent, Ac
 
     private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>();    
 	private Detail imageDetail = new Detail();    
-        
-    //TODO: If style.background had settings for controlling a background image, then this class could be implemented as nothing
-    //      more than a special rendering of Label.
-    static {
-        Style s = new Style(getDefaultStyle(Component.class)); //inherit defaults from Component class               
-        setDefaultStyle(Image.class, s);
-    }
     
 	/**
 	 * Constructs a new Image with no image fileName.

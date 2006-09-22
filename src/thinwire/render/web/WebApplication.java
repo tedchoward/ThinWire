@@ -4,6 +4,8 @@
  */
 package thinwire.render.web;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -11,6 +13,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
@@ -28,6 +31,9 @@ import thinwire.ui.FileChooser;
 import thinwire.ui.Component;
 import thinwire.ui.Window;
 import thinwire.ui.FileChooser.FileInfo;
+import thinwire.ui.style.Border;
+import thinwire.ui.style.Font;
+import thinwire.ui.style.Style;
 
 /**
  * @author Joshua J. Gertzen
@@ -45,11 +51,17 @@ public final class WebApplication extends Application {
     private static final long INSTANCE_TIMEOUT = 10 * MINUTE;
     private static final long INSTANCE_KEEP_ALIVE_CYCLE = INSTANCE_TIMEOUT - MINUTE;
     private static final long INSTANCE_MONITOR_THREAD_CYCLE = INSTANCE_TIMEOUT / 2;
+    private static final Set<WebApplication> allApps = new HashSet<WebApplication>();
     private static Thread instanceMonitorThread;
+    
     private static final Runnable instanceMonitorRunnable = new Runnable() {
         public void run() {
             log.fine("Starting instance monitoring thread");
-            Application[] apps = getApplications();
+            WebApplication[] apps;
+            
+            synchronized (allApps) {
+                apps = allApps.toArray(new WebApplication[allApps.size()]);
+            }
 
             do {
                 try {
@@ -58,8 +70,7 @@ public final class WebApplication extends Application {
                     throw new RuntimeException(e);                    
                 }
                 
-                for (Application app : apps) {
-                    WebApplication twapp = (WebApplication)app;
+                for (WebApplication twapp : apps) {
                     long currentTime = System.currentTimeMillis();
                     
                     //If more than two minutes have passed shutdown app
@@ -69,14 +80,18 @@ public final class WebApplication extends Application {
                         
                         try {
                             //Attempt to join thread for 10 seconds, if this fails, forcefully kill the thread.
-                            Thread appThread = twapp.getExecutionThread();
-                            if (appThread != null) {                                
-                                appThread.join(10000);
+                            if (twapp.appThread != null) {                                
+                                twapp.appThread.join(10000);
                                 
-                                if (appThread.isAlive()) {
+                                if (twapp.appThread.isAlive()) {
                                     log.fine("Forcefully stopping application instance " + twapp.id + ", thread did not respond to join");
-                                    appThread.stop();
-                                    twapp.setExecutionThread(null);
+                                    twapp.appThread.stop();
+                                    
+                                    synchronized (allApps) {
+                                        allApps.remove(twapp);
+                                    }
+                                    
+                                    twapp.appThread = null;
                                 }                                
                             }
                         } catch (Exception e) {
@@ -85,7 +100,9 @@ public final class WebApplication extends Application {
                     }
                 }
                 
-                apps = getApplications();
+                synchronized (allApps) {
+                    apps = allApps.toArray(new WebApplication[allApps.size()]);
+                }
             } while (apps.length > 0);
             
             log.fine("Finishing instance monitoring thread");
@@ -110,6 +127,7 @@ public final class WebApplication extends Application {
     private int nextCompId;
     private int captureCount;
     private Long lastClientRequestTime;
+    private AppThread appThread;
 	
 	//Stress Test Variables.
 	private UserActionListener userActionListener;    
@@ -138,7 +156,20 @@ public final class WebApplication extends Application {
         private boolean repeat;
     }
 
-    WebApplication(final WebServlet servlet, final HttpSession httpSession, final String mainClass, final String[] args) {
+    private static final String DEFAULT_STYLE_SHEET = "class:///" + Application.class.getName() + "/resources/DefaultStyle.properties";
+    
+    WebApplication(final WebServlet servlet, final HttpSession httpSession, final String mainClass, String styleSheet, final String[] args) {
+        try {
+            Properties props = new Properties();
+            if (styleSheet == null) styleSheet = DEFAULT_STYLE_SHEET;
+            if (!styleSheet.startsWith("class:///")) styleSheet = this.getRelativeFile(styleSheet).getAbsolutePath();
+            props.load(new ByteArrayInputStream(RemoteFileMap.INSTANCE.loadLocalData(styleSheet)));
+            loadStyleSheet(props);
+        } catch (Exception e) {
+            if (e instanceof RuntimeException) throw (RuntimeException)e;
+            throw new RuntimeException(e);
+        }
+
         nameToRenderer = new HashMap<String, Class<ComponentRenderer>>();
         windowToRenderer = new HashMap<Window, WindowRenderer>();
         eventQueue = new ArrayList<WebComponentEvent>();
@@ -185,7 +216,7 @@ public final class WebApplication extends Application {
             }
         });
         
-        setExecutionThread(new Thread("ThinWire AppThread-" + id) {
+        appThread = new AppThread(this, id) {
             public void run() {
                 try {
                     //set the frame to visible and then wait for the 
@@ -232,15 +263,25 @@ public final class WebApplication extends Application {
 
                     // Set the execution thread to null,
                     // so that this application instance can get
-                    // garbage collected.                    
-                    setExecutionThread(null);
+                    // garbage collected.
+                    
+                    synchronized (allApps) {
+                        allApps.remove(WebApplication.this);
+                    }
+                    
+                    WebApplication.this.appThread = null;
+                    
                     if (httpSession.getAttribute("instance") == WebApplication.this) httpSession.setAttribute("instance", null);                    
                     log.exiting(WebApplication.class.getName(), "exit");                    
                 } catch (Exception e) {
                     reportException(null, e);
                 }
             }
-        });
+        };
+        
+        synchronized (allApps) {
+            allApps.add(this);
+        }
         
         //Guarantee communication back and forth to the client every 60 seconds.  This causes an update
         //to the lastClientRequestTime and therefore prevents the app instance from being shutdown.
@@ -261,23 +302,44 @@ public final class WebApplication extends Application {
             }
         }
 
-        getExecutionThread().start();
+        appThread.start();
     }
     
     Integer getNextComponentId() {
         nextCompId = nextCompId == Integer.MAX_VALUE ? 1 : nextCompId + 1;
         return new Integer(nextCompId);
     }
+    
+    private void sendStyleClass(String styleName, Style s) {
+        StringBuffer sb = new StringBuffer();
+        sb.append('{');
+        sb.append("backgroundColor:\"").append(s.getBackground().getColor().toRGBString()).append("\",");
+        Font f = s.getFont();
+        sb.append("fontFamily:\"").append(f.getFamily()).append("\",");
+        sb.append("fontColor:\"").append(f.getColor().toRGBString()).append("\",");
+        sb.append("fontSize:").append(f.getSize()).append(",");
+        sb.append("fontItalic:").append(f.isItalic()).append(",");
+        sb.append("fontBold:").append(f.isBold()).append(",");
+        sb.append("fontUnderline:").append(f.isUnderline()).append(",");
+        Border b = s.getBorder();
+        sb.append("borderSize:").append(b.getSize()).append(",");
+        sb.append("borderType:\"").append(b.getType()).append("\",");
+        sb.append("borderColor:\"").append(b.getColor().toRGBString()).append("\"");
+        sb.append('}');
+        clientSideMethodCall("tw_Component", "setDefaultStyle", styleName, sb);
+    }
 
     ComponentRenderer getRenderer(Component comp) {
-        Class compClazz = comp.getClass();
+        Class compClazz = comp.getClass();        
         Class<ComponentRenderer> renderClazz = null;
 
-        outer: while (compClazz != null) {
+        //outer: while (compClazz != null) {
             String className = compClazz.getName();
             renderClazz = nameToRenderer.get(className);
             
             if (renderClazz == null) {
+                Style defaultStyle = getDefaultStyle(compClazz);
+                String styleClass = className.substring(className.lastIndexOf('.') + 1);
                 List<Class> lst = new ArrayList<Class>();
                 lst.add(compClazz);
                 
@@ -289,7 +351,8 @@ public final class WebApplication extends Application {
                     try {
                         renderClazz = (Class)Class.forName(qualClassName);
                         nameToRenderer.put(className, renderClazz);
-                        break outer;
+                        sendStyleClass(styleClass, defaultStyle);
+                        break;//outer;
                     } catch (ClassNotFoundException e) {
                         //We'll continue trying until no classes in the hierarchy are left.
                     }
@@ -301,10 +364,10 @@ public final class WebApplication extends Application {
                         if (Component.class.isAssignableFrom(i)) lst.add(i);
                     }
                 }                
-            } else {
-                break;
-            }
-        }
+            } //else {
+              //  break;
+            //}
+        //}
         
         if (renderClazz != null) {
             try {

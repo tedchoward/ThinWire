@@ -9,7 +9,6 @@ import thinwire.ui.event.ItemChangeListener;
 import thinwire.ui.event.PropertyChangeEvent;
 import thinwire.ui.event.PropertyChangeListener;
 import thinwire.ui.event.ItemChangeEvent.Type;
-import thinwire.ui.style.*;
 
 /**
  * A container for Tab Sheets. A Tab folder could sit in a dialog and have
@@ -63,22 +62,6 @@ import thinwire.ui.style.*;
 public class TabFolder extends AbstractContainer<TabSheet> {        
     public static final String PROPERTY_CURRENT_INDEX = "currentIndex";
     private static final int TABS_HEIGHT = 20;
-    
-    //TODO: It's not necessary, but conceivably you could have a style just for the tab itself.  In fact, for a more
-    //      web like interface it might be nice to set certain things about a tab for each tab, such as the background color.
-    //      Or possibly setting the background color for the active tab would be sufficient.
-    static {
-        Style s = new Style(getDefaultStyle(Component.class)); //inherit defaults from Component class
-        s.getBackground().setColor(Color.THREEDFACE);
-        
-        Border b = s.getBorder();
-        b.setSize(2);
-        b.setType(Border.Type.OUTSET);
-        b.setColor(Color.THREEDFACE);
-        
-        setDefaultStyle(TabFolder.class, s);
-    }
-    
     
 	private int currentIndex;
 	

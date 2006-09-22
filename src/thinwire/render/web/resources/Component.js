@@ -198,6 +198,13 @@ var tw_Component = Class.extend({
         return false;
     },
     
+    setStyleClass: function(className) {
+        return;
+        if (className != "Button") return;
+        var style = tw_Component.defaultStyles[className];
+        for (var name in style) this.setStyle(name, style[name]);
+    },
+    
     setStyle: function(name, value) {
         var realName = tw_Component.styleNameMap[name];
         if (realName == undefined) throw "attempt to set unknown property '" + name + "' to value '" + value + "'";
@@ -540,6 +547,11 @@ tw_Component.getReverseBorderType = function(type) {
     else if (type == "inset") type = "outset";
     else if (type == "outset") type = "inset";
     return type;
+};
+
+tw_Component.defaultStyles = { };
+tw_Component.setDefaultStyle = function(styleName, style) {
+    tw_Component.defaultStyles[styleName] = style;
 };
 
 //NOTE: This function is defined here so it can be shared by the unrelated classes: Image, Hyperlink, Label & BaseCheckRadio.

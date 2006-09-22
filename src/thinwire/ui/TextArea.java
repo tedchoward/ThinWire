@@ -4,10 +4,6 @@
  */
 package thinwire.ui;
 
-import thinwire.ui.style.Border;
-import thinwire.ui.style.Color;
-import thinwire.ui.style.Style;
-
 /**
  * This is a multiline text field screen element.
  * <p>
@@ -45,20 +41,7 @@ import thinwire.ui.style.Style;
  * 
  * @author Joshua J. Gertzen
  */
-public final class TextArea extends AbstractEditorComponent {
-    static {
-        Style s = new Style(getDefaultStyle(Component.class)); // inherit
-																// defaults from
-																// Component
-																// class
-        s.getBackground().setColor(Color.WINDOW);
-        Border b = s.getBorder();
-        b.setSize(2);
-        b.setType(Border.Type.INSET);
-        b.setColor(Color.THREEDFACE);        
-        setDefaultStyle(TextArea.class, s);
-    }    
-    
+public final class TextArea extends AbstractEditorComponent {    
 	/**
 	 * Constructs a new TextArea with no text.
 	 */

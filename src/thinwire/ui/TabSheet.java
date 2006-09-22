@@ -4,9 +4,6 @@
  */
 package thinwire.ui;
 
-import thinwire.ui.style.Style;
-
-
 /**
  * A TabSheet is a Panel that can be layered, so that a user can switch between
  * tab sheets.
@@ -60,11 +57,6 @@ public class TabSheet extends AbstractContainer<Component> implements TextCompon
 	private String text = "";
     private boolean allowSizeChange;
 	private Image.Detail imageDetail = new Image.Detail();
-	
-    static {
-        Style s = new Style(getDefaultStyle(Component.class)); //inherit defaults from Component class
-        setDefaultStyle(TabSheet.class, s);
-    }
     
 	/**
 	 * Construct a new TabSheet with no text.

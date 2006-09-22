@@ -40,6 +40,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     static final String SET_HEIGHT = "setHeight";
     static final String SET_VISIBLE = "setVisible";
     static final String SET_PROPERTY_WITH_EFFECT = "setPropertyWithEffect";
+    static final String PROPERTY_STYLE_CLASS = "styleClass";
 
     //Shared by other renderers
     static final String DESTROY = "destroy";
@@ -70,12 +71,18 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         this.comp = comp;
     }
     
+    static String getSimpleClassName(Class type) {
+        String text = type.getName();
+        text = text.substring(text.lastIndexOf('.') + 1);
+        return text;
+    }    
+    
 	void render(WindowRenderer wr, Component comp, ComponentRenderer container) {
         id = wr.addComponentId(comp);
         if (this instanceof WebComponentListener) wr.ai.setWebComponentListener(id, (WebComponentListener)this);
         FX.Type visibleChange = comp.getStyle().getFX().getVisibleChange();
         addClientSideProperty(Component.PROPERTY_FOCUS);
-
+        
         if (!isPropertyChangeIgnored(Component.PROPERTY_X)) addInitProperty(Component.PROPERTY_X, comp.getX());
         if (!isPropertyChangeIgnored(Component.PROPERTY_Y)) addInitProperty(Component.PROPERTY_Y, comp.getY());
         if (!isPropertyChangeIgnored(Component.PROPERTY_WIDTH)) addInitProperty(Component.PROPERTY_WIDTH, comp.getWidth());
@@ -84,6 +91,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
                 visibleChange != FX.Type.NONE && cr != null && cr.isFullyRendered() ? Boolean.FALSE : comp.isVisible());                
         if (!isPropertyChangeIgnored(Component.PROPERTY_ENABLED)) addInitProperty(Component.PROPERTY_ENABLED, comp.isEnabled());
         if (!comp.isFocusCapable()) addInitProperty(Component.PROPERTY_FOCUS_CAPABLE, false);         
+        addInitProperty(PROPERTY_STYLE_CLASS, getSimpleClassName(comp.getClass()));
         if (comp.isFocus()) addInitProperty(Component.PROPERTY_FOCUS, true);
                 
         if (jsClass != null) {
@@ -119,7 +127,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     void setStyle(String propertyName, boolean isNotDefault) {
         if (propertyName.startsWith("fx")) return;
         Style s = comp.getStyle();
-        Style ds = comp.getStyle().getDefaultStyle();
+        Style ds = wr.ai.getDefaultStyle(comp.getClass());
         Object value;
         Object defaultValue;
         

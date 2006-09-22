@@ -25,42 +25,6 @@ abstract class AbstractComponent implements Component {
     }
     
     //#ENDIF
-    private static Map<Class, Style> defaultStyles = new HashMap<Class, Style>();
-    
-    static {
-        Style s = new Style();
-        Font f = s.getFont(); 
-        f.setFamily(Font.Family.SANS_SERIF);
-        f.setColor(Color.WINDOWTEXT);
-        f.setSize(8);
-        f.setItalic(false);
-        f.setBold(false);
-        f.setUnderline(false);
-        
-        s.getBackground().setColor(Color.TRANSPARENT);
-        
-        Border b = s.getBorder();
-        b.setType(Border.Type.NONE);
-        b.setSize(0);
-        b.setColor(Color.TRANSPARENT);
-        
-        setDefaultStyle(Component.class, s);
-    }    
-    
-    static Style getDefaultStyle(Class clazz) {
-        Style style;
-        
-        do {
-            style = defaultStyles.get(clazz);
-            clazz = clazz.getSuperclass();
-        } while(style == null && clazz != null);
-        
-        return style;
-    }
-    
-    static void setDefaultStyle(Class<? extends Component> clazz, Style s) {
-        defaultStyles.put(clazz, s);
-    }
     
     Application app;
     private Object parent;
@@ -88,8 +52,8 @@ abstract class AbstractComponent implements Component {
         app = Application.current();
         pcei = new EventListenerImpl<PropertyChangeListener>(app.getGloalPropertyChangeListenerImpl());
         kpei = new EventListenerImpl<KeyPressListener>();
-        
-        this.style = new Style(getDefaultStyle(this.getClass()), this) {
+            
+        this.style = new Style(app.getDefaultStyle(this.getClass()), this) {
             protected void firePropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
                 AbstractComponent.this.firePropertyChange(source, propertyName, oldValue, newValue);
             }

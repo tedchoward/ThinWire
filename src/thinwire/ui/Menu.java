@@ -5,8 +5,6 @@
 package thinwire.ui;
 
 import thinwire.ui.event.KeyPressEvent;
-import thinwire.ui.style.Color;
-import thinwire.ui.style.Style;
 
 /**
  * A component that displays a set of hierarchical data as a menu.
@@ -54,17 +52,6 @@ import thinwire.ui.style.Style;
  * @author Joshua J. Gertzen
  */
 public class Menu extends AbstractHierarchyComponent<Menu.Item> {    
-    
-    // TODO: There could be a number of additional styles for MENU such as
-    // MainMenu.Item & Menu.Item.
-    //      And for each of those thier could be a hover-over style.  In the meantime, we set the
-    //      background color but nothing else.
-    static {
-        Style s = new Style(getDefaultStyle(Component.class)); //inherit defaults from Component class
-        s.getBackground().setColor(Color.THREEDFACE);
-        setDefaultStyle(Menu.class, s);
-    }
-
     /**
      * An object that represents an item in a <code>Menu</code> component.
      */

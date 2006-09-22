@@ -8,10 +8,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import thinwire.ui.style.Border;
-import thinwire.ui.style.Color;
-import thinwire.ui.style.Style;
-
 /**
  * A Frame is a top-level window with a title.
  * <p>
@@ -40,21 +36,6 @@ import thinwire.ui.style.Style;
  * @author Joshua J. Gertzen
  */
 public final class Frame extends AbstractWindow {
-    static {
-        Style s = new Style(getDefaultStyle(Component.class)); //inherit defaults from Component class
-        
-        s.getBackground().setColor(Color.WINDOW);
-        
-        //XXX: These values are just a good approximation... and it's not possible for a user to set them, so we should
-        //      devise a way to stop the setters from being called.  Not critical since these values really don't mean much.
-        Border b = s.getBorder();
-        b.setSize(4);
-        b.setType(Border.Type.OUTSET); 
-        b.setColor(Color.THREEDFACE);
-        
-        setDefaultStyle(Frame.class, s);
-    }    
-    
     private List<Dialog> children = new ArrayList<Dialog>();
     private List<Dialog> roChildren = Collections.unmodifiableList(children);
     private int innerHeight;

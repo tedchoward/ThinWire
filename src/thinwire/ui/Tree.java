@@ -4,10 +4,6 @@
  */
 package thinwire.ui;
 
-import thinwire.ui.style.Border;
-import thinwire.ui.style.Color;
-import thinwire.ui.style.Style;
-
 /**
  * A component that displays a set of hierarchical data as an outline.
  * <p>
@@ -98,22 +94,6 @@ import thinwire.ui.style.Style;
  * @author Joshua J. Gertzen
  */
 public final class Tree extends AbstractHierarchyComponent<Tree.Item> {    
-    // TODO It would be helpful to be able to set the style associated with the
-	// highlighted item.
-    // It may not make sense for this to be a separate Style class.
-    static {
-        Style s = new Style(getDefaultStyle(Component.class)); // inherit
-																// defaults from
-																// Component
-																// class
-        s.getBackground().setColor(Color.WINDOW);
-        Border b = s.getBorder();
-        b.setSize(2);
-        b.setType(Border.Type.INSET);
-        b.setColor(Color.THREEDFACE);
-        setDefaultStyle(Tree.class, s);
-    }    
-
     /**
      * An object that represents an item in a <code>Tree</code> component.
      */
