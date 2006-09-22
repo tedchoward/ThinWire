@@ -65,7 +65,7 @@ var tw_TabSheet = tw_BaseContainer.extend({
         var s = this._tab.firstChild.style;
         
         if (image.length > 0) {
-            s.backgroundImage = "url(" + tw_BASE_PATH + "/resources/" + image + ")";
+            s.backgroundImage = "url(" + tw_BASE_PATH + "resources/" + image + ")";
             s.display = "block";
         } else {
             s.backgroundImage = "";

@@ -48,7 +48,8 @@ var tw_useSmartTab = tw_isWin && ((tw_isIE && tw_bVer >= 6) || (tw_isFirefox && 
 var tw_BASE_PATH = new String(location);
 var tw_APP_URL = tw_BASE_PATH.substring(0, tw_BASE_PATH.indexOf("/", tw_BASE_PATH.indexOf("//") + 2));
 tw_BASE_PATH = tw_BASE_PATH.substring(tw_BASE_PATH.indexOf("/", tw_BASE_PATH.indexOf("//") + 2));
-if (tw_BASE_PATH.indexOf("?") >= 0) tw_BASE_PATH = tw_BASE_PATH.substring(0, tw_BASE_PATH.indexOf("?")); 
+if (tw_BASE_PATH.indexOf("?") >= 0) tw_BASE_PATH = tw_BASE_PATH.substring(0, tw_BASE_PATH.indexOf("?"));
+if (tw_BASE_PATH.charAt(tw_BASE_PATH.length - 1) != "/") tw_BASE_PATH += "/";
 tw_APP_URL += tw_BASE_PATH;
 
 function tw_include(name) {

@@ -144,7 +144,7 @@ var tw_Button = tw_Component.extend({
         var s = this._fontBox.style;
     
         if (image.length > 0) {
-            s.backgroundImage = "url(" + tw_BASE_PATH + "/resources/" + image + ")";
+            s.backgroundImage = "url(" + tw_BASE_PATH + "resources/" + image + ")";
             s.paddingLeft = tw_Button.imagePadding + "px";
         } else {
             s.backgroundImage = "";

@@ -445,7 +445,7 @@ public final class GridBox extends AbstractComponent implements Grid<GridBox.Row
             
             if (oldSortedColumn != null && oldSortedColumn != this) gb.firePropertyChange(oldSortedColumn, PROPERTY_COLUMN_SORT_ORDER, oldSortedColumnOrder, SortOrder.NONE);
             gb.firePropertyChange(this, PROPERTY_COLUMN_SORT_ORDER, oldSortedColumn == this ? oldSortedColumnOrder : SortOrder.NONE, sortOrder);
-            gb.selectedRowIndex = selectedRow.getIndex();
+            if (selectedRow != null) gb.selectedRowIndex = selectedRow.getIndex();
         }
     }
     

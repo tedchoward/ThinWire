@@ -22,7 +22,7 @@ var tw_Image = tw_Component.extend({
     keyPressNotify: tw_Component.keyPressNotifySpaceFireAction,    
     
     setImage: function(image) {
-        this._box.style.backgroundImage = image.length > 0 ? "url(" + tw_BASE_PATH + "/resources/" + image + ")" : "";
+        this._box.style.backgroundImage = image.length > 0 ? "url(" + tw_BASE_PATH + "resources/" + image + ")" : "";
     },
     
     setHeight: function(height) {
