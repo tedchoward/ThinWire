@@ -149,4 +149,104 @@ public class Menu extends AbstractHierarchyComponent<Menu.Item> {
     public Menu() {
         super(new Item());
     }
+
+    public int getHeight() {
+        Container cont = getContainer();
+
+        if (cont instanceof Window && ((Window)cont).getMenu() == this) {
+            return AbstractWindow.MENU_BAR_HEIGHT; 
+        } else {
+            return super.getHeight();
+        }
+    }    
+    
+    public void setHeight(int height) {
+        Container cont = getContainer();
+        
+        if (cont instanceof Window && ((Window)cont).getMenu() == this) {
+            throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_HEIGHT, false)); 
+        } else {
+            super.setHeight(height);
+        }        
+    }
+    
+    public int getWidth() {
+        Container cont = getContainer();
+        
+        if (cont instanceof Window && ((Window)cont).getMenu() == this) {
+            return cont.getInnerWidth(); 
+        } else {
+            return super.getWidth();
+        }
+    }
+    
+    public void setWidth(int width) {
+        Container cont = getContainer();
+        
+        if (cont instanceof Window && ((Window)cont).getMenu() == this) {
+            throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_WIDTH, false)); 
+        } else {
+            super.setWidth(width);
+        }
+    }
+    
+    public int getX() {
+        Container cont = getContainer();
+        
+        if (cont instanceof Window && ((Window)cont).getMenu() == this) {
+            return 0; 
+        } else {
+            return super.getX();
+        }
+    }    
+    
+    public void setX(int x) {
+        Container cont = getContainer();
+        
+        if (cont instanceof Window && ((Window)cont).getMenu() == this) {
+            throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_X, false)); 
+        } else {
+            super.setX(x);
+        }
+    }
+    
+    public int getY() {
+        Container cont = getContainer();
+        
+        if (cont instanceof Window && ((Window)cont).getMenu() == this) {
+            return 0; 
+        } else {
+            return super.getY();
+        }
+    }    
+
+    public void setY(int y) {
+        Container cont = getContainer();
+        
+        if (cont instanceof Window && ((Window)cont).getMenu() == this) {
+            throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_Y, false)); 
+        } else {
+            super.setY(y);
+        }
+    }    
+
+    public boolean isVisible() {
+        Container cont = getContainer();
+        
+        if (cont instanceof Window && ((Window)cont).getMenu() == this) {
+            return true; 
+        } else {
+            return super.isVisible();
+        }
+    }        
+    
+    public void setVisible(boolean visible) {
+        Container cont = getContainer();
+        
+        if (cont instanceof Window && ((Window)cont).getMenu() == this) {
+            throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_VISIBLE, false)); 
+        } else {
+            super.setVisible(visible);
+        }
+    }    
 }

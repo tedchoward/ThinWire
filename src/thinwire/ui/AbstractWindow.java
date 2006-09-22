@@ -38,6 +38,8 @@ abstract class AbstractWindow extends AbstractContainer<Component> implements Wi
     public void setMenu(Menu menu) {
         Menu oldMenu = this.menu;
         this.menu = menu;
+        if (oldMenu != null) oldMenu.setParent(null);
+        if (menu != null) menu.setParent(this);
         firePropertyChange(this, PROPERTY_MENU, oldMenu, menu);
     }
 
