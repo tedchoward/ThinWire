@@ -19,18 +19,23 @@ var tw_Menu = tw_Component.extend({
 
         var s = this._box.style;
         s.overflow = "visible";
-        s.background = tw_COLOR_THREEDFACE;
         s.padding = "1px";
-        s.borderBottom = "2px groove";
         s.marginBottom = "1px";
         s.zIndex = "1";
+
+        s.background = tw_COLOR_THREEDFACE;
+        s.fontFamily = tw_FONT_FAMILY;
+        s.fontSize = "8pt";
+        s.fontColor = tw_COLOR_MENUTEXT;
         s.borderColor = tw_borderColor;
-        
-        if (!this._windowMenu) {
+
+        if (this._windowMenu) {
+            s.borderBottom = "2px groove";
+            s.position = "";
+            this._borderBox = null;
+        } else {
             s.borderWidth = "2px";
             s.borderStyle = "outset";
-        } else {
-            s.position = "";
         }
         
         this._mainMenuMouseOver = this._mainMenuMouseOver.bind(this);
@@ -222,8 +227,8 @@ var tw_Menu = tw_Component.extend({
                 this._activeMenuItem = item;
             } else {                
                 button.tw_invertArrow = false;
-                button.style.color = "menutext";
-                button.style.backgroundColor = tw_COLOR_THREEDFACE;
+                button.style.color = this.getStyle("fontColor");
+                button.style.backgroundColor = this.getStyle("backgroundColor");
             }
             
             this._setArrowVisible(item, item.lastChild.childNodes.length > 0);
@@ -322,9 +327,6 @@ var tw_Menu = tw_Component.extend({
             s.position = "relative";
             s.margin = "0px";
             s.padding = "2px";
-            s.backgroundColor = tw_COLOR_THREEDFACE;
-            s.fontFamily = tw_FONT_FAMILY;
-            s.fontSize = "8pt";
             
             var image = document.createElement("img");
             image.className = "menuButtonImage";
@@ -383,9 +385,6 @@ var tw_Menu = tw_Component.extend({
             s.paddingLeft = "5px";
             s.paddingRight = "5px";
             s.border = "1px solid threedface";
-            s.backgroundColor = tw_COLOR_THREEDFACE;
-            s.fontFamily = tw_FONT_FAMILY;
-            s.fontSize = "8pt";            
         }
     
         item.appendChild(button);
@@ -397,9 +396,9 @@ var tw_Menu = tw_Component.extend({
         s.margin = "0px";
         s.padding = "0px";
         s.border = "2px outset";
+
         s.backgroundColor = tw_COLOR_THREEDFACE;
-        s.fontFamily = tw_FONT_FAMILY;
-        s.fontSize = "8pt";
+
         s.visibility = "hidden";
         s.borderColor = tw_borderColor;
         if (prefix == "m") s.top = "-2px";        

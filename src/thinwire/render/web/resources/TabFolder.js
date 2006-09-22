@@ -27,25 +27,15 @@ var tw_TabFolder = tw_BaseContainer.extend({
         this._borderBox = this._backgroundBox = this._container = document.createElement("div");
         var s = this._container.style;
         s.position = "absolute";
-        s.padding = "1px";
         s.zIndex = "0";
 
-        this.setStyle("backgroundColor", tw_COLOR_THREEDFACE);
-        this.setStyle("borderSize", 2);
-        this.setStyle("borderType", "outset");
-        this.setStyle("borderColor", tw_borderColor);
-        
         this._box.appendChild(this._container);    
         this.init(-1, props);
     },
     
     setStyle: function(name, value) {
         this.$.setStyle.apply(this, [name, value]);
-        
-        for (var i = 0, cnt = this._children.length; i < cnt; i++) {
-            var sheet = this._children[i];
-            sheet.setStyle(name, value);
-        }
+        if (name == "borderSize") this._offsetX = this._offsetY = parseInt(value);
     },    
     
     getOffsetY: function() {
@@ -54,16 +44,16 @@ var tw_TabFolder = tw_BaseContainer.extend({
         
     setWidth: function(width) {
         this.$.setWidth.apply(this, [width]);
-        this._tabs.style.width = width + "px";        
+        this._tabs.style.width = width + "px";
         var cWidth = width - this._borderSizeSub;
         if (cWidth < 0) cWidth = 0;
-        this._container.style.width = cWidth + "px";        
-        width -= this.getStyle("borderSize") * 2;
-        if (width < 0) width = 0;
-        
+        this._container.style.width = cWidth + "px";
+        cWidth = width - this.getStyle("borderSize") * 2;
+        if (cWidth < 0) cWidth = 0;
+
         for (var i = this._children.length; --i >= 0;) {
-            this._children[i].setWidth(width);
-        }    
+            this._children[i].setWidth(cWidth);
+        }
     },
     
     setHeight: function(height) {
@@ -71,12 +61,12 @@ var tw_TabFolder = tw_BaseContainer.extend({
         this._container.style.top = this._tabs.style.height = tw_TabFolder._tabsHeight + "px";        
         var cHeight = height - this._borderSizeSub - tw_TabFolder._tabsHeight;
         if (cHeight < 0) cHeight = 0;
-        this._container.style.height = cHeight + "px";        
-        height -= this.getStyle("borderSize") * 2 + tw_TabFolder._tabsHeight;
-        if (height < 0) height = 0;
+        this._container.style.height = cHeight + "px";
+        cHeight = height - (this.getStyle("borderSize") * 2 + tw_TabFolder._tabsHeight);
+        if (cHeight < 0) cHeight = 0;
         
         for (var i = this._children.length; --i >= 0;) {            
-            this._children[i].setHeight(height);
+            this._children[i].setHeight(cHeight);
         }
     },
     
@@ -84,7 +74,7 @@ var tw_TabFolder = tw_BaseContainer.extend({
         var size = this.getWidth() - this.getStyle("borderSize") * 2;
         if (size < 0) size = 0;
         sheet.setWidth(size);
-        var size = this.getHeight() - this.getStyle("borderSize") * 2 - tw_TabFolder._tabsHeight;
+        var size = this.getHeight() - (this.getStyle("borderSize") * 2 + tw_TabFolder._tabsHeight);
         if (size < 0) size = 0;        
         sheet.setHeight(size);
 

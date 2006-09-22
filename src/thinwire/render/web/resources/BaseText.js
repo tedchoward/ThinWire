@@ -33,13 +33,6 @@ var tw_BaseText = tw_Component.extend({
         this._box.appendChild(editor);
         this._editor = this._focusBox = this._fontBox = this._backgroundBox = editor;
         
-        this.setStyle("backgroundColor", tw_COLOR_WINDOW);
-        this.setStyle("borderSize", 2);
-        this.setStyle("borderType", "inset");
-        this.setStyle("borderColor", tw_borderColor);
-        this.setStyle("fontSize", 8);
-        this.setStyle("fontFamily", tw_FONT_FAMILY);        
-        
         this._focusListener = this._focusListener.bind(this);
         this._blurListener = this._blurListener.bind(this);
         

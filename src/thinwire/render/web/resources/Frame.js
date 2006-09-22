@@ -16,11 +16,12 @@ var tw_Frame = tw_BaseContainer.extend({
     
     construct: function(id, containerId, props) {
         this.$.construct.apply(this, ["frame", id, 0]);
+        this._fontBox = this._borderBox = null;
+        
         var s = this._box.style;
         s.cursor = "default";    
         s.top = "0px";
         s.left = "0px";
-        s.backgroundColor = tw_COLOR_WINDOW;
         s.width = "100%";
         s.height = "100%";
         
@@ -31,7 +32,6 @@ var tw_Frame = tw_BaseContainer.extend({
         this._backgroundBox = this._container = document.createElement("div");
         this._container.className = "container";
         var s = this._container.style;
-        s.backgroundColor = tw_COLOR_WINDOW;
         s.position = "absolute";        
         s.overflow = "hidden";
         s.zIndex = "0";
@@ -150,6 +150,10 @@ var tw_Frame = tw_BaseContainer.extend({
             this._focusBeforeDialog = null;
         }
     },
+    
+    getOffsetY: function() {
+        return this.$.getOffsetY.apply(this) + (this.getMenu() != null ? tw_Dialog.menuBarHeight : 0);
+    },     
     
     setX: function() { },    
     setY: function() { },

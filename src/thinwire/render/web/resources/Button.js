@@ -12,7 +12,7 @@ var tw_Button = tw_Component.extend({
         this.$.construct.apply(this, ["div", "button", id, containerId]);
         var s = this._box.style;
         s.borderStyle = "solid";
-        s.borderColor = tw_COLOR_BLACK;                        
+        s.borderColor = tw_COLOR_WINDOWFRAME;                        
         s.borderWidth = "0px";
         
         var border = this._borderBox = this._focusBox = document.createElement("div");
@@ -26,12 +26,6 @@ var tw_Button = tw_Component.extend({
         s.backgroundColor = tw_COLOR_TRANSPARENT;
         s.backgroundRepeat = "no-repeat";
         s.backgroundPosition = "center left";
-
-        this.setStyle("borderSize", 2);
-        this.setStyle("borderType", "outset");
-        this.setStyle("borderColor", tw_borderColor);
-        this.setStyle("fontSize", 8);
-        this.setStyle("fontFamily", tw_FONT_FAMILY);        
         
         border.appendChild(document.createTextNode(""));        
         this._box.appendChild(border);
@@ -43,7 +37,6 @@ var tw_Button = tw_Component.extend({
         tw_addEventListener(border, "blur", this._blurListener.bind(this));
         
         this.init(-1, props);
-        this.setStyle("backgroundColor", tw_COLOR_BUTTONFACE);
     },    
     
     _setStandardStyle: function(state) {
@@ -102,10 +95,11 @@ var tw_Button = tw_Component.extend({
     
     setEnabled: function(enabled) {
         this.$.setEnabled.apply(this, [enabled]);        
-        this._fontBox.color = enabled ? tw_COLOR_WINDOWTEXT : tw_COLOR_GRAYTEXT;            
+        this._fontBox.color = enabled ? tw_COLOR_BUTTONTEXT : tw_COLOR_GRAYTEXT;
     },
     
     setFocus: function(focus) {
+        if (!this.isEnabled() || !this.isVisible()) return false;
         var sButton = this.getBaseWindow().getStandardButton();        
         
         if (focus) {                

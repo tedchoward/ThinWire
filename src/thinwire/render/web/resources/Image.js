@@ -5,8 +5,8 @@
 var tw_Image = tw_Component.extend({
     construct: function(id, containerId, props) {
         this.$.construct.apply(this, ["div", "image", id, containerId]);
+        this._fontBox = null;
         var s = this._box.style;
-        s.background = tw_COLOR_TRANSPARENT;
         s.backgroundRepeat = "no-repeat";
         s.backgroundPosition = "center center";
         tw_addEventListener(this._box, "click", this._clickListener.bind(this));        

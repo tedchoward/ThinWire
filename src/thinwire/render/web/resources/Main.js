@@ -34,17 +34,22 @@ function tw_include(name) {
     }       
 }
 
+var tw_COLOR_ACTIVECAPTION = "activecaption";
+var tw_COLOR_CAPTIONTEXT= "captiontext";
+var tw_COLOR_INACTIVECAPTION = "inactivecaption";
+var tw_COLOR_INACTIVECAPTIONTEXT= "inactivecaptiontext";
 var tw_COLOR_WINDOW = "window";
 var tw_COLOR_WINDOWTEXT = "windowtext";
 var tw_COLOR_HIGHLIGHT = "highlight";
 var tw_COLOR_HIGHLIGHTTEXT = "highlighttext";
 var tw_COLOR_GRAYTEXT = "graytext";
+var tw_COLOR_BUTTONTEXT = "buttontext";
 var tw_COLOR_BUTTONFACE = "buttonface";
 var tw_COLOR_THREEDFACE = "threedface";
 var tw_COLOR_THREEDSHADOW = "threedshadow";
+var tw_COLOR_WINDOWFRAME = "windowframe";
+var tw_COLOR_MENUTEXT = "menutext";
 var tw_COLOR_TRANSPARENT = "transparent";
-
-var tw_COLOR_BLACK = "black";
 
 var tw_FONT_FAMILY = "tahoma, sans-serif";
 

@@ -24,22 +24,6 @@ var tw_GridBox = tw_Component.extend({
     construct: function(id, containerId, props) {
         this.$.construct.apply(this, ["div", "gridBox", id, containerId]);
         
-        this.setStyle("backgroundColor", tw_COLOR_WINDOW);
-        this.setStyle("borderSize", 2);
-        this.setStyle("borderType", "inset");
-        this.setStyle("borderColor", tw_borderColor);
-        this.setStyle("fontColor", tw_COLOR_WINDOWTEXT);
-        this.setStyle("fontSize", 8);
-        this.setStyle("fontFamily", tw_FONT_FAMILY);                
-        
-        /*s.borderStyle = "inset";
-        s.borderWidth = "2px";
-        s.borderColor = tw_borderColor;
-        s.backgroundColor = tw_COLOR_WINDOW;
-        s.color = tw_COLOR_WINDOWTEXT;
-        s.fontFamily = tw_FONT_FAMILY;
-        s.fontSize = "8pt";*/
-        
         this._root = this;   
         var visibleCheckBoxes = props.visibleCheckBoxes;
         var cols = props.columnData;
@@ -57,7 +41,7 @@ var tw_GridBox = tw_Component.extend({
         header.className = "gridBoxHeader";
         var s = header.style;
         s.position = "absolute";
-        s.backgroundColor = tw_COLOR_BUTTONFACE;        
+        s.backgroundColor = tw_Component.defaultStyles["Button"].backgroundColor;
         s.display = "none";
         this._hresize = {column: null, startX: -1};        
         this._header = header;
@@ -107,10 +91,6 @@ var tw_GridBox = tw_Component.extend({
         //  points to a child gridbox.
         if (container instanceof tw_DropDownGridBox || container instanceof tw_GridBox) {
             this._box.style.zIndex = 1;
-
-            this.setStyle("borderSize", 1);
-            this.setStyle("borderType", "solid");
-            this.setStyle("borderColor", tw_COLOR_BLACK);
                             
             if (container instanceof tw_GridBox) {
                 props.x = 0;
@@ -414,8 +394,7 @@ var tw_GridBox = tw_Component.extend({
                 cell.scrollIntoView(false);            
             }
         } else {
-            var color = this._box.style.color;
-            if (color == "") color = tw_COLOR_WINDOWTEXT;
+            var color = this.getStyle("fontColor");
             var backgroundColor = tw_COLOR_TRANSPARENT;
             var arrowImage = tw_GridBox.imageChildArrow;
         }   
@@ -436,14 +415,7 @@ var tw_GridBox = tw_Component.extend({
         var oldCalcBorderSize = this._borderSizeSub;
         this.$.setStyle.apply(this, [name, value]);
         
-        if (name == "borderType") {
-            var newType = tw_Component.getReverseBorderType(value);
-            
-            for (var i = 0, cnt = this._getColumnCount(); i < cnt; i++) {
-                var h = this._header.childNodes.item(i);
-                h.style.borderStyle = newType;
-            }            
-        } else if (name == "borderSize") {
+        if (name == "borderSize") {
             for (var i = 0, cnt = this._getColumnCount(); i < cnt; i++) {
                 var h = this._header.childNodes.item(i);
                 h.style.borderWidth = value + "px";
@@ -768,10 +740,11 @@ var tw_GridBox = tw_Component.extend({
         s.height = tw_GridBox.rowHeight + this.getStyle("borderSize") * 2 - this._borderSizeSub + "px";
         s.textAlign = alignX;
 
-        s.backgroundColor = tw_COLOR_BUTTONFACE;
-        s.borderWidth = this.getStyle("borderSize") + "px";
-        s.borderStyle = tw_Component.getReverseBorderType(this.getStyle("borderType"));
-        s.borderColor = this.getStyle("borderColor");
+        var bs = tw_Component.defaultStyles["Button"];
+        s.borderWidth = this.getStyle("borderSize") + "px";        
+        s.backgroundColor = bs.backgroundColor;
+        s.borderStyle = bs.borderType; 
+        s.borderColor = tw_Component.getIEBorderColor(bs.borderColor);
         
         columnHeader.appendChild(document.createTextNode(name));
                 

@@ -21,16 +21,17 @@ var tw_DropDownGridBox = tw_BaseText.extend({
         s.backgroundPosition = "center center";                
         s.backgroundImage = "url(?_twr_=tbArrowDown.png)";
 
-        s.backgroundColor = tw_COLOR_BUTTONFACE;
-        s.borderStyle = "outset";
-        s.borderColor = tw_borderColor;        
+        var bs = tw_Component.defaultStyles["Button"];        
+        s.backgroundColor = bs.backgroundColor;
+        s.borderStyle = bs.borderType;
+        s.borderColor = tw_Component.getIEBorderColor(bs.borderColor);        
         
         var s = buttonBorder.style;
         s.position = "absolute";
         s.right = "0px";
         s.backgroundColor = tw_COLOR_TRANSPARENT;
         s.borderStyle = "solid";
-        s.borderColor = tw_COLOR_BLACK;                        
+        s.borderColor = tw_COLOR_WINDOWFRAME;                        
         s.borderWidth = "0px";
         buttonBorder.appendChild(button);
         this._box.appendChild(buttonBorder);
@@ -62,9 +63,10 @@ var tw_DropDownGridBox = tw_BaseText.extend({
     _buttonMouseUpListener: function(event) {
         if (!this.isEnabled() || tw_getEventButton(event) != 1) return; 
         var s = this._button.style;
-        s.borderStyle = "outset";
+        var bs = tw_Component.defaultStyles["Button"];
+        s.borderStyle = bs.borderType;
         s.borderWidth = this._box.style.borderWidth;
-        s.borderColor = tw_borderColor;
+        s.borderColor = tw_Component.getIEBorderColor(bs.borderColor);
         s.padding = "0px";    
     },
     
@@ -131,12 +133,7 @@ var tw_DropDownGridBox = tw_BaseText.extend({
 
     setStyle: function(name, value) {
         this.$.setStyle.apply(this, [name, value]);
-        
-        if (name.indexOf("border") == 0) {
-            if (name == "borderSize") this._button.style.borderWidth = value + "px";
-        }
-        
-        if (this._ddComp != null) this._ddComp.setStyle(name, value);
+        if (name == "borderSize") this._button.style.borderWidth = value + "px";
     },
     
     keyPressNotify: function(keyPressCombo) {        

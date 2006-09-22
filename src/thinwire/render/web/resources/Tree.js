@@ -18,13 +18,6 @@ var tw_Tree = tw_Component.extend({
         s.overflow = "auto";
         s.whiteSpace = "nowrap";
         
-        this.setStyle("backgroundColor", tw_COLOR_WINDOW);
-        this.setStyle("borderSize", 2);
-        this.setStyle("borderType", "inset");
-        this.setStyle("borderColor", tw_borderColor);
-        this.setStyle("fontSize", 8);
-        this.setStyle("fontFamily", tw_FONT_FAMILY);        
-        
         this._treeTop = document.createElement("span");
         this._box.appendChild(this._treeTop);
 
@@ -370,7 +363,7 @@ var tw_Tree = tw_Component.extend({
         if (this._currentItem != undefined) {
             var s = this._currentItem.textNode.style;
             s.backgroundColor = tw_COLOR_TRANSPARENT;
-            s.color = tw_COLOR_WINDOWTEXT;
+            s.color = this.getStyle("fontColor");
             s.zIndex = 0;
         }
         
@@ -565,7 +558,6 @@ var tw_Tree = tw_Component.extend({
     destroy: function() {
         this._treeTop = this._currentItem = this._rootItem.textNode = this._rootItem.assignedImageNode = null;
         this._rootItem = null;         
-        if (tw_Component.currentFocus === this) tw_Component.currentFocus = null;         
         var divs = this._box.getElementsByTagName("div");
         
         for (var i = 0; i < divs.length; i++) {

@@ -4,7 +4,11 @@
  */
 package thinwire.ui.style;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import thinwire.render.web.WebApplication;
@@ -21,36 +25,117 @@ public class Font {
     public static final String PROPERTY_FONT_COLOR = "fontColor";
     public static final String PROPERTY_FONT_FAMILY = "fontFamily";
     
-    public static enum Family {
-        SERIF, SANS_SERIF, CURSIVE, FANTASY, MONOSPACE;
+    public static class Family {
+        private static List<Family> VALUES = new ArrayList<Family>();
         
-        /*private static final Pattern FONT_NAME_PATTERN = Pattern.compile("[\\w|\\-| ]+");
+        public static final Family SERIF = new Family("serif", null);
+        public static final Family SANS_SERIF = new Family("sans-serif", null);
+        public static final Family CURSIVE = new Family("cursive", null);
+        public static final Family FANTASY = new Family("fantasy", null);
+        public static final Family MONOSPACE = new Family("monospace", null);
+        static {
+            Collections.sort(VALUES, new Comparator<Family>() {
+                public int compare(Family c1, Family c2) {
+                    int o1 = c1.ordinal();
+                    int o2 = c2.ordinal();
+                    
+                    if (o1 == o2) {
+                        return 0;
+                    } else if (o1 > o2) {
+                        return 1;
+                    } else {
+                        return -1;
+                    }
+                }            
+            });
+        }
+
+        private static int nextOrdinal = 0;        
         
-        private ThreadLocal<String> optimalFontNames = new ThreadLocal<String>() {
-            protected String initialValue() {
-                return "";
-            }
-        };
+        public static final Family valueOf(String name) {
+            if (name == null) throw new IllegalArgumentException("name == null");
+            name = name.trim();
+            if (name.equals("")) throw new IllegalArgumentException("name.equals(\"\")");
+            int index = name.indexOf(',');
+                        
+            if (index >= 0) {
+                Family parent = valueOf(name.substring(index + 1));
+                name = name.substring(0, index).trim();
+                if (name.equals("")) throw new IllegalArgumentException("name.equals(\"\")");
+                return new Family(name, parent);
+            } else {
+                name = name.toUpperCase().replace('-', '_');
                 
-        public void setOptimalFontNames(String optimialFontNames) {
-            StringBuffer sb = new StringBuffer();            
-            
-            for (String s : optimialFontNames.split(",")) {
-                s = s.trim();
-                if (!FONT_NAME_PATTERN.matcher(s).matches()) throw new IllegalArgumentException("Font name '" + s + "' must match the regex pattern '" + FONT_NAME_PATTERN + "'");                
-                sb.append(s).append(',');
+                for (Family f : VALUES) {
+                    if (f.name.equals(name)) {
+                        return f;
+                    }
+                }
+                
+                throw new IllegalArgumentException("name=" + name + " is not a valid base font family");
             }
-            
-            sb.deleteCharAt(sb.length() - 1);
-            optimalFontNames.set(sb.toString());
         }
         
-        public String getOptimialFontNames() {
-            return optimalFontNames.get();
-        }*/
+        public static final Family[] values() {
+            return VALUES.toArray(new Family[VALUES.size()]);
+        }
+        
+        private int ordinal;
+        private String name;
+        private String qualifiedName;
+        private Family parent;
+
+        private Family(String name, Family parent) {
+            if (name == null) throw new IllegalArgumentException("name == null");
+            name = name.trim();
+            if (name.equals("")) throw new IllegalArgumentException("name.equals(\"\")");            
+            if (!name.matches("[-\\w ]+")) throw new IllegalArgumentException("!name.matches(\"[-\\w ]+\")");
+            this.ordinal = parent == null ? nextOrdinal++ : -1;
+            StringBuilder sb = new StringBuilder();
+            sb.append(name);
+            this.name = name.toUpperCase().replaceAll("[- ]", "_");
+            this.parent = parent;
+            
+            if (parent == null) {
+                VALUES.add(this);
+            } else {
+                sb.append(", ").append(parent.toString());                
+            }
+            
+            qualifiedName = sb.toString();
+        }
+        
+        public Family getParent() {
+            return parent;
+        }
+        
+        public Family sub(String name) {
+            return new Family(name, this);
+        }
+        
+        public String name() {
+            return name; 
+        }
+        
+        public int ordinal() {        
+            return ordinal;
+        }
+        
+        public int hashCode() {
+            return toString().hashCode();
+        }
+        
+        public boolean equals(Object o) {
+            if (o == null || !(o instanceof Family)) {
+                return false;
+            } else {
+                Family f = (Family)o;
+                return this.toString().equals(f.toString());
+            }
+        }        
         
         public String toString() {
-            return name().toLowerCase().replace('_', '-');
+            return qualifiedName;
         }
     }
 
@@ -93,7 +178,7 @@ public class Font {
         return computedState;
     }
     
-    public int getStringWidth(String s) {
+    private Metrics getMetrics() {
         String computedState = getComputedState();
         Map<String, Metrics> map = fontMetrics.get(); 
         Metrics fm = map.get(computedState);        
@@ -111,6 +196,11 @@ public class Font {
             map.put(computedState, fm);
         }
         
+        return fm;
+    }
+    
+    public int getStringWidth(String s) {
+        Metrics fm = getMetrics();
         int[] widths = fm.widths;        
         int width = 0;
         
@@ -123,15 +213,34 @@ public class Font {
         
         return width;
     }
+    
+    public int getStringHeight(String s) {
+        return getMetrics().height;
+    }
         
     public void copy(Font font) {
+        copy(font, false);
+    }
+    
+    public void copy(Font font, boolean onlyIfDefault) {
         if (font == null) throw new IllegalArgumentException("font == null");
-        setFamily(font.getFamily());
-        setColor(font.getColor());
-        setSize(font.getSize());
-        setBold(font.isBold());
-        setItalic(font.isItalic());
-        setUnderline(font.isUnderline());
+        
+        if (onlyIfDefault) {
+            Font df = parent.defaultStyle.getFont();
+            if (getFamily().equals(df.getFamily())) setFamily(font.getFamily());
+            if (getColor().equals(df.getColor())) setColor(font.getColor());
+            if (getSize() == df.getSize()) setSize(font.getSize());
+            if (isBold() == df.isBold()) setBold(font.isBold());
+            if (isItalic() == df.isItalic()) setItalic(font.isItalic());
+            if (isUnderline() == df.isUnderline()) setUnderline(font.isUnderline());            
+        } else {
+            setFamily(font.getFamily());
+            setColor(font.getColor());
+            setSize(font.getSize());
+            setBold(font.isBold());
+            setItalic(font.isItalic());
+            setUnderline(font.isUnderline());
+        }
     }
     
     public Style getParent() {

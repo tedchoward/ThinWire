@@ -11,6 +11,8 @@ var tw_BaseCheckRadio = tw_Component.extend({
     
     construct: function(className, id, containerId) {
         this.$.construct.apply(this, ["a", className, id, containerId, "text,lineHeight"]);
+        this._borderBox = null;
+        this._box.href = "javascript:void(false)";
         var s = this._box.style;
         s.display = "block";
         s.cursor = "default";        
@@ -19,10 +21,6 @@ var tw_BaseCheckRadio = tw_Component.extend({
         s.backgroundColor = tw_COLOR_TRANSPARENT;        
         s.textDecoration = "none";
         s.border = "0px";
-                
-        s.fontFamily = tw_FONT_FAMILY;
-        s.fontSize = "8pt";
-        s.color = tw_COLOR_WINDOWTEXT;
         s.whiteSpace = "nowrap";
         s.paddingLeft = "18px";
 
@@ -34,7 +32,6 @@ var tw_BaseCheckRadio = tw_Component.extend({
         s.overflow = "hidden";
         s.left = "4px";
         s.zIndex = 0;
-        s.backgroundColor = tw_COLOR_WINDOW;
         this._box.appendChild(this._backgroundBox);               
         
         this._image = document.createElement("div");
@@ -51,7 +48,6 @@ var tw_BaseCheckRadio = tw_Component.extend({
         this._imageUnchecked = "url(?_twr_=" + prefix + "Unchecked.png)";
         this._imageDisabledChecked = "url(?_twr_=" + prefix + "DisabledChecked.png)";
         this._imageDisabledUnchecked = "url(?_twr_=" + prefix + "DisabledUnchecked.png)";    
-        tw_setFocusCapable(this._box, true);
         tw_addEventListener(this._box, "click", this._clickListener.bind(this));    
         tw_addEventListener(this._box, "focus", this._focusListener.bind(this));        
         tw_addEventListener(this._box, "blur", this._blurListener.bind(this));         
@@ -88,7 +84,6 @@ var tw_BaseCheckRadio = tw_Component.extend({
         if (enabled == this.isEnabled()) return;
         this.$.setEnabled.apply(this, [enabled]);
         this.setChecked(this.isChecked()); //Toggles image to disabled image
-        tw_setFocusCapable(this._box, enabled);
     },
     
     keyPressNotify: tw_Component.keyPressNotifySpaceFireAction,

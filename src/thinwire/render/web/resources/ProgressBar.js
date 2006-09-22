@@ -6,16 +6,10 @@
 var tw_ProgressBar = tw_BaseRange.extend({
     construct: function(id, containerId, props) {
         this.$.construct.apply(this, ["div", "progressBar", id, containerId]);
-        
+        this._backgroundBox = this._box;
         this._selection.style.left = "0px";
-
-        this.setStyle("borderSize", 2);
-        this.setStyle("borderType", "inset");
-        this.setStyle("borderColor", tw_borderColor);
-        
+        this._selection.style.backgroundColor = tw_COLOR_ACTIVECAPTION; 
         this.init(-1, props);
-        this.setStyle("backgroundColor", "activecaption");
-        this._box.style.backgroundColor = tw_COLOR_WINDOW;
     },
     
     _recalc: function() {

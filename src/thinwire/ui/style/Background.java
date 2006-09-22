@@ -19,10 +19,20 @@ public class Background {
     }
     
     public void copy(Background background) {
-        if (background == null) throw new IllegalArgumentException("background == null");
-        setColor(background.getColor());
+        copy(background, false);
     }
-    
+
+    public void copy(Background background, boolean onlyIfDefault) {
+        if (background == null) throw new IllegalArgumentException("background == null");
+        
+        if (onlyIfDefault) {
+            Background db = parent.defaultStyle.getBackground();
+            if (getColor().equals(db.getColor())) setColor(background.getColor());
+        } else {
+            setColor(background.getColor());
+        }
+    }
+
     public Style getParent() {
         return parent;
     }    

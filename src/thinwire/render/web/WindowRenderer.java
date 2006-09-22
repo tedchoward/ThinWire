@@ -26,11 +26,11 @@ class WindowRenderer extends ContainerRenderer {
     void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         setPropertyChangeIgnored(Component.PROPERTY_VISIBLE, true);
         Window w = (Window)c;        
-        addInitProperty("title", w.getTitle());
+        addInitProperty(Window.PROPERTY_TITLE, w.getTitle());
         compToId = new HashMap<Component, Integer>(w.getChildren().size());        
         super.render(wr, c, container);
         Menu m = w.getMenu();
-        if (m != null) (mr = new MenuRenderer()).render(wr, m, this);
+        if (m != null) (mr = (MenuRenderer)ai.getRenderer(m)).render(wr, m, this);
     }
     
     void destroy() {
@@ -73,7 +73,7 @@ class WindowRenderer extends ContainerRenderer {
                 postClientEvent(SET_MENU, newValue);                
             } else {
                 Menu m = (Menu)newValue;
-                (mr = new MenuRenderer()).render(wr, m, this);            
+                (mr = (MenuRenderer)ai.getRenderer(m)).render(wr, m, this);            
             }
         }
     }

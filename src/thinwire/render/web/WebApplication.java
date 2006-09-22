@@ -5,7 +5,6 @@
 package thinwire.render.web;
 
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -25,15 +24,9 @@ import javax.servlet.http.HttpSession;
 
 import thinwire.render.RenderStateEvent;
 import thinwire.render.RenderStateListener;
-import thinwire.ui.Application;
-import thinwire.ui.Dialog;
-import thinwire.ui.FileChooser;
-import thinwire.ui.Component;
-import thinwire.ui.Window;
+import thinwire.ui.*;
 import thinwire.ui.FileChooser.FileInfo;
-import thinwire.ui.style.Border;
-import thinwire.ui.style.Font;
-import thinwire.ui.style.Style;
+import thinwire.ui.style.*;
 
 /**
  * @author Joshua J. Gertzen
@@ -159,17 +152,6 @@ public final class WebApplication extends Application {
     private static final String DEFAULT_STYLE_SHEET = "class:///" + Application.class.getName() + "/resources/DefaultStyle.properties";
     
     WebApplication(final WebServlet servlet, final HttpSession httpSession, final String mainClass, String styleSheet, final String[] args) {
-        try {
-            Properties props = new Properties();
-            if (styleSheet == null) styleSheet = DEFAULT_STYLE_SHEET;
-            if (!styleSheet.startsWith("class:///")) styleSheet = this.getRelativeFile(styleSheet).getAbsolutePath();
-            props.load(new ByteArrayInputStream(RemoteFileMap.INSTANCE.loadLocalData(styleSheet)));
-            loadStyleSheet(props);
-        } catch (Exception e) {
-            if (e instanceof RuntimeException) throw (RuntimeException)e;
-            throw new RuntimeException(e);
-        }
-
         nameToRenderer = new HashMap<String, Class<ComponentRenderer>>();
         windowToRenderer = new HashMap<Window, WindowRenderer>();
         eventQueue = new ArrayList<WebComponentEvent>();
@@ -302,6 +284,17 @@ public final class WebApplication extends Application {
             }
         }
 
+        try {
+            Properties props = new Properties();
+            if (styleSheet == null) styleSheet = DEFAULT_STYLE_SHEET;
+            if (!styleSheet.startsWith("class:///")) styleSheet = this.getRelativeFile(styleSheet).getAbsolutePath();
+            props.load(new ByteArrayInputStream(RemoteFileMap.INSTANCE.loadLocalData(styleSheet)));
+            loadStyleSheet(props);
+        } catch (Exception e) {
+            if (e instanceof RuntimeException) throw (RuntimeException)e;
+            throw new RuntimeException(e);
+        }
+        
         appThread.start();
     }
     
@@ -330,44 +323,42 @@ public final class WebApplication extends Application {
     }
 
     ComponentRenderer getRenderer(Component comp) {
-        Class compClazz = comp.getClass();        
-        Class<ComponentRenderer> renderClazz = null;
-
-        //outer: while (compClazz != null) {
-            String className = compClazz.getName();
-            renderClazz = nameToRenderer.get(className);
+        Class compClass = comp.getClass();        
+        String className = compClass.getName();
+        Class<ComponentRenderer> renderClazz = nameToRenderer.get(className);
+        
+        if (renderClazz == null) {
+            Style defaultStyle = getDefaultStyle(compClass);
+            String compClassName = className;
+            List<Class> lst = new ArrayList<Class>();
+            lst.add(compClass);
             
-            if (renderClazz == null) {
-                Style defaultStyle = getDefaultStyle(compClazz);
-                String styleClass = className.substring(className.lastIndexOf('.') + 1);
-                List<Class> lst = new ArrayList<Class>();
-                lst.add(compClazz);
+            while (lst.size() > 0) {
+                compClass = lst.remove(0);
+                className = compClass.getName();
+                String qualClassName = PACKAGE_NAME + '.' + className.substring(className.lastIndexOf('.') + 1) + "Renderer";
                 
-                while (lst.size() > 0) {
-                    compClazz = lst.remove(0);
-                    className = compClazz.getName();
-                    String qualClassName = PACKAGE_NAME + '.' + className.substring(className.lastIndexOf('.') + 1) + "Renderer";
-                    
-                    try {
-                        renderClazz = (Class)Class.forName(qualClassName);
-                        nameToRenderer.put(className, renderClazz);
-                        sendStyleClass(styleClass, defaultStyle);
-                        break;//outer;
-                    } catch (ClassNotFoundException e) {
-                        //We'll continue trying until no classes in the hierarchy are left.
-                    }
-                    
-                    Class sc = compClazz.getSuperclass();
-                    if (Component.class.isAssignableFrom(sc)) lst.add(sc);
-                    
-                    for (Class i : compClazz.getInterfaces()) {
-                        if (Component.class.isAssignableFrom(i)) lst.add(i);
-                    }
-                }                
-            } //else {
-              //  break;
-            //}
-        //}
+                try {
+                    renderClazz = (Class)Class.forName(qualClassName);
+                    nameToRenderer.put(compClassName, renderClazz);
+                    //TODO: A quick hack to guarantee that the Button style is sent before GridBox and DropDown
+                    //Technically this causes the button style class to be sent multiple times
+                    if (comp instanceof GridBox || comp instanceof DropDown || comp instanceof Dialog) sendStyleClass("Button", getDefaultStyle(Button.class));
+                    else if (comp instanceof Slider) sendStyleClass("Divider", getDefaultStyle(Divider.class));
+                    sendStyleClass(compClassName.substring(compClassName.lastIndexOf('.') + 1), defaultStyle);
+                    break;
+                } catch (ClassNotFoundException e) {
+                    //We'll continue trying until no classes in the hierarchy are left.
+                }
+                
+                Class sc = compClass.getSuperclass();
+                if (Component.class.isAssignableFrom(sc)) lst.add(sc);
+                
+                for (Class i : compClass.getInterfaces()) {
+                    if (Component.class.isAssignableFrom(i)) lst.add(i);
+                }
+            }                
+        }
         
         if (renderClazz != null) {
             try {

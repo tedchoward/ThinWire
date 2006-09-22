@@ -5,6 +5,8 @@
 package thinwire.ui.style;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Joshua J. Gertzen
@@ -210,31 +212,51 @@ public class Color {
         });
     }    
     
+    private static final Pattern REGEX_RGB = Pattern.compile("rgb[(]\\s*(\\d{1,3})\\s*,\\s*(\\d{1,3})\\s*,\\s*(\\d{1,3})\\s*[)]"); 
+    private static final Pattern REGEX_HEX = Pattern.compile("#([a-zA-Z0-9]{2})([a-zA-Z0-9]{2})([a-zA-Z0-9]{2})"); 
     private static int nextOrdinal = 0;
     
     public static final Color valueOf(String colorId) {
         if (colorId.startsWith("rgb(")) {
-            String[] rgb = colorId.split("rgb(\\s*(\\d{1,3})\\s*,\\s*(\\d{1,3})\\s*,\\s*(\\d{1,3})\\s*");
-            int red = Integer.parseInt(rgb[0]);
-            int green = Integer.parseInt(rgb[1]);
-            int blue = Integer.parseInt(rgb[2]);
-            if (red < 0 || red > 255 || green < 0 || green > 255 || blue < 0 || blue > 255)
-                throw new IllegalArgumentException("red < 0 || red > 255 || green < 0 || green > 255 || blue < 0 || blue > 255 : " + colorId);
-            return new Color(null, red, green, blue);
-        } else if (colorId.startsWith("#")) {
-            String[] rgb = colorId.split("#([a-zA-Z0-9]{2})([a-zA-Z0-9]{2})([a-zA-Z0-9]{2})");
-            int red = Integer.parseInt(rgb[0], 16);
-            int green = Integer.parseInt(rgb[1], 16);
-            int blue = Integer.parseInt(rgb[2], 16);
-            if (red < 0 || red > 255 || green < 0 || green > 255 || blue < 0 || blue > 255)
-                throw new IllegalArgumentException("red < 0 || red > 255 || green < 0 || green > 255 || blue < 0 || blue > 255 : " + colorId);
-            return new Color(null, red, green, blue);                    
-        } else {
-            synchronized (NAMED_COLORS) {
-                Color named = NAMED_COLORS.get(colorId);
-                if (named == null) throw new IllegalArgumentException("specified named color is unknown");
-                return named;
+            Matcher m = REGEX_RGB.matcher(colorId);
+
+            if (m.find()) {
+                int red = Integer.parseInt(m.group(1));
+                int green = Integer.parseInt(m.group(2));
+                int blue = Integer.parseInt(m.group(3));
+                if (red < 0 || red > 255 || green < 0 || green > 255 || blue < 0 || blue > 255)
+                    throw new IllegalArgumentException("red < 0 || red > 255 || green < 0 || green > 255 || blue < 0 || blue > 255 : " + colorId);
+
+                for (Color c : VALUES) {
+                    if (c.red == red && c.green == green && c.blue == blue) return c;
+                }
+                
+                return new Color(null, red, green, blue);
+            } else {
+                throw new IllegalArgumentException("colorId '" + colorId + "' has an unrecognized rgb format");
             }
+        } else if (colorId.startsWith("#")) {
+            Matcher m = REGEX_HEX.matcher(colorId);
+
+            if (m.find()) {
+                int red = Integer.parseInt(m.group(1), 16);
+                int green = Integer.parseInt(m.group(2), 16);
+                int blue = Integer.parseInt(m.group(3), 16);
+                if (red < 0 || red > 255 || green < 0 || green > 255 || blue < 0 || blue > 255)
+                    throw new IllegalArgumentException("red < 0 || red > 255 || green < 0 || green > 255 || blue < 0 || blue > 255 : " + colorId);
+                
+                for (Color c : VALUES) {
+                    if (c.red == red && c.green == green && c.blue == blue) return c;
+                }
+                
+                return new Color(null, red, green, blue);
+            } else {
+                throw new IllegalArgumentException("colorId '" + colorId + "' has an unrecognized hex format");
+            }
+        } else {
+            Color named = NAMED_COLORS.get(colorId);
+            if (named == null) throw new IllegalArgumentException("specified named color is unknown");
+            return named;
         }
     }
     
@@ -254,26 +276,24 @@ public class Color {
     
     private Color(String name, int red, int green, int blue) {                
         if (name != null && name.length() > 0) {
-            synchronized (NAMED_COLORS) {
-                this.ordinal = nextOrdinal++;            
-                
-                if (red >=0 && green >= 0 && blue >= 0) {
-                    this.red = red;
-                    this.green = green;
-                    this.blue = blue;
-                    this.name = name;
-                    rgbString = "rgb(" + this.red + "," + this.green + "," + this.blue + ")";
-                    hexString = "#" + Integer.toString(this.red, 16) + Integer.toString(this.green, 16) + Integer.toString(this.blue, 16);                    
-                } else {
-                    this.red = this.green = this.blue = -1;
-                    this.name = rgbString = hexString = name;
-                }
-                
-                NAMED_COLORS.put(name, this);
+            this.ordinal = nextOrdinal++;            
+            
+            if (red >=0 && green >= 0 && blue >= 0) {
+                this.red = red;
+                this.green = green;
+                this.blue = blue;
+                this.name = name;
+                rgbString = "rgb(" + this.red + "," + this.green + "," + this.blue + ")";
+                hexString = "#" + Integer.toString(this.red, 16) + Integer.toString(this.green, 16) + Integer.toString(this.blue, 16);                    
+            } else {
+                this.red = this.green = this.blue = -1;
+                this.name = rgbString = hexString = name;
             }
+            
+            NAMED_COLORS.put(name, this);
         } else if (red >= 0 && green >= 0 && blue >= 0) {
             this.ordinal = -1;
-            this.name = "";            
+            this.name = "";
             this.red = red;
             this.green = green;
             this.blue = blue;                    

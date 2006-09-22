@@ -31,10 +31,22 @@ public class Border {
     }
             
     public void copy(Border border) {
+        copy(border, false);
+    }
+
+    public void copy(Border border, boolean onlyIfDefault) {
         if (border == null) throw new IllegalArgumentException("border == null");
-        setType(border.getType());
-        setSize(border.getSize());
-        setColor(border.getColor());
+        
+        if (onlyIfDefault) {
+            Border db = parent.defaultStyle.getBorder();
+            if (getType().equals(db.getType())) setType(border.getType());
+            if (getSize() == db.getSize()) setSize(border.getSize());
+            if (getColor().equals(db.getColor())) setColor(border.getColor());            
+        } else {
+            setType(border.getType());
+            setSize(border.getSize());
+            setColor(border.getColor());
+        }
     }
     
     public Style getParent() {

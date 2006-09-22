@@ -31,10 +31,22 @@ public class FX {
     }    
         
     public void copy(FX fx) {
+        copy(fx, false);
+    }
+
+    public void copy(FX fx, boolean onlyIfDefault) {
         if (fx == null) throw new IllegalArgumentException("fx == null");
-        setPositionChange(fx.getPositionChange());
-        setSizeChange(fx.getSizeChange());
-        setVisibleChange(fx.getVisibleChange());
+
+        if (onlyIfDefault) {
+            FX df = parent.defaultStyle.getFX();
+            if (getPositionChange().equals(df.getPositionChange())) setPositionChange(fx.getPositionChange());
+            if (getSizeChange().equals(df.getSizeChange())) setSizeChange(fx.getSizeChange());
+            if (getVisibleChange().equals(df.getVisibleChange())) setVisibleChange(fx.getVisibleChange());
+        } else {
+            setPositionChange(fx.getPositionChange());
+            setSizeChange(fx.getSizeChange());
+            setVisibleChange(fx.getVisibleChange());            
+        }
     }
         
     public Style getParent() {

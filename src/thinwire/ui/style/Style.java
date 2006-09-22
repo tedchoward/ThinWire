@@ -72,11 +72,15 @@ public class Style {
     }
         
     public void copy(Style style) {
+        copy(style, false);
+    }
+
+    public void copy(Style style, boolean onlyIfDefault) {
         if (style == null) throw new IllegalArgumentException("style == null");
-        getFont().copy(style.getFont());
-        getBackground().copy(style.getBackground());
-        getBorder().copy(style.getBorder());
-        getFX().copy(style.getFX());
+        getFont().copy(style.getFont(), onlyIfDefault);
+        getBackground().copy(style.getBackground(), onlyIfDefault);
+        getBorder().copy(style.getBorder(), onlyIfDefault);
+        getFX().copy(style.getFX());        
     }
     
     public Object getParent() {

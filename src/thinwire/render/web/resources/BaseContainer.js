@@ -14,7 +14,6 @@ var tw_BaseContainer = tw_Component.extend({
         this._fontBox = null;
         this._container = this._box;
         this._children = [];
-        this.setStyle("borderSize", 0);
     },
     
     getContainer: function() {
@@ -22,11 +21,11 @@ var tw_BaseContainer = tw_Component.extend({
     },
 
     getOffsetX: function() {
-        return this.getStyle("borderSize") + this._offsetX - this._box.scrollLeft;
+        return (this._box == this._borderBox ? this.getStyle("borderSize") : 0) + this._offsetX - this._box.scrollLeft;
     },
 
     getOffsetY: function() {
-        return this.getStyle("borderSize") + this._offsetY - this._box.scrollTop;
+        return (this._box == this._borderBox ? this.getStyle("borderSize") : 0) + this._offsetY - this._box.scrollTop;
     },
     
     setScroll: function(scrollCode) {

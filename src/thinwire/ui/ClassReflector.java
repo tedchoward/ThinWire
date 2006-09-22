@@ -150,10 +150,20 @@ class ClassReflector<T> {
             try {
                 Field f = type.getField(str.toUpperCase().replace('-', '_'));                        
                 value = f.get(null);
-            } catch (NoSuchFieldException e) {
-                value = null;
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
+            } catch (NoSuchFieldException e2) {
+                try {
+                    Method m = type.getMethod("valueOf", String.class);
+                    if (m.getReturnType() != type) throw new NoSuchMethodException("public static " + type + " valueOf(String value)");
+                    value = m.invoke(null, value);
+                } catch (NoSuchMethodException e) {
+                    throw new RuntimeException(e);
+                } catch (InvocationTargetException e) {
+                    throw new RuntimeException(e);                
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+            } catch (IllegalAccessException e2) {
+                throw new RuntimeException(e2);
             }
         }
         

@@ -9,6 +9,12 @@ import thinwire.ui.event.ItemChangeListener;
 import thinwire.ui.event.PropertyChangeEvent;
 import thinwire.ui.event.PropertyChangeListener;
 import thinwire.ui.event.ItemChangeEvent.Type;
+import thinwire.ui.style.Background;
+import thinwire.ui.style.Border;
+import thinwire.ui.style.Color;
+import thinwire.ui.style.FX;
+import thinwire.ui.style.Font;
+import thinwire.ui.style.Style;
 
 /**
  * A container for Tab Sheets. A Tab folder could sit in a dialog and have
@@ -63,7 +69,7 @@ public class TabFolder extends AbstractContainer<TabSheet> {
     public static final String PROPERTY_CURRENT_INDEX = "currentIndex";
     private static final int TABS_HEIGHT = 20;
     
-	private int currentIndex;
+	private int currentIndex = -1;
 	
 	public TabFolder() {
 		super(true);
@@ -73,27 +79,47 @@ public class TabFolder extends AbstractContainer<TabSheet> {
                 Type type = ev.getType();
                 TabSheet oSheet = (TabSheet)ev.getOldValue();
                 TabSheet nSheet = (TabSheet)ev.getNewValue();                
-                if (type == Type.REMOVE || type == Type.SET) oSheet.sizeChanged(0, 0);                
-                if (type == Type.ADD || type == Type.SET) nSheet.sizeChanged(getInnerWidth(), getInnerHeight());
+                
+                if (type == Type.REMOVE || type == Type.SET) {
+                    oSheet.sizeChanged(0, 0);
+                    if (getChildren().size() == 0) setCurrentIndex(-1);
+                }
+                
+                if (type == Type.ADD || type == Type.SET) {
+                    nSheet.sizeChanged(getInnerWidth(), getInnerHeight());
+                    Style ss = nSheet.getStyle();
+                    Style s = getStyle();
+                    ss.getBorder().copy(s.getBorder(), false);
+                    ss.getBackground().copy(s.getBackground(), true);
+                    ss.getFont().copy(s.getFont(), true);
+                    ss.getFX().copy(s.getFX(), true);
+                    if (getChildren().size() == 1) setCurrentIndex(0); 
+                }
             }
         });
         
-        /*addPropertyChangeListener(new String[] {Border.PROPERTY_BORDER_COLOR, Border.PROPERTY_BORDER_SIZE, Border.PROPERTY_BORDER_TYPE,
-                Font.PROPERTY_FONT_BOLD, Font.PROPERTY_FONT_COLOR, Font.PROPERTY_FONT_FAMILY, Font.PROPERTY_FONT_ITALIC, Font.PROPERTY_FONT_SIZE, Font.PROPERTY_FONT_UNDERLINE}, new PropertyChangeListener() {
+        addPropertyChangeListener(DropDown.STYLE_PROPERTIES, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent ev) {
-                getStyle().setProperty(ev.getPropertyName(), ev.getNewValue());
+                String propertyName = ev.getPropertyName();
+                Object o = ev.getNewValue();
+
+                for (TabSheet ts : getChildren()) {
+                    Style s = ts.getStyle();
+                    DropDown.setStyleValue(s, propertyName, o);
+                }
             }
-        });*/
+        });
 	}
     
 	/**
 	 * Sets the current tab sheet.
-	 * @param index (Default = 0)
+	 * @param currentIndex (Default = 0)
 	 */
-	public void setCurrentIndex(int index) {
-		int oldIndex = this.currentIndex;
-		this.currentIndex = index;
-	 	firePropertyChange(this, PROPERTY_CURRENT_INDEX, oldIndex, this.currentIndex);
+	public void setCurrentIndex(int currentIndex) {
+        if (currentIndex < -1 || currentIndex >= getChildren().size()) throw new IllegalArgumentException("currentIndex < 0 || currentIndex >= getChildren().size()");
+		int oldCurrentIndex = this.currentIndex;
+		this.currentIndex = currentIndex;
+	 	firePropertyChange(this, PROPERTY_CURRENT_INDEX, oldCurrentIndex, this.currentIndex);
 	}
 	
 	public int getCurrentIndex() {
@@ -101,15 +127,10 @@ public class TabFolder extends AbstractContainer<TabSheet> {
 	}
     
     public int getInnerHeight() {
-        int innerHeight = getHeight() - CALC_BORDER_PADDING_SUB - TABS_HEIGHT;
+        int innerHeight = super.getInnerHeight() - TABS_HEIGHT;
         return innerHeight < 0 ? 0 : innerHeight;
     }
-    
-    public int getInnerWidth() {
-        int innerWidth = getWidth() - CALC_BORDER_PADDING_SUB;
-        return innerWidth < 0 ? 0 : innerWidth;
-    }
-        
+
     private void updateTabSheetSize() {        
         int innerWidth = getInnerWidth();
         int innerHeight = getInnerHeight();

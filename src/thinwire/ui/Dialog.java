@@ -106,11 +106,8 @@ public class Dialog extends AbstractWindow {
         firePropertyChange(this, PROPERTY_RESIZE_ALLOWED, oldResizeAllowed, this.resizeAllowed);
     }
     
-    public int getInnerHeight() {        
-        return getHeight() - CALC_BORDER_PADDING_SUB - TITLE_BAR_HEIGHT - (getMenu() == null ? 0 : MENU_BAR_HEIGHT);
+    public int getInnerHeight() {
+        int innerHeight = super.getInnerHeight() - TITLE_BAR_HEIGHT - (getMenu() == null ? 0 : MENU_BAR_HEIGHT);
+        return innerHeight < 0 ? 0 : innerHeight;
     }
-    
-    public int getInnerWidth() {        
-        return getWidth() - CALC_BORDER_PADDING_SUB;
-    }        
 }

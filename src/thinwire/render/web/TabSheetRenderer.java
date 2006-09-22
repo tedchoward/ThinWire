@@ -23,7 +23,6 @@ class TabSheetRenderer extends ContainerRenderer {
         setPropertyChangeIgnored(Component.PROPERTY_WIDTH, true);
         setPropertyChangeIgnored(Component.PROPERTY_HEIGHT, true);
         setPropertyChangeIgnored(Component.PROPERTY_ENABLED, true);
-        setPropertyChangeIgnored(Component.PROPERTY_VISIBLE, true);
         TabSheet ts = (TabSheet)c;
         addInitProperty(TabSheet.PROPERTY_TEXT, ts.getText());
         addInitProperty(TabSheet.PROPERTY_IMAGE, getRemoteNameForLocalFile(ts.getImage()));

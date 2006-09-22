@@ -4,9 +4,6 @@
  */
 package thinwire.ui;
 
-import java.util.Map;
-import java.util.HashMap;
-
 import thinwire.render.Renderer;
 import thinwire.ui.event.PropertyChangeListener;
 import thinwire.ui.event.KeyPressEvent;

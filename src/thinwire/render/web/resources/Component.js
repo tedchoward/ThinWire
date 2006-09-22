@@ -34,7 +34,6 @@ var tw_Component = Class.extend({
     _boxSizeSub: 0,
     _fontBox: null,
     _enabledBackgroundColor: "",
-    _disabledBackgroundColor: tw_COLOR_THREEDFACE,
     
     construct: function(tagName, className, id, containerId, support) {
         var box = document.createElement(tagName);
@@ -141,10 +140,11 @@ var tw_Component = Class.extend({
         this._enabled = enabled;
         
         if (enabled) {
-            this._backgroundBox.style.backgroundColor = this._enabledBackgroundColor;
+            this.setStyle("backgroundColor", this._enabledBackgroundColor);
         } else {
             this._enabledBackgroundColor = this._backgroundBox.style.backgroundColor;
-            this._backgroundBox.style.backgroundColor = this._disabledBackgroundColor; 
+            this.setStyle("backgroundColor", "transparent");
+            //alert("set backgroundcolor to transparent: " + this._backgroundBox.style.backgroundColor);
         }
     },
         
@@ -180,7 +180,15 @@ var tw_Component = Class.extend({
                     tw_Component.currentFocus.setFocus(false);
                     tw_Component.currentFocus.firePropertyChange("focus", false);
                 }
+
+                try {
+                    if (tw_Component.currentFocus._focusBox.blur) tw_Component.currentFocus._focusBox.blur();
+                } catch (e) {
+                    //Firefox sometimes throws an error when attemptting to set focus.
+                    //ignore the error for now until solution is found.
+                }
                 
+                tw_Component.priorFocus = tw_Component.currentFocus; 
                 tw_Component.currentFocus = this;
                 this.firePropertyChange("focus", true);
                 
@@ -196,13 +204,6 @@ var tw_Component = Class.extend({
         }
         
         return false;
-    },
-    
-    setStyleClass: function(className) {
-        return;
-        if (className != "Button") return;
-        var style = tw_Component.defaultStyles[className];
-        for (var name in style) this.setStyle(name, style[name]);
     },
     
     setStyle: function(name, value) {
@@ -241,11 +242,11 @@ var tw_Component = Class.extend({
                     this.setWidth(this.getWidth());
                     this.setHeight(this.getHeight());
                 }
-            } else {            
+            } else {
+                //NOTE: IE Specific, allows 3D borders to be drawn with two colors
+                if (tw_isIE && name == "borderColor") value = tw_Component.getIEBorderColor(value);                
                 this._borderBox.style[realName] = value;
             }
-        } else {
-            throw "attempt to set unsupported property '" + name + "' to value '" + value + "'";
         }
     },
     
@@ -280,7 +281,9 @@ var tw_Component = Class.extend({
             
             if (name == "borderSize") {
                 value = parseInt(value);
-            } else if (name == "borderType" || name == "borderColor") {
+            } else {
+                //NOTE: IE Specific, allows 3D borders to be drawn with two colors
+                if (tw_isIE && name == "borderColor" && value == "") value = "threedface";
                 var index = value.indexOf(" ");
                 value = index == -1 ? value : value.substring(0, index);
             }
@@ -478,7 +481,7 @@ var tw_Component = Class.extend({
                 if (comp == null) comp = this;
                 comp.setFocus(true);
                 return false;
-            }                
+            }
         } else if (this._eventNotifiers != null) {
             var keyPressNotifiers = this._eventNotifiers["keyPress"]; 
             
@@ -492,8 +495,21 @@ var tw_Component = Class.extend({
 
         return true;
     },
-        
+            
     init: function(insertAtIndex, props) {
+        var styleClass = props.styleClass;
+        var style = tw_Component.defaultStyles[styleClass];
+        delete props.styleClass;
+        this.setStyle("borderSize", style["borderSize"]);
+        this.setStyle("borderType", style["borderType"]);
+        this.setStyle("borderColor", style["borderColor"]);
+        this.setStyle("fontFamily", style["fontFamily"]);
+        this.setStyle("fontColor", style["fontColor"]);
+        this.setStyle("fontSize", style["fontSize"]);
+        this.setStyle("fontItalic", style["fontItalic"]);
+        this.setStyle("fontBold", style["fontBold"]);
+        this.setStyle("fontUnderline", style["fontUnderline"]);
+        
         for (var prop in props) {
             this[this.__setters__[prop]](props[prop]);
         }
@@ -514,6 +530,7 @@ var tw_Component = Class.extend({
             document.body.appendChild(this._box);
         }
         
+        this.setStyle("backgroundColor", style["backgroundColor"]);
         this._inited = true;
     },
     
@@ -521,12 +538,14 @@ var tw_Component = Class.extend({
         delete tw_Component.instances[this._id];                   
         this._box = this._focusBox = this._eventNotifiers = this._backgroundBox = 
             this._borderBox = this._fontBox = this._parent = null;
+        if (tw_Component.priorFocus === this) tw_Component.priorFocus = null;
         if (tw_Component.currentFocus === this) tw_Component.currentFocus = null; 
     }
 });
 
 tw_Component.zIndex = 0;
 tw_Component.instances = {};
+tw_Component.priorFocus = null;
 tw_Component.currentFocus = null;
 tw_Component.styleNameMap = {
     backgroundColor: "backgroundColor",
@@ -541,17 +560,14 @@ tw_Component.styleNameMap = {
     borderColor: "borderColor"
 };
 
-tw_Component.getReverseBorderType = function(type) {
-    if (type == "groove") type = "ridge";
-    else if (type == "ridge") type = "groove";
-    else if (type == "inset") type = "outset";
-    else if (type == "outset") type = "inset";
-    return type;
-};
-
 tw_Component.defaultStyles = { };
 tw_Component.setDefaultStyle = function(styleName, style) {
     tw_Component.defaultStyles[styleName] = style;
+};
+
+tw_Component.getIEBorderColor = function(value) {
+    if (value == "buttonface" || value == "threedface") value = "";
+    return value;
 };
 
 //NOTE: This function is defined here so it can be shared by the unrelated classes: Image, Hyperlink, Label & BaseCheckRadio.

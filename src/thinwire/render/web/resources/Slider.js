@@ -11,22 +11,21 @@ var tw_Slider = tw_BaseRange.extend({
     construct: function(id, containerId, props) {
         this.$.construct.apply(this, ["div", "slider", id, containerId]);
         var s = this._box.style;
-        s.backgroundColor = "transparent";
+        s.backgroundColor = tw_COLOR_TRANSPARENT;
         
         var line = document.createElement("div");
         var s = line.style;
         s.position = "absolute";
-        s.border = "1px solid";
-        s.borderColor = "buttonshadow buttonhighlight buttonhighlight buttonshadow";
         s.lineHeight = "0px";
+        
+        var ds = tw_Component.defaultStyles["Divider"];
+        s.borderWidth = ds.borderSize + "px";
+        s.borderStyle = ds.borderType;
+        s.borderColor = tw_Component.getIEBorderColor(ds.borderColor);
         this._box.insertBefore(line, this._selection);
         this._line = line;
         
         this._borderBox = this._selection;
-        this.setStyle("backgroundColor", tw_COLOR_BUTTONFACE);
-        this.setStyle("borderSize", 2);
-        this.setStyle("borderType", "outset");
-        this.setStyle("borderColor", tw_COLOR_BUTTONFACE);
         this._cursorDrag = new tw_DragHandler(this._selection, this._cursorDragListener.bind(this));
         
         tw_addEventListener(this._box, "click", this._clickListener.bind(this));

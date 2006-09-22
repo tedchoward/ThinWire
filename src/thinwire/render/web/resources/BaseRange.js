@@ -11,7 +11,8 @@ var tw_BaseRange = tw_Component.extend({
         
     construct: function(tagName, className, id, containerId) {
         this.$.construct.apply(this, [tagName, className, id, containerId]);
-        
+        this._fontBox = null;
+
         var selection = document.createElement("div");     
         var s = selection.style;
         s.position = "absolute";

@@ -282,13 +282,13 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
             } else if (name.equals(Component.PROPERTY_WIDTH)) {
                 Integer width = (Integer)newValue;
                 if (dd != null) width = width.intValue() < dd.getWidth() ? dd.getWidth() : width;
-                setPropertyWithEffect(SET_WIDTH, width, pce.getOldValue(), SET_WIDTH, FX.PROPERTY_FX_SIZE_CHANGE);
+                setPropertyWithEffect(Component.PROPERTY_WIDTH, width, pce.getOldValue(), SET_WIDTH, FX.PROPERTY_FX_SIZE_CHANGE);
                 calcAutoColumnWidth();
                 sendAutoColumnWidths(null);
             } else if (name.equals(Component.PROPERTY_HEIGHT)) {
                 Integer height = (Integer)newValue;
                 if (dd != null) height = height.intValue() < MIN_SIZE ? MIN_SIZE : height;
-                setPropertyWithEffect(SET_HEIGHT, height, pce.getOldValue(), SET_HEIGHT, FX.PROPERTY_FX_SIZE_CHANGE);
+                setPropertyWithEffect(Component.PROPERTY_HEIGHT, height, pce.getOldValue(), SET_HEIGHT, FX.PROPERTY_FX_SIZE_CHANGE);
             } else {
                 super.propertyChange(pce);
             }

@@ -14,6 +14,7 @@ var tw_Dialog = tw_BaseContainer.extend({
     _moveDrag: null,
     _resizeDrag: null,
     _imageResize: "url(?_twr_=dResize.png)",
+    _fontColor: "",
     
     construct: function(id, containerId, props) {
         this.$.construct.apply(this, ["dialog", id, 0]);
@@ -21,12 +22,8 @@ var tw_Dialog = tw_BaseContainer.extend({
         var s = dialog.style;
         s.cursor = "default";    
         s.overflow = "visible";
-        s.padding = "1px";
-        s.border = "2px outset";
-        s.backgroundColor = tw_COLOR_THREEDFACE;        
-        s.borderColor = tw_borderColor;
         
-        var title = document.createElement("div");
+        var title = this._fontBox = document.createElement("div");
         var s = title.style;
         s.paddingLeft = "2px";
         s.marginBottom = "1px";
@@ -34,31 +31,26 @@ var tw_Dialog = tw_BaseContainer.extend({
         s.lineHeight = "17px";
         s.whiteSpace = "nowrap";
         s.overflow = "hidden";
-        s.backgroundColor = "activecaption";
-        s.color = "captiontext";
-        s.fontFamily = tw_FONT_FAMILY;
-        s.fontSize = "8pt";
-        s.fontWeight = "bold";        
+        s.backgroundColor = tw_COLOR_ACTIVECAPTION;
         title.appendChild(document.createTextNode(""));
         this._moveDrag = new tw_DragHandler(title, this._moveDragListener.bind(this));                
         
-        var closeButton = document.createElement("div");
+        var closeButton = this._closeButton = document.createElement("div");
         var s = closeButton.style;
         s.textAlign = "center";
         s.position = "absolute";
         s.margin = "0px";
-        s.color = "black";
         s.padding = "1px";    
-        s.border = "2px outset";
         s.overflow = "hidden";
-        s.backgroundColor = tw_COLOR_BUTTONFACE;
-        s.borderColor = tw_borderColor;
         s.top = "3px";
         s.right = "3px";
         s.lineHeight = 8 + "px";        
-        var subtractSize = tw_sizeIncludesBorders ? 0 : tw_CALC_BORDER_PADDING_SUB;
-        s.width = 16 - subtractSize + "px";
-        s.height = 14 - subtractSize + "px";        
+
+        var bs = tw_Component.defaultStyles["Button"];
+        s.backgroundColor = bs.backgroundColor;
+        s.color = bs.fontColor;
+        s.borderStyle = bs.borderType;
+        s.borderColor = tw_Component.getIEBorderColor(bs.borderColor);
         closeButton.appendChild(document.createTextNode("X"));
         
         title.appendChild(closeButton);    
@@ -67,8 +59,8 @@ var tw_Dialog = tw_BaseContainer.extend({
         var container = document.createElement("div");
         container.className = "container";
         var s = container.style;
-        s.backgroundColor = tw_COLOR_THREEDFACE;
         s.position = "absolute";
+        s.backgroundColor = tw_COLOR_TRANSPARENT;
         dialog.appendChild(container);
 
         tw_Frame.active.setModalLayerVisible(true, this);
@@ -78,10 +70,15 @@ var tw_Dialog = tw_BaseContainer.extend({
         tw_addEventListener(closeButton, "click", this._closeButtonClickListener.bind(this));
         this.setActive = this.setActive.bind(this);
         this.setActive(true);
-        this._closeButton = closeButton;
         this._container = container;
 
         this.init(-1, props);
+    },
+    
+    _calcCloseButtonSize: function(borderSize) {
+        var subtractSize = tw_sizeIncludesBorders ? 0 : (parseInt(this._closeButton.style.padding) + borderSize) * 2;
+        this._closeButton.style.width = 16 - subtractSize + "px";
+        this._closeButton.style.height = 14 - subtractSize + "px";        
     },
         
     _moveDragListener: function(ev) {
@@ -113,14 +110,12 @@ var tw_Dialog = tw_BaseContainer.extend({
     _closeButtonMouseDownListener: function(ev) {
         this.setFocus(true);
         if (tw_getEventButton(ev) != 1) return;  //only if left click        
-        this._closeButton.style.border = "2px inset";
-        this._closeButton.style.borderColor = tw_borderColor;        
+        this._closeButton.style.borderStyle = "inset";
         ev.cancelBubble = true; //TODO: is this cross browser?
     },
     
     _closeButtonMouseUpListener: function(ev) {
-        this._closeButton.style.border = "2px outset";
-        this._closeButton.style.borderColor = tw_borderColor;        
+        this._closeButton.style.borderStyle = "outset";
         ev.cancelBubble = true;
     },       
 
@@ -153,6 +148,21 @@ var tw_Dialog = tw_BaseContainer.extend({
         }
     },
     
+    setStyle: function(name, value) {
+        this.$.setStyle.apply(this, [name, value]);
+
+        if (name == "fontColor") {
+            this._fontColor = this.getStyle("fontColor");
+        } else if (name == "borderSize" && this._closeButton != null) {
+            this._closeButton.style.borderWidth = value + "px";
+            this._calcCloseButtonSize(parseInt(value));        
+        }
+    },
+    
+    getOffsetY: function() {
+        return this.$.getOffsetY.apply(this) + (this.getMenu() != null ? tw_Dialog.menuBarHeight : 0);
+    },     
+        
     setY: function(y) {
         if (tw_Frame.active.getMenu() != null) y += tw_Dialog.menuBarHeight;            
         this.$.setY.apply(this, [y]);
@@ -165,22 +175,16 @@ var tw_Dialog = tw_BaseContainer.extend({
     },
     
     setWidth: function(width) {
-        this._width = width;
-        this._box.style.width = width - (tw_sizeIncludesBorders ? 0 : tw_CALC_BORDER_PADDING_SUB) + "px";
-        width = width - tw_CALC_BORDER_PADDING_SUB;
+        this.$.setWidth.apply(this, [width]);
+        width = width - this.getStyle("borderSize") * 2;
+        if (width < 0) width = 0;
         this._container.style.width = width + "px";
     },
     
     setHeight: function(height) {
-        this._height = height;
-        this._box.style.height = height - (tw_sizeIncludesBorders ? 0 : tw_CALC_BORDER_PADDING_SUB) + "px";
-        
-        if (this._menu == null) {
-            height = height - tw_CALC_BORDER_PADDING_SUB - tw_Dialog.titleBarHeight;
-        } else {
-            height = height - tw_CALC_BORDER_PADDING_SUB - tw_Dialog.titleBarHeight - tw_Dialog.menuBarHeight;
-        }       
-        
+        this.$.setHeight.apply(this, [height]);        
+        height -= tw_Dialog.titleBarHeight - (this._menu == null ? 0 : tw_Dialog.menuBarHeight) - this.getStyle("borderSize") * 2;
+        if (height < 0) height = 0;
         this._container.style.height = height + "px";
     },
     
@@ -227,7 +231,7 @@ var tw_Dialog = tw_BaseContainer.extend({
                 state = true;
             } else {
                 setTimeout(this.setActive, 100);
-                state = s.backgroundColor == "inactivecaption";
+                state = s.backgroundColor == tw_COLOR_INACTIVECAPTION;
                 this._modalFlashCount--;
             }
             
@@ -235,13 +239,13 @@ var tw_Dialog = tw_BaseContainer.extend({
         }
                
         if (state) {
-            s.backgroundColor = "activecaption";
-            s.color = "captiontext";
+            s.backgroundColor = tw_COLOR_ACTIVECAPTION;
+            s.color = this._fontColor;
             tw_Dialog.active = this;
             if (!flash) this._box.style.zIndex = ++tw_Component.zIndex;       
         } else {
-            s.backgroundColor = "inactivecaption";
-            s.color = "inactivecaptiontext";
+            s.backgroundColor = tw_COLOR_INACTIVECAPTION;
+            s.color = tw_COLOR_INACTIVECAPTIONTEXT;
             this._moveDrag.releaseDrag();
             if (this.getMenu() != null) this.getMenu().close();            
             if (!flash) tw_Dialog.active = null;
@@ -263,7 +267,6 @@ var tw_Dialog = tw_BaseContainer.extend({
         this._moveDrag.destroy();
         this._menu = this._standardButton = this._drag = this._closeButton = null;                
         tw_Frame.active.setModalLayerVisible(false);
-        //tw_Frame.active.removeComponent(this._id);
         document.body.removeChild(this._box);
         this.$.destroy.apply(this, []);
     }

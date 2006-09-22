@@ -4,6 +4,8 @@
  */
 package thinwire.ui;
 
+import java.util.List;
+
 /**
  * A TabSheet is a Panel that can be layered, so that a user can switch between
  * tab sheets.
@@ -174,13 +176,25 @@ public class TabSheet extends AbstractContainer<Component> implements TextCompon
         throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_Y, false));
     }   
     
-    @Override
-    public boolean isVisible() {
-        throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_VISIBLE, true));        
-    }
-
-    @Override
     public void setVisible(boolean visible) {
-        throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_VISIBLE, false));
-    }    
+        super.setVisible(visible);
+        TabFolder tf = (TabFolder)getParent();
+        
+        if (tf != null) {
+            List<TabSheet> l = tf.getChildren();
+            int index = l.indexOf(this);
+            
+            if (index == tf.getCurrentIndex()) {            
+                if (index + 1 < l.size()) {
+                    index++;
+                } else if (index > 0) {
+                    index--;
+                } else {
+                    index = -1;
+                }
+                
+                tf.setCurrentIndex(index);
+            }
+        }
+    }   
 }

@@ -84,11 +84,6 @@ abstract class AbstractContainer<T extends Component> extends AbstractComponent 
             return l.size();
         }
     }
-    
-    static final int BORDER_WIDTH = 2;
-    static final int PADDING_WIDTH = 1;
-    static final int CALC_BORDER_SUB = BORDER_WIDTH * 2;
-    static final int CALC_BORDER_PADDING_SUB = (BORDER_WIDTH + PADDING_WIDTH) * 2;    
 
     private ScrollType scroll = ScrollType.NONE;
     private EventListenerImpl<ItemChangeListener> icei = new EventListenerImpl<ItemChangeListener>();
@@ -183,10 +178,12 @@ abstract class AbstractContainer<T extends Component> extends AbstractComponent 
     }
     
     public int getInnerWidth() {
-        return this.getWidth();
+        int innerWidth = getWidth() - getStyle().getBorder().getSize() * 2;
+        return innerWidth < 0 ? 0 : innerWidth;
     }
     
-    public int getInnerHeight() {        
-        return this.getHeight();
+    public int getInnerHeight() {
+        int innerHeight = getHeight() - getStyle().getBorder().getSize() * 2;
+        return innerHeight < 0 ? 0 : innerHeight;
     }    
 }

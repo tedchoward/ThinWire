@@ -17,10 +17,11 @@ var tw_TabSheet = tw_BaseContainer.extend({
         tab.className = "floatDivLeft"; //hack for FF
         var s = tab.style;
         s.cursor = "default";
+        s.overflow = "hidden";
         s.whiteSpace = "nowrap";
         s.styleFloat = "left"; //Doesn't work in FF.
         s.display = "block";
-        s.lineHeight = s.height = tw_TabFolder._tabsHeight - (tw_sizeIncludesBorders ? 2 : 4) + "px";
+        //  s.lineHeight = s.height = tw_TabFolder._tabsHeight - (tw_sizeIncludesBorders ? 2 : 4) + "px";
 
         var tabImage = document.createElement("div");
         tabImage.className = "floatDivLeft"; //hack for FF
@@ -37,15 +38,7 @@ var tw_TabSheet = tw_BaseContainer.extend({
         tab.appendChild(tabImage);       
         tab.appendChild(document.createTextNode(""));
         tw_addEventListener(tab, "click", this._tabClickListener.bind(this));        
-        
-        this.setStyle("backgroundColor", tw_COLOR_THREEDFACE);
-        this.setStyle("fontFamily", tw_FONT_FAMILY);
-        this.setStyle("fontSize", 8);
-        this.setStyle("fontColor", tw_COLOR_WINDOWTEXT);
-        this.setStyle("fontBold", false);
-        this.setStyle("fontItalic", false);
-        this.setStyle("fontUnderline", false);
-        
+                
         var tabIndex = props.tabIndex;
         delete props.tabIndex;
         this.init(tabIndex, props);
@@ -58,6 +51,7 @@ var tw_TabSheet = tw_BaseContainer.extend({
         for (var i = children.length; --i >= 0;) {
             if (children[i] == this) {
                 this._parent.setCurrentIndex(i, true);
+                this._parent.setFocus(true);
                 break;
             }
         }
@@ -85,27 +79,43 @@ var tw_TabSheet = tw_BaseContainer.extend({
         var borderSize = this.getStyle("borderSize");
         
         if (active) {
+            var margin = 0;
             bs.zIndex = 1;
             bs.visibility = "visible";
-            s.height = tw_TabFolder._tabsHeight + (tw_sizeIncludesBorders ? borderSize : 0) + "px";
+            s.height = tw_TabFolder._tabsHeight + (tw_sizeIncludesBorders ? borderSize : margin) + "px";
             s.paddingLeft = "4px";
             s.paddingRight = "4px";
         } else {
+            var margin = 2;
             bs.zIndex = 0;
             bs.visibility = "hidden";
-            s.height = tw_TabFolder._tabsHeight - (tw_sizeIncludesBorders ? borderSize : borderSize * 2) + "px";
+            s.height = tw_TabFolder._tabsHeight - (tw_sizeIncludesBorders ? borderSize : borderSize + margin) + "px";
             s.paddingLeft = "2px";
             s.paddingRight = "2px";
         }
 
-        s.marginTop = active ? "0px" : borderSize + "px";        
+        s.marginTop = margin + "px";
         tw_setFocusCapable(this._tab, active);
     },    
         
     setStyle: function(name, value) {
         this.$.setStyle.apply(this, [name, value]);
-        if (name == "backgroundColor") this._tab.style.backgroundColor = value;
-        else if (name == "borderSize") this._borderBox.style.borderBottomWidth = "0px";
+        
+        if (name == "backgroundColor") {
+            this._tab.style.backgroundColor = value;
+        } else if (name == "borderSize") {
+            var borderSize = this.getStyle("borderSize");
+            this._tab.style.lineHeight = tw_TabFolder._tabsHeight - (tw_sizeIncludesBorders ? borderSize : borderSize * 2) + "px";
+            this._borderBox.style.borderBottomWidth = "0px";
+            this.setActiveStyle(this._box.style.visibility == "visible");
+        }
+    },
+    
+    setOpacity: function(opacity) {
+        this.$.setOpacity.apply(this, [opacity]);
+        this._tab.style.display = opacity > 0 ? "block" : "none";        
+        this._tab.style.opacity = opacity / 100;
+        if (tw_isIE) this._tab.style.filter = opacity >= 100 ? "" : "alpha(opacity=" + opacity + ")";
     },
 
     destroy: function() {
