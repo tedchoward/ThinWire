@@ -1,14 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE project [
+	<!ENTITY antpp SYSTEM "file:build.antpp.xml">
+]>
 <project name="ThinWire RIA Ajax Framework" default="help" basedir=".">
 	<target name="-init">
 		<!-- Path locations -->
 		<property name="path.library" value="../lib"/>
-		<property name="path.source" value="../src"/>
 		<property name="path.temp" value="../temp"/>
+		<property name="path.source" value="${path.temp}_src"/>
+		<property name="path.binary" value="${path.temp}_bin"/>
+		
+		<!-- Preprocessor Defines -->
+		<property name="PREPROCESSOR_DEFINES" value=""/>
+		<!-- Uncomment the following line to enable a v1.1 compatible API -->
+		<!--<property name="pp.defines" value="|V1_1_COMPAT"/>-->
+		
+		<!-- Delete working folders -->
+		<delete dir="${path.temp}"/>
+		<delete dir="${path.source}"/>
+		<delete dir="${path.binary}"/>
+
+		<!-- Create empty working folders -->
+		<mkdir dir="${path.temp}"/>
+		<mkdir dir="${path.source}"/>
+		<mkdir dir="${path.binary}"/>
+
+		<!-- Copy source files to working folder -->
+		<copy todir="${path.source}" overwrite="true">
+			<fileset dir="../src" defaultexcludes="yes">
+				<include name="**/*"/>
+			</fileset>
+		</copy>
 		
 		<!-- Load version information from internal properties file -->
-		<loadproperties srcFile="${path.source}/thinwire/ui/resources/versionInfo.properties"/>
-					
+		<loadproperties srcFile="${path.source}/thinwire/ui/resources/versionInfo.properties"/>		
+			
+		<!-- Preprocessor Constants -->
+		<property name="VERSION_HEADER" value=" [ v${versionInfo.productVersion} ] ${PREPROCESSOR_DEFINES}"/>
+		
+		<!-- Include Preprocessor Engine and Run it Over The Files -->
+		&antpp;
+		<antpp dir="${path.source}" defines="${PREPROCESSOR_DEFINES}">
+			<include name="thinwire/**/*.java"/>
+			<include name="thinwire/**/*.js"/>
+			<include name="thinwire/**/*.html"/>
+	    </antpp>
+		
 		<tstamp/>
 	</target>
 	
@@ -20,9 +57,6 @@
 	
 	<target name="-compile">
 		<echo message="Compiling Java Source"/>
-		
-		<delete dir="${path.temp}"/>
-		<mkdir dir="${path.temp}"/>
 		
 		<javac srcdir="${path.source}" destdir="${path.temp}" target="1.5" source="1.5" debug="yes">
 			<classpath>
@@ -95,10 +129,7 @@
 	</target>
 	
 	<target name="-zip">
-		<delete dir="${path.temp}"/>
-		<mkdir dir="${path.temp}"/>
-
-		<copy todir="${path.temp}" flatten="true">
+		<copy todir="${path.binary}" flatten="true">
 			<fileset dir="../">
 				<include name="${versionInfo.originalFilename}"/>
 				<include name="LICENSE.txt"/>
@@ -107,14 +138,11 @@
 			<fileset dir="${path.library}" includes="*/**"/>
 		</copy>	
 			
-		<zip destfile="../thinwire-${versionInfo.productVersion}.zip" basedir="${path.temp}" filesonly="true"/>
+		<zip destfile="../thinwire-${versionInfo.productVersion}.zip" basedir="${path.binary}" filesonly="true"/>
 	</target>
-
+	
 	<target name="-zipJava14">
-		<delete dir="${path.temp}"/>
-		<mkdir dir="${path.temp}"/>
-
-		<copy todir="${path.temp}" flatten="true">
+		<copy todir="${path.binary}" flatten="true">
 			<fileset dir="../">
 				<include name="${versionInfo.originalFilename}"/>
 				<include name="LICENSE.txt"/>
@@ -124,19 +152,20 @@
 			<fileset dir="./" includes="retroweaver*/retroweaver-rt*.jar"/>
 		</copy>
 		
-		<zip destfile="../thinwire-${versionInfo.productVersion}-java14.zip" basedir="${path.temp}" filesonly="true"/>
+		<zip destfile="../thinwire-${versionInfo.productVersion}-java14.zip" basedir="${path.binary}" filesonly="true"/>
 	</target>	
 	
 	<target name="-clean">
 		<delete dir="${path.temp}"/>
-		<delete file="../${versionInfo.originalFilename}"/>	
+		<delete dir="${path.source}"/>
+		<delete dir="${path.binary}"/>
+		<delete file="../${versionInfo.originalFilename}"/>
 	</target>
 	
 	<!-- Archive the source, including everything needed to build the framework -->
-	<target name="source" depends="-init">
-		<delete dir="${path.temp}"/>
-		<mkdir dir="${path.temp}"/>
-		
+	<target name="source" depends="-init,-zipSource,-clean"/>
+	
+	<target name="-zipSource">		
 		<copy todir="${path.temp}" overwrite="true">
 			<fileset dir="../" defaultexcludes="yes">
 				<include name="lib/**/*"/>
@@ -148,20 +177,19 @@
 		</copy>
 
 		<zip destfile="../thinwire-${versionInfo.productVersion}-src.zip"><fileset dir="${path.temp}"/></zip>
-		<delete dir="${path.temp}"/>
 	</target>
 	
 	<!-- Build the API javadoc and archive it -->
-	<target name="javadoc" depends="-init">
-		<mkdir dir="${path.temp}"/>
-
+	<target name="javadoc" depends="-init,-createJavaDoc,-clean"/>		
+	
+	<target name="-createJavaDoc">
 		<javadoc destdir="${path.temp}"
 			author="false"
 			version="false"
 			use="false"
 			access="protected"
-			windowtitle="ThinWire RIA Ajax Framework API v${versionInfo.productVersion}"
-			doctitle="ThinWire RIA Ajax Framework API v${versionInfo.productVersion}">
+			windowtitle="ThinWire RIA Ajax Framework API ${VERSION_HEADER}"
+			doctitle="ThinWire RIA Ajax Framework API ${VERSION_HEADER}">
 
 			<fileset dir="${path.source}" defaultexcludes="yes">
 				<include name="thinwire/ui/**/*.java"/>
@@ -187,8 +215,6 @@
 		<zip destfile="../thinwire-${versionInfo.productVersion}-doc.zip">
 			<fileset dir="${path.temp}"/>
 		</zip>
-		
-		<delete dir="${path.temp}"/>
 	</target>
 	
 	<target name="help">

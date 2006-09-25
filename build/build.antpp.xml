@@ -1,0 +1,43 @@
+<macrodef name="antpp">
+	<attribute name="dir"/>
+	<attribute name="defines"/>
+	<element name="pp-fileset" implicit="yes"/>
+	<sequential>
+		<echo message="Running Preprocessor [@{defines}]"/>
+		
+		<replaceregexp match="^.*[#]IFDEF +(?!__PREPROCESSOR_DEFINES__@{defines})[\s\S]*?[#]ENDIF.*?$\n" replace="" flags="gm">
+			<fileset dir="@{dir}" defaultexcludes="yes">
+				<pp-fileset/>
+			</fileset>
+		</replaceregexp>
+
+		<replaceregexp match="^.*[#]IFNDEF +(?=__PREPROCESSOR_DEFINES__@{defines})[\s\S]*?[#]ENDIF.*?$\n" replace="" flags="gm">
+			<fileset dir="@{dir}" defaultexcludes="yes">
+				<pp-fileset/>
+			</fileset>
+		</replaceregexp>			
+		
+		<replaceregexp match="[#]([A-Z_]+)[#]" replace="${\1}" flags="g">
+			<fileset dir="@{dir}" defaultexcludes="yes">
+				<pp-fileset/>
+			</fileset>
+		</replaceregexp>
+		
+		<mkdir dir="@{dir}/pp_tmp"/>
+		
+		<move todir="@{dir}/pp_tmp">
+			<fileset dir="@{dir}" defaultexcludes="yes">
+				<pp-fileset/>
+		    </fileset>
+			<filterchain><expandproperties/></filterchain>
+		</move>
+
+		<move todir="@{dir}">
+			<fileset dir="@{dir}/pp_tmp" defaultexcludes="yes">
+				<pp-fileset/>
+		    </fileset>
+		</move>
+		
+		<delete dir="@{dir}/pp_tmp"/>
+	</sequential>
+</macrodef>
