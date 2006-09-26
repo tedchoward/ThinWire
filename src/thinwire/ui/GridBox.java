@@ -32,6 +32,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 
 import thinwire.render.Renderer;
 import thinwire.ui.AlignX;
@@ -127,7 +128,8 @@ import thinwire.util.Grid;
  * 
  * @author Joshua J. Gertzen
  */
-public final class GridBox extends AbstractComponent implements Grid<GridBox.Row, GridBox.Column>, ActionEventComponent, ItemChangeEventComponent {        
+public final class GridBox extends AbstractComponent implements Grid<GridBox.Row, GridBox.Column>, ActionEventComponent, ItemChangeEventComponent {
+    private static Logger log = Logger.getLogger(GridBox.class.getName());
     public static final class CellPosition {
         private int rowIndex;
         private int columnIndex;
@@ -361,7 +363,7 @@ public final class GridBox extends AbstractComponent implements Grid<GridBox.Row
             boolean oldVisible = this.visible;
             GridBox gb = (GridBox) getParent();
             this.visible = visible;
-            if (gb != null) gb.firePropertyChange(this, Component.PROPERTY_VISIBLE, oldVisible, visible);
+            if (gb != null) gb.firePropertyChange(this, PROPERTY_COLUMN_VISIBLE, oldVisible, visible);
         }
 
         /**
@@ -790,37 +792,43 @@ public final class GridBox extends AbstractComponent implements Grid<GridBox.Row
            
     @Override
     public boolean isFocusCapable() {
-        if (getParent() instanceof DropDownGridBox) return false;
+        Object parent = getParent();
+        if (parent != null && !(parent instanceof Container)) return false;
         return super.isFocusCapable();
     }
     
     @Override
     public void setFocusCapable(boolean focusCapable) {
-        if (getParent() instanceof DropDownGridBox) throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_FOCUS_CAPABLE, false));
+        Object parent = getParent();
+        if (parent != null && !(parent instanceof Container)) throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_FOCUS_CAPABLE, false));
         super.setFocusCapable(focusCapable);
     }
     
     @Override
     public int getX() {
-        if (getParent() instanceof DropDownGridBox) throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_X, true));
+        Object parent = getParent();
+        if (parent != null && !(parent instanceof Container)) throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_X, true));
         return super.getX();
     }
     
     @Override
     public void setX(int x) {
-        if (getParent() instanceof DropDownGridBox) throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_X, false));
+        Object parent = getParent();
+        if (parent != null && !(parent instanceof Container)) throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_X, false));
         super.setX(x);
     }
 
     @Override
     public int getY() {
-        if (getParent() instanceof DropDownGridBox) throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_Y, true));
+        Object parent = getParent();
+        if (parent != null && !(parent instanceof Container)) throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_Y, true));
         return super.getY();
     }
 
     @Override
     public void setY(int y) {
-        if (getParent() instanceof DropDownGridBox) throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_Y, false));
+        Object parent = getParent();
+        if (parent != null && !(parent instanceof Container)) throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_Y, false));
         super.setY(y);
     }
     //#IFDEF V1_1_COMPAT

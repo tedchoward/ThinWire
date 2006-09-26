@@ -157,7 +157,7 @@ var tw_Tree = tw_Component.extend({
         } else {
             node.imageNode.src = node == node.parentNode.lastChild ? tw_Tree.imageUnexpandBottom : tw_Tree.imageUnexpand;
         }
-        
+
         node.subNodes.style.display = state ? "block" : "none";            
         if (this._treeTop.firstChild == node) this._makeTopImage();
         

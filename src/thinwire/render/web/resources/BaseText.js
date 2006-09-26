@@ -43,8 +43,8 @@ var tw_BaseText = tw_Component.extend({
         var editor = document.createElement(tagNames[1]);    
         var s = editor.style;
         s.position = "absolute";
-        s.left = "1px";
-        s.top = "0px";
+        s.left = tw_isKHTML || tw_isSafari ? "-1px" : "1px";
+        s.top = tw_isKHTML || tw_isSafari ? "-2px" : "0px";
         s.margin = "0px";
         s.border = "0px";
         s.padding = "0px";
@@ -84,14 +84,14 @@ var tw_BaseText = tw_Component.extend({
         this.$.setWidth.apply(this, [width]);
         width -= this._borderSizeSub + this._subtractEditorWidth;
         if (width < 0) width = 0;
-        this._editor.style.width = width + "px";        
+        this._editor.style.width = width - ((parseInt(this._editor.style.left) - 1) * 2) + "px";        
     },
     
     setHeight: function(height) {
         this.$.setHeight.apply(this, [height]);
         height -= this._borderSizeSub;
         if (height < 0) height = 0;
-        this._editor.style.height = height + "px";        
+        this._editor.style.height = height - (parseInt(this._editor.style.top) * 2) + "px";        
     },
         
     setText: function(text) {

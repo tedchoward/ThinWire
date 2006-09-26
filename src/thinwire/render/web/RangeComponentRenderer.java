@@ -33,20 +33,38 @@ import thinwire.ui.style.FX;
 abstract class RangeComponentRenderer extends ComponentRenderer {
     
     public void render(WindowRenderer wr, Component c, ComponentRenderer container) {
-        addInitProperty(RangeComponent.PROPERTY_LENGTH, ((RangeComponent) c).getLength());
-        addInitProperty(RangeComponent.PROPERTY_CURRENT_INDEX, ((RangeComponent) c).getCurrentIndex());
+        RangeComponent rc = (RangeComponent) c;
+        if (rc.getLength() == 1) {
+            addInitProperty(RangeComponent.PROPERTY_LENGTH, 2);
+            addInitProperty(RangeComponent.PROPERTY_CURRENT_INDEX, rc.getCurrentIndex() + 1);
+        } else {
+            addInitProperty(RangeComponent.PROPERTY_LENGTH, rc.getLength());
+            addInitProperty(RangeComponent.PROPERTY_CURRENT_INDEX, rc.getCurrentIndex());
+        }
+        
         super.render(wr, comp, container);
     }
     
     public void propertyChange(PropertyChangeEvent pce) {
         Object newValue = pce.getNewValue();
         String name = pce.getPropertyName();
+        RangeComponent rc = (RangeComponent) comp;
         
         if (isPropertyChangeIgnored(name)) return;
         if (name.equals(RangeComponent.PROPERTY_LENGTH)) {
-            postClientEvent("setLength", (Integer) newValue);
+            if (rc.getLength() == 1) {
+                postClientEvent("setLength", 2);
+                postClientEvent("setCurrentIndex", rc.getCurrentIndex() + 1);
+            } else {
+                postClientEvent("setLength", (Integer) newValue);
+                postClientEvent("setCurrentIndex", rc.getCurrentIndex());
+            }
         } else if (name.equals(RangeComponent.PROPERTY_CURRENT_INDEX)) {
-            setPropertyWithEffect(name, (Integer) newValue, (Integer) pce.getOldValue(), "setCurrentIndex", FX.PROPERTY_FX_POSITION_CHANGE);
+            if (rc.getLength() == 1) {
+                setPropertyWithEffect(name, ((Integer) newValue + 1), ((Integer) pce.getOldValue() + 1), "setCurrentIndex", FX.PROPERTY_FX_POSITION_CHANGE);
+            } else {
+                setPropertyWithEffect(name, (Integer) newValue, (Integer) pce.getOldValue(), "setCurrentIndex", FX.PROPERTY_FX_POSITION_CHANGE);
+            }
         } else {
             super.propertyChange(pce);
         }

@@ -343,6 +343,10 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
                 } else if (name.equals(GridBox.Column.PROPERTY_COLUMN_DISPLAY_NAME)) {
                     postClientEvent(SET_COLUMN_NAME, getVisibleIndex(index), newValue);                    
                 } else if (name.equals(GridBox.Column.PROPERTY_COLUMN_WIDTH)) {
+                    if ((Integer) newValue == -1) {
+                        calcAutoColumnWidth();
+                        newValue = autoColumnWidth;
+                    }
                     postClientEvent(SET_COLUMN_WIDTH, getVisibleIndex(index), newValue);
                 } else if (name.equals(GridBox.Column.PROPERTY_COLUMN_ALIGN_X)) {
                     postClientEvent(SET_COLUMN_ALIGN_X, getVisibleIndex(index), ((AlignX)newValue).name().toLowerCase());
@@ -487,14 +491,14 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
             for (int i = 0, cnt = lst.size(); i < cnt; i++) {
                 GridBox.Column c = lst.get(i);
     
-                if (c != exclude && c.getWidth() == -1) {
+                if (c != exclude && c.isVisible() && c.getWidth() == -1) {
                     postClientEvent(SET_COLUMN_WIDTH, getVisibleIndex(i), autoColumnWidth);
                 }
             }
         }
     }
 
-    private void removeColumn(Integer index) {        
+    private void removeColumn(Integer index) {
         postClientEvent(REMOVE_COLUMN, getVisibleIndex(index));
         calcAutoColumnWidth();
         sendAutoColumnWidths(null);
@@ -505,7 +509,7 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
         List<GridBox.Column> cols = gb.getColumns();
 
         for (int i = 0; i <= index; i++) {
-            if (cols.get(i).isVisible()) visibleIndex++;
+            if (i == index || cols.get(i).isVisible()) visibleIndex++;
         }
         
         return visibleIndex;

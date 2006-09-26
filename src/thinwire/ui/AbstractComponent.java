@@ -132,7 +132,7 @@ abstract class AbstractComponent implements Component {
         } else if (this instanceof CheckBox || this instanceof RadioButton) {
             addPropertyChangeListener(CheckedComponent.PROPERTY_CHECKED, listener);
         } else if (this instanceof GridBox) {
-            addPropertyChangeListener(new String[]{GridBox.Row.PROPERTY_ROW_SELECTED}, listener);
+            addPropertyChangeListener(new String[]{GridBox.Row.PROPERTY_ROW_SELECTED, "selected"}, listener);
         } else if (this instanceof TabFolder) {
             addPropertyChangeListener(TabFolder.PROPERTY_CURRENT_INDEX, listener);
         } else if (this instanceof Window) {

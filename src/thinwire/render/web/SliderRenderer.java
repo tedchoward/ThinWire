@@ -42,11 +42,16 @@ public class SliderRenderer extends RangeComponentRenderer {
     
     public void componentChange(WebComponentEvent event) {
         String name = event.getName();
+        Slider s = (Slider) comp;
         
         if (name.equals(Slider.PROPERTY_CURRENT_INDEX)) {
             int value = Integer.parseInt((String) event.getValue());
             setPropertyChangeIgnored(name, value, true);
-            ((Slider) comp).setCurrentIndex(value);
+            if (s.getLength() == 1) {
+                s.setCurrentIndex(value - 1);
+            } else {
+                s.setCurrentIndex(value);
+            }
         } else {
             setPropertyChangeIgnored(name, true);
             super.componentChange(event);

@@ -148,6 +148,7 @@ public class SplitLayout implements Layout {
     }
     
     public void setDividerSize(int dividerSize) {
+        if (dividerSize < 0 || dividerSize >= 32767) throw new IllegalArgumentException("dividerSize < 0 || dividerSize >= 32767");
         this.dividerSize = dividerSize;        
         this.divider.setVisible(dividerSize > 0);
         if (autoLayout) apply();

@@ -114,7 +114,7 @@ public class KeyPressEvent extends EventObject {
      * @see #encodeKeyPressCombo(boolean, boolean, boolean, String)
      */    
     public static String normalizeKeyPressCombo(String keyPressCombo) {
-        if (keyPressCombo == null || keyPressCombo.length() == 0) new IllegalArgumentException("keyPressCombo == null || keyPressCombo.length() == 0");
+        if (keyPressCombo == null || keyPressCombo.length() == 0) throw new IllegalArgumentException("keyPressCombo == null || keyPressCombo.length() == 0");
         boolean ctrl = false;
         boolean alt = false;
         boolean shift = false;

@@ -78,7 +78,8 @@ final class TreeRenderer extends ComponentRenderer implements ItemChangeListener
             String fullIndex = fullIndex((Tree.Item)source);
 
             if (name.equals(Tree.Item.PROPERTY_ITEM_EXPANDED)) {
-                postClientEvent(ITEM_EXPAND, fullIndex, newValue);
+                log.finest(ITEM_EXPAND+","+fullIndex+","+newValue);
+                if (((Tree.Item) source).hasChildren()) postClientEvent(ITEM_EXPAND, fullIndex, newValue);
             } else if (name.equals(HierarchyComponent.Item.PROPERTY_ITEM_IMAGE) || name.equals(HierarchyComponent.Item.PROPERTY_ITEM_TEXT)) {
                 postClientEvent(ITEM_CHANGE, fullIndex, getEscapedText(((Tree.Item)source).getText()), getRemoteNameForLocalFile(((Tree.Item)source).getImage()));
             } else if (name.equals(Tree.Item.PROPERTY_ITEM_SELECTED)) {
@@ -109,7 +110,10 @@ final class TreeRenderer extends ComponentRenderer implements ItemChangeListener
         
         if (type == ItemChangeEvent.Type.ADD || type == ItemChangeEvent.Type.SET) {
             postClientEvent(ITEM_ADD, fullIndex, getEscapedText(newValue.getText()), getRemoteNameForLocalFile(newValue.getImage()));
-            if (newValue.getChildren().size() > 0) renderChildren(newValue);
+            if (newValue.hasChildren()) renderChildren(newValue);
+            if (((Tree.Item)newValue.getParent()).isExpanded() && newValue.getIndex() == 0) {
+                postClientEvent(ITEM_EXPAND, fullIndex(((Tree.Item)newValue.getParent())), true);
+            }
         }
     }
     

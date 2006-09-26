@@ -26,6 +26,7 @@
 // Determine Standards Compliance
 var tw_isOpera = false;
 var tw_isSafari = false;
+var tw_isKHTML = false;
 var tw_isFirefox = false;
 var tw_isIE = false;
 var tw_isGecko = false;
@@ -37,7 +38,6 @@ function parseBrowserType(ua) {
 
     function parseBrowser(browser, ver) {
         var index = agent.indexOf(browser);
-        
         if (index >= 0) {
             index += browser.length + 1;
             while (index < agent.length && !/[\d.]/.test(agent.charAt(index))) index++;
@@ -54,10 +54,10 @@ function parseBrowserType(ua) {
 
     if (tw_isOpera = parseBrowser("opera", 8)) {}
     else if (tw_isSafari = parseBrowser("safari", 412)) {}
+    else if (tw_isKHTML = parseBrowser("khtml", 3.5)) {}
     else if (tw_isFirefox = tw_isGecko = parseBrowser("firefox", 1)) {}
     else if (tw_isIE = parseBrowser("msie", 5.5)) {}
     else if (tw_isGecko = parseBrowser("gecko", 20050512)) {};
-    
     if (msg != null) alert(msg + ":\n" + ua);
 }
 

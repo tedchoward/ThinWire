@@ -99,11 +99,12 @@ public final class WebServlet extends HttpServlet {
 
     public void service(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         String method = request.getMethod();
-        String servletPath = request.getServletPath();       
-        int index = servletPath.indexOf(USER_RESOURCE);
+        
+        String requestURI = request.getRequestURI();
+        int index = requestURI.indexOf(USER_RESOURCE);
         
 		if (index >= 0) {
-            handleUserResource(request, response, servletPath.substring(index));
+            handleUserResource(request, response, requestURI.substring(index));
 		} else {            
 	        if (method.equals("GET")) {
 	            String resource = request.getParameter("_twr_");
@@ -280,8 +281,8 @@ public final class WebServlet extends HttpServlet {
     
     private void handleResource(String resourceName, byte[] data, HttpServletResponse response) throws IOException, ServletException {        
         if (data == null) {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND);           
-        } else {        
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        } else {
             try {
                 String mimeType;
                             
@@ -290,8 +291,8 @@ public final class WebServlet extends HttpServlet {
                 if (resourceName.endsWith(".js")) {
                     mimeType = "text/plain";
                 } else {
-                    mimeType = getServletContext().getMimeType(resourceName);
-                    if (mimeType.startsWith("image/")) response.setHeader("Cache-Control", "max-age=43200");
+                    mimeType = getServletContext().getMimeType(resourceName.toLowerCase());
+                    if (mimeType != null && mimeType.startsWith("image/")) response.setHeader("Cache-Control", "max-age=43200");
                 }
                 
                 response.setContentType(mimeType);
