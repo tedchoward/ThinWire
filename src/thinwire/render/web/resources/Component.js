@@ -216,6 +216,7 @@ var tw_Component = Class.extend({
                 tw_Component.currentFocus = this;
                 tw_em.removeQueuedViewStateChange("focus");
                 this.firePropertyChange("focus", true, "focus");
+                if (tw_Component.priorFocus != null && tw_Component.priorFocus.hasPropertyChangeListener("focus")) tw_em.sendGetEvents();
                 
                 try {
                     if (this._focusBox.focus) this._focusBox.focus();
@@ -380,6 +381,13 @@ var tw_Component = Class.extend({
             tw_em.queueViewStateChanged(this._id, name, value, key);
         }                          
     },
+    
+    hasPropertyChangeListener: function(name) {
+        var props = undefined;
+        if (this._eventNotifiers != null) props = this._eventNotifiers["propertyChange"];                        
+        return props != undefined && props[name] === true;
+    },
+
         
     getNextComponent: function(usable) {
         var parent = this._parent;
