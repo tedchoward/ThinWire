@@ -231,7 +231,11 @@ if (tw_isIE) {
 }
 
 //Prevent context menu from showing on right click
-document.oncontextmenu = function() { return false; };
+document.oncontextmenu = function(event) {
+    //var comp = tw_getEventTarget(event);
+    var comp = tw_isIE ? tw_getActiveElement() : tw_getEventTarget(event);
+    return comp.tagName == "TEXTAREA" || comp.tagName == "INPUT";
+};
 
 var tw_shutdownInProgress = false;
 
