@@ -109,8 +109,10 @@ public final class Image extends AbstractComponent implements ImageComponent, Ac
 	 * @param fileName a file name that specifies an image to display.
 	 */
 	public Image(String fileName) {
-	    if (fileName != null) setImage(fileName);
-        setSize(imageDetail.width, imageDetail.height);
+	    if (fileName != null) {
+            setImage(fileName);
+            setSize(imageDetail.width, imageDetail.height);
+        }
         setFocusCapable(false);
 	}
         
