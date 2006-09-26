@@ -32,6 +32,7 @@ import thinwire.render.RenderStateListener;
 import thinwire.render.web.WebApplication;
 import thinwire.ui.*;
 import thinwire.ui.event.*;
+import thinwire.ui.style.Style;
 
 /**
  * @author Joshua J. Gertzen
@@ -152,6 +153,10 @@ public class SplitLayout implements Layout {
         this.dividerSize = dividerSize;        
         this.divider.setVisible(dividerSize > 0);
         if (autoLayout) apply();
+    }
+    
+    public Style getDividerStyle() {
+        return divider.getStyle();
     }
     
     public double getSize() {
