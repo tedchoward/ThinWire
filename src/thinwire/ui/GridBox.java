@@ -685,7 +685,6 @@ public final class GridBox extends AbstractComponent implements Grid<GridBox.Row
         if (row == null) throw new IllegalArgumentException("row == null");
         GridBox gb = (GridBox)row.getParent();
         row.setSelected(true);
-        if (gb.visibleCheckBoxes && gb.fullRowCheckBox) row.setChecked(!row.isChecked());        		
 
         if (row.getChild() == null) {
         	DropDownGridBox dd = getDropDown(gb);
@@ -853,3 +852,4 @@ public final class GridBox extends AbstractComponent implements Grid<GridBox.Row
     }
     //#ENDIF
 }
+
