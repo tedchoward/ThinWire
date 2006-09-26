@@ -30,6 +30,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -93,7 +95,7 @@ public final class Image extends AbstractComponent implements ImageComponent, Ac
     }
 
     private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>();    
-	private Detail imageDetail = new Detail();    
+	private Detail imageDetail = new Detail();
     
 	/**
 	 * Constructs a new Image with no image fileName.
@@ -108,6 +110,7 @@ public final class Image extends AbstractComponent implements ImageComponent, Ac
 	 */
 	public Image(String fileName) {
 	    if (fileName != null) setImage(fileName);
+        setSize(imageDetail.width, imageDetail.height);
         setFocusCapable(false);
 	}
         
@@ -156,14 +159,18 @@ public final class Image extends AbstractComponent implements ImageComponent, Ac
             InputStream is = null;
 
             if (image != null && image.trim().length() > 0) {
-                //"class:///thinwire.ui.layout.SplitLayout/resources/Image.png"                
+                //"class:///thinwire.ui.layout.SplitLayout/resources/Image.png"
                 if (image.startsWith("class:///")) {
                     int endIndex = image.indexOf('/', 9);
                     String className = image.substring(9, endIndex);
                     String resource = image.substring(endIndex + 1);
                     Class clazz = Class.forName(className);
                     is = clazz.getResourceAsStream(resource);
-                } else {                   
+                } else if (image.startsWith("http://")) {
+                    URL remoteImageURL = new URL(image);
+                    URLConnection remoteImageConnection = remoteImageURL.openConnection();
+                    is = remoteImageConnection.getInputStream();
+                } else {
                     File file = Application.current().getRelativeFile(image);
                     if (file.exists()) is = new FileInputStream(file);
                 }
@@ -446,6 +453,7 @@ final class ImageInfo {
         {"image/jpeg", "image/gif", "image/png", "image/bmp", "image/pcx", 
          "image/iff", "image/ras", "image/x-portable-bitmap", "image/x-portable-graymap", "image/x-portable-pixmap", 
          "image/psd", "application/x-shockwave-flash"};
+    
 
     private int width;
     private int height;

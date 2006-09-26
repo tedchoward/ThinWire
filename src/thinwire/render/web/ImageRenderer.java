@@ -37,7 +37,7 @@ final class ImageRenderer extends ComponentRenderer {
 
     void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         init(IMAGE_CLASS, wr, c, container);
-        addInitProperty(Image.PROPERTY_IMAGE, getRemoteNameForLocalFile(((Image)c).getImage()));
+        addInitProperty(Image.PROPERTY_IMAGE, getQualifiedURL(((Image)c).getImage()));
         super.render(wr, c, container);                
     }
     
@@ -46,7 +46,7 @@ final class ImageRenderer extends ComponentRenderer {
         if (isPropertyChangeIgnored(name)) return;        
         
         if (name.equals(Image.PROPERTY_IMAGE)) {
-            postClientEvent(SET_IMAGE, getRemoteNameForLocalFile((String)pce.getNewValue()));
+            postClientEvent(SET_IMAGE, getQualifiedURL((String)pce.getNewValue()));
         } else {
             super.propertyChange(pce);
         }

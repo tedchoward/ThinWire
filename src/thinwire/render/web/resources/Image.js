@@ -43,11 +43,11 @@ var tw_Image = tw_Component.extend({
     keyPressNotify: tw_Component.keyPressNotifySpaceFireAction,    
     
     setImage: function(image) {
-        this._box.style.backgroundImage = image.length > 0 ? "url(" + tw_BASE_PATH + "resources/" + image + ")" : "";
+        this._box.style.backgroundImage = image.length > 0 ? "url(" + tw_BaseBrowserLink.expandLocation(image) + ")" : "";
     },
     
     setHeight: function(height) {
-        this.$.setHeight.apply(this, [height]);        
+        this.$.setHeight.apply(this, [height]);
         
         //NOTE: This is not perfect, the problem here is that when an image has transparent
         //      whitespace on the top, the image does not vertically center in IE.  Technically,
