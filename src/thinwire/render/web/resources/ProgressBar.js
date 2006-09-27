@@ -28,7 +28,7 @@ var tw_ProgressBar = tw_BaseRange.extend({
         this.$.construct.apply(this, ["div", "progressBar", id, containerId]);
         this._backgroundBox = this._box;
         this._selection.style.left = "0px";
-        this._selection.style.backgroundColor = tw_COLOR_ACTIVECAPTION; 
+        //this._selection.style.backgroundColor = tw_COLOR_ACTIVECAPTION; 
         this.init(-1, props);
     },
     
@@ -50,6 +50,14 @@ var tw_ProgressBar = tw_BaseRange.extend({
         if (this._vertical) {
             var s = this._selection.style;
             s.height = this.getHeight() - parseInt(s.top) + "px";
+        }
+    },
+    
+    setStyle: function(name, value) {
+        if (name == "fontColor") {
+            this._selection.style.backgroundColor = value;
+        } else {
+            this.$.setStyle.apply(this, [name, value]);
         }
     }
 });
