@@ -68,6 +68,8 @@ final class HyperlinkRenderer extends ComponentRenderer {
         
         if (name.equals(Hyperlink.ACTION_CLICK)) {
             ((Hyperlink)comp).fireAction(Hyperlink.ACTION_CLICK);
+        } else if (name.equals(Hyperlink.ACTION_DOUBLE_CLICK)) {
+            ((Hyperlink)comp).fireAction(Hyperlink.ACTION_DOUBLE_CLICK);
         } else {
             super.componentChange(event);
         }        

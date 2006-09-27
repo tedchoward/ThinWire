@@ -32,6 +32,7 @@ import thinwire.ui.event.ActionListener;
  */
 public interface ActionEventComponent extends Component {
     public static final String ACTION_CLICK = "click";
+    public static final String ACTION_DOUBLE_CLICK = "doubleClick";
 
     
     /**

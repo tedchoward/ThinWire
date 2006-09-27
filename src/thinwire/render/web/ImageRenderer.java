@@ -57,6 +57,8 @@ final class ImageRenderer extends ComponentRenderer {
         
         if (name.equals(Image.ACTION_CLICK)) {
             ((Image)comp).fireAction(Image.ACTION_CLICK);
+        } else if (name.equals(Image.ACTION_DOUBLE_CLICK)) {
+            ((Image)comp).fireAction(Image.ACTION_DOUBLE_CLICK);
         } else {
             super.componentChange(event);
         }        

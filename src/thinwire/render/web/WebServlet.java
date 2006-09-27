@@ -94,7 +94,7 @@ public final class WebServlet extends HttpServlet {
     
 	public void init(ServletConfig config) throws ServletException {
         super.init(config);
-        loadFromDisk = new File(getServletContext().getRealPath("") + "/WEB-INF/src/thinwire/render/web/resources/").exists();
+        loadFromDisk = new File(getServletContext().getRealPath("") + "/src/thinwire/render/web/resources/").exists();
     }
 
     public void service(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
@@ -222,7 +222,7 @@ public final class WebServlet extends HttpServlet {
         if (log.isLoggable(Level.FINEST)) log.finest("getting platform resource: " + resource); 
         
         if (loadFromDisk) {
-            File f = new File(getServletContext().getRealPath("") + "/WEB-INF/src/thinwire/render/web/resources/" + resource);
+            File f = new File(getServletContext().getRealPath("") + "/src/thinwire/render/web/resources/" + resource);
             FileInputStream is = new FileInputStream(f);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             byte[] buffer = new byte[1024];

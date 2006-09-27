@@ -235,7 +235,7 @@ abstract class AbstractHierarchyComponent<HI extends AbstractHierarchyComponent.
      * @param item the Menu.Item that the action should be triggered for.
      */
     public void fireAction(String action, HI item) {
-        if (action == null || !action.equals(ACTION_CLICK)) throw new IllegalArgumentException("the specified action is not supported");                
+        if (action == null || !(action.equals(ACTION_CLICK) || (this instanceof Tree && action.equals(ACTION_DOUBLE_CLICK)))) throw new IllegalArgumentException("the specified action is not supported");                
         if (item == null) throw new IllegalArgumentException("item == null");
         aei.fireAction(item, action);
     }

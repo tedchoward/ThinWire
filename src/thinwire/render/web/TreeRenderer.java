@@ -137,6 +137,11 @@ final class TreeRenderer extends ComponentRenderer implements ItemChangeListener
             setPropertyChangeIgnored(Tree.Item.PROPERTY_ITEM_SELECTED, true);
             tree.fireAction(Tree.ACTION_CLICK, ti);
             setPropertyChangeIgnored(Tree.Item.PROPERTY_ITEM_SELECTED, false);
+        } else if (name.equals(Tree.ACTION_DOUBLE_CLICK)) {
+            Tree.Item ti = fullIndexItem(tree, value);
+            setPropertyChangeIgnored(Tree.Item.PROPERTY_ITEM_SELECTED, true);
+            tree.fireAction(Tree.ACTION_DOUBLE_CLICK, ti);
+            setPropertyChangeIgnored(Tree.Item.PROPERTY_ITEM_SELECTED, false);
         } else if (name.equals(Tree.Item.PROPERTY_ITEM_SELECTED)) {
             Tree.Item ti = fullIndexItem(tree, value);
             setPropertyChangeIgnored(name, true);

@@ -67,6 +67,8 @@ final class LabelRenderer extends ComponentRenderer {
         
         if (name.equals(Label.ACTION_CLICK)) {
             ((Label)comp).fireAction(Label.ACTION_CLICK);
+        } else if (name.equals(Label.ACTION_DOUBLE_CLICK)) {
+            ((Label)comp).fireAction(Label.ACTION_DOUBLE_CLICK);
         } else {
             super.componentChange(event);
         }        

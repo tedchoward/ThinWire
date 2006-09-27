@@ -64,6 +64,8 @@ final class ButtonRenderer extends ComponentRenderer {
         
         if (name.equals(Button.ACTION_CLICK)) {
             b.fireAction(Button.ACTION_CLICK);
+        } else if (name.equals(Button.ACTION_DOUBLE_CLICK)) {
+            b.fireAction(Button.ACTION_DOUBLE_CLICK);
         } else {
             super.componentChange(event);
         }

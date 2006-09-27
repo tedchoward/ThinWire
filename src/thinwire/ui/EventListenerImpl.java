@@ -186,7 +186,7 @@ class EventListenerImpl<E extends EventListener> {
     }
         
     void fireAction(Object source, String action) {
-        if (action == null || !action.equals(ActionEventComponent.ACTION_CLICK)) throw new IllegalArgumentException("the specified action is not supported");        
+        if (action == null || !(action.equals(ActionEventComponent.ACTION_CLICK) || action.equals(ActionEventComponent.ACTION_DOUBLE_CLICK))) throw new IllegalArgumentException("the specified action is not supported");        
         if (!hasListeners()) return;
         ActionEvent ae = new ActionEvent(source, action);
         fireEvent(ae, action);

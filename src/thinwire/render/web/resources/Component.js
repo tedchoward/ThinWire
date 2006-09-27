@@ -59,6 +59,7 @@ var tw_Component = Class.extend({
     _borderSizeSub: 0,
     _boxSizeSub: 0,
     _fontBox: null,
+    _clickTime: null,
     
     construct: function(tagName, className, id, containerId, support) {
         var box = document.createElement(tagName);
@@ -612,4 +613,24 @@ tw_Component.keyPressNotifySpaceFireAction = function(keyPressCombo) {
         return this.$.keyPressNotify.apply(this, [keyPressCombo]);
     }
 };
+
+tw_Component.clickListener = function(ev) {
+    if (!this.isEnabled()) return;
+    if (this.isFocusCapable()) this.setFocus(true);
+    var action = tw_Component.getClickAction(ev.type);
+    if (action == null) return;
+    this.fireAction(action);
+};
+
+tw_Component.getClickAction = function(type, index) {
+    if (type == "click") {
+        var now = new Date();
+        if (now - this._clickTime < 500 && (index == null || index == this._lastIndex)) return null; 
+        this._clickTime = now;
+        if (index != null) this._lastIndex = index;
+        return "click";
+    } else if (type == "dblclick") {
+        return "doubleClick";
+    }
+}
 

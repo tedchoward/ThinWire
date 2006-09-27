@@ -44,6 +44,8 @@ final class DividerRenderer extends ComponentRenderer {
         
         if (name.equals(Divider.ACTION_CLICK)) {
             ((Divider)comp).fireAction(Divider.ACTION_CLICK);
+        } else if (name.equals(Divider.ACTION_DOUBLE_CLICK)) {
+            ((Divider)comp).fireAction(Divider.ACTION_DOUBLE_CLICK);
         } else {
             super.componentChange(event);
         }        

@@ -681,7 +681,7 @@ public final class GridBox extends AbstractComponent implements Grid<GridBox.Row
      * @throws IllegalArgumentException if action is null or not equal to ACTION_CLICK.
      */
     public void fireAction(String action, Row row) {
-        if (action == null || !action.equals(ACTION_CLICK)) throw new IllegalArgumentException("the specified action is not supported");        
+        if (action == null || !(action.equals(ACTION_CLICK) || action.equals(ACTION_DOUBLE_CLICK))) throw new IllegalArgumentException("the specified action is not supported");        
         if (row == null) throw new IllegalArgumentException("row == null");
         GridBox gb = (GridBox)row.getParent();
         row.setSelected(true);
