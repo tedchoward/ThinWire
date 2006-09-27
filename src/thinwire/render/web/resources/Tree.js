@@ -31,6 +31,8 @@ var tw_Tree = tw_Component.extend({
     _treeTop: null,
     _rootItem: null,
     _currentItem: null,
+    _clickTime: null,
+    _lastIndex: null,
     
     construct: function(id, containerId, props) {
         this.$.construct.apply(this, ["div", "tree", id, containerId]);
@@ -63,8 +65,12 @@ var tw_Tree = tw_Component.extend({
         var item = tw_getEventTarget(event, "treeRow");
         this.setFocus(true);
         this._select(item, true);
-        this.fireAction("click", this._fullIndex(item));
+        var action = this._getClickAction(event.type, item);
+        if (action == null) return;
+        this.fireAction(action, this._fullIndex(item));
     },
+    
+    _getClickAction: tw_Component.getClickAction,
     
     _buttonClickListener: function(event) {
         if (!this.isEnabled()) return false;
@@ -120,7 +126,7 @@ var tw_Tree = tw_Component.extend({
             node.appendChild(textNode);
             textNode.appendChild(document.createTextNode(text));
             node.textNode = textNode;
-            tw_addEventListener(textNode, "click", this._textClickListener);
+            tw_addEventListener(textNode, ["click", "dblClick"], this._textClickListener);
             tw_addEventListener(textNode, "dblclick", this._buttonClickListener);
             
             this._box.insertBefore(node,this._box.firstChild);
@@ -289,7 +295,7 @@ var tw_Tree = tw_Component.extend({
         node.appendChild(textNode);
         node.textNode = textNode;
         textNode.appendChild(document.createTextNode(text));
-        tw_addEventListener(textNode, "click", this._textClickListener);
+        tw_addEventListener(textNode, ["click", "dblclick"], this._textClickListener);
         tw_addEventListener(textNode, "dblclick", this._buttonClickListener);
         
         //Add the span which will hold the row's child rows.

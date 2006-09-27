@@ -41,6 +41,8 @@ var tw_GridBox = tw_Component.extend({
     _currentIndex: -1,
     _dropDown: null,
     _parentCell: null,
+    _lastIndex: null,
+    _clickTime: null,
     
     construct: function(id, containerId, props) {
         this.$.construct.apply(this, ["div", "gridBox", id, containerId]);
@@ -302,9 +304,13 @@ var tw_GridBox = tw_Component.extend({
                 this.setRowIndexCheckState(index, -1, true);
             }
     
-            this.fireAction("click", index);
+            var action = this._getAction(event.type, index);
+            if (action == null) return;
+            this.fireAction(action, index);
         } else {
-            this.fireAction("click", index);
+            var action = this._getAction(event.type, index);
+            if (action == null) return;
+            this.fireAction(action, index);
             
             if (this._lastColumn().childNodes.item(index).tw_child != undefined) {
                 this._setChildVisible(index, true);
@@ -318,7 +324,11 @@ var tw_GridBox = tw_Component.extend({
                 }
             }
         }
+        
+        
     },
+    
+    _getClickAction: tw_Component.getClickAction,
     
     _newCell: function(value, columnIndex, state) {
         var cell = document.createElement("div");
@@ -346,7 +356,7 @@ var tw_GridBox = tw_Component.extend({
         if (value != undefined) cell.appendChild(document.createTextNode(value));
         tw_addEventListener(cell, "focus", this._focusListener);
         tw_addEventListener(cell, "blur", this._blurListener);        
-        tw_addEventListener(cell, "click", this._cellClickListener);                        
+        tw_addEventListener(cell, ["click", "dblclick"], this._cellClickListener);                        
         return cell;
     },
 
@@ -592,7 +602,8 @@ var tw_GridBox = tw_Component.extend({
         
                 default:
                     var charValue = keyPressCombo;
-                    
+                    if (charValue.indexOf("Num") >= 0) charValue = charValue.substring(3);
+                    if (charValue == "Dash") charValue = "-";
                     if (charValue.length == 1 && /[a-zA-Z0-9]/.test(charValue)) {
                         charValue = charValue.toLowerCase();
                         var content = this._content;

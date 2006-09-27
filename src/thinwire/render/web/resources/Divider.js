@@ -29,7 +29,7 @@ var tw_Divider = tw_Component.extend({
         this._fontBox = null;
         var s = this._box.style;
         s.backgroundColor = tw_COLOR_TRANSPARENT;
-        tw_addEventListener(this._box, "click", this._clickListener.bind(this));
+        tw_addEventListener(this._box, ["click", "dblclick"], this._clickListener.bind(this));
 
         var tagLine = this._borderBox = document.createElement("div");
         var s = tagLine.style;
@@ -39,11 +39,7 @@ var tw_Divider = tw_Component.extend({
         this.init(-1, props);
     },
     
-    _clickListener: function() {
-        if (!this.isEnabled()) return;
-        if (this.isFocusCapable()) this.setFocus(true);     
-        this.fireAction("click");
-    },    
+    _clickListener: tw_Component.clickListener,    
          
     _recalc: function() {
         if (this._width != -1 && this._height != -1) {

@@ -60,7 +60,7 @@ var tw_Button = tw_Component.extend({
         
         tw_addEventListener(this._box, "mousedown", this._mouseDownListener.bind(this));    
         tw_addEventListener(this._box, ["mouseup", "mouseout"], this._mouseUpListener.bind(this));    
-        tw_addEventListener(this._box, "click", this._clickListener.bind(this));
+        tw_addEventListener(this._box, ["click", "dblclick"], this._clickListener.bind(this));
         tw_addEventListener(border, "focus", this._focusListener.bind(this));    
         tw_addEventListener(border, "blur", this._blurListener.bind(this));
         
@@ -86,13 +86,13 @@ var tw_Button = tw_Component.extend({
     },
 
     //TODO: Will simply returning false from click when disabled, work in Gecko?
-    _clickListener: function(ev) {
-        if (!this.isEnabled()) return;
-        this.setFocus(true);  
-        this.fireAction("click");
-    },
+    _clickListener: tw_Component.clickListener,
     
-    fireClick: function() { this._clickListener(); },
+    fireClick: function() {
+        var ev = {};
+        ev.type = "click"
+        this._clickListener(ev); 
+    },
 
     setStyle: function(name, value) {
         this.$.setStyle.apply(this, [name, value]);

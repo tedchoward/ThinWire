@@ -28,15 +28,11 @@ var tw_Label = tw_Component.extend({
         this.$.construct.apply(this, ["div", "label", id, containerId, "text,lineHeight"]);
         var s = this._box.style;
         s.whiteSpace = "nowrap";        
-        tw_addEventListener(this._box, "click", this._clickListener.bind(this));
+        tw_addEventListener(this._box, ["click", "dblclick"], this._clickListener.bind(this));
         this.init(-1, props);
     },
     
-    _clickListener: function() {
-        if (!this.isEnabled()) return;
-        if (this.isFocusCapable()) this.setFocus(true);     
-        this.fireAction("click");
-    },    
+    _clickListener: tw_Component.clickListener,    
     
     keyPressNotify: tw_Component.keyPressNotifySpaceFireAction,
     

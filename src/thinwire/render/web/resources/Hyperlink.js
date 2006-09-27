@@ -34,14 +34,12 @@ var tw_Hyperlink = tw_BaseBrowserLink.extend({
         var s = this._box.style;
         s.whiteSpace = "nowrap";
         s.overflow = "hidden";        
-        tw_addEventListener(this._box, "click", this._clickListener.bind(this));
+        tw_addEventListener(this._box, ["click", "dblclick"], this._clickListener.bind(this));
         this.init(-1, props);
     },
     
-    _clickListener: function() {
-        if (!this.isEnabled()) return false;
-        this.setFocus(true);        
-        this.fireAction("click");
+    _clickListener: function(ev) {
+        tw_Component.clickListener(ev);
         tw_Hyperlink.openLocation(this._location, "hl" + this._id);
         return false;
     },    

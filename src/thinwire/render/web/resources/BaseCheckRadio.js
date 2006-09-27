@@ -69,7 +69,7 @@ var tw_BaseCheckRadio = tw_Component.extend({
         this._imageUnchecked = "url(?_twr_=" + prefix + "Unchecked.png)";
         this._imageDisabledChecked = "url(?_twr_=" + prefix + "DisabledChecked.png)";
         this._imageDisabledUnchecked = "url(?_twr_=" + prefix + "DisabledUnchecked.png)";    
-        tw_addEventListener(this._box, "click", this._clickListener.bind(this));    
+        tw_addEventListener(this._box, ["click", "dblclick"], this._clickListener.bind(this));    
         tw_addEventListener(this._box, "focus", this._focusListener.bind(this));        
         tw_addEventListener(this._box, "blur", this._blurListener.bind(this));         
     },
