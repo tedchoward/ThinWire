@@ -132,26 +132,26 @@ public final class WebServlet extends HttpServlet {
         HttpSession httpSession = request.getSession();        
         WebApplication app = (WebApplication)httpSession.getAttribute("instance");
         if (app == null) return;
-        InputStream is = request.getInputStream();
-        ByteArrayOutputStream baos = new ByteArrayOutputStream(is.available());
+        BufferedReader r = request.getReader();
+        StringBuilder sb = new StringBuilder();
         
         do {
-	        readSimpleValue(baos, is);
-	        int eventType = Integer.parseInt(baos.toString());
-	        readComplexValue(baos, is);
-	        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+	        readSimpleValue(sb, r);
+	        int eventType = Integer.parseInt(sb.toString());
+	        readComplexValue(sb, r);
+            CharArrayReader car = new CharArrayReader(sb.toString().toCharArray());
 	        
 	        switch (eventType) {                
 	        	case EVENT_WEB_COMPONENT: {
-	        	    readSimpleValue(baos, bais);
-	        	    Integer source = Integer.valueOf(baos.toString());
+	        	    readSimpleValue(sb, car);
+	        	    Integer source = Integer.valueOf(sb.toString());
 	        	    WebComponentListener wcl = app.getWebComponentListener(source);
 	        	    
 	                if (wcl != null) {
-	                    readSimpleValue(baos, bais);
-	                    String name = baos.toString();
-	                    readComplexValue(baos, bais);
-	                    String value = baos.toString();	                    
+	                    readSimpleValue(sb, car);
+	                    String name = sb.toString();
+	                    readComplexValue(sb, car);
+	                    String value = sb.toString();	                    
 	                    if (log.isLoggable(Level.FINEST)) log.finest("EVENT_WEB_COMPONENT:source=" + source + ",name=" + name + ",value=" + value);
 	                    WebComponentEvent wce = new WebComponentEvent(source, name, value);
 	                    app.queueWebComponentEvent(wce);
@@ -163,59 +163,59 @@ public final class WebServlet extends HttpServlet {
                 case EVENT_GET_EVENTS: break;
 	        	
 	        	case EVENT_LOG_MESSAGE: {
-	        	    readSimpleValue(baos, bais);
-	        	    String levelName = baos.toString();
-	        	    readComplexValue(baos, bais);                    
-                    String message = baos.toString();                    
+	        	    readSimpleValue(sb, car);
+	        	    String levelName = sb.toString();
+	        	    readComplexValue(sb, car);                    
+                    String message = sb.toString();                    
                     app.queueWebComponentEvent(new WebComponentEvent(WebApplication.APPEVENT_ID, WebApplication.APPEVENT_LOG_MESSAGE,
                             new String[] {levelName, message}));
                     break;
 	        	}
                 
                 case EVENT_SYNC_CALL: {
-                    readComplexValue(baos, bais);
-                    String value = baos.toString();
+                    readComplexValue(sb, car);
+                    String value = sb.toString();
                     app.notifySyncCallResponse(value);
                     if (log.isLoggable(Level.FINEST)) log.finest("EVENT_SYNC_CALL:response=" + value);
                     break;
                 }
                 
                 case EVENT_RUN_TIMER: {
-                    readSimpleValue(baos, bais);
-                    String timerId = baos.toString();
+                    readSimpleValue(sb, car);
+                    String timerId = sb.toString();
                     app.queueWebComponentEvent(new WebComponentEvent(WebApplication.APPEVENT_ID, WebApplication.APPEVENT_RUN_TIMER, timerId));
                     break;
                 }
 	        }            
-        } while (is.read() == ':');
+        } while (r.read() == ':');
         
         String events = app.getClientEvents();
         if (log.isLoggable(Level.FINEST)) log.finest("handleGetEvents:" + events);
         
         if (events != null) {
-            response.setContentType("text/plain"); 
+            response.setContentType("text/plain; charset=utf-8");
             response.setHeader("Cache-Control", "no-store");
-            response.getOutputStream().write(events.getBytes());
+            response.getWriter().print(events);
         }
     }
     
-    private void readSimpleValue(ByteArrayOutputStream baos, InputStream is) throws IOException, ServletException {
-        baos.reset();
-        int b;
+    private void readSimpleValue(StringBuilder sb, Reader r) throws IOException, ServletException {
+        sb.setLength(0);
+        int ch;
         
-        while ((b = is.read()) != ':') {
-            if (b == -1) throw new ServletException("premature end of post event encountered[" + baos.toString() + "]");
-            baos.write(b);
+        while ((ch = r.read()) != ':') {
+            if (ch == -1) throw new ServletException("premature end of post event encountered[" + sb.toString() + "]");
+            sb.append((char)ch);
         }        
     }
     
-    private void readComplexValue(ByteArrayOutputStream baos, InputStream is) throws IOException, ServletException {
-        readSimpleValue(baos, is);
-        int length = Integer.parseInt(baos.toString()) - 1;
-        baos.reset();        
+    private void readComplexValue(StringBuilder sb, Reader r) throws IOException, ServletException {
+        readSimpleValue(sb, r);
+        int length = Integer.parseInt(sb.toString()) - 1;
+        sb.setLength(0);        
 
         for (; length >= 0; length--)
-            baos.write(is.read());
+            sb.append((char)r.read());
     }
         
     private byte[] getPlatformResource(String resource) throws IOException {
