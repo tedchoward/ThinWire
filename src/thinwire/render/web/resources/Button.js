@@ -148,15 +148,8 @@ var tw_Button = tw_Component.extend({
     
     setImage: function(image) {
         var s = this._fontBox.style;
-    
-        if (image.length > 0) {
-            s.backgroundImage = "url(" + tw_BASE_PATH + "resources/" + image + ")";
-            s.paddingLeft = tw_Button.imagePadding + "px";
-        } else {
-            s.backgroundImage = "";
-            s.paddingLeft = tw_Button.textPadding + "px";
-        }
-        
+        s.backgroundImage = tw_Component.expandUrl(image, true);
+        s.paddingLeft = (image.length > 0 ? tw_Button.imagePadding : tw_Button.textPadding) + "px";
         this.setWidth(this.getWidth());
         this.setHeight(this.getHeight());
     },

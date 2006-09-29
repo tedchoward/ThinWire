@@ -81,7 +81,7 @@ final class TreeRenderer extends ComponentRenderer implements ItemChangeListener
                 log.finest(ITEM_EXPAND+","+fullIndex+","+newValue);
                 if (((Tree.Item) source).hasChildren()) postClientEvent(ITEM_EXPAND, fullIndex, newValue);
             } else if (name.equals(HierarchyComponent.Item.PROPERTY_ITEM_IMAGE) || name.equals(HierarchyComponent.Item.PROPERTY_ITEM_TEXT)) {
-                postClientEvent(ITEM_CHANGE, fullIndex, getEscapedText(((Tree.Item)source).getText()), getRemoteNameForLocalFile(((Tree.Item)source).getImage()));
+                postClientEvent(ITEM_CHANGE, fullIndex, getEscapedText(((Tree.Item)source).getText()), getQualifiedURL(((Tree.Item)source).getImage()));
             } else if (name.equals(Tree.Item.PROPERTY_ITEM_SELECTED)) {
                 postClientEvent(ITEM_SELECT, fullIndex);
             }
@@ -109,7 +109,7 @@ final class TreeRenderer extends ComponentRenderer implements ItemChangeListener
         }
         
         if (type == ItemChangeEvent.Type.ADD || type == ItemChangeEvent.Type.SET) {
-            postClientEvent(ITEM_ADD, fullIndex, getEscapedText(newValue.getText()), getRemoteNameForLocalFile(newValue.getImage()));
+            postClientEvent(ITEM_ADD, fullIndex, getEscapedText(newValue.getText()), getQualifiedURL(newValue.getImage()));
             if (newValue.hasChildren()) renderChildren(newValue);
             if (((Tree.Item)newValue.getParent()).isExpanded() && newValue.getIndex() == 0) {
                 postClientEvent(ITEM_EXPAND, fullIndex(((Tree.Item)newValue.getParent())), true);
@@ -123,7 +123,7 @@ final class TreeRenderer extends ComponentRenderer implements ItemChangeListener
             int index = item.getIndex();
             String fullIndex = String.valueOf(index);            
             if (parent != tree.getRootItem()) fullIndex = fullIndex(parent) + "." + index;            
-            postClientEvent(ITEM_ADD, fullIndex, getEscapedText(item.getText()), getRemoteNameForLocalFile(item.getImage()));            
+            postClientEvent(ITEM_ADD, fullIndex, getEscapedText(item.getText()), getQualifiedURL(item.getImage()));            
             if (item.getChildren().size() > 0) renderChildren(item);
         }
     }
@@ -190,7 +190,7 @@ final class TreeRenderer extends ComponentRenderer implements ItemChangeListener
 	    sb.append(",cw:").append(tree.getWidth());
 	    sb.append(",fo:").append(tree.isFocus());
 	   	sb.append(",rt:\"").append(getEscapedText(ri.getText())).append("\"");
-        sb.append(",ri:\"").append(getRemoteNameForLocalFile(ri.getImage())).append('"');        
+        sb.append(",ri:\"").append(getQualifiedURL(ri.getImage())).append('"');        
 	    sb.append(",re:").append(ri.isExpanded());
 	    sb.append(",rv:").append(tree.isRootItemVisible());
 	    sb.append(',');
@@ -207,7 +207,7 @@ final class TreeRenderer extends ComponentRenderer implements ItemChangeListener
 			
             if (ti != null) {
 			    sb.append("{ix:").append(i);
-                sb.append(",tm:\"").append(getRemoteNameForLocalFile(ti.getImage())).append('"');
+                sb.append(",tm:\"").append(getQualifiedURL(ti.getImage())).append('"');
 			    sb.append(",tt:\"").append(getEscapedText(ti.getText())).append("\"");
 			    sb.append(",te:").append(ti.isExpanded());
                 sb.append(',');

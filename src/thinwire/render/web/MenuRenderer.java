@@ -126,7 +126,7 @@ final class MenuRenderer extends ComponentRenderer implements ItemChangeListener
                     postClientEvent(ITEM_SET_TEXT, fullIndex, text);
                 }
             } else if (name.equals(HierarchyComponent.Item.PROPERTY_ITEM_IMAGE)) {
-                postClientEvent(ITEM_SET_IMAGE_URL, fullIndex, getRemoteNameForLocalFile((String)newValue));                              
+                postClientEvent(ITEM_SET_IMAGE_URL, fullIndex, getQualifiedURL((String)newValue));                              
             } else if (name.equals(Menu.Item.PROPERTY_ITEM_KEY_PRESS_COMBO)) {
                 setupKeyPressListener(item);
                 postClientEvent(ITEM_SET_KEY_PRESS_COMBO, fullIndex, newValue);
@@ -217,7 +217,7 @@ final class MenuRenderer extends ComponentRenderer implements ItemChangeListener
 		}
 		
 		String img = item.getImage();
-		if (img.length() > 0) sb.append(",g:\"").append(getRemoteNameForLocalFile(item.getImage())).append('"');		
+		if (img.length() > 0) sb.append(",g:\"").append(getQualifiedURL(item.getImage())).append('"');		
 		sb.append('}');
 	}
 	

@@ -27,6 +27,7 @@ package thinwire.ui;
 
 import thinwire.render.Renderer;
 import thinwire.ui.event.ActionListener;
+import thinwire.util.ImageInfo;
 
 /**
  * A Button is a component that typically causes an action when activated.
@@ -82,7 +83,7 @@ public class Button extends AbstractTextComponent implements ImageComponent, Act
     public static final String PROPERTY_STANDARD = "standard";
 
     private boolean standard;
-	private Image.Detail imageDetail = new Image.Detail();
+	private ImageInfo imageDetail = new ImageInfo();
     private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>();
 	
 	/**
@@ -119,7 +120,7 @@ public class Button extends AbstractTextComponent implements ImageComponent, Act
 	 * @return the filename of the image on the button.
 	 */
 	public String getImage() {
-	    return imageDetail.image;
+	    return imageDetail.getName();
 	}
 	
 	/**
@@ -129,9 +130,9 @@ public class Button extends AbstractTextComponent implements ImageComponent, Act
 	 * @throws RuntimeException thrown if an I/O error occurs
 	 */
 	public void setImage(String image) {
-        String oldImage = this.imageDetail.image;
-        Image.updateImageDetail(imageDetail, image);        
-        firePropertyChange(this, PROPERTY_IMAGE, oldImage, this.imageDetail.image);
+        String oldImage = this.imageDetail.getName();
+        imageDetail.setName(image);        
+        firePropertyChange(this, PROPERTY_IMAGE, oldImage, this.imageDetail.getName());
     }	
 
 	/**

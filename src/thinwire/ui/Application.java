@@ -182,7 +182,10 @@ public abstract class Application {
     private EventListenerImpl<PropertyChangeListener> gpcei;
     private WeakReference<Component> priorFocus;
     private Frame frame;
+    
+    //#IFDEF V1_1_COMPAT    
     private Map<String, String> fileMap;
+    //#ENDIF
     private Map<String, Color> systemColors;
     private Map<Class<? extends Component>, Style> compTypeToStyle;
     
@@ -537,9 +540,10 @@ public abstract class Application {
         this.baseFolder = baseFolder;
     }
         
+    //#IFDEF V1_1_COMPAT    
     /**
-     * 
      * @return
+     * @deprecated there is no replacement for this method, instead use String constant variables.
      */
     public Map<String, String> getFileMap() {
         return fileMap;
@@ -548,11 +552,13 @@ public abstract class Application {
     /**
      * All keys in the file map must be upper case
      * @param fileMap
+     * @deprecated there is no replacement for this method, instead use String constant variables.
      */
     public void setFileMap(Map<String, String> fileMap) {
         this.fileMap = fileMap;
     }
 
+    //#ENDIF
     /**
      * 
      * @param pathname
@@ -576,6 +582,7 @@ public abstract class Application {
         String ret = null;
 
         if (s != null && !s.matches("^\\w?:?[\\\\|/].*")) {
+            //#IFDEF V1_1_COMPAT
             //Limit the keys in the map to UPPER-CASE letters or underscores.
             //This lowers the chance of someone using this resourceMap to override a valid
             //file path.  i.e.  map.put("C:\\WORK\\CUSTOMERFILE.DOC", "C:\\TEMP\\HACK.TXT")
@@ -593,7 +600,7 @@ public abstract class Application {
                     }
                 }
             }
-            
+            //#ENDIF
             if (ret == null) ret = getBaseFolder() + File.separator + s;
         }
         

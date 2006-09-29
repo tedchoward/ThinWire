@@ -39,7 +39,7 @@ final class ButtonRenderer extends ComponentRenderer {
         init(BUTTON_CLASS, wr, c, container);
         Button b = (Button)c;
         addInitProperty(Button.PROPERTY_TEXT, b.getText());
-        addInitProperty(Button.PROPERTY_IMAGE, getRemoteNameForLocalFile(b.getImage()));
+        addInitProperty(Button.PROPERTY_IMAGE, getQualifiedURL(b.getImage()));
         addInitProperty(Button.PROPERTY_STANDARD, b.isStandard());        
         super.render(wr, c, container);
     }
@@ -52,7 +52,7 @@ final class ButtonRenderer extends ComponentRenderer {
         if (name.equals(Button.PROPERTY_TEXT)) {
             postClientEvent(SET_TEXT, newValue);
         } else if (name.equals(Button.PROPERTY_IMAGE)) {
-            postClientEvent(SET_IMAGE, getRemoteNameForLocalFile((String)newValue));
+            postClientEvent(SET_IMAGE, getQualifiedURL((String)newValue));
         } else {
             super.propertyChange(pce);
         }

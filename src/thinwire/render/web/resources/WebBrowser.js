@@ -38,7 +38,7 @@ var tw_WebBrowser = tw_BaseBrowserLink.extend({
     
     setLocation: function(location) {
         //NOTE: this line throws an error in firefox, but it still works.
-        if (location != "") location = tw_BaseBrowserLink.expandLocation(location);
+        if (location != "") location = tw_Component.expandUrl(location);
         this._box.src = location;
     },
     

@@ -39,7 +39,7 @@ var tw_Image = tw_Component.extend({
     keyPressNotify: tw_Component.keyPressNotifySpaceFireAction,    
     
     setImage: function(image) {
-        this._box.style.backgroundImage = image.length > 0 ? "url(" + tw_BaseBrowserLink.expandLocation(image) + ")" : "";
+        this._box.style.backgroundImage = tw_Component.expandUrl(image, true);
     },
     
     setHeight: function(height) {

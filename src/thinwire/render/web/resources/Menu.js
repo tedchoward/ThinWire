@@ -235,7 +235,7 @@ var tw_Menu = tw_Component.extend({
     },
                 
     _setImageUrl: function(item, imageUrl) {
-        imageUrl = imageUrl == null || imageUrl.length == 0 ? "" : "url(" + tw_BASE_PATH + "resources/" + imageUrl + ")";
+        imageUrl = tw_Component.expandUrl(imageUrl, true);
         
         if (item.className == "menuItem") {
             item.firstChild.childNodes.item(0).style.backgroundImage = imageUrl;

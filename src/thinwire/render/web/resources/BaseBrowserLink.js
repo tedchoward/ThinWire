@@ -36,8 +36,3 @@ var tw_BaseBrowserLink = tw_Component.extend({
     }   
 });
 
-tw_BaseBrowserLink.expandLocation = function(location) {
-    if (location.indexOf("%SYSROOT%") == 0) location = tw_BASE_PATH + "resources/" + location.substring(9);
-    return location;
-} 
-

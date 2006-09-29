@@ -55,7 +55,7 @@ var tw_Hyperlink = tw_BaseBrowserLink.extend({
     
     setLocation: function(location) {
         this._location = location;
-        this._box.href = "javascript:void('" + tw_BaseBrowserLink.expandLocation(this._location) + "')";
+        this._box.href = "javascript:void('" + tw_Component.expandUrl(this._location) + "')";
     },
 
     setEnabled: function(enabled) {
@@ -66,6 +66,6 @@ var tw_Hyperlink = tw_BaseBrowserLink.extend({
 });
 
 tw_Hyperlink.openLocation = function(location, target) {
-    if (location.length > 0) window.open(tw_BaseBrowserLink.expandLocation(location), target);
+    if (location.length > 0) window.open(tw_Component.expandUrl(location), target);
 };
 

@@ -527,15 +527,6 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         return s;
     }
     
-    final String getRemoteNameForLocalFile(String localName) {
-        if (localName.trim().length() == 0) return "";
-        if (!localName.startsWith("class:///")) localName = wr.ai.getRelativeFile(localName).getAbsolutePath();        
-        String remoteName = RemoteFileMap.INSTANCE.add(localName);
-        if (remoteFiles == null) remoteFiles = new ArrayList<String>(5);
-        remoteFiles.add(localName);
-        return remoteName;
-    }
-    
     final String getQualifiedURL(String location) {        
         if (location.trim().length() > 0) {
             URI uri;
@@ -550,8 +541,11 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
             
             String scheme = uri.getScheme();        
             
-            if (scheme.equals("file") || scheme.equals("class")) {            
-                location = "%SYSROOT%" + getRemoteNameForLocalFile(location);            
+            if (scheme.equals("file") || scheme.equals("class")) {
+                if (!scheme.equals("class")) location = wr.ai.getRelativeFile(location).getAbsolutePath();
+                if (remoteFiles == null) remoteFiles = new ArrayList<String>(5);
+                remoteFiles.add(location);
+                location = "%SYSROOT%" + RemoteFileMap.INSTANCE.add(location);
             } else {
                 location = uri.toString();
             }

@@ -50,7 +50,7 @@ class TabSheetRenderer extends ContainerRenderer {
         setPropertyChangeIgnored(Border.PROPERTY_BORDER_SIZE, true);
         TabSheet ts = (TabSheet)c;
         addInitProperty(TabSheet.PROPERTY_TEXT, ts.getText());
-        addInitProperty(TabSheet.PROPERTY_IMAGE, getRemoteNameForLocalFile(ts.getImage()));
+        addInitProperty(TabSheet.PROPERTY_IMAGE, getQualifiedURL(ts.getImage()));
         addInitProperty("tabIndex", ((TabFolder)ts.getParent()).getChildren().indexOf(ts));        
         super.render(wr, c, container);
     }
@@ -60,7 +60,7 @@ class TabSheetRenderer extends ContainerRenderer {
         Object newValue = pce.getNewValue();        
         
         if (name.equals(TabSheet.PROPERTY_IMAGE)) {
-            postClientEvent(SET_IMAGE, getRemoteNameForLocalFile((String)newValue));
+            postClientEvent(SET_IMAGE, getQualifiedURL((String)newValue));
         } else if (name.equals(TabSheet.PROPERTY_TEXT)) {
             postClientEvent(SET_TEXT, newValue);
         } else {

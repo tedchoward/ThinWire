@@ -304,11 +304,11 @@ var tw_GridBox = tw_Component.extend({
                 this.setRowIndexCheckState(index, -1, true);
             }
     
-            var action = this._getAction(event.type, index);
+            var action = this._getClickAction(event.type, index);
             if (action == null) return;
             this.fireAction(action, index);
         } else {
-            var action = this._getAction(event.type, index);
+            var action = this._getClickAction(event.type, index);
             if (action == null) return;
             this.fireAction(action, index);
             

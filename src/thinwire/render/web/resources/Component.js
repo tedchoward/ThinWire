@@ -604,6 +604,13 @@ tw_Component.setSystemColors = function(systemColors) {
     }
 };
 
+tw_Component.expandUrl = function(url, wrapInUrl) {
+    if (url == null) return "";
+    if (url.indexOf("%SYSROOT%") == 0) url = tw_BASE_PATH + "resources/" + url.substring(9);
+    if (wrapInUrl && url.length > 0) url = "url(" + url + ")";
+    return url;
+};
+
 //NOTE: This function is defined here so it can be shared by the unrelated classes: Image, Hyperlink, Label & BaseCheckRadio.
 tw_Component.keyPressNotifySpaceFireAction = function(keyPressCombo) {
     if (keyPressCombo == "Space") {

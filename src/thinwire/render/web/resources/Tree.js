@@ -504,7 +504,7 @@ var tw_Tree = tw_Component.extend({
     
     _expandImageURL: function(itemImg) {
         if (itemImg != undefined && itemImg != null && itemImg.length > 0)
-            return tw_BASE_PATH + "resources/" + itemImg;
+            return tw_Component.expandUrl(itemImg);
         else
             return null;
     },

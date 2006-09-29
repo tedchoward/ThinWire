@@ -82,14 +82,8 @@ var tw_TabSheet = tw_BaseContainer.extend({
             
     setImage: function(image) {
         var s = this._tab.firstChild.style;
-        
-        if (image.length > 0) {
-            s.backgroundImage = "url(" + tw_BASE_PATH + "resources/" + image + ")";
-            s.display = "block";
-        } else {
-            s.backgroundImage = "";
-            s.display = "none";
-        }
+        s.backgroundImage = tw_Component.expandUrl(image, true);
+        s.display = image.length > 0 ? "block" : "none";
     },
     
     setActiveStyle: function(active) {  

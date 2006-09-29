@@ -33,6 +33,7 @@ import thinwire.render.Renderer;
 import thinwire.ui.event.ActionListener;
 import thinwire.ui.event.ItemChangeListener;
 import thinwire.ui.event.ItemChangeEvent.Type;
+import thinwire.util.ImageInfo;
 
 /**
  * @author Joshua J. Gertzen
@@ -84,7 +85,7 @@ abstract class AbstractHierarchyComponent<HI extends AbstractHierarchyComponent.
     
     static class Item<H extends AbstractHierarchyComponent, I extends AbstractHierarchyComponent.Item> implements HierarchyComponent.Item<H, I> {        
         private String text = "";
-        private Image.Detail imageDetail = new Image.Detail();
+        private ImageInfo imageDetail = new ImageInfo();
         private Object userObject;        
         private Object parent;
         private List<I> children;
@@ -102,14 +103,14 @@ abstract class AbstractHierarchyComponent<HI extends AbstractHierarchyComponent.
         }
         
         public String getImage() {
-            return imageDetail.image;
+            return imageDetail.getName();
         }
 
         public void setImage(String image) {
-            String oldImage = this.imageDetail.image;
-            Image.updateImageDetail(imageDetail, image);        
+            String oldImage = this.imageDetail.getName();
+            imageDetail.setName(image);        
             H hier = getHierarchy();
-            if (hier != null) hier.firePropertyChange(this, PROPERTY_ITEM_IMAGE, oldImage, this.imageDetail.image);
+            if (hier != null) hier.firePropertyChange(this, PROPERTY_ITEM_IMAGE, oldImage, this.imageDetail.getName());
         }
 
         public Object getUserObject() {
@@ -235,7 +236,7 @@ abstract class AbstractHierarchyComponent<HI extends AbstractHierarchyComponent.
      * @param item the Menu.Item that the action should be triggered for.
      */
     public void fireAction(String action, HI item) {
-        if (action == null || !(action.equals(ACTION_CLICK) || (this instanceof Tree && action.equals(ACTION_DOUBLE_CLICK)))) throw new IllegalArgumentException("the specified action is not supported");                
+        if (action == null || !(action.equals(ACTION_CLICK) || action.equals(ACTION_DOUBLE_CLICK))) throw new IllegalArgumentException("the specified action is not supported");
         if (item == null) throw new IllegalArgumentException("item == null");
         aei.fireAction(item, action);
     }

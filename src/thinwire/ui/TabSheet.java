@@ -27,6 +27,8 @@ package thinwire.ui;
 
 import java.util.List;
 
+import thinwire.util.ImageInfo;
+
 /**
  * A TabSheet is a Panel that can be layered, so that a user can switch between
  * tab sheets.
@@ -79,7 +81,7 @@ import java.util.List;
 public class TabSheet extends AbstractContainer<Component> implements TextComponent, ImageComponent {
 	private String text = "";
     private boolean allowBoundsChange;
-	private Image.Detail imageDetail = new Image.Detail();
+	private ImageInfo imageDetail = new ImageInfo();
     
 	/**
 	 * Construct a new TabSheet with no text.
@@ -105,7 +107,7 @@ public class TabSheet extends AbstractContainer<Component> implements TextCompon
 	 * @return the filename of the image on the tabsheet
 	 */
 	public String getImage() {
-	    return imageDetail.image;
+	    return imageDetail.getName();
 	}
 
 	/**
@@ -115,9 +117,9 @@ public class TabSheet extends AbstractContainer<Component> implements TextCompon
      * @throws RuntimeException thrown if an I/O error occurs
      */
     public void setImage(String image) {
-        String oldImage = this.imageDetail.image;
-        Image.updateImageDetail(imageDetail, image);        
-        firePropertyChange(this, PROPERTY_IMAGE, oldImage, this.imageDetail.image);
+        String oldImage = this.imageDetail.getName();
+        imageDetail.setName(image);        
+        firePropertyChange(this, PROPERTY_IMAGE, oldImage, this.imageDetail.getName());
     }	
 	
 	/**
