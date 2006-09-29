@@ -38,7 +38,6 @@ import org.apache.commons.fileupload.DiskFileUpload;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 
-import thinwire.render.web.WebFileChooser.FileInfo;
 import thinwire.ui.FileChooser;
 
 import javax.servlet.*;
@@ -306,7 +305,6 @@ public final class WebServlet extends HttpServlet {
     private void handleUserUpload(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         HttpSession httpSession = request.getSession();
         WebApplication app = (WebApplication)httpSession.getAttribute("instance");        
-        
         if (app != null) {
             try {
                 DiskFileUpload upload = new DiskFileUpload();
@@ -314,26 +312,23 @@ public final class WebServlet extends HttpServlet {
                 upload.setSizeMax(25000000);
                 upload.setRepositoryPath("C:\\");
                 List<FileItem> items = upload.parseRequest(request);
-                List<FileChooser.FileInfo> files = app.getFileInfoList();
-                
                 if (items.size() > 0) {
-                    FileInfo f = null;
-                    
-                    for (FileItem fi : items) {
-                        if (!fi.isFormField() && fi.getSize() > 0) {
-                            f = new WebFileChooser.FileInfo();
-                            f.name = fi.getName();
-                            f.is = fi.getInputStream();
-                            f.description = "";
-                            files.add(f);
-                        } else {
-                            if (f != null) f.description = fi.getString();
-                            f = null;
+                    FileChooser.FileInfo f = null;
+                    synchronized(app.fileList) {
+                        for (FileItem fi : items) {
+                            if (!fi.isFormField() && fi.getSize() > 0) {
+                                f = new FileChooser.FileInfo();
+                                f.setName(fi.getName());
+                                f.setInputStream(fi.getInputStream());
+                                f.setDescription("");
+                                app.fileList[0] = f;
+                            }
                         }
+                        app.fileList.notify();
                     }
                 }
                 
-                app.queueWebComponentEvent(new WebComponentEvent(WebApplication.APPEVENT_ID, WebApplication.APPEVENT_FILEUPLOAD_COMPLETE, null));
+                //app.queueWebComponentEvent(new WebComponentEvent(WebApplication.APPEVENT_ID, WebApplication.APPEVENT_FILEUPLOAD_COMPLETE, null));
             } catch (FileUploadException e) {
                 log.log(Level.SEVERE, null, e);
             }            

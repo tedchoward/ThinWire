@@ -40,6 +40,7 @@ var tw_Button = tw_Component.extend({
         var s = border.style;
         s.overflow = "hidden";
         s.backgroundColor = tw_COLOR_TRANSPARENT;
+        s.zIndex = "0";
         this._box.appendChild(border);
 
         var surface = this._fontBox = this._focusBox = document.createElement("a");

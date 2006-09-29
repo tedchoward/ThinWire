@@ -39,10 +39,12 @@ var tw_Hyperlink = tw_BaseBrowserLink.extend({
     },
     
     _clickListener: function(ev) {
-        tw_Component.clickListener(ev);
+        this._superClick(ev);
         tw_Hyperlink.openLocation(this._location, "hl" + this._id);
         return false;
-    },    
+    },
+    
+    _superClick: tw_Component.clickListener,
     
     keyPressNotify: tw_Component.keyPressNotifySpaceFireAction,
     

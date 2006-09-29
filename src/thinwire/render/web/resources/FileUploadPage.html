@@ -66,12 +66,12 @@
 </form>
 <script type="text/javascript" defer="defer">
 var tw_fileCount = 0;
-
+/*
 with (document.getElementById("files").style) {
-    width = parseInt(tw_width) - 20 + "px";
-    height = parseInt(tw_height) - 75 + "px";
+    //width = parseInt(tw_width) - 20 + "px";
+    //height = parseInt(tw_height) - 75 + "px";
 }
-
+*/
 function addUploadLine() {
     var files = document.getElementById("files");
     var file = document.createElement("input");
@@ -79,20 +79,23 @@ function addUploadLine() {
     file.name = "file" + tw_fileCount;
     file.size = "72";
     file.type = "file";
-    var label = getLabel("File Name" + (tw_multiFile ? " " + (tw_fileCount + 1) : "") + ":");    
+    //file.style.opacity = ".0";
+    //var label = getLabel("File Name" + (tw_multiFile ? " " + (tw_fileCount + 1) : "") + ":");
+    var label = getLabel("File Name" + " " + (tw_fileCount + 1) + ":");    
     files.appendChild(label);    
     files.appendChild(file);    
     
-    if (tw_showDescription) {
+    //if (tw_showDescription) {
         var desc = document.createElement("input");
         desc.className = "fileUploadEditor";
         desc.name = "desc" + tw_fileCount;
         desc.size = "72";
         desc.type = "text";
-        var label = getLabel("Description" + (tw_multiFile ? " " + (tw_fileCount + 1) : "") + ":");
+        //var label = getLabel("Description" + (tw_multiFile ? " " + (tw_fileCount + 1) : "") + ":");
+        var label = getLabel("Description" + " " + (tw_fileCount + 1) + ":");
         files.appendChild(label);
         files.appendChild(desc);
-    }
+    //}
     
     tw_fileCount++;
 }
@@ -116,7 +119,7 @@ function getLabel(text) {
     label.appendChild(document.createTextNode(text));
     return label;
 }
-
+/*
 function insertButton(text, handler) {
     var br = document.getElementById("files");
     var add = document.createElement("input");
@@ -126,13 +129,14 @@ function insertButton(text, handler) {
     add.type = "button";
     files.parentNode.insertBefore(add, files.nextSibling);
 }
-
+*/
 addUploadLine();
-
+/*
 if (tw_multiFile) {
     insertButton("Remove", removeUploadLine);
     insertButton("Add", addUploadLine);
 }
+*/
 </script>
 </body>
 </html>

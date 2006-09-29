@@ -32,6 +32,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import thinwire.ui.MessageBox;
 import thinwire.ui.Panel;
 import thinwire.ui.Dialog;
 import thinwire.ui.FileChooser;
@@ -43,44 +44,6 @@ import thinwire.ui.ScrollType;
  * @author Joshua J. Gertzen
  */
 class WebFileChooser {
-    static class FileInfo implements FileChooser.FileInfo {
-        String name;
-        String description;
-        InputStream is;        
-        
-        public String getName() {
-            return name;
-        }
-        
-        public String getDescription() {
-            return description;
-        }
-        
-        public InputStream getInputStream() {
-            return is;
-        }
-        
-        public void saveToFile(String fileName) {
-            saveToFile(WebApplication.current().getRelativeFile(fileName));
-        }
-        
-        public void saveToFile(File resourceName) {
-            try {
-                FileOutputStream fos = new FileOutputStream(resourceName);
-                byte[] block = new byte[256];
-                int length;
-                
-                while ((length = is.read(block)) != -1) {
-                    fos.write(block, 0, length);
-                }
-                
-                fos.close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }    
-    
     private static final String PREPARE_FILE_CHOOSER = "tw_prepareFileChooser";
     
     private WebApplication app;
@@ -126,6 +89,7 @@ class WebFileChooser {
     }
     
     void hide() {
+        MessageBox.confirm("hide");
         d.setVisible(false);        
     }
     

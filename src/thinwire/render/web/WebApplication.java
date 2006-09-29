@@ -68,6 +68,7 @@ public final class WebApplication extends Application {
     private static final Set<WebApplication> allApps = new HashSet<WebApplication>();
     private static Thread instanceMonitorThread;
     
+    
     private static final Runnable instanceMonitorRunnable = new Runnable() {
         public void run() {
             log.fine("Starting instance monitoring thread");
@@ -144,6 +145,8 @@ public final class WebApplication extends Application {
     private int captureCount;
     private Long lastClientRequestTime;
     private AppThread appThread;
+    
+    FileInfo[] fileList = new FileInfo[1];
 	
 	//Stress Test Variables.
 	private UserActionListener userActionListener;    
@@ -202,6 +205,7 @@ public final class WebApplication extends Application {
                         log.log(lr);
                     }
                 } else if (APPEVENT_FILEUPLOAD_COMPLETE.equals(name)) {
+                    MessageBox.confirm("Upload Complete");
                     fileChooser.hide();
                 } else if (APPEVENT_SHUTDOWN.equals(name)) {
                     getFrame().setVisible(false);
@@ -772,6 +776,8 @@ public final class WebApplication extends Application {
     }
 
     List<FileChooser.FileInfo> getFileInfoList() {
+        log.entering(WebApplication.class.getName(), "getFileInfoList");
+        log.fine("fileChooser = " + fileChooser);
         return fileChooser.getFileInfoList();
     }
 
@@ -779,6 +785,21 @@ public final class WebApplication extends Application {
         fileChooser = new WebFileChooser(this);
         fileChooser.show(showDescription, multiFile);
         return fileChooser.getFileInfoList();
+    }
+    
+    protected FileInfo getFileInfo() {
+        synchronized(fileList) {
+            while (fileList[0] == null) {
+                try {
+                    fileList.wait();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            FileChooser.FileInfo fileInfo = fileList[0];
+            fileList[0] = null;
+            return fileInfo;
+        }
     }
 
     public void addTimerTask(Runnable task, long timeout) {
