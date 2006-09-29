@@ -70,6 +70,7 @@ final class RemoteFileMap {
                 String resource = localName.substring(endIndex + 1);
                 Class clazz = Class.forName(className);
                 is = clazz.getResourceAsStream(resource);
+                if (is == null) throw new FileNotFoundException(localName);            
             } else {                   
                 is = new BufferedInputStream(new FileInputStream(localName));
             }
