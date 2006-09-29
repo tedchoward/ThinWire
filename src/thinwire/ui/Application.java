@@ -151,7 +151,7 @@ public abstract class Application {
             sb.append(e.getKey()).append("=").append(e.getValue()).append('\n');
         }
 
-        final java.awt.Frame frame = new java.awt.Frame("ThinWire(TM) RIA Ajax Framework v" + getPlatformVersionInfo().get("productVersion"));
+        final java.awt.Frame frame = new java.awt.Frame("ThinWire(R) RIA Ajax Framework v" + getPlatformVersionInfo().get("productVersion"));
         final java.awt.TextArea ta = new java.awt.TextArea(sb.toString());
         ta.setEditable(false);
         frame.add(ta);
