@@ -154,6 +154,10 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         defaultValue = ds.getBackground().getColor();
         if (!value.equals(defaultValue)) sb.append("backgroundColor:\"").append(wr.ai.getColorValue((Color)value, false)).append("\",");
 
+        value = s.getBackground().getImage();
+        defaultValue = ds.getBackground().getImage();
+        if (!value.equals(defaultValue)) sb.append("backgroundImage:\"").append(getQualifiedURL((String)value)).append("\",");
+        
         value = s.getBorder().getType();
         defaultValue = ds.getBorder().getType();            
         
@@ -220,6 +224,8 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         
         if (propertyName.equals(Background.PROPERTY_BACKGROUND_COLOR)) {
             value = s.getBackground().getColor();
+        } else if (propertyName.equals(Background.PROPERTY_BACKGROUND_IMAGE)) {
+            value = getQualifiedURL(s.getBackground().getImage());
         } else if (propertyName.equals(Border.PROPERTY_BORDER_COLOR)) {
             if (s.getBorder().getType() == Border.Type.NONE) return;
             value = s.getBorder().getColor();

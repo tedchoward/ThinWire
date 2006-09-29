@@ -25,14 +25,18 @@
  */
 package thinwire.ui.style;
 
+import thinwire.util.ImageInfo;
+
 /**
  * @author Joshua J. Gertzen
  */
 public class Background {
     public static final String PROPERTY_BACKGROUND_COLOR = "backgroundColor";
+    public static final String PROPERTY_BACKGROUND_IMAGE = "backgroundImage";
     
     private Style parent;
     private Color color;
+    private ImageInfo imageInfo = new ImageInfo();
     
     Background(Style parent) {
         this.parent = parent;
@@ -49,8 +53,10 @@ public class Background {
         if (onlyIfDefault) {
             Background db = parent.defaultStyle.getBackground();
             if (getColor().equals(db.getColor())) setColor(background.getColor());
+            if (getImage().equals(db.getImage())) setImage(background.getImage());
         } else {
             setColor(background.getColor());
+            setImage(background.getImage());
         }
     }
 
@@ -65,9 +71,21 @@ public class Background {
     
     public void setColor(Color color) {
         if (color == null && parent.defaultStyle != null) color = parent.defaultStyle.getBackground().getColor();        
-        if (color == null) throw new IllegalArgumentException("color == null");
+        if (color == null) throw new IllegalArgumentException("color == null && defaultStyle.getBackground().getColor() == null");
         Color oldColor = this.color;
         this.color = color;        
         if (parent != null) parent.firePropertyChange(this, PROPERTY_BACKGROUND_COLOR, oldColor, this.color);
+    }
+    
+    public String getImage() {
+        return imageInfo.getName();
+    }
+    
+    public void setImage(String image) {
+        if (image == null && parent.defaultStyle != null) image = parent.defaultStyle.getBackground().getImage();
+        if (image == null) throw new IllegalArgumentException("image == null && defaultStyle.getBackground().getImage() == null");
+        String oldImage = imageInfo.getName();        
+        imageInfo.setName(image);
+        if (parent != null) parent.firePropertyChange(this, PROPERTY_BACKGROUND_IMAGE, oldImage, imageInfo.getName());
     }
 }

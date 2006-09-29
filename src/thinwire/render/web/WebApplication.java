@@ -350,6 +350,15 @@ public final class WebApplication extends Application {
         StringBuilder sb = new StringBuilder();
         sb.append('{');
         sb.append("backgroundColor:\"").append(getColorValue(s.getBackground().getColor(), false)).append("\",");
+        String backgroundImage = s.getBackground().getImage();
+        
+        if (backgroundImage.length() > 0) {
+            WindowRenderer wr = windowToRenderer.get(getFrame());
+            backgroundImage = wr.getQualifiedURL(backgroundImage);
+        }
+        
+        sb.append("backgroundImage:\"").append(backgroundImage).append("\",");
+        
         Font f = s.getFont();
         sb.append("fontFamily:\"").append(f.getFamily()).append("\",");
         sb.append("fontColor:\"").append(getColorValue(f.getColor(), false)).append("\",");

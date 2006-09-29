@@ -244,9 +244,14 @@ var tw_Component = Class.extend({
         var realName = tw_Component.styleNameMap[name];
         if (realName == undefined) throw "attempt to set unknown property '" + name + "' to value '" + value + "'";
         
-        if (this._backgroundBox != null && name == "backgroundColor") {
-            this._backgroundColor = value;
-            if (this.isEnabled()) this._backgroundBox.style.backgroundColor = value;
+        if (this._backgroundBox != null && name.indexOf("background") == 0) {
+            if (name == "backgroundColor") {
+                this._backgroundColor = value;
+                if (this.isEnabled()) this._backgroundBox.style.backgroundColor = value;
+            } else if (name == "backgroundImage") {
+                this._backgroundBox.style.backgroundImage = tw_Component.expandUrl(value, true);
+                this._backgroundBox.style.backgroundPosition = "center center";
+            }
         } else if (this._fontBox != null && name.indexOf("font") == 0) {
             if (name == "fontSize") {
                 value += "pt";
@@ -295,8 +300,12 @@ var tw_Component = Class.extend({
         if (realName == undefined) throw "attempt to get unknown property '" + name + "'";
         var value;
         
-        if (this._backgroundBox != null && name == "backgroundColor") {
-            value = this._backgroundColor;
+        if (this._backgroundBox != null && name.indexOf("background") == 0) {
+            if (name == "backgroundColor") {
+                value = this._backgroundColor;
+            } else {
+                value = this._backgroundBox.style.backgroundImage;
+            }
         } else if (this._fontBox != null && name.indexOf("font") == 0) {
             value = this._fontBox.style[realName];
             
@@ -519,15 +528,22 @@ var tw_Component = Class.extend({
         }
         
         this.setStyle("backgroundColor", style["backgroundColor"]);
-        this.setStyle("borderType", style["borderType"]);
-        this.setStyle("borderSize", style["borderSize"]);
-        this.setStyle("borderColor", style["borderColor"]);
-        this.setStyle("fontFamily", style["fontFamily"]);
-        this.setStyle("fontColor", style["fontColor"]);
-        this.setStyle("fontSize", style["fontSize"]);
-        this.setStyle("fontItalic", style["fontItalic"]);
-        this.setStyle("fontBold", style["fontBold"]);
-        this.setStyle("fontUnderline", style["fontUnderline"]);
+        this.setStyle("backgroundImage", style["backgroundImage"]);
+        
+        if (this._borderBox != null) {
+            this.setStyle("borderType", style["borderType"]);
+            this.setStyle("borderSize", style["borderSize"]);
+            this.setStyle("borderColor", style["borderColor"]);
+        }
+        
+        if (this._fontBox != null) {
+            this.setStyle("fontFamily", style["fontFamily"]);
+            this.setStyle("fontColor", style["fontColor"]);
+            this.setStyle("fontSize", style["fontSize"]);
+            this.setStyle("fontItalic", style["fontItalic"]);
+            this.setStyle("fontBold", style["fontBold"]);
+            this.setStyle("fontUnderline", style["fontUnderline"]);
+        }
         
         if (props.insertAtIndex != undefined) {
             insertAtIndex = props.insertAtIndex;
@@ -576,6 +592,7 @@ tw_Component.priorFocus = null;
 tw_Component.currentFocus = null;
 tw_Component.styleNameMap = {
     backgroundColor: "backgroundColor",
+    backgroundImage: "backgroundImage",
     fontSize: "fontSize",
     fontBold: "fontWeight",
     fontItalic: "fontStyle",
