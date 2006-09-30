@@ -146,61 +146,28 @@ function tw_cancelEvent(event) {
     }
 }
 
-function tw_prepareFileChooser(containerId, showDescription, multiFile) {
-    var c = document.getElementById(containerId);
-    var iframe = document.createElement("iframe");
-    iframe.style.width = c.style.width;
-    iframe.style.height = c.style.height;
-    iframe.style.position = "absolute";
-    iframe.frameBorder = "0";
-    //iframe.style.border = "solid 1px black";
-    iframe.scrolling = "no";
-    iframe.src = "?_twr_=FileUploadPage.html";    
-    c.appendChild(iframe);
-
-    iframe.onload = function() {
-        if (iframe.readyState != "loading") return;
-        //iframe.contentWindow.document.body.style.borderType = "none";
-        iframe.contentWindow.tw_showDescription = showDescription;
-        iframe.contentWindow.tw_multiFile = multiFile;
-        iframe.contentWindow.tw_width = c.style.width;
-        iframe.contentWindow.tw_height = c.style.height;
-        with(iframe.contentWindow.document.getElementById("files")) {
-            width = parseInt(c.style.width) - 20 + "px";
-            height = parseInt(c.style.height) - 75 + "px";
-        }
-        if (multiFile) {
-            tw_FileChooser_insertButton("Remove", removeUploadLine, iframe);
-            tw_FileChooser_insertButton("Add", addUploadLine, iframe);
-        }
-        iframe.onreadystatechange = null;
-    };
-}
-
 function tw_makeFileChooserBtn(buttonId, tfId) {
     var btn = tw_Component.instances[buttonId];
     var tf = tw_Component.instances[tfId];
     var iframe = document.createElement("iframe");
     
     s = iframe.style;
-    
     s.top = "0px";
     s.width = btn.getWidth() + "px";
     s.height = btn.getHeight() + "px";
     s.position = "absolute";
-    //s.border = "solid 1px black";
-    //s.backgroundColor = "red";
     s.overflow = "hidden";
     s.zIndex = "1";
     s.opacity = "0";
     if (tw_isIE) s.filter = "alpha(opacity=0)";
     iframe.scrolling = "no";
-    iframe.src = "?_twr_=blank.html";
+    iframe.src = "?_twr_=FileUploadPage.html";
     iframe.frameBorder = "0";
-    iframe.onload = function() {
+    iframe.onreadystatechange = iframe.onload = function() {
+        if (tw_isIE && iframe.readyState != "complete") return;
         input = iframe.contentWindow.document.getElementsByTagName("input")[0];
         if (input != null) {
-            input.name = "file0";
+            input.name = "file";
             input.onchange = function() {
                 tf.setText(this.value);
             };
@@ -212,20 +179,8 @@ function tw_makeFileChooserBtn(buttonId, tfId) {
 
 function tw_FileChooser_submit(buttonId) {
     var btn = tw_Component.instances[buttonId];
-    var iframe = btn._iframe;
-    iframe.contentWindow.document.getElementById("uploadForm").submit();
+    btn._iframe.contentWindow.document.getElementById("uploadForm").submit();
 }
-
-function tw_FileChooser_insertButton(text, handler, iframe) {
-    var br = iframe.contentWindow.document.getElementById("files");
-    var add = iframe.contentWindow.document.createElement("input");
-    add.className = "fileUploadButton";
-    add.value = text;
-    add.onclick = handler;
-    add.type = "button";
-    br.parentNode.insertBefore(add, files.nextSibling);
-}
-
 
 function tw_getTime() {
     return new Date().getTime();

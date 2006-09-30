@@ -327,8 +327,6 @@ public final class WebServlet extends HttpServlet {
                         app.fileList.notify();
                     }
                 }
-                
-                //app.queueWebComponentEvent(new WebComponentEvent(WebApplication.APPEVENT_ID, WebApplication.APPEVENT_FILEUPLOAD_COMPLETE, null));
             } catch (FileUploadException e) {
                 log.log(Level.SEVERE, null, e);
             }            

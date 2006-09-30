@@ -137,7 +137,6 @@ public final class WebApplication extends Application {
     private Set<String> clientSideIncludes;    
     private Map<Component, Object> renderCallbacks;
     private String[] syncCallResponse = new String[1];
-    private WebFileChooser fileChooser;
     private boolean threadCaptured;
     private boolean threadWaiting;
     private boolean processClientEvents;
@@ -204,9 +203,6 @@ public final class WebApplication extends Application {
                         lr.setSourceMethodName("[client-side]");
                         log.log(lr);
                     }
-                } else if (APPEVENT_FILEUPLOAD_COMPLETE.equals(name)) {
-                    MessageBox.confirm("Upload Complete");
-                    fileChooser.hide();
                 } else if (APPEVENT_SHUTDOWN.equals(name)) {
                     getFrame().setVisible(false);
                 } else if (APPEVENT_RUN_TIMER.equals(name)) {
@@ -782,18 +778,6 @@ public final class WebApplication extends Application {
 
     WindowRenderer getWindowRenderer(Window w) {
         return (WindowRenderer) windowToRenderer.get(w);
-    }
-
-    List<FileChooser.FileInfo> getFileInfoList() {
-        log.entering(WebApplication.class.getName(), "getFileInfoList");
-        log.fine("fileChooser = " + fileChooser);
-        return fileChooser.getFileInfoList();
-    }
-
-    protected List<FileInfo> showFileChooser(boolean showDescription, boolean multiFile) {
-        fileChooser = new WebFileChooser(this);
-        fileChooser.show(showDescription, multiFile);
-        return fileChooser.getFileInfoList();
     }
     
     protected FileInfo getFileInfo() {

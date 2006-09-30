@@ -42,8 +42,70 @@ import thinwire.ui.event.ActionListener;
 import thinwire.ui.event.PropertyChangeEvent;
 import thinwire.ui.event.PropertyChangeListener;
 
+/**
+ * A <code>FileChooser</code> is a Component that enables a user to upload a
+ * file. It consists of a disabled TextField and a Button, that when clicked,
+ * causes the browser's file dialog to open. When the user chooses a file, the
+ * path of the file is displayed in the TextField.
+ * <p>
+ * <b>Example:</b> <br>
+ * <img src="doc-files/FileChooser-1.png"> <br>
+ * 
+ * <pre>
+ * final Dialog dlg = new Dialog(&quot;FileChooser Test&quot;);
+ * dlg.setBounds(10, 10, 320, 100);
+ * final FileChooser fc = new FileChooser();
+ * fc.setBounds(10, 10, 300, 20);
+ * dlg.getChildren().add(fc);
+ * 
+ * Button b = new Button(&quot;OK&quot;);
+ * b.setBounds(10, 40, 80, 25);
+ * b.addActionListener(Button.ACTION_CLICK, new ActionListener() {
+ *     public void actionPerformed(ActionEvent ev) {
+ *         try {
+ *             FileInfo fi = fc.getFileInfo();
+ *             File f = File.createTempFile(&quot;tw_upload&quot;
+ *                 + System.currentTimeMillis(), &quot;.txt&quot;);
+ *             fi.saveToFile(f);
+ *             Hyperlink h = new Hyperlink();
+ *             h.setText("Click Here to See Your File");
+ *             h.setLocation(f.getAbsolutePath());
+ *             MessageBox mb = new MessageBox();
+ *             mb.setTitle(&quot;File Chooser Test&quot;);
+ *             mb.setComponent(h);
+ *             mb.confirm();
+ *             dlg.setVisible(false);
+ *         } catch (Exception e) {
+ *             throw new RuntimeException(e);
+ *         }
+ *     }
+ * });
+ * dlg.getChildren().add(b);
+ * dlg.setVisible(true);
+ * </pre>
+ * 
+ * </p>
+ * <p>
+ * <b>Keyboard Navigation:</b><br>
+ * <table border="1">
+ * <tr>
+ * <td>KEY</td>
+ * <td>RESPONSE</td>
+ * <td>NOTE</td>
+ * </tr>
+ * </table>
+ * </p>
+ * @author Ted C. Howard
+ */
 public class FileChooser extends Panel {
     
+    /**
+     * <code>FileInfo</code> is a class containing the name of the file
+     * uploaded and its <code>InputStream</code>. It also contains
+     * convenience methods for saving the file.
+     * 
+     * @author Joshua J. Gertzen and Ted C. Howard
+     */
     public static class FileInfo {
         String name;
         String description;
@@ -61,6 +123,12 @@ public class FileChooser extends Panel {
             return description;
         }
         
+        /**
+         * For convenience, an arbitrary description can be assigned to each
+         * file uploaded.
+         * 
+         * @param description
+         */
         public void setDescription(String description) {
             this.description = description;
         }
@@ -73,10 +141,21 @@ public class FileChooser extends Panel {
             this.is = is;
         }
         
+        /**
+         * Writes the uploaded file to a new <code>File</code> at the
+         * specified location relative to the application base path.
+         * 
+         * @param fileName
+         */
         public void saveToFile(String fileName) {
             Application.current().getRelativeFile(fileName);
         }
         
+        /**
+         * Writes the uploaded file to the specified <code>File</code>.
+         * 
+         * @param file
+         */
         public void saveToFile(File file) {
             try {
                 FileOutputStream fos = new FileOutputStream(file);
@@ -97,7 +176,6 @@ public class FileChooser extends Panel {
     private static final int BROWSE_BUTTON_HEIGHT = 20;
     private static final int TEXT_FIELD_BUTTON_GAP = 5;
     private static final int MAX_HEIGHT = 500;
-    
     
     private WebApplication app;
     private TextField fileName;
@@ -147,6 +225,10 @@ public class FileChooser extends Panel {
         });
     }
     
+    /**
+     * Initiates the upload of the file from the user's machine to the server.
+     * @return a <code>FileInfo</code> object for the file uploaded
+     */
     public FileInfo getFileInfo() {
         app.clientSideFunctionCall(FILE_CHOOSER_SUBMIT, browseButtonId);
         FileInfo fi = ((Application) app).getFileInfo();
@@ -157,28 +239,55 @@ public class FileChooser extends Panel {
         return Collections.unmodifiableList(super.getChildren());
     }
     
+    /**
+     * Displays a <code>Dialog</code> with a <code>FileChooser</code> along
+     * with OK and Cancel <code>Buttons</code>.
+     * 
+     * @return the <code>FileInfo</code> for the file uploaded
+     */
+    public static FileInfo show() {
+        return show(false);
+    }
+    
+    /**
+     * Displays a <code>Dialog</code> with a <code>FileChooser</code> and
+     * optionally a description <code>TextField</code> along with OK and
+     * Cancel <code>Buttons</code>.
+     * 
+     * @param showDescription
+     *            displays a <code>TextField</code> for a description if true
+     * @return the <code>FileInfo</code> for the file uploaded
+     */
+    public static FileInfo show(boolean showDescription) {
+        List<FileInfo> l = show(showDescription, false);
+        return l.size() > 0 ? l.get(0) : null;
+    }
+    
+    /**
+     * Displays a <code>Dialog</code> with a <code>FileChooser</code> and
+     * optionally a description <code>TextField</code> along with OK and
+     * Cancel <code>Buttons</code>. Optional <code>Buttons</code> are
+     * availiable for adding and removing additional <code>FileChooser</code>
+     * components.
+     * 
+     * @param showDescription
+     *            displays a <code>TextField</code> for a description if true
+     * @param multiFile
+     *            displays Add and Remove <code>Buttons</code> for uploading multiple files
+     * @return a <code>List</code> of <code>FileInfo</code> objects
+     */
     public static List<FileInfo> show(final boolean showDescription, boolean multiFile) {
+        final Frame f = Application.current().getFrame();
         final Dialog dlg = new Dialog(multiFile ? "Upload Multiple Files" : "Upload File");
-        List<Component> kids = dlg.getChildren();
+        final List<Component> kids = dlg.getChildren();
         final List<Component[]> files = new ArrayList<Component[]>();
         final List<FileInfo> fileInfoList = new ArrayList<FileInfo>();
-        final int[] rowCount = new int[1];
-        rowCount[0] = 0;
-        Frame f = Application.current().getFrame();
         
         int width = 600;
-        int height = 20;
-        if (showDescription) height += 20 + 3;    
-        
-        if (multiFile) {
-            height *= 5;
-            width -= 20;
-        }
-        
-        height += 78;
+        int height = showDescription ? 98 : 121;
         
         dlg.setBounds((f.getWidth() - width) / 2, (f.getHeight() - height) / 2, width, height);
-        files.add(addRow(dlg, rowCount[0], showDescription));
+        files.add(addRow(dlg, 0, showDescription));
         
         final Button okBtn = new Button("OK");
         okBtn.setBounds(dlg.getInnerWidth() - 170, dlg.getInnerHeight() - 27, 80, 22);
@@ -194,6 +303,7 @@ public class FileChooser extends Panel {
             }
         });
         kids.add(okBtn);
+        
         final Button cancelBtn = new Button("Cancel");
         cancelBtn.setBounds(dlg.getInnerWidth() - 85, dlg.getInnerHeight() - 27, 80, 22);
         cancelBtn.addActionListener(Button.ACTION_CLICK, new ActionListener() {
@@ -204,15 +314,35 @@ public class FileChooser extends Panel {
         kids.add(cancelBtn);
         
         if (multiFile) {
-            Button addButton = new Button("Add");
-            addButton.setBounds(5, dlg.getInnerHeight() - 27, 80, 22);
-            addButton.addActionListener(Button.ACTION_CLICK, new ActionListener() {
+            Button addBtn = new Button("Add");
+            final Button removeBtn = new Button("Remove");
+            
+            addBtn.setBounds(5, dlg.getInnerHeight() - 27, 80, 22);
+            addBtn.addActionListener(Button.ACTION_CLICK, new ActionListener() {
                 public void actionPerformed(ActionEvent ev) {
                     dlg.setHeight(dlg.getHeight() + 50);
-                    addRow(dlg, ++rowCount[0], showDescription);
+                    dlg.setY((f.getHeight() - dlg.getHeight()) / 2);
+                    files.add(addRow(dlg, files.size(), showDescription));
+                    if (files.size() > 1) removeBtn.setEnabled(true);
                 }
             });
-            kids.add(addButton);
+            kids.add(addBtn);
+            
+            removeBtn.setBounds(90, dlg.getInnerHeight() - 27, 80, 22);
+            removeBtn.setEnabled(false);
+            removeBtn.addActionListener(Button.ACTION_CLICK, new ActionListener() {
+                public void actionPerformed(ActionEvent ev) {
+                    Component[] lastFile = files.remove(files.size() - 1);
+                    for (Component c : lastFile) {
+                        kids.remove(c.getLabel());
+                        kids.remove(c);
+                    }
+                    dlg.setHeight(dlg.getHeight() - 50);
+                    dlg.setY((f.getHeight() - dlg.getHeight()) / 2);
+                    if (files.size() <= 1) ((Button) ev.getSource()).setEnabled(false);
+                }
+            });
+            kids.add(removeBtn);
         }
         
         dlg.addPropertyChangeListener(Dialog.PROPERTY_HEIGHT, new PropertyChangeListener() {
@@ -230,7 +360,7 @@ public class FileChooser extends Panel {
     
     private static Component[] addRow(Dialog dlg, int rowCount, boolean showDescription) {
         List<Component> kids = dlg.getChildren();
-        int y1 = showDescription ? 10 + (rowCount * 40) : 10 + (rowCount * 20);
+        int y1 = showDescription ? 10 + (rowCount * 50) : 10 + (rowCount * 20);
         FileChooser fc = new FileChooser();
         fc.setBounds(85, y1, dlg.getInnerWidth() - 90, 20);
         kids.add(fc);

@@ -625,7 +625,6 @@ public abstract class Application {
     protected abstract void releaseThread();
     protected abstract void showWindow(Window w);
     protected abstract void hideWindow(Window w);
-    protected abstract List<FileChooser.FileInfo> showFileChooser(boolean showDescription, boolean multiFile);
     protected abstract FileChooser.FileInfo getFileInfo();
     
     /**
