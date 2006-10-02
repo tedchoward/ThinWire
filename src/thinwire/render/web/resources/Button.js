@@ -54,7 +54,7 @@ var tw_Button = tw_Component.extend({
         s.paddingRight = tw_Button.textPadding + "px";
         s.backgroundColor = tw_COLOR_TRANSPARENT;
         s.backgroundRepeat = "no-repeat";
-        s.backgroundPosition = "center left";
+        s.backgroundPosition = "5% 50%";
         surface.appendChild(document.createTextNode(""));
         border.appendChild(surface);
         this._fontBox = surface;
