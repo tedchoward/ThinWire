@@ -84,25 +84,20 @@ public class Background {
             if (positionId == null) throw new IllegalArgumentException("positionId == null");
             positionId = positionId.trim();
             if (positionId.equals("")) throw new IllegalArgumentException("positionId.equals(\"\")");
+            Matcher m = REGEX_PERCENT.matcher(positionId);
 
-            if (positionId.indexOf(' ') >= 0) {
-                Matcher m = REGEX_PERCENT.matcher(positionId);
+            if (m.find()) {
+                int x = Integer.parseInt(m.group(1));
+                int y = Integer.parseInt(m.group(2));
+                
+                if (x < 0 || x > 100 || y < 0 || y > 100)
+                    throw new IllegalArgumentException("x < 0 || x > 100 || y < 0 || y > 100 : " + positionId);
 
-                if (m.find()) {
-                    int x = Integer.parseInt(m.group(1));
-                    int y = Integer.parseInt(m.group(2));
-                    
-                    if (x < 0 || x > 100 || y < 0 || y > 100)
-                        throw new IllegalArgumentException("x < 0 || x > 100 || y < 0 || y > 100 : " + positionId);
-
-                    for (Position p : VALUES) {
-                        if (p.x == x && p.y == y) return p;
-                    }
-                    
-                    return new Position(null, x, y);
-                } else {
-                    throw new IllegalArgumentException("positionId '" + positionId + "' has an unrecognized position format");
+                for (Position p : VALUES) {
+                    if (p.x == x && p.y == y) return p;
                 }
+                
+                return new Position(null, x, y);
             } else {
                 positionId = positionId.toUpperCase().replace(' ', '_');
                 
