@@ -140,7 +140,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         
         wr.ai.flushRenderCallbacks(comp, id);        
 	}
-
+    
     private StringBuilder getInitialStyleInfo() {
         Style s = comp.getStyle();
         Style ds = wr.ai.getDefaultStyle(comp.getClass());
@@ -157,6 +157,14 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         value = s.getBackground().getImage();
         defaultValue = ds.getBackground().getImage();
         if (!value.equals(defaultValue)) sb.append("backgroundImage:\"").append(getQualifiedURL((String)value)).append("\",");
+        
+        value = s.getBackground().getRepeat();
+        defaultValue = ds.getBackground().getRepeat();
+        if (!value.equals(defaultValue)) sb.append("backgroundRepeat:\"").append(wr.ai.getRepeatValue((Background.Repeat)value)).append("\",");
+
+        value = s.getBackground().getPosition();
+        defaultValue = ds.getBackground().getPosition();
+        if (!value.equals(defaultValue)) sb.append("backgroundPosition:\"").append(value).append("\",");
         
         value = s.getBorder().getType();
         defaultValue = ds.getBorder().getType();            
@@ -219,13 +227,16 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     private void setStyle(String propertyName, Object oldValue) {
         if (propertyName.startsWith("fx") || isPropertyChangeIgnored(propertyName)) return;
         Style s = comp.getStyle();
-        Style ds = wr.ai.getDefaultStyle(comp.getClass());
         Object value;
         
         if (propertyName.equals(Background.PROPERTY_BACKGROUND_COLOR)) {
             value = s.getBackground().getColor();
         } else if (propertyName.equals(Background.PROPERTY_BACKGROUND_IMAGE)) {
             value = getQualifiedURL(s.getBackground().getImage());
+        } else if (propertyName.equals(Background.PROPERTY_BACKGROUND_REPEAT)) {
+            value = wr.ai.getRepeatValue(s.getBackground().getRepeat());
+        } else if (propertyName.equals(Background.PROPERTY_BACKGROUND_POSITION)) {
+            value = s.getBackground().getPosition();
         } else if (propertyName.equals(Border.PROPERTY_BORDER_COLOR)) {
             if (s.getBorder().getType() == Border.Type.NONE) return;
             value = s.getBorder().getColor();

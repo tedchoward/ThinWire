@@ -250,7 +250,8 @@ var tw_Component = Class.extend({
                 if (this.isEnabled()) this._backgroundBox.style.backgroundColor = value;
             } else if (name == "backgroundImage") {
                 this._backgroundBox.style.backgroundImage = tw_Component.expandUrl(value, true);
-                this._backgroundBox.style.backgroundPosition = "center center";
+            } else if (name == "backgroundRepeat" || name == "backgroundPosition") {
+                this._backgroundBox.style[realName] = value;
             }
         } else if (this._fontBox != null && name.indexOf("font") == 0) {
             if (name == "fontSize") {
@@ -303,8 +304,8 @@ var tw_Component = Class.extend({
         if (this._backgroundBox != null && name.indexOf("background") == 0) {
             if (name == "backgroundColor") {
                 value = this._backgroundColor;
-            } else {
-                value = this._backgroundBox.style.backgroundImage;
+            } else if (name == "backgroundImage" || name == "backgroundRepeat" || name == "backgroundPosition") {
+                value = this._backgroundBox.style[realName];
             }
         } else if (this._fontBox != null && name.indexOf("font") == 0) {
             value = this._fontBox.style[realName];
@@ -529,6 +530,8 @@ var tw_Component = Class.extend({
         
         this.setStyle("backgroundColor", style["backgroundColor"]);
         this.setStyle("backgroundImage", style["backgroundImage"]);
+        this.setStyle("backgroundRepeat", style["backgroundRepeat"]);
+        this.setStyle("backgroundPosition", style["backgroundPosition"]);
         
         if (this._borderBox != null) {
             this.setStyle("borderType", style["borderType"]);
@@ -593,6 +596,8 @@ tw_Component.currentFocus = null;
 tw_Component.styleNameMap = {
     backgroundColor: "backgroundColor",
     backgroundImage: "backgroundImage",
+    backgroundRepeat: "backgroundRepeat",
+    backgroundPosition: "backgroundPosition",
     fontSize: "fontSize",
     fontBold: "fontWeight",
     fontItalic: "fontStyle",

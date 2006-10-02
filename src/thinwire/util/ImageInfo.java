@@ -41,7 +41,7 @@ import thinwire.ui.Application;
  * @author Joshua J. Gertzen
  */
 public class ImageInfo {
-    public enum Format {GIF,JPEG,PNG};
+    public enum Format {GIF,JPEG,PNG}
     
     private String name;
     private Format format;

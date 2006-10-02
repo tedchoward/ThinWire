@@ -42,6 +42,8 @@ public class Style {
         
         s.getBackground().setColor(Color.WHITE);
         s.getBackground().setImage("");
+        s.getBackground().setRepeat(Background.Repeat.NONE);
+        s.getBackground().setPosition(Background.Position.LEFT_TOP);
 
         Border b = s.getBorder();
         b.setColor(Color.WHITE);

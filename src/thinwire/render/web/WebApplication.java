@@ -335,7 +335,16 @@ public final class WebApplication extends Application {
     String getColorValue(Color color, boolean border) {
         if (color.isSystemColor()) color = systemColors.get(color.toString());
         return color.toRGBString();
-    }    
+    }
+    
+    String getRepeatValue(Background.Repeat repeat) {
+        switch (repeat) {
+            case BOTH: return "repeat";
+            case X: return "repeat-x";
+            case Y: return "repeat-y";
+            default: return "no-repeat";
+        }
+    }
     
     Integer getNextComponentId() {
         nextCompId = nextCompId == Integer.MAX_VALUE ? 1 : nextCompId + 1;
@@ -354,6 +363,8 @@ public final class WebApplication extends Application {
         }
         
         sb.append("backgroundImage:\"").append(backgroundImage).append("\",");
+        sb.append("backgroundRepeat:\"").append(getRepeatValue(s.getBackground().getRepeat())).append("\",");
+        sb.append("backgroundPosition:\"").append(s.getBackground().getPosition()).append("\",");
         
         Font f = s.getFont();
         sb.append("fontFamily:\"").append(f.getFamily()).append("\",");

@@ -274,7 +274,7 @@ public class Font {
     
     public void setFamily(Family family) {        
         if (family == null && parent.defaultStyle != null) family = parent.defaultStyle.getFont().getFamily();
-        if (family == null) throw new IllegalArgumentException("family == null");
+        if (family == null) throw new IllegalArgumentException("family == null && defaultStyle.getFont().getFamily() == null");
         Family oldFamily = this.family;
         this.computedState = null;
         this.family = family;
@@ -282,13 +282,13 @@ public class Font {
     }
     
     public Color getColor() {
-        if (color == null)  throw new IllegalStateException("color == null");
+        if (color == null)  throw new IllegalStateException("color not initialized");
         return color;
     }
     
     public void setColor(Color color) {
         if (color == null && parent.defaultStyle != null) color = parent.defaultStyle.getFont().getColor();        
-        if (color == null) throw new IllegalArgumentException("color == null");
+        if (color == null) throw new IllegalArgumentException("color == null && defaultStyle.getFont().getColor() == null");
         Color oldColor = this.color;
         this.color = color;        
         if (parent != null) parent.firePropertyChange(this, PROPERTY_FONT_COLOR, oldColor, this.color);
@@ -310,7 +310,7 @@ public class Font {
     
     public boolean isBold() {
         if (bold == -1) throw new IllegalStateException("bold not initialized");
-        return bold == 1 ? true : false;
+        return bold == 1;
     }
     
     public void setBold(boolean bold) {       
@@ -322,7 +322,7 @@ public class Font {
 
     public boolean isItalic() {
         if (italic == -1) throw new IllegalStateException("italic not initialized");
-        return italic == 1 ? true : false;
+        return italic == 1;
     }
     
     public void setItalic(boolean italic) {
@@ -334,7 +334,7 @@ public class Font {
     
     public boolean isUnderline() {
         if (underline == -1) throw new IllegalStateException("underline not initialized");
-        return underline == 1 ? true : false;
+        return underline == 1;
     }
     
     public void setUnderline(boolean underline) {
