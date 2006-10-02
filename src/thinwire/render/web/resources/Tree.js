@@ -342,6 +342,8 @@ var tw_Tree = tw_Component.extend({
                 bs.src = tw_Tree.imageLeafBottom;
           }
         }
+        
+        if (this._currentItem === rnode) this._currentItem = undefined;
     },
     
     _refreshLine: function(row, level, visible) {
