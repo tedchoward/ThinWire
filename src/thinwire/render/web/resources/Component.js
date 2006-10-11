@@ -639,7 +639,7 @@ tw_Component.keyPressNotifySpaceFireAction = function(keyPressCombo) {
         this._clickListener();
         return false;
     } else {
-        return this.$.keyPressNotify.apply(this, [keyPressCombo]);
+        return arguments.callee.$.keyPressNotify.call(this, keyPressCombo);
     }
 };
 

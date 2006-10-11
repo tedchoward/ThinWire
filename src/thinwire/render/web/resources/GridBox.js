@@ -45,7 +45,7 @@ var tw_GridBox = tw_Component.extend({
     _clickTime: null,
     
     construct: function(id, containerId, props) {
-        this.$.construct.apply(this, ["div", "gridBox", id, containerId]);
+        arguments.callee.$.construct.call(this, "div", "gridBox", id, containerId);
         
         this._root = this;   
         var visibleCheckBoxes = props.visibleCheckBoxes;
@@ -454,7 +454,7 @@ var tw_GridBox = tw_Component.extend({
     
     setStyle: function(name, value) {
         var oldCalcBorderSize = this._borderSizeSub;
-        this.$.setStyle.apply(this, [name, value]);
+        arguments.callee.$.setStyle.call(this, name, value);
         
         if (name == "borderSize") {
             for (var i = 0, cnt = this._getColumnCount(); i < cnt; i++) {
@@ -471,7 +471,7 @@ var tw_GridBox = tw_Component.extend({
     setX: function(x) {
         this._x = x;
         if (this._parent instanceof tw_GridBox) x += parseInt(this._parent._box.style.left);
-        this.$.setX.apply(this, [x]);
+        arguments.callee.$.setX.call(this, x);
     },
         
     setY: function(y) {
@@ -486,26 +486,26 @@ var tw_GridBox = tw_Component.extend({
             }
         }    
         
-        this.$.setY.apply(this, [y]);
+        arguments.callee.$.setY.call(this, y);
     },
         
     setWidth: function(width) {
-        this.$.setWidth.apply(this, [width]);
+        arguments.callee.$.setWidth.call(this, width);
         this.setColumnWidth();
     },
     
     setHeight: function(height) {
-        this.$.setHeight.apply(this, [height]);
+        arguments.callee.$.setHeight.call(this, height);
         this.setVisibleHeader(this._visibleHeader);
     },
         
     setVisible: function(visible) {
         if (!visible) this.closeChildren();
-        this.$.setVisible.apply(this, [visible]);
+        arguments.callee.$.setVisible.call(this, visible);
     },
 
     setEnabled: function(enabled) {
-        this.$.setEnabled.apply(this, [enabled]);        
+        arguments.callee.$.setEnabled.call(this, enabled);        
         tw_setFocusCapable(this._box, enabled);
     },
 
@@ -513,7 +513,7 @@ var tw_GridBox = tw_Component.extend({
         if (this._root._dropDown != null || this._root !== this) {
             return true;
         } else {
-            return this.$.setFocus.apply(this, [focus]);
+            return arguments.callee.$.setFocus.call(this, focus);
         }
     },
         
@@ -642,7 +642,7 @@ var tw_GridBox = tw_Component.extend({
             }
             
             if (retVal) {
-                return this.$.keyPressNotify.apply(this, [keyPressCombo]);
+                return arguments.callee.$.keyPressNotify.call(this, keyPressCombo);
             } else {
                 return false;
             }
@@ -984,7 +984,7 @@ var tw_GridBox = tw_Component.extend({
         
         
         this._box.tw_root = this._root = this._header = this._content = this._childGridBoxes = this._dropDown = this._hresize.column = this._parentCell = null;
-        this.$.destroy.apply(this, []);
+        arguments.callee.$.destroy.call(this);
     }    
 });
 

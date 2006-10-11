@@ -30,7 +30,7 @@ var tw_Hyperlink = tw_BaseBrowserLink.extend({
     _location: "",
     
     construct: function(id, containerId, props) {
-        this.$.construct.apply(this, ["a", "hyperlink", id, containerId, "text"]);
+        arguments.callee.$.construct.call(this, "a", "hyperlink", id, containerId, "text");
         var s = this._box.style;
         s.whiteSpace = "nowrap";
         s.overflow = "hidden";        
@@ -49,7 +49,7 @@ var tw_Hyperlink = tw_BaseBrowserLink.extend({
     keyPressNotify: tw_Component.keyPressNotifySpaceFireAction,
     
     setStyle: function(name, value) {
-        this.$.setStyle.apply(this, [name, value]);
+        arguments.callee.$.setStyle.call(this, name, value);
         if (name == "fontColor") this._fontColor = value;
     },
     
@@ -59,7 +59,7 @@ var tw_Hyperlink = tw_BaseBrowserLink.extend({
     },
 
     setEnabled: function(enabled) {
-        this.$.setEnabled.apply(this, [enabled]);
+        arguments.callee.$.setEnabled.call(this, enabled);
         this._box.style.cursor = enabled ? "hand" : "default";
         this._fontBox.style.color = enabled ? this._fontColor : tw_COLOR_GRAYTEXT; 
     }

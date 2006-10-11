@@ -27,7 +27,7 @@ var tw_RadioButton = tw_BaseCheckRadio.extend({
     _groupId: 0,
     
     construct: function(id, containerId, props) {
-        this.$.construct.apply(this, ["radioButton", id, containerId]);        
+        arguments.callee.$.construct.call(this, "radioButton", id, containerId);        
         this.init(-1, props);
     },
     
@@ -63,12 +63,12 @@ var tw_RadioButton = tw_BaseCheckRadio.extend({
             }
         }
         
-        this.$.setChecked.apply(this, [checked, true]);
+        arguments.callee.$.setChecked.call(this, checked, true);
     },
     
     destroy: function() {
         this.setGroup(0);
-        this.$.destroy.apply(this, []);
+        arguments.callee.$.destroy.call(this);
     }
 });
 

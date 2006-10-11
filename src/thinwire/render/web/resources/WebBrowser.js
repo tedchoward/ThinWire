@@ -26,7 +26,7 @@
 var tw_WebBrowser = tw_BaseBrowserLink.extend({
     
     construct: function(id, containerId, props) {
-        this.$.construct.apply(this, ["iframe", "webBrowser", id, containerId]);
+        arguments.callee.$.construct.call(this, "iframe", "webBrowser", id, containerId);
         this._box.style.overflow = "auto";
         this._fontBox = null;
         this._borderBox = null;
@@ -43,7 +43,7 @@ var tw_WebBrowser = tw_BaseBrowserLink.extend({
     },
     
     setStyle: function(name, value) {
-        if (name != "backgroundColor") this.$.setStyle.apply(this, [name, value]);
+        if (name != "backgroundColor") arguments.callee.$.setStyle.call(this, name, value);
     }
 });
 

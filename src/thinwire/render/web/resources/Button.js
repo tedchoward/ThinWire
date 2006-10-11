@@ -30,7 +30,7 @@ var tw_Button = tw_Component.extend({
     _fontColor: null,
         
     construct: function(id, containerId, props) {
-        this.$.construct.apply(this, ["div", "button", id, containerId]);
+        arguments.callee.$.construct.call(this, "div", "button", id, containerId);
         var s = this._box.style;
         s.borderStyle = "solid";
         s.borderColor = tw_COLOR_WINDOWFRAME;                        
@@ -96,13 +96,13 @@ var tw_Button = tw_Component.extend({
     },
 
     setStyle: function(name, value) {
-        this.$.setStyle.apply(this, [name, value]);
+        arguments.callee.$.setStyle.call(this, name, value);
         if (name == "backgroundColor") this._disabledBackgroundColor = value;
         if (name == "fontColor") this._fontColor = value;
     },
     
     setWidth: function(width) {
-        this.$.setWidth.apply(this, [width]);
+        arguments.callee.$.setWidth.call(this, width);
         var s = this._fontBox.style;
         width -= this._boxSizeSub;
         if (!tw_sizeIncludesBorders) width -= parseInt(s.paddingLeft) + parseInt(s.paddingRight) + this._borderSizeSub;
@@ -111,7 +111,7 @@ var tw_Button = tw_Component.extend({
     },
     
     setHeight: function(height) {
-        this.$.setHeight.apply(this, [height]);
+        arguments.callee.$.setHeight.call(this, height);
         var s = this._fontBox.style;
         height -= this._boxSizeSub;
         if (!tw_sizeIncludesBorders) height -= this._borderSizeSub;
@@ -121,7 +121,7 @@ var tw_Button = tw_Component.extend({
     
     setEnabled: function(enabled) {
         if (!enabled) this._setStandardStyle(false);
-        this.$.setEnabled.apply(this, [enabled]);
+        arguments.callee.$.setEnabled.call(this, enabled);
         this._fontBox.style.color = enabled ? this._fontColor : tw_COLOR_GRAYTEXT; 
         tw_setFocusCapable(this._fontBox, enabled);
     },
@@ -129,7 +129,7 @@ var tw_Button = tw_Component.extend({
     setFocus: function(focus) {
         if (!this.isEnabled() || !this.isVisible()) return false;
         this._setStandardStyle(focus);
-        return this.$.setFocus.apply(this, [focus]);
+        return arguments.callee.$.setFocus.call(this, focus);
     },
     
     keyPressNotify: function(keyPressCombo) {
@@ -137,7 +137,7 @@ var tw_Button = tw_Component.extend({
             this.fireClick();
             return false;
         } else {
-            return this.$.keyPressNotify.apply(this, [keyPressCombo]);
+            return arguments.callee.$.keyPressNotify.call(this, keyPressCombo);
         }        
     },
     
@@ -176,7 +176,7 @@ var tw_Button = tw_Component.extend({
     destroy: function() {
         var w = this.getBaseWindow();
         if (w.getStandardButton() === this) w.setStandardButton(null);
-        this.$.destroy.apply(this, []);
+        arguments.callee.$.destroy.call(this);
     }
 });
 

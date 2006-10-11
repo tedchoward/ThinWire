@@ -29,7 +29,7 @@ var tw_Menu = tw_Component.extend({
     _windowMenu: false,
     
     construct: function(id, containerId, props) {
-        this.$.construct.apply(this, ["div", "mainMenu", id, containerId]);
+        arguments.callee.$.construct.call(this, "div", "mainMenu", id, containerId);
         this._windowMenu = props.windowMenu;                
         delete props.windowMenu;
 
@@ -56,7 +56,7 @@ var tw_Menu = tw_Component.extend({
     },
     
     setHeight: function(height) {
-        this.$.setHeight.apply(this, [height]);
+        arguments.callee.$.setHeight.call(this, height);
         this._mainItemSub = this._borderSizeSub + this._boxSizeSub;
         
         if (!tw_sizeIncludesBorders) {
@@ -74,7 +74,7 @@ var tw_Menu = tw_Component.extend({
     },
     
     setStyle: function(name, value) {
-        this.$.setStyle.apply(this, [name, value]);
+        arguments.callee.$.setStyle.call(this, name, value);
 
         if (name == "backgroundColor" || name.indexOf("border") == 0) {
             if (this._windowMenu) {
@@ -696,6 +696,6 @@ var tw_Menu = tw_Component.extend({
     
     destroy: function() {
         this._activeMenuItem = null;
-        this.$.destroy.apply(this, []);        
+        arguments.callee.$.destroy.call(this);        
     }
 });

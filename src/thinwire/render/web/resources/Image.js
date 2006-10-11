@@ -25,7 +25,7 @@
  */
 var tw_Image = tw_Component.extend({
     construct: function(id, containerId, props) {
-        this.$.construct.apply(this, ["div", "image", id, containerId]);
+        arguments.callee.$.construct.call(this, "div", "image", id, containerId);
         this._fontBox = null;
         var s = this._box.style;
         s.backgroundRepeat = "no-repeat";
@@ -43,7 +43,7 @@ var tw_Image = tw_Component.extend({
     },
     
     setHeight: function(height) {
-        this.$.setHeight.apply(this, [height]);
+        arguments.callee.$.setHeight.call(this, height);
         
         //NOTE: This is not perfect, the problem here is that when an image has transparent
         //      whitespace on the top, the image does not vertically center in IE.  Technically,

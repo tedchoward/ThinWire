@@ -25,7 +25,7 @@
  */
 var tw_Divider = tw_Component.extend({
     construct: function(id, containerId, props) {
-        this.$.construct.apply(this, ["div", "divider", id, containerId]);
+        arguments.callee.$.construct.call(this, "div", "divider", id, containerId);
         this._fontBox = null;
         var s = this._box.style;
         s.backgroundColor = tw_COLOR_TRANSPARENT;
@@ -64,12 +64,12 @@ var tw_Divider = tw_Component.extend({
     },
     
     setWidth: function(width) {
-        this.$.setWidth.apply(this, [width]);
+        arguments.callee.$.setWidth.call(this, width);
         this._recalc();
     },
     
     setHeight: function(height) {
-        this.$.setHeight.apply(this, [height]);        
+        arguments.callee.$.setHeight.call(this, height);        
         this._recalc();
     }        
 });
