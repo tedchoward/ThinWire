@@ -62,7 +62,7 @@ import thinwire.ui.event.ActionListener;
  * 
  * @author Joshua J. Gertzen
  */
-public final class Hyperlink extends AbstractTextComponent implements ActionEventComponent {    
+public class Hyperlink extends AbstractTextComponent implements ActionEventComponent {    
     private static ThreadLocal<Integer> targetId = new ThreadLocal<Integer>() {
         protected synchronized Integer initialValue() {
             return 0;

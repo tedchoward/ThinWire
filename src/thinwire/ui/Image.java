@@ -78,7 +78,7 @@ import thinwire.util.ImageInfo;
  * 
  * @author Joshua J. Gertzen
  */
-public final class Image extends AbstractComponent implements ImageComponent, ActionEventComponent {
+public class Image extends AbstractComponent implements ImageComponent, ActionEventComponent {
     private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>();    
 	private ImageInfo imageDetail = new ImageInfo();
     

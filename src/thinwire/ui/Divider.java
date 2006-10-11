@@ -53,7 +53,7 @@ import thinwire.ui.event.ActionListener;
  * </p>
  * @author Joshua J. Gertzen
  */
-public final class Divider extends AbstractComponent implements ActionEventComponent {    
+public class Divider extends AbstractComponent implements ActionEventComponent {    
     private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>();    
     
     /**

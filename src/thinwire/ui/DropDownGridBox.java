@@ -108,7 +108,7 @@ import java.util.List;
  * 
  * @author Joshua J. Gertzen
  */
-public final class DropDownGridBox extends DropDown<GridBox> {
+public class DropDownGridBox extends DropDown<GridBox> {
     public static class DefaultView implements DropDown.View<GridBox> {
         private int columnIndex;
         private String delimiter;

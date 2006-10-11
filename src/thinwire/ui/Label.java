@@ -75,7 +75,7 @@ import thinwire.ui.event.ActionListener;
  * 
  * @author Joshua J. Gertzen
  */
-public final class Label extends AbstractTextComponent implements AlignTextComponent, ActionEventComponent {
+public class Label extends AbstractTextComponent implements AlignTextComponent, ActionEventComponent {
     public static final String PROPERTY_LABEL_FOR = "labelFor";
     public static final String PROPERTY_WRAP_TEXT = "wrapText";
     

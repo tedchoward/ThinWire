@@ -58,7 +58,7 @@ package thinwire.ui;
  */
 // TODO Nice to haves on the client side Iframe - Back/Forward/Stop/Refresh.
 // i.e. Browser like functionality.
-public final class WebBrowser extends AbstractComponent {
+public class WebBrowser extends AbstractComponent {
     public static final String PROPERTY_LOCATION = "location";
     
     private String location = "";

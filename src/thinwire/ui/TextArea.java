@@ -62,7 +62,7 @@ package thinwire.ui;
  * 
  * @author Joshua J. Gertzen
  */
-public final class TextArea extends AbstractEditorComponent {    
+public class TextArea extends AbstractEditorComponent {    
 	/**
 	 * Constructs a new TextArea with no text.
 	 */

@@ -128,7 +128,7 @@ import thinwire.util.Grid;
  * 
  * @author Joshua J. Gertzen
  */
-public final class GridBox extends AbstractComponent implements Grid<GridBox.Row, GridBox.Column>, ActionEventComponent, ItemChangeEventComponent {
+public class GridBox extends AbstractComponent implements Grid<GridBox.Row, GridBox.Column>, ActionEventComponent, ItemChangeEventComponent {
     private static Logger log = Logger.getLogger(GridBox.class.getName());
     public static final class CellPosition {
         private int rowIndex;

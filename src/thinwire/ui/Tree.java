@@ -114,7 +114,7 @@ package thinwire.ui;
  * 
  * @author Joshua J. Gertzen
  */
-public final class Tree extends AbstractHierarchyComponent<Tree.Item> {    
+public class Tree extends AbstractHierarchyComponent<Tree.Item> {    
     /**
      * An object that represents an item in a <code>Tree</code> component.
      */
