@@ -65,7 +65,7 @@ var tw_TabFolder = tw_BaseContainer.extend({
     },    
     
     getOffsetY: function() {
-        return this.$.getOffsetY.apply(this) + tw_TabFolder._tabsHeight;
+        return arguments.callee.$.getOffsetY.apply(this) + tw_TabFolder._tabsHeight;
     },
         
     setWidth: function(width) {

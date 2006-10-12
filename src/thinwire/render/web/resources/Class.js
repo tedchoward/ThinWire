@@ -44,7 +44,12 @@ Class.extend = function(def) {
     
     for (var n in def) {
         var item = def[n];                        
-        if (item instanceof Function) item.$ = superClass;
+        
+        if (item instanceof Function) {
+            item.$$ = superClass[n];
+            item.$ = superClass;
+        }
+        
         proto[n] = item;
     }
 

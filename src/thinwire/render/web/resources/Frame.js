@@ -172,7 +172,7 @@ var tw_Frame = tw_BaseContainer.extend({
     },
     
     getOffsetY: function() {
-        return this.$.getOffsetY.apply(this) + (this.getMenu() != null ? tw_Dialog.menuBarHeight : 0);
+        return arguments.callee.$.getOffsetY.apply(this) + (this.getMenu() != null ? tw_Dialog.menuBarHeight : 0);
     },     
     
     setX: function() { },    
