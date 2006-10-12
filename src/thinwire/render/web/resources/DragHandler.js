@@ -73,10 +73,10 @@ var tw_DragHandler = Class.extend({
         this._callListener(0, 0, 0);
         tw_addEventListener(document, "mousemove", this._mouseMove);    
         tw_addEventListener(document, "mouseup", this._mouseUp);        
-        var frames = document.getElementsByTagName("IFRAME");
-                
-        for (var i = 0, cnt = frames.length; i < cnt; i++) {
-            frames.item(i).style.display = "none";
+        var browsers = tw_WebBrowser.instances;
+        
+        for (var id in browsers) {
+            browsers[id].setDragLayerVisible(true);
         }
     },    
         
@@ -95,10 +95,11 @@ var tw_DragHandler = Class.extend({
         var newY = event.clientY;
         tw_removeEventListener(document, "mousemove", this._mouseMove);    
         tw_removeEventListener(document, "mouseup", this._mouseUp);
-        var frames = document.getElementsByTagName("IFRAME");
-
-        for (var i = 0, cnt = frames.length; i < cnt; i++) {
-            frames.item(i).style.display = "block";
+        
+        var browsers = tw_WebBrowser.instances;
+        
+        for (var id in browsers) {
+            browsers[id].setDragLayerVisible(false);
         }
 
         var totalChangeInX = newX - this._startX;

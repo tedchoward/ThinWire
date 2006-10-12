@@ -64,15 +64,8 @@ var tw_Frame = tw_BaseContainer.extend({
         s.position = "absolute";
         s.height = "100%";
         s.width = "100%";
-        s.backgroundColor = tw_COLOR_TRANSPARENT;
-        s.zIndex = "1";        
-        
-        if (tw_isIE) {
-            //NOTE: IE allows clicks to propagate if the background-color is transparent.
-            //However, if the background is white and the opacity is zero, it works like it should.
-            s.filter = "alpha(opacity=0)";
-            s.backgroundColor = "white";
-        }
+        s.zIndex = "1";
+        tw_setLayerTransparent(this._modalLayer);        
         
         tw_addEventListener(this._modalLayer, "mousedown", this._modalLayerMouseDownListener);
         document.body.appendChild(this._modalLayer);

@@ -146,6 +146,19 @@ function tw_cancelEvent(event) {
     }
 }
 
+function tw_setLayerTransparent(box) {
+    var s = box.style;
+    
+    if (tw_isIE) {
+        //NOTE: IE allows clicks to propagate if the background-color is transparent.
+        //However, if the background is white and the opacity is zero, it works like it should.
+        s.filter = "alpha(opacity=0)";
+        s.backgroundColor = "white";
+    } else {
+        s.backgroundColor = tw_COLOR_TRANSPARENT;        
+    }
+}
+
 function tw_makeFileChooserBtn(buttonId, tfId) {
     var btn = tw_Component.instances[buttonId];
     var tf = tw_Component.instances[tfId];

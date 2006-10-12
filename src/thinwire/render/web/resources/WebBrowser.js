@@ -24,26 +24,56 @@
  #VERSION_HEADER#
  */
 var tw_WebBrowser = tw_BaseBrowserLink.extend({
+    _browser: null,
+    _dragLayer: null,
     
     construct: function(id, containerId, props) {
-        arguments.callee.$.construct.call(this, "iframe", "webBrowser", id, containerId);
-        this._box.style.overflow = "auto";
+        arguments.callee.$.construct.call(this, "div", "webBrowser", id, containerId);
         this._fontBox = null;
-        this._borderBox = null;
-        var s = this._box.style;
+        
+        var browser = this._browser = document.createElement("iframe"); 
+        browser.frameBorder = "0";
+        var s = browser.style;
+        s.overflow = "auto";
         if (tw_isIE) this._box.allowTransparency = true;
-        this.init(-1, props);
         s.backgroundColor = "window";
+        s.position = "absolute";
+        s.width = "100%";
+        s.height = "100%";     
+        s.zIndex = "1";
+        
+        var dragLayer = this._dragLayer = document.createElement("div");
+        var s = dragLayer.style;
+        s.position = "absolute";
+        s.width = "100%";
+        s.height = "100%";
+        s.zIndex = "2";
+        tw_setLayerTransparent(dragLayer);
+        this.setDragLayerVisible(false);
+        
+        this._box.appendChild(dragLayer);
+        this._box.appendChild(browser);
+        tw_WebBrowser.instances[id] = this;
+        this.init(-1, props);
     },
     
     setLocation: function(location) {
         //NOTE: this line throws an error in firefox, but it still works.
         if (location != "") location = tw_Component.expandUrl(location);
-        this._box.src = location;
+        this._browser.src = location;
+        this._browser.style.display = location != "" ? "block" : "none"; 
     },
     
-    setStyle: function(name, value) {
-        if (name != "backgroundColor") arguments.callee.$.setStyle.call(this, name, value);
+    setDragLayerVisible: function(state) {
+        this._dragLayer.style.display = state ? "block" : "none";
+    },
+    
+    destroy: function() {
+        delete tw_WebBrowser.instances[this._id];
+        this._browser = this._dragLayer = null;
+        arguments.callee.$$.call(this);
     }
 });
+
+tw_WebBrowser.instances = {};
 
