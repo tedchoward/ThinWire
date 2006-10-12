@@ -140,6 +140,7 @@ var tw_TabFolder = tw_BaseContainer.extend({
         
         if (active) {
             this._focusBox = sheet._tab;
+            if (this._focusBox.focus) this._focusBox.focus();
             this._currentIndex = index;
         }
 
@@ -173,9 +174,9 @@ var tw_TabFolder = tw_BaseContainer.extend({
         if (sendEvent && this._currentIndex == index) sendEvent = false;            
         this._currentIndex = index;
         this._setTabActive(this._currentIndex, true);
+        this.setFocus(true);
         
         if (sendEvent) {
-            this.setFocus(true);
             this.firePropertyChange("currentIndex", index);
         }
     },
