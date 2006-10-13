@@ -34,7 +34,7 @@ var tw_DropDown = tw_BaseText.extend({
     construct: function(id, containerId, props) {
         var button = this._button = document.createElement("div");
         var buttonBorder = this._buttonBorder = document.createElement("div");
-        arguments.callee.$.construct.call(this, ["div", "input", "text"], "dropDownGridBox", id, containerId, "editMask");
+        arguments.callee.$.call(this, ["div", "input", "text"], "dropDownGridBox", id, containerId, "editMask");
         this._box.style.fontSize = "1px"; //Hack to work around IE height sizing issue
         this._subtractEditorWidth += this._buttonWidth;
         
@@ -103,7 +103,7 @@ var tw_DropDown = tw_BaseText.extend({
     },
     
     setWidth: function(width) {
-        arguments.callee.$.setWidth.call(this, width);
+        arguments.callee.$.call(this, width);
         width = this._buttonWidth;
         if (!tw_sizeIncludesBorders) width -= this._buttonBorderWidth * 2;        
         if (width < 0) width = 0;
@@ -114,7 +114,7 @@ var tw_DropDown = tw_BaseText.extend({
     },
 
     setHeight: function(height) {
-        arguments.callee.$.setHeight.call(this, height);
+        arguments.callee.$.call(this, height);
         height -= this._borderSizeSub;
         if (!tw_sizeIncludesBorders) height -= this._buttonBorderWidth * 2;
         if (height < 0) height = 0;        
@@ -125,12 +125,12 @@ var tw_DropDown = tw_BaseText.extend({
     },
     
     setVisible: function(visible) {
-        arguments.callee.$.setVisible.call(this, visible);
+        arguments.callee.$.call(this, visible);
         if (!visible) this.setDropDownVisible(false);
     },
 
     setEnabled: function(enabled) {
-        arguments.callee.$.setEnabled.call(this, enabled);
+        arguments.callee.$.call(this, enabled);
         this._button.style.backgroundImage = enabled ? "url(?_twr_=ddButton.png)" : "url(?_twr_=ddDisabledButton.png)";
         if (enabled && !this._editAllowed) this._editor.readOnly = true;
     },
@@ -150,11 +150,11 @@ var tw_DropDown = tw_BaseText.extend({
         }
         
         this._setFocusStyle(focus);        
-        return arguments.callee.$.setFocus.call(this, focus);
+        return arguments.callee.$.call(this, focus);
     },
 
     setStyle: function(name, value) {
-        arguments.callee.$.setStyle.call(this, name, value);
+        arguments.callee.$.call(this, name, value);
         if (name == "borderSize") this._button.style.borderWidth = value + "px";
     },
     
@@ -164,7 +164,7 @@ var tw_DropDown = tw_BaseText.extend({
                 this.setDropDownVisible(true);
                 return false;                
             } else {
-                return arguments.callee.$.keyPressNotify.call(this, keyPressCombo);                
+                return arguments.callee.$.call(this, keyPressCombo);                
             }
         } else {
             return this._ddComp.keyPressNotify(keyPressCombo);
@@ -217,7 +217,7 @@ var tw_DropDown = tw_BaseText.extend({
     destroy: function() {        
         this._ddComp.destroy();
         this._ddComp = this._button = this._buttonBorder = null;
-        arguments.callee.$.destroy.call(this);
+        arguments.callee.$.call(this);
     }
 });
 

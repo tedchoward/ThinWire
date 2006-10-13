@@ -31,7 +31,7 @@ var tw_BaseCheckRadio = tw_Component.extend({
     _image: null,
     
     construct: function(className, id, containerId) {
-        arguments.callee.$.construct.call(this, "a", className, id, containerId, "text,lineHeight");
+        arguments.callee.$.call(this, "a", className, id, containerId, "text,lineHeight");
         this._borderBox = null;
 
         var s = this._box.style;
@@ -99,7 +99,7 @@ var tw_BaseCheckRadio = tw_Component.extend({
     },
     
     setHeight: function(height) {
-        arguments.callee.$.setHeight.call(this, height);
+        arguments.callee.$.call(this, height);
         var top = height / 2 - 8;        
         if (top < 0) top = 0;
         this._image.style.top = top + "px";
@@ -109,7 +109,7 @@ var tw_BaseCheckRadio = tw_Component.extend({
     setEnabled: function(enabled) {
         tw_setFocusCapable(this._box, enabled);
         if (enabled == this.isEnabled()) return;
-        arguments.callee.$.setEnabled.call(this, enabled);
+        arguments.callee.$.call(this, enabled);
         this.setChecked(this.isChecked()); //Toggles image to disabled image
     },
     
@@ -131,7 +131,7 @@ var tw_BaseCheckRadio = tw_Component.extend({
     
     destroy: function() {
         this._image = null;
-        arguments.callee.$.destroy.call(this);        
+        arguments.callee.$.call(this);        
     }
 });
 

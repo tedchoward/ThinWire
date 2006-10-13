@@ -25,13 +25,13 @@
  */
 var tw_BaseBrowserLink = tw_Component.extend({    
     construct: function(tagName, className, id, containerId, support) {
-        arguments.callee.$.construct.call(this, tagName, className, id, containerId, support);        
+        arguments.callee.$.call(this, tagName, className, id, containerId, support);        
         tw_addEventListener(this._box, "focus", this._focusListener.bind(this)); 
         tw_addEventListener(this._box, "blur", this._blurListener.bind(this));        
     },
     
     setEnabled: function(enabled) {
-        arguments.callee.$.setEnabled.call(this, enabled);
+        arguments.callee.$.call(this, enabled);
         this._box.disabled = !enabled;
     }   
 });

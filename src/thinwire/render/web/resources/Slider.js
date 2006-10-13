@@ -30,7 +30,7 @@ var tw_Slider = tw_BaseRange.extend({
     _line: null,
    
     construct: function(id, containerId, props) {
-        arguments.callee.$.construct.call(this, "div", "slider", id, containerId);
+        arguments.callee.$.call(this, "div", "slider", id, containerId);
         var s = this._box.style;
         s.fontSize = "1px"; //Hack to work around IE height sizing issue
         s.backgroundColor = tw_COLOR_TRANSPARENT;
@@ -51,7 +51,7 @@ var tw_Slider = tw_BaseRange.extend({
     },
     
     setStyle: function(name, value) {
-        arguments.callee.$.setStyle.call(this, name, value);
+        arguments.callee.$.call(this, name, value);
         var s = this._line.style;
         
         if (name == "borderColor") {
@@ -116,12 +116,12 @@ var tw_Slider = tw_BaseRange.extend({
                 
                 this._max = this.getHeight() - (parseInt(c.height) + this.getStyle("borderSize") * 2);
             }
-            arguments.callee.$._recalc.call(this);
+            arguments.callee.$.call(this);
         }
     },
     
     _updateSelection: function() {
-        arguments.callee.$._updateSelection.call(this, "left");
+        arguments.callee.$.call(this, "left");
     },
     
     _clickListener: function() {
@@ -136,7 +136,7 @@ var tw_Slider = tw_BaseRange.extend({
     setEnabled: function(enabled) {
        tw_setFocusCapable(this._box, enabled);
        if (enabled == this.isEnabled()) return;
-       arguments.callee.$.setEnabled.call(this, enabled);
+       arguments.callee.$.call(this, enabled);
     },
     
     keyPressNotify: function(keyPressCombo) {
@@ -153,7 +153,7 @@ var tw_Slider = tw_BaseRange.extend({
             }
             return false;
         } else {
-            return arguments.callee.$.keyPressNotify.call(this, keyPressCombo);
+            return arguments.callee.$.call(this, keyPressCombo);
         }
     }
 });

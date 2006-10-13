@@ -35,7 +35,7 @@ var tw_Tree = tw_Component.extend({
     _lastIndex: null,
     
     construct: function(id, containerId, props) {
-        arguments.callee.$.construct.call(this, "div", "tree", id, containerId);
+        arguments.callee.$.call(this, "div", "tree", id, containerId);
         this._box.tw_isLeaf = false;
         var s = this._box.style;
         s.overflow = "auto";
@@ -493,14 +493,14 @@ var tw_Tree = tw_Component.extend({
                 }
                 break;
                 
-            default: return arguments.callee.$.keyPressNotify.call(this, keyPressCombo);
+            default: return arguments.callee.$.call(this, keyPressCombo);
         }
         
         return false;
     },
     
     setEnabled: function(enabled) {
-        arguments.callee.$.setEnabled.call(this, enabled);        
+        arguments.callee.$.call(this, enabled);        
         tw_setFocusCapable(this._box, enabled);        
     },
     
@@ -570,7 +570,7 @@ var tw_Tree = tw_Component.extend({
             if (dv.className == "treeRow") dv.textNode = dv.imageNode = dv.assignedImageNode = dv.subNodes = null;
         }
         
-        arguments.callee.$.destroy.call(this);
+        arguments.callee.$.call(this);
     }    
 });
 

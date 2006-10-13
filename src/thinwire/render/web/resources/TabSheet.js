@@ -28,7 +28,7 @@ var tw_TabSheet = tw_BaseContainer.extend({
     _tab: null,
     
     construct: function(id, containerId, props) {
-        arguments.callee.$.construct.call(this, "tabSheet", id, containerId);
+        arguments.callee.$.call(this, "tabSheet", id, containerId);
         var s = this._box.style;
         s.top = "0px";
         s.left = "0px";
@@ -112,7 +112,7 @@ var tw_TabSheet = tw_BaseContainer.extend({
     },    
         
     setStyle: function(name, value) {
-        arguments.callee.$.setStyle.call(this, name, value);
+        arguments.callee.$.call(this, name, value);
         
         if (name == "backgroundColor") {
             this._tab.style.backgroundColor = value;
@@ -125,14 +125,14 @@ var tw_TabSheet = tw_BaseContainer.extend({
     },
     
     setOpacity: function(opacity) {
-        arguments.callee.$.setOpacity.call(this, opacity);
+        arguments.callee.$.call(this, opacity);
         this._tab.style.display = opacity > 0 ? "block" : "none";        
         this._tab.style.opacity = opacity / 100;
         if (tw_isIE) this._tab.style.filter = opacity >= 100 ? "" : "alpha(opacity=" + opacity + ")";
     },
 
     destroy: function() {
-        arguments.callee.$.destroy.call(this);
+        arguments.callee.$.call(this);
         this._tab = null;
     }    
 });

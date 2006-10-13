@@ -37,7 +37,7 @@ var tw_BaseText = tw_Component.extend({
     _selectionOld: undefined,
     
     construct: function(tagNames, className, id, containerId, support) {
-        arguments.callee.$.construct.call(this, tagNames[0], className, id, containerId, support);
+        arguments.callee.$.call(this, tagNames[0], className, id, containerId, support);
         var s = this._box.style;
         
         var editor = document.createElement(tagNames[1]);    
@@ -81,14 +81,14 @@ var tw_BaseText = tw_Component.extend({
     },
     
     setWidth: function(width) {     
-        arguments.callee.$.setWidth.call(this, width);
+        arguments.callee.$.call(this, width);
         width -= this._borderSizeSub + this._subtractEditorWidth;
         if (width < 0) width = 0;
         this._editor.style.width = width - ((parseInt(this._editor.style.left) - 1) * 2) + "px";        
     },
     
     setHeight: function(height) {
-        arguments.callee.$.setHeight.call(this, height);
+        arguments.callee.$.call(this, height);
         height -= this._borderSizeSub;
         if (height < 0) height = 0;
         this._editor.style.height = height - (parseInt(this._editor.style.top) * 2) + "px";        
@@ -102,18 +102,18 @@ var tw_BaseText = tw_Component.extend({
     },
 
     setEnabled: function(enabled) {        
-        arguments.callee.$.setEnabled.call(this, enabled);        
+        arguments.callee.$.call(this, enabled);        
         this._editor.readOnly = !enabled;
     },
 
     setFocus: function(focus) {        
         if (focus) {
-            var ret = arguments.callee.$.setFocus.call(this, focus);        
+            var ret = arguments.callee.$.call(this, focus);        
             this._valueOnFocus = this._editor.value;
             this._textStateChange();
         } else {
             this._textStateChange(false, true);
-            var ret = arguments.callee.$.setFocus.call(this, focus);            
+            var ret = arguments.callee.$.call(this, focus);            
         }
         
         return ret;
@@ -613,13 +613,13 @@ var tw_BaseText = tw_Component.extend({
             
             return false;
         } else {
-            return arguments.callee.$.keyPressNotify.call(this, keyPressCombo);
+            return arguments.callee.$.call(this, keyPressCombo);
         }        
     },
         
     destroy: function() {
         this._editor = null;
-        arguments.callee.$.destroy.call(this);
+        arguments.callee.$.call(this);
     }
 });
 

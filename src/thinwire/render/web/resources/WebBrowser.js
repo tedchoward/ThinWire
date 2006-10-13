@@ -28,7 +28,7 @@ var tw_WebBrowser = tw_BaseBrowserLink.extend({
     _dragLayer: null,
     
     construct: function(id, containerId, props) {
-        arguments.callee.$.construct.call(this, "div", "webBrowser", id, containerId);
+        arguments.callee.$.call(this, "div", "webBrowser", id, containerId);
         this._fontBox = null;
         
         var browser = this._browser = document.createElement("iframe"); 
@@ -71,7 +71,7 @@ var tw_WebBrowser = tw_BaseBrowserLink.extend({
     destroy: function() {
         delete tw_WebBrowser.instances[this._id];
         this._browser = this._dragLayer = null;
-        arguments.callee.$$.call(this);
+        arguments.callee.$.call(this);
     }
 });
 

@@ -36,7 +36,7 @@ var tw_Frame = tw_BaseContainer.extend({
     _focusBeforeDialog: null,
     
     construct: function(id, containerId, props) {
-        arguments.callee.$.construct.call(this, "frame", id, 0);
+        arguments.callee.$.call(this, "frame", id, 0);
         this._fontBox = this._borderBox = null;
         
         var s = this._box.style;
@@ -165,7 +165,7 @@ var tw_Frame = tw_BaseContainer.extend({
     },
     
     getOffsetY: function() {
-        return arguments.callee.$.getOffsetY.apply(this) + (this.getMenu() != null ? tw_Dialog.menuBarHeight : 0);
+        return arguments.callee.$.call(this) + (this.getMenu() != null ? tw_Dialog.menuBarHeight : 0);
     },     
     
     setX: function() { },    
@@ -210,7 +210,7 @@ var tw_Frame = tw_BaseContainer.extend({
         document.body.removeChild(this._modalLayer);
         document.body.removeChild(this._box);
         this._menu = this._standardButton = this._modalLayer = this._modalDialogIds = null;
-        arguments.callee.$.destroy.call(this);
+        arguments.callee.$.call(this);
     }
 });
 

@@ -31,7 +31,7 @@ var tw_BaseContainer = tw_Component.extend({
     _offsetY: 0,
     
     construct: function(className, id, containerId) {
-        arguments.callee.$.construct.call(this, "div", className, id, containerId);
+        arguments.callee.$.call(this, "div", className, id, containerId);
         this._fontBox = null;
         this._container = this._box;
         this._children = [];
@@ -100,7 +100,7 @@ var tw_BaseContainer = tw_Component.extend({
         }
         
         this._container = this._children = null;
-        arguments.callee.$.destroy.call(this);
+        arguments.callee.$.call(this);
     }
 });
 
@@ -111,7 +111,7 @@ tw_BaseContainer.keyPressNotifyCtrlEnterButton = function(keyPressCombo) {
         if (button != null && button.isEnabled()) button.fireClick();
         return false;
     } else {
-        return arguments.callee.$.keyPressNotify.call(this, keyPressCombo);
+        return arguments.callee.$.call(this, keyPressCombo);
     }
 };
 

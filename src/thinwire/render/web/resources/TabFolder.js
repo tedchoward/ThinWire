@@ -32,7 +32,7 @@ var tw_TabFolder = tw_BaseContainer.extend({
     _tabs: null,
     
     construct: function(id, containerId, props) {
-        arguments.callee.$.construct.call(this, "tabFolder", id, containerId);
+        arguments.callee.$.call(this, "tabFolder", id, containerId);
         this._fontBox = null; 
         var s = this._box.style;
         s.backgroundColor = tw_COLOR_TRANSPARENT;
@@ -54,7 +54,7 @@ var tw_TabFolder = tw_BaseContainer.extend({
     },
     
     setStyle: function(name, value) {
-        arguments.callee.$.setStyle.call(this, name, value);
+        arguments.callee.$.call(this, name, value);
         if (name == "borderSize") this._offsetX = this._offsetY = parseInt(value);
         
         if (name.indexOf("border") == 0) {
@@ -65,11 +65,11 @@ var tw_TabFolder = tw_BaseContainer.extend({
     },    
     
     getOffsetY: function() {
-        return arguments.callee.$.getOffsetY.apply(this) + tw_TabFolder._tabsHeight;
+        return arguments.callee.$.call(this) + tw_TabFolder._tabsHeight;
     },
         
     setWidth: function(width) {
-        arguments.callee.$.setWidth.call(this, width);
+        arguments.callee.$.call(this, width);
         this._tabs.style.width = width + "px";
         var cWidth = width - this._borderSizeSub;
         if (cWidth < 0) cWidth = 0;
@@ -83,7 +83,7 @@ var tw_TabFolder = tw_BaseContainer.extend({
     },
     
     setHeight: function(height) {
-        arguments.callee.$.setHeight.call(this, height);
+        arguments.callee.$.call(this, height);
         this._container.style.top = this._tabs.style.height = tw_TabFolder._tabsHeight + "px";        
         var cHeight = height - this._borderSizeSub - tw_TabFolder._tabsHeight;
         if (cHeight < 0) cHeight = 0;
@@ -117,7 +117,7 @@ var tw_TabFolder = tw_BaseContainer.extend({
             this._tabs.insertBefore(tab, this._tabs.childNodes.item(insertAtIndex));
         }
         
-        arguments.callee.$.addComponent.call(this, insertAtIndex, sheet);
+        arguments.callee.$.call(this, insertAtIndex, sheet);
         
         if (this._currentIndex != insertAtIndex) this._setTabActive(insertAtIndex, false);
         this._setTabActive(this._currentIndex, true);
@@ -127,7 +127,7 @@ var tw_TabFolder = tw_BaseContainer.extend({
         this._setTabActive(this._currentIndex, false);
         var tab = tw_Component.instances[componentId]._tab;
         tab.parentNode.removeChild(tab);
-        arguments.callee.$.removeComponent.call(this, componentId);
+        arguments.callee.$.call(this, componentId);
         var len = this._children.length;
         this._setTabActive(this._currentIndex < len ? this._currentIndex : len - 1, true);    
     },
@@ -165,7 +165,7 @@ var tw_TabFolder = tw_BaseContainer.extend({
             this.setCurrentIndex(index, true);
             return false;
         } else {
-            return arguments.callee.$.keyPressNotify.call(this, keyPressCombo);            
+            return arguments.callee.$.call(this, keyPressCombo);            
         }
     },    
 
@@ -182,7 +182,7 @@ var tw_TabFolder = tw_BaseContainer.extend({
     },
     
     destroy: function() {
-        arguments.callee.$.destroy.call(this);
+        arguments.callee.$.call(this);
         this._tabs = null;
     }
 });

@@ -25,7 +25,7 @@
  */
 var tw_Label = tw_Component.extend({
     construct: function(id, containerId, props) {
-        arguments.callee.$.construct.call(this, "div", "label", id, containerId, "text,lineHeight");
+        arguments.callee.$.call(this, "div", "label", id, containerId, "text,lineHeight");
         var s = this._box.style;
         s.whiteSpace = "nowrap";        
         tw_addEventListener(this._box, ["click", "dblclick"], this._clickListener.bind(this));

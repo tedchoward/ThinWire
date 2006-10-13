@@ -38,7 +38,7 @@ var tw_Dialog = tw_BaseContainer.extend({
     _fontColor: "",
     
     construct: function(id, containerId, props) {
-        arguments.callee.$.construct.call(this, "dialog", id, 0);
+        arguments.callee.$.call(this, "dialog", id, 0);
         var dialog = this._box;
         var s = dialog.style;
         s.cursor = "default";    
@@ -144,11 +144,11 @@ var tw_Dialog = tw_BaseContainer.extend({
     },    
     
     registerEventNotifier: function(type, subType) {
-        arguments.callee.$.registerEventNotifier.call(this, type, subType);
+        arguments.callee.$.call(this, type, subType);
         
         if (type == "propertyChange") {
-            if (subType == "x" || subType == "y") arguments.callee.$.registerEventNotifier.call(this, type, "position");
-            else if (subType == "width" || subType == "height") arguments.callee.$.registerEventNotifier.call(this, type, "size");
+            if (subType == "x" || subType == "y") arguments.callee.$.call(this, type, "position");
+            else if (subType == "width" || subType == "height") arguments.callee.$.call(this, type, "size");
         } 
     },
 
@@ -178,7 +178,7 @@ var tw_Dialog = tw_BaseContainer.extend({
     },
     
     setStyle: function(name, value) {
-        arguments.callee.$.setStyle.call(this, name, value);
+        arguments.callee.$.call(this, name, value);
 
         if (name == "fontColor") {
             this._fontColor = this.getStyle("fontColor");
@@ -189,29 +189,29 @@ var tw_Dialog = tw_BaseContainer.extend({
     },
     
     getOffsetY: function() {
-        return arguments.callee.$.getOffsetY.call(this) + tw_Dialog.titleBarHeight + (this.getMenu() != null ? tw_Dialog.menuBarHeight : 0);
+        return arguments.callee.$.call(this) + tw_Dialog.titleBarHeight + (this.getMenu() != null ? tw_Dialog.menuBarHeight : 0);
     },     
         
     setY: function(y) {
         if (tw_Frame.active.getMenu() != null) y += tw_Dialog.menuBarHeight;            
-        arguments.callee.$.setY.call(this, y);
+        arguments.callee.$.call(this, y);
     },
     
     getY: function() {
-        var y = arguments.callee.$.getY.call(this);
+        var y = arguments.callee.$.call(this);
         if (tw_Frame.active.getMenu() != null) y -= tw_Dialog.menuBarHeight;
         return y;
     },
     
     setWidth: function(width) {
-        arguments.callee.$.setWidth.call(this, width);
+        arguments.callee.$.call(this, width);
         width = width - this.getStyle("borderSize") * 2;
         if (width < 0) width = 0;
         this._container.style.width = width + "px";
     },
     
     setHeight: function(height) {
-        arguments.callee.$.setHeight.call(this, height);        
+        arguments.callee.$.call(this, height);        
         height -= tw_Dialog.titleBarHeight + (this._menu == null ? 0 : tw_Dialog.menuBarHeight) + this.getStyle("borderSize") * 2;
         if (height < 0) height = 0;
         this._container.style.height = height + "px";
@@ -296,7 +296,7 @@ var tw_Dialog = tw_BaseContainer.extend({
         this._menu = this._standardButton = this._drag = this._closeButton = null;                
         tw_Frame.active.setModalLayerVisible(false);
         document.body.removeChild(this._box);
-        arguments.callee.$.destroy.call(this);
+        arguments.callee.$.call(this);
     }
 });
 

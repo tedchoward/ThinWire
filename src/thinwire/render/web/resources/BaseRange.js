@@ -31,7 +31,7 @@ var tw_BaseRange = tw_Component.extend({
     _currentIndex: null,
         
     construct: function(tagName, className, id, containerId) {
-        arguments.callee.$.construct.call(this, tagName, className, id, containerId);
+        arguments.callee.$.call(this, tagName, className, id, containerId);
         this._fontBox = null;
 
         var selection = document.createElement("div");     
@@ -66,12 +66,12 @@ var tw_BaseRange = tw_Component.extend({
     },
     
     setWidth: function(width) {
-        arguments.callee.$.setWidth.call(this, width);
+        arguments.callee.$.call(this, width);
         this._recalc();
     },
     
     setHeight: function(height) {
-        arguments.callee.$.setHeight.call(this, height);
+        arguments.callee.$.call(this, height);
         this._recalc();
     },
     

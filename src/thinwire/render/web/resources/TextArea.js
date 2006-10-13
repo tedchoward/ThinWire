@@ -27,7 +27,7 @@ var tw_TextArea = tw_BaseText.extend({
     _maxLength: -1,
     
     construct: function(id, containerId, props) {
-        arguments.callee.$.construct.call(this, ["div", "textarea"], "textArea", id, containerId);
+        arguments.callee.$.call(this, ["div", "textarea"], "textArea", id, containerId);
         this._useToolTip = false;
         this.init(-1, props);
     },
@@ -40,7 +40,7 @@ var tw_TextArea = tw_BaseText.extend({
     },
     
     keyPressNotify: function(keyPressCombo) {
-        return arguments.callee.$.keyPressNotify.call(this, keyPressCombo);
+        return arguments.callee.$.call(this, keyPressCombo);
     },
         
     _validateInput: function(te) {
