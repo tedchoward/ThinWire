@@ -100,11 +100,12 @@ var tw_DateBox = tw_Component.extend({
         }
         this._selectedDate = new Date(selectedDate);
         cell = this._getCellFromDate(this._selectedDate);
-        if (cell != null) {
-            this._oldColor = cell.style.color;
-            this._toggleSelection(cell, true);
+        if (cell == null) {
+            this._setMonth(this._selectedDate);
+            cell = this._getCellFromDate(this._selectedDate);
         }
-        
+        this._oldColor = cell.style.color;
+        this._toggleSelection(cell, true);
     },
     
     setWidth: function(width) {
@@ -244,19 +245,17 @@ var tw_DateBox = tw_Component.extend({
     _footerClickListener: function(event) {
         var footer = tw_getEventTarget(event);
         this.setSelectedDate(this._today);
-        var tmpDt = this._selectedDate;
-        var idx = 0;
-        var operator = tmpDt < this._curDate ? "+" : "-";
-        var comparator = tmpDt < this._curDate ? "<" : ">";
-        eval("while (tmpDt " + comparator + " this._curDate) {tmpDt = new Date(tmpDt.getFullYear(), tmpDt.getMonth() " + operator + " 1, tmpDt.getDate());idx" + operator + operator + ";}");
-        this._incrementMonth(-idx);
+    },
+    
+    _setMonth: function(date) {
+        this._curDate = date;
+        this._header.replaceChild(document.createTextNode(tw_DateBox.MONTHS[this._curDate.getMonth()] + " " + this._curDate.getFullYear()), this._header.firstChild);
+        this._populateCells();
     },
     
     _incrementMonth: function(inc) {
         var tmpDate = new Date(this._curDate.getFullYear(), this._curDate.getMonth() + inc, this._curDate.getDate());
-        this._header.replaceChild(document.createTextNode(tw_DateBox.MONTHS[tmpDate.getMonth()] + " " + tmpDate.getFullYear()), this._header.firstChild);
-        this._curDate = tmpDate;
-        this._populateCells();
+        this._setMonth(tmpDate);
     },
     
     _toggleSelection: function (cell, selected) {
