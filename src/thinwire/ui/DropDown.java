@@ -95,10 +95,14 @@ public class DropDown<T extends Component> extends AbstractMaskEditorComponent {
         return size;        
     }    
     
+    //TODO DROPDOWN: Implement Genereric AbstractView    
     public static interface View<T extends Component> {
         DropDown<T> getDropDown();
         Object getValue();
         void setValue(Object value);
+        //TODO DROPDOWN: Add getOptimalWidth / getOptimialHeight
+        //TODO DROPDOWN: protected void addCloseComponent(ActionEventComponent comp)
+        //TODO DROPDOWN: protected void removeCloseComponent(ActionEventComponent comp)
     }   
     
     private boolean editAllowed = true;

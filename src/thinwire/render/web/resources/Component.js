@@ -197,6 +197,7 @@ var tw_Component = Class.extend({
         
     setFocus: function(focus) {
         if (!this.isEnabled() || !this.isVisible()) return;
+        if (!this.getParent() instanceof tw_BaseContainer) return;
         
         if (focus) {
             if (tw_Component.currentFocus !== this) {
@@ -283,6 +284,8 @@ var tw_Component = Class.extend({
             } else if (name == "borderColor") {
                 this._borderColor = value;
                 this._borderBox.style[realName] = tw_Component.getIEBorder(value, this._borderType);
+            } else if (name == "borderImage") {
+                var borderImage = tw_Component.expandUrl(value, true);
             } else {
                 this._borderType = value;
                 this._borderBox.style[realName] = value;
@@ -324,6 +327,8 @@ var tw_Component = Class.extend({
                 return this._borderSize;
             } else if (name == "borderColor") {
                 return this._borderColor;
+            } else if (name == "borderImage") {
+                return "";
             } else {
                 return this._borderType;
             }
@@ -537,6 +542,7 @@ var tw_Component = Class.extend({
             this.setStyle("borderType", style["borderType"]);
             this.setStyle("borderSize", style["borderSize"]);
             this.setStyle("borderColor", style["borderColor"]);
+            this.setStyle("borderImage", style["borderImage"]);
         }
         
         if (this._fontBox != null) {
@@ -606,7 +612,8 @@ tw_Component.styleNameMap = {
     fontFamily: "fontFamily",
     borderType: "borderStyle",
     borderSize: "borderWidth",
-    borderColor: "borderColor"
+    borderColor: "borderColor",
+    borderImage: "borderImage"
 };
 
 tw_Component.defaultStyles = { };

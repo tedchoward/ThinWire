@@ -43,6 +43,7 @@ final class DropDownRenderer extends MaskEditorComponentRenderer {
         addInitProperty(DropDown.PROPERTY_EDIT_ALLOWED, dd.isEditAllowed());
         super.render(wr, c, container);
         Component ddc = dd.getComponent();
+        //TODO GRIDBOX: Call DropDown.getView().getOptimalWidth() / getOptimalHeight()
         ddcr = wr.ai.getRenderer(ddc);
         ddcr.render(wr, ddc, this);
 	}

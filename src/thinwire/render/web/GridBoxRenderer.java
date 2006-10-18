@@ -73,7 +73,6 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
     private GridBox gb;
     private Map<GridBox, GridBoxRenderer> childToRenderer;
     private int autoColumnWidth;
-    DropDownGridBox dd;
     
     //TODO: Column indexes on the client side may differ if there is a hidden column between two visible columns
     void render(WindowRenderer wr, Component c, ComponentRenderer container) {
@@ -96,10 +95,12 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
             setPropertyChangeIgnored(Component.PROPERTY_Y, true);            
 
             if (container instanceof DropDownRenderer) {
-                dd = (DropDownGridBox)container.comp;                
+                //TODO DROPDOWN: Move to DropDown
+                DropDownGridBox dd = (DropDownGridBox)container.comp;                
                 if (gb.getWidth() == 0 || gb.getWidth() < dd.getWidth()) gb.setWidth(getCalcWidth());
                 if (gb.getHeight() == 0 || gb.getHeight() < MIN_SIZE) gb.setHeight(getCalcHeight());                
             } else if (container instanceof GridBoxRenderer) {
+                //TODO DROPDOWN: Call setPrivatePackageMember
                 if (gb.getWidth() == 0) gb.setWidth(getCalcWidth());
                 if (gb.getHeight() == 0) gb.setHeight(getCalcHeight());
             }
@@ -185,6 +186,7 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
         }
     }
 
+    //TODO: This is not correct when you have fixed-width columns (i.e. non-auto-size columns)
     private int getCalcWidth() {
         int width = 0;
         List<GridBox.Column> cols = gb.getColumns(); 
@@ -266,7 +268,6 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
         super.destroy();
         gb.removeItemChangeListener(this);
         gb = null;
-        dd = null;
         rowState.clear();
         columnState.clear();
         columnState = rowState = null;
@@ -298,13 +299,11 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
                 postClientEvent(SET_FULL_ROW_CHECK_BOX, newValue);
             } else if (name.equals(Component.PROPERTY_WIDTH)) {
                 Integer width = (Integer)newValue;
-                if (dd != null) width = width.intValue() < dd.getWidth() ? dd.getWidth() : width;
                 setPropertyWithEffect(Component.PROPERTY_WIDTH, width, pce.getOldValue(), SET_WIDTH, FX.PROPERTY_FX_SIZE_CHANGE);
                 calcAutoColumnWidth();
                 sendAutoColumnWidths(null);
             } else if (name.equals(Component.PROPERTY_HEIGHT)) {
                 Integer height = (Integer)newValue;
-                if (dd != null) height = height.intValue() < MIN_SIZE ? MIN_SIZE : height;
                 setPropertyWithEffect(Component.PROPERTY_HEIGHT, height, pce.getOldValue(), SET_HEIGHT, FX.PROPERTY_FX_SIZE_CHANGE);
             } else {
                 super.propertyChange(pce);

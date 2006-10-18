@@ -212,6 +212,8 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
                     //#IFDEF V1_1_COMPAT                    
                     if (gb.compatModeOn) gb.firePropertyChange(this, "checked", oldChecked, checked);
                     //#ENDIF
+                    
+                    //TODO DROPDOWN: Move to DropDownGridBox.View
                     DropDownGridBox dd = getDropDown(gb);
                     if (dd != null) dd.setText(dd.getView().getValue().toString());
                 }
@@ -240,6 +242,7 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
             boolean oldSelected = gb.selectedRowIndex == rowIndex;
     	    gb.selectedRowIndex = selected ? rowIndex : 0;
             
+            //TODO DROPDOWN: Comment out section and we'll see if it's needed.
             //If the selected row has a child and this gridbox is part of a drop-down
             //then we want to take the text value from the drop-down and match it 
             //against the child gridbox
@@ -481,7 +484,8 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
             if (selectedRow != null) gb.selectedRowIndex = selectedRow.getIndex();
         }
     }
-    
+
+    //TODO DROPDOWN: Remove this method
     private static DropDownGridBox getDropDown(GridBox gb) {
         DropDownGridBox dd = null;        
         Object o = gb.getParent();
@@ -686,6 +690,7 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
         GridBox gb = (GridBox)row.getParent();
         row.setSelected(true);
 
+        //TODO DROPDOWN: Move to DropDownGridBox.View
         if (row.getChild() == null) {
         	DropDownGridBox dd = getDropDown(gb);
         	if (dd != null) dd.setText(dd.getView().getValue().toString());
@@ -844,7 +849,7 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
             view = ((DropDownGridBox)getParent()).getView();
         } else if (view == null) {
             DefaultView v = new DefaultView();
-            v.init(getDropDown(this), this);
+            v.init(null, this);
             view = v;
         }
         

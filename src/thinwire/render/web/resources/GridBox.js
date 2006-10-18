@@ -39,6 +39,7 @@ var tw_GridBox = tw_Component.extend({
     _childColumnWidth: 0,
     _childOpen: false, 
     _currentIndex: -1,
+    //TODO DROPDOWN: Remove this reference
     _dropDown: null,
     _parentCell: null,
     _lastIndex: null,
@@ -171,16 +172,14 @@ var tw_GridBox = tw_Component.extend({
                 }
                 
                 container._childGridBoxes.push(this);
+                //TODO DROPDOWN: In the DropDownGridBox.View, just add an actionListener **MUST DO IT FOR EACH CHILD**                
                 //If this gridbox is a member of a dropdown, then an actual click event must
                 //be reported to the server so the dropdown text value gets populated.
                 if (this._root._dropDown != null) this.registerEventNotifier("action", "click");
             } else {
-                if (props.width < container.getWidth()) props.width = container.getWidth();
-                if (props.height < container.getHeight()) props.height = container.getHeight();
-                props.x = container.getX();
-                props.y = container.getY() + container.getHeight();                
+                //TODO DROPDOWN: Move this block to DropDown post-construct method
                 this.setVisible(false);
-    
+                    
                 //Destroy existing GridBox for the dropdown if it exists
                 if (container._ddComp != undefined) {
                     showDropDown = container._ddComp.isVisible();
@@ -203,8 +202,11 @@ var tw_GridBox = tw_Component.extend({
         }    
     
         this.setVisibleCheckBoxes(visibleCheckBoxes, checkedRows);
-        if (selectedRow >= 0) this.setRowIndexSelected(selectedRow, false);    
-        if (showDropDown) this._dropDown.setDropDownVisible(true);    
+        if (selectedRow >= 0) this.setRowIndexSelected(selectedRow, false);
+        
+        //TODO DROPDOWN: Move this line to DropDown post-construct method
+        if (showDropDown) this._dropDown.setDropDownVisible(true);  
+        
         if (showChild) this._parent._setChildVisible(parentIndex, true);        
     },
     
@@ -317,6 +319,7 @@ var tw_GridBox = tw_Component.extend({
             } else {
                 this._root.closeChildren();
                 
+                //TODO DROPDOWN: Move to View definition on server.  Support closing on all ActionComponents
                 if (this._root._dropDown != null) {
                     var dd = this._root._dropDown;
                     dd.setDropDownVisible(false);
@@ -389,9 +392,9 @@ var tw_GridBox = tw_Component.extend({
                 gbc.setX(x);
                 
                 //TODO: if this is part of a dropdown, then we need to store off the selected row
-                if (gbc._root._dropDown != null) {
+                //if (gbc._root._dropDown != null) {
                         
-                }
+                //}
                 
                 gbc.setVisible(true);
                 this._childOpen = true;
@@ -480,7 +483,7 @@ var tw_GridBox = tw_Component.extend({
         if (this._parent instanceof tw_GridBox) {      
             y += parseInt(this._parent._box.style.top);
             
-            if (this._root._dropDown == null && this._root._id == this._parent._id) {
+            if (this._root.getParent() instanceof tw_BaseContainer && this._root === this._parent) {
                 var win = this.getBaseWindow();
                 if (win instanceof tw_Dialog) y += win.getOffsetY();
             }
@@ -508,14 +511,6 @@ var tw_GridBox = tw_Component.extend({
         arguments.callee.$.call(this, enabled);        
         tw_setFocusCapable(this._box, enabled);
     },
-
-    setFocus: function(focus) {
-        if (this._root._dropDown != null || this._root !== this) {
-            return true;
-        } else {
-            return arguments.callee.$.call(this, focus);
-        }
-    },
         
     keyPressNotify: function(keyPressCombo) {
         if (!this.isEnabled()) return;
@@ -537,33 +532,33 @@ var tw_GridBox = tw_Component.extend({
         }
         
         if (this._id == top._id) {
-            var isDropDown = this._root._dropDown != null;
             var retVal = false;            
             
             switch (keyPressCombo) {
                 case "ArrowUp":
                     var index = this._currentIndex - 1;
-                    this.setRowIndexSelected(index, !isDropDown);
+                    this.setRowIndexSelected(index, true);
                     break;
         
                 case "PageUp":
                     var index = this._currentIndex - 5;
-                    this.setRowIndexSelected(index, !isDropDown);            
+                    this.setRowIndexSelected(index, true);            
                     break;
         
                 case "ArrowDown":
                     var index = this._currentIndex + 1;
-                    this.setRowIndexSelected(index, !isDropDown);
+                    this.setRowIndexSelected(index, true);
                     break;
         
                 case "PageDown":
                     var index = this._currentIndex + 5;
-                    this.setRowIndexSelected(index, !isDropDown);
+                    this.setRowIndexSelected(index, true);
                     break;            
         
                 case "Esc":
+                    //TODO DROPDOWN: Move to DropDown
                     //Close a drop-down
-                    if (isDropDown && this.isVisible()) {
+                    if (this._root._dropDown != null) {
                         var dd = this._root._dropDown;
                         dd.setDropDownVisible(false);
                         dd.setFocus(true);                
@@ -584,15 +579,16 @@ var tw_GridBox = tw_Component.extend({
                     break;
         
                 case "Enter":                
-                case "ArrowRight":                
+                case "ArrowRight":
                     //You cannot have children and visibleCheckBoxes, otherwise if dropdown close.
                     if (this._childGridBoxes != null && this._lastColumn().childNodes.item(this._currentIndex).tw_child != undefined) {
-                        this.setRowIndexSelected(this._currentIndex, isDropDown);
+                        this.setRowIndexSelected(this._currentIndex, true);
                         this.fireAction("click", this._currentIndex);
                         this._setChildVisible(this._currentIndex, true);
-                    } else if (keyPressCombo == "Enter" && this._root._dropDown != null && this.isVisible()) {
-                        this.setRowIndexSelected(this._currentIndex, isDropDown);
+                    } else if (keyPressCombo == "Enter") {
+                        this.setRowIndexSelected(this._currentIndex, true);
                         this.fireAction("click", this._currentIndex);
+                        //TODO DROPDOWN: Move to DropDown
                         var dd = this._root._dropDown
                         dd.setDropDownVisible(false);
                         dd.setFocus(true);
@@ -634,7 +630,7 @@ var tw_GridBox = tw_Component.extend({
                                 }
                             }
                             
-                            if (foundIndex != -1) this.setRowIndexSelected(foundIndex, !isDropDown);                        
+                            if (foundIndex != -1) this.setRowIndexSelected(foundIndex, true);                        
                         }                        
                     } else {
                         retVal = true;
@@ -983,6 +979,7 @@ var tw_GridBox = tw_Component.extend({
         }
         
         
+        //TODO DROPDOWN: Remove the this._dropDown reference
         this._box.tw_root = this._root = this._header = this._content = this._childGridBoxes = this._dropDown = this._hresize.column = this._parentCell = null;
         arguments.callee.$.call(this);
     }    
