@@ -2,6 +2,9 @@ package thinwire.ui;
 
 import java.util.Date;
 
+import thinwire.render.Renderer;
+import thinwire.ui.event.ActionListener;
+
 /**
  * A <code>DateBox</code> is a <code>Component</code> that displays a
  * month-view calendar. The user can click the arrows in the header to change
@@ -33,14 +36,20 @@ import java.util.Date;
  * </p>
  * @author Ted C. Howard
  */
-public class DateBox extends AbstractComponent {
+public class DateBox extends AbstractComponent implements ActionEventComponent {
     
     public static final String PROPERTY_SELECTED_DATE = "selectedDate";
     
+    private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>();
     private Date selectedDate;
     
     public DateBox() {
         this(new Date());
+    }
+    
+    void setRenderer(Renderer r) {
+        super.setRenderer(r);
+        aei.setRenderer(r);
     }
     
     /**
@@ -67,5 +76,21 @@ public class DateBox extends AbstractComponent {
         Date oldDate = this.selectedDate;
         this.selectedDate = selectedDate;
         firePropertyChange(this, PROPERTY_SELECTED_DATE, oldDate, this.selectedDate);
+    }
+
+    public void addActionListener(String action, ActionListener listener) {
+        aei.addListener(action, listener);
+    }
+
+    public void addActionListener(String[] actions, ActionListener listener) {
+        aei.addListener(actions, listener);
+    }
+
+    public void removeActionListener(ActionListener listener) {
+        aei.addListener(listener);
+    }
+    
+    public void fireAction(String action, Date selectedDate) {
+        aei.fireAction(selectedDate, action);
     }
 }

@@ -69,6 +69,40 @@ var tw_DropDown = tw_BaseText.extend({
         this.init(-1, props);
     },
     
+    setComponent: function(compId) {
+        var comp = tw_Component.instances[compId];
+        var showDropDown = false;
+        //Destroy existing Component for the dropdown if it exists
+        if (this._ddComp != null) {
+            showDropDown = this._ddComp.isVisible();
+            this._ddComp.destroy();
+        }
+        this._ddComp = comp;
+        this._ddComp._box.style.zIndex = 1;
+
+        this._ddComp.setCompVisible = this._ddComp.setVisible;
+        this._ddComp.setVisible = this.setDropDownVisible.bind(this);
+        
+        this._ddComp.setVisible(showDropDown);  
+    },
+    
+    addCloseComponent: function(compId) {
+        var comp = tw_Component.instances[compId];
+        comp.fireCompAction = comp.fireAction;
+        comp.fireAction = this._fireCloseAction;
+    },
+    
+    removeCloseComponent: function(compId) {
+        var comp = tw_Component.instances[compId];
+        comp.fireAction = comp.fireCompAction;
+        delete comp.fireCompAction;
+    },
+    
+    _fireCloseAction: function(subType, eventData) {
+        if (subType == "click") this.setVisible(false);
+        this.fireCompAction(subType, eventData);
+    },
+    
     _buttonMouseDownListener: function(event) {
         if (!this.isEnabled() || tw_getEventButton(event) != 1) return; 
         var s = this._button.style;
@@ -98,7 +132,6 @@ var tw_DropDown = tw_BaseText.extend({
             this.setDropDownVisible(true);
         } else {
             this.setDropDownVisible(false);
-            this._focusListener();
         }
     },
     
@@ -145,7 +178,6 @@ var tw_DropDown = tw_BaseText.extend({
                 while (active.id <= 0) active = active.parentNode;
                 if (active.id == this._ddComp._id) return false;
             }
-            
             this._ddComp.setVisible(false);
         }
         
@@ -167,7 +199,14 @@ var tw_DropDown = tw_BaseText.extend({
                 return arguments.callee.$.call(this, keyPressCombo);                
             }
         } else {
-            return this._ddComp.keyPressNotify(keyPressCombo);
+            if (keyPressCombo == "Esc" || keyPressCombo == "Enter") {
+                var retval = false;
+                if (keyPressCombo == "Enter") retval = this._ddComp.keyPressNotify(keyPressCombo);
+                this.setDropDownVisible(false);
+                return retval;
+            } else {
+                return this._ddComp.keyPressNotify(keyPressCombo);
+            }
         }
     },
     
@@ -207,10 +246,11 @@ var tw_DropDown = tw_BaseText.extend({
             offsetY += (availableHeight < comp._height ? -comp._height : this._height);
             comp.setY(offsetY);
             comp.setX(offsetX);
-            comp.setVisible(true);
+            comp.setCompVisible(true);
             comp.setFocus(true);
         } else {
-            this._ddComp.setVisible(false);
+            this._ddComp.setCompVisible(false);
+            this.setFocus(true);
         }
     },
         

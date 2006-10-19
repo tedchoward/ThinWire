@@ -48,6 +48,7 @@ import thinwire.render.RenderStateListener;
 import thinwire.ui.*;
 import thinwire.ui.FileChooser.FileInfo;
 import thinwire.ui.style.*;
+import thinwire.util.Grid;
 
 /**
  * @author Joshua J. Gertzen
@@ -631,10 +632,14 @@ public final class WebApplication extends Application {
         
     
     public Integer getComponentId(Component comp) {
-        Component w = comp;
+        Object w = comp;
         
         while (w != null && !(w instanceof Window)) {
-            w  = (Component)w.getParent();
+            if (w instanceof Grid.Row) {
+                w = ((Grid.Row)w).getParent();
+            } else {
+                w  = ((Component)w).getParent();
+            }
         }
         
         if (w != null) {
@@ -837,8 +842,8 @@ public final class WebApplication extends Application {
         timerMap.remove(timerId);
     }
 
-    protected void setPackagePrivateMember(String memberName, Component comp, Object value) {
-        super.setPackagePrivateMember(memberName, comp, value);
+    protected Object setPackagePrivateMember(String memberName, Component comp, Object value) {
+        return super.setPackagePrivateMember(memberName, comp, value);
     }    
 
     public void setUserActionListener(UserActionListener listener) {

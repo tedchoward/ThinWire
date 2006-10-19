@@ -33,9 +33,9 @@ import java.util.HashMap;
 
 import thinwire.ui.AlignX;
 import thinwire.ui.Application;
-import thinwire.ui.DropDownGridBox;
 import thinwire.ui.GridBox;
 import thinwire.ui.Component;
+import thinwire.ui.DropDownGridBox.DefaultView;
 import thinwire.ui.GridBox.CellPosition;
 import thinwire.ui.GridBox.Column;
 import thinwire.ui.GridBox.Row;
@@ -86,25 +86,18 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
         this.wr = wr;
         gb.addItemChangeListener(this);
         
-        if (!(container instanceof ContainerRenderer)) {
+        if (container instanceof GridBoxRenderer) {
             //a gridbox for a dropdown does not support the focus, enabled, x or y properties
             setPropertyChangeIgnored(Component.PROPERTY_FOCUS, true);
-            setPropertyChangeIgnored(Component.PROPERTY_ENABLED, true);            
-            setPropertyChangeIgnored(Component.PROPERTY_VISIBLE, true);            
-            setPropertyChangeIgnored(Component.PROPERTY_X, true);            
-            setPropertyChangeIgnored(Component.PROPERTY_Y, true);            
-
-            if (container instanceof DropDownRenderer) {
-                //TODO DROPDOWN: Move to DropDown
-                DropDownGridBox dd = (DropDownGridBox)container.comp;                
-                if (gb.getWidth() == 0 || gb.getWidth() < dd.getWidth()) gb.setWidth(getCalcWidth());
-                if (gb.getHeight() == 0 || gb.getHeight() < MIN_SIZE) gb.setHeight(getCalcHeight());                
-            } else if (container instanceof GridBoxRenderer) {
-                //TODO DROPDOWN: Call setPrivatePackageMember
-                if (gb.getWidth() == 0) gb.setWidth(getCalcWidth());
-                if (gb.getHeight() == 0) gb.setHeight(getCalcHeight());
-            }
-        }         
+            setPropertyChangeIgnored(Component.PROPERTY_ENABLED, true);
+            setPropertyChangeIgnored(Component.PROPERTY_VISIBLE, true);
+            setPropertyChangeIgnored(Component.PROPERTY_X, true);
+            setPropertyChangeIgnored(Component.PROPERTY_Y, true);
+            WebApplication app = (WebApplication) Application.current();
+            DefaultView v = (DefaultView) app.setPackagePrivateMember("initDDGBView", null, gb);
+            if (gb.getWidth() == 0) gb.setWidth(v.getOptimalWidth());
+            if (gb.getHeight() == 0) gb.setHeight(v.getOptimalHeight());
+        }
         
         StringBuilder checkedRows = new StringBuilder();
         getCheckedRowIndices(checkedRows);
@@ -184,84 +177,6 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
         } else {
             autoColumnWidth = 0;
         }
-    }
-
-    //TODO: This is not correct when you have fixed-width columns (i.e. non-auto-size columns)
-    private int getCalcWidth() {
-        int width = 0;
-        List<GridBox.Column> cols = gb.getColumns(); 
-        boolean[] visibleState = new boolean[cols.size()];
-        
-        for (int i = 0, size = cols.size(); i < size; i++) {
-            visibleState[i] = cols.get(i).isVisible();
-        }
-                
-        if (gb.isVisibleHeader()) {
-            int cnt = 0;
-
-            for (int i = 0, size = cols.size(); i < size; i++) {
-                if (visibleState[i]) {
-                    GridBox.Column col = cols.get(i);
-                    String name = col.getDisplayName();
-                    if (name.length() == 0) name = col.getName();
-                    int len = name.length();
-                    String upperName = name.toUpperCase();
-                    if (name.equals(upperName)) len = len / 7 + 1;
-                    if (len < 4) len++;
-                    cnt += len;
-                }
-            }
-            
-            if (cnt > width) width = cnt;            
-        }
-
-        for (Row r : gb.getRows()) {
-            int cnt = 0;
-            
-            for (int i = 0, size = r.size(); i < size; i++) {
-                if (visibleState[i]) {
-                    Object cell = r.get(i);
-                 
-                    if (cell != null) {                    
-                        String value = cell.toString();
-                        int len = value.length();
-                        String upperValue = value.toUpperCase();
-                        if (value.equals(upperValue)) len += len / 7 + 1;
-                        if (len < 4) len++;
-                        cnt += len;
-                    }
-                }
-            }
-            
-            if (cnt > width) width = cnt;
-        }
-        
-        if (gb.isVisibleCheckBoxes()) width += 3;
-        
-        width *= 6.6; //TODO: Hardcoded character width.        
-        
-        if (gb.getParent() instanceof DropDownGridBox) {
-            int ddWidth = ((DropDownGridBox)gb.getParent()).getWidth();
-            if (ddWidth > width) width = ddWidth;
-        }
-        
-        int maxWidth = Application.current().getFrame().getInnerWidth() / 2 - 10;
-        if (width > maxWidth) width = maxWidth;
-        if (width < MIN_SIZE) width = MIN_SIZE;
-        return width;
-    }
-    
-    private int getCalcHeight() {
-        int height = gb.getRows().size();
-        if (height < 3) height = 3;
-        height *= 14; //TODO: Hardcoded row height        
-        height += 10; //TODO: Hardcoded fudge factor for border        
-        if (gb.isVisibleHeader()) height += 16; //TODO: Hardcoded column header size
-        int maxHeight = Application.current().getFrame().getInnerHeight() / 2 - 20;
-        if (gb.getParent() instanceof DropDownGridBox) maxHeight -= ((DropDownGridBox)gb.getParent()).getHeight();
-        if (height > maxHeight) height = maxHeight;
-        if (height < MIN_SIZE) height = MIN_SIZE; 
-        return height;
     }
 
     void destroy() {

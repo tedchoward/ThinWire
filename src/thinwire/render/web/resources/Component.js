@@ -197,7 +197,7 @@ var tw_Component = Class.extend({
         
     setFocus: function(focus) {
         if (!this.isEnabled() || !this.isVisible()) return;
-        if (!this.getParent() instanceof tw_BaseContainer) return;
+        if (!(this.getParent() instanceof tw_BaseContainer)) return;
         
         if (focus) {
             if (tw_Component.currentFocus !== this) {

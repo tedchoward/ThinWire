@@ -45,6 +45,20 @@ public class DateBoxRenderer extends ComponentRenderer {
             } finally {
                 setPropertyChangeIgnored(name, false);
             }
+        } else if (name.equals(DateBox.ACTION_CLICK)) {
+            String value = (String) event.getValue();
+            try {
+                db.fireAction(DateBox.ACTION_CLICK, dateBoxFormat.parse(value));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        } else if (name.equals(DateBox.ACTION_DOUBLE_CLICK)) {
+            String value = (String) event.getValue();
+            try {
+                db.fireAction(DateBox.ACTION_DOUBLE_CLICK, dateBoxFormat.parse(value));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         } else {
             super.componentChange(event);
         }

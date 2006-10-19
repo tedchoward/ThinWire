@@ -608,7 +608,7 @@ public abstract class Application {
         return ret;
     }
         
-    protected void setPackagePrivateMember(String memberName, Component comp, Object value) {
+    protected Object setPackagePrivateMember(String memberName, Component comp, Object value) {
         if (memberName.equals("renderer")) {
             ((AbstractComponent)comp).setRenderer((Renderer)value);
         } else if (memberName.equals("innerWidth")) {
@@ -618,7 +618,12 @@ public abstract class Application {
         } else if (memberName.equals("frameSize")) {
             Integer[] size = (Integer[])value;
             ((Frame)comp).sizeChanged(size[0], size[1]);
+        } else if (memberName.equals("initDDGBView")) {
+            DropDownGridBox.DefaultView v = new DropDownGridBox.DefaultView();
+            v.init(null, (GridBox) value);
+            return v;
         }
+        return null;
     }
     
     protected abstract void captureThread();

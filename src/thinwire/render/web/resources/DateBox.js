@@ -52,7 +52,6 @@ var tw_DateBox = tw_Component.extend({
         this._header = document.createElement("div");
         s = this._header.style;
         s.overflow = "hidden";
-        //s.top = "0px";
         s.whiteSpace = "nowrap";        
         s.height = tw_GridBox.rowHeight + this.getStyle("borderSize") * 2 - this._borderSizeSub + "px";
         
@@ -77,14 +76,12 @@ var tw_DateBox = tw_Component.extend({
         
         var footer = document.createElement("div");
         s = footer.style;
-        //s.position = "absolute";
-        //s.left = "20px";
         s.height = "20px";
         s.textAlign = "center";
         footer.appendChild(document.createTextNode("Today: " + this._getFormattedDate(this._today)));
         this._box.appendChild(footer);
         this._footer = footer;
-        tw_addEventListener(this._footer, "click", this._footerClickListener);
+        tw_addEventListener(this._footer, ["click", "dblclick"], this._footerClickListener);
         
         this.init(-1, props);
     },
@@ -110,18 +107,15 @@ var tw_DateBox = tw_Component.extend({
     
     setWidth: function(width) {
         arguments.callee.$.call(this, width);
-        this._table.style.width = (width - 40) + "px";
-        this._columnHeaders.style.width = (width - 40) + "px";
+        this._table.style.width = (width - 20) + "px";
+        this._columnHeaders.style.width = (width - 20) + "px";
     },
     
     setHeight: function(height) {
         arguments.callee.$.call(this, height);
-        //this._columnHeaders.style.top = parseInt(this._header.style.height) + 5 + "px";
         var tblHeight = height - (parseInt(this._footer.style.height) + parseInt(this._header.style.height) + parseInt(this._columnHeaders.style.height) + 5);
         if (tblHeight < 0) tblHeight = 0;
         this._table.style.height = tblHeight + "px";
-        //this._table.style.top = parseInt(this._columnHeaders.style.height) + parseInt(this._columnHeaders.style.top) + "px";
-        //this._footer.style.top = parseInt(this._table.style.height) + parseInt(this._table.style.top) + "px";
     },
     
     setStyle: function(name, value) {
@@ -135,9 +129,7 @@ var tw_DateBox = tw_Component.extend({
         var days = ["S", "M", "T", "W", "T", "F", "S"];
         var row = document.createElement("tr");
         var s = table.style;
-        //s.position = "absolute";
         s.height = "20px";
-        //s.left = "20px";
         s.borderBottom = "1px solid " + tw_COLOR_WINDOWFRAME;
         s.marginLeft = "auto";
         s.marginRight = "auto";
@@ -157,8 +149,6 @@ var tw_DateBox = tw_Component.extend({
         var tbody = document.createElement("tbody");
         table.appendChild(tbody);
         var s = table.style;
-        //s.position = "absolute";
-        //s.left = "20px";
         s.borderBottom = "1px solid " + tw_COLOR_WINDOWFRAME;
         s.marginLeft = "auto";
         s.marginRight = "auto";
@@ -169,7 +159,7 @@ var tw_DateBox = tw_Component.extend({
                 cell.style.border = "none 1px " + tw_COLOR_WINDOWFRAME;
                 cell.style.padding = "1px";
                 cell.appendChild(document.createTextNode(""));
-                tw_addEventListener(cell, "click", this._cellClickListener);
+                tw_addEventListener(cell, ["click", "dblclick"], this._cellClickListener);
                 
                 row.appendChild(cell);
             }
@@ -217,6 +207,8 @@ var tw_DateBox = tw_Component.extend({
         }
     },
     
+    _getClickAction: tw_Component.getClickAction,
+    
     _cellClickListener: function(event) {
         var cell = tw_getEventTarget(event);
         var rowIdx = this._getRowIndex(cell);
@@ -227,7 +219,11 @@ var tw_DateBox = tw_Component.extend({
             this._incrementMonth(1); 
         }
         this.setSelectedDate((this._curDate.getMonth() + 1) + "/" + newDt + "/" + this._curDate.getFullYear());
-        this.firePropertyChange("selectedDate", (this._getFormattedDate(this._selectedDate)));
+        var formattedDate = this._getFormattedDate(this._selectedDate);
+        this.firePropertyChange("selectedDate", formattedDate);
+        var action = this._getClickAction(event.type, formattedDate);
+        if (action == null) return;
+        this.fireAction(action, formattedDate);
     },
     
     _getRowIndex: function(cell) {
@@ -245,6 +241,11 @@ var tw_DateBox = tw_Component.extend({
     _footerClickListener: function(event) {
         var footer = tw_getEventTarget(event);
         this.setSelectedDate(this._today);
+        var formattedDate = this._getFormattedDate(this._selectedDate);
+        this.firePropertyChange("selectedDate", formattedDate);
+        var action = this._getClickAction(event.type, formattedDate);
+        if (action == null) return;
+        this.fireAction(action, formattedDate);
     },
     
     _setMonth: function(date) {

@@ -25,11 +25,29 @@
  */
 package thinwire.ui;
 
-import thinwire.ui.style.*;
-import thinwire.ui.event.*;
+import thinwire.render.RenderStateEvent;
+import thinwire.render.RenderStateListener;
+import thinwire.render.web.WebApplication;
+import thinwire.ui.event.PropertyChangeEvent;
+import thinwire.ui.event.PropertyChangeListener;
+import thinwire.ui.style.Background;
+import thinwire.ui.style.Border;
+import thinwire.ui.style.Color;
+import thinwire.ui.style.FX;
+import thinwire.ui.style.Font;
+import thinwire.ui.style.Style;
 
 /**
+ * The generic <code>DropDown</code> component allows you to place an
+ * arbitrary component in a <code>DropDown</code>. In order to implement
+ * this, the developer must implement a <code>DropDown.View</code> (or extend
+ * <code>AbstractView</code>) for the <code>Component</code> they are
+ * placing in the <code>DropDown</code>.
+ * 
+ * @see thinwire.ui.DropDownDateBox
+ * @see thinwire.ui.DropDownGridBox
  * @author Joshua J. Gertzen
+ * @author Ted C. Howard
  */
 public class DropDown<T extends Component> extends AbstractMaskEditorComponent {
     public static final String PROPERTY_EDIT_ALLOWED = "editAllowed";
@@ -94,16 +112,40 @@ public class DropDown<T extends Component> extends AbstractMaskEditorComponent {
         if (size < 1) size = 1;
         return size;        
     }    
-    
-    //TODO DROPDOWN: Implement Genereric AbstractView    
+        
     public static interface View<T extends Component> {
         DropDown<T> getDropDown();
         Object getValue();
         void setValue(Object value);
-        //TODO DROPDOWN: Add getOptimalWidth / getOptimialHeight
-        //TODO DROPDOWN: protected void addCloseComponent(ActionEventComponent comp)
-        //TODO DROPDOWN: protected void removeCloseComponent(ActionEventComponent comp)
-    }   
+        int getOptimalWidth();
+        int getOptimalHeight();
+    }
+    
+    public static abstract class AbstractView<T extends Component> implements View {
+    	
+    	DropDown<T> dd;
+    	T ddc;
+    	
+    	void init(DropDown<T> dropDown, T comp) {
+    		dd = dropDown;
+    		ddc = comp;
+    	}
+    	
+    	void addCloseComponent(final ActionEventComponent comp) {
+            if (dd == null) throw new RuntimeException();
+            final WebApplication app = (WebApplication) Application.current();
+            app.invokeAfterRendered(comp, new RenderStateListener() {
+                public void renderStateChange(RenderStateEvent ev) {
+                    app.clientSideMethodCall(app.getComponentId(dd), "addCloseComponent", app.getComponentId(comp));
+                }
+            });
+    	}
+    	
+    	public int getOptimalWidth() {
+    		return dd.getWidth();
+    	}
+    	
+    }
     
     private boolean editAllowed = true;
     private DropDown.View<T> view;

@@ -27,6 +27,12 @@ package thinwire.ui;
 
 import java.util.List;
 
+import thinwire.ui.GridBox.Row;
+import thinwire.ui.event.ActionEvent;
+import thinwire.ui.event.ActionListener;
+import thinwire.ui.event.PropertyChangeEvent;
+import thinwire.ui.event.PropertyChangeListener;
+
 /**
  * A DropDownGridBox wraps around a GridBox component to provide drop down
  * features.
@@ -107,13 +113,34 @@ import java.util.List;
  * </p>
  * 
  * @author Joshua J. Gertzen
+ * @author Ted C. Howard
  */
 public class DropDownGridBox extends DropDown<GridBox> {
-    public static class DefaultView implements DropDown.View<GridBox> {
+    public static class DefaultView extends DropDown.AbstractView<GridBox> {
+        
+        private static final int MIN_SIZE = 25;
+        
         private int columnIndex;
         private String delimiter;
-        private DropDownGridBox ddgb;
-        private GridBox gb;
+        
+        private PropertyChangeListener childChangePcl = new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent ev) {
+                if (ev.getOldValue() != null) ((GridBox) ev.getOldValue()).removeActionListener(clickListener);
+                if (ev.getNewValue() != null) ((GridBox) ev.getNewValue()).addActionListener(GridBox.ACTION_CLICK, clickListener);
+            }
+        };
+        
+        private PropertyChangeListener checkListener = new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent ev) {
+                dd.setText(getValue().toString());
+            }
+        };
+        
+        private ActionListener clickListener = new ActionListener() {
+            public void actionPerformed(ActionEvent ev) {
+                if (((GridBox.Row) ev.getSource()).getChild() == null) dd.setText(getValue().toString());
+            }
+        };
         
         DefaultView() {
             setColumnIndex(0);
@@ -121,16 +148,32 @@ public class DropDownGridBox extends DropDown<GridBox> {
         }
         
         void init(DropDownGridBox ddgb, GridBox gb) {
-            this.ddgb = ddgb;
-            this.gb = gb;
+            super.init(ddgb, gb);
+            if (dd != null) {
+                ddc.addPropertyChangeListener(GridBox.Row.PROPERTY_ROW_CHILD, childChangePcl);
+                ddc.addActionListener(GridBox.ACTION_CLICK, clickListener);
+                ddc.addPropertyChangeListener(GridBox.Row.PROPERTY_ROW_CHECKED, checkListener);
+                iterateRows(ddc.getRows());
+            }
+        }
+        
+        void iterateRows(List<GridBox.Row> rows) {
+            for (GridBox.Row r : rows) {
+                GridBox child = r.getChild();
+                if (child != null) {
+                    child.addPropertyChangeListener(GridBox.Row.PROPERTY_ROW_CHILD, childChangePcl);
+                    ddc.addActionListener(GridBox.ACTION_CLICK, clickListener);
+                    iterateRows(child.getRows());
+                }
+            }
         }
         
         public DropDownGridBox getDropDown() {
-            return ddgb;
+            return (DropDownGridBox) dd;
         }
         
         GridBox getGridBox() {
-            GridBox gb = ddgb == null ? this.gb : ddgb.getComponent();
+            GridBox gb = dd == null ? ddc : dd.getComponent();
             GridBox.Row row = gb.getSelectedRow();
             
             while (row != null && row.getChild() != null) {
@@ -257,6 +300,84 @@ public class DropDownGridBox extends DropDown<GridBox> {
             if (delimiter == null || delimiter.length() == 0) throw new IllegalArgumentException("delimiter == null || delimiter.length() == 0");
             this.delimiter = delimiter;
         }
+
+        //TODO: This is not correct when you have fixed-width columns (i.e. non-auto-size columns)
+		public int getOptimalWidth() {
+            int width = 0;
+            List<GridBox.Column> cols = ddc.getColumns(); 
+            boolean[] visibleState = new boolean[cols.size()];
+            
+            for (int i = 0, size = cols.size(); i < size; i++) {
+                visibleState[i] = cols.get(i).isVisible();
+            }
+                    
+            if (ddc.isVisibleHeader()) {
+                int cnt = 0;
+
+                for (int i = 0, size = cols.size(); i < size; i++) {
+                    if (visibleState[i]) {
+                        GridBox.Column col = cols.get(i);
+                        String name = col.getDisplayName();
+                        if (name.length() == 0) name = col.getName();
+                        int len = name.length();
+                        String upperName = name.toUpperCase();
+                        if (name.equals(upperName)) len = len / 7 + 1;
+                        if (len < 4) len++;
+                        cnt += len;
+                    }
+                }
+                
+                if (cnt > width) width = cnt;            
+            }
+
+            for (Row r : ddc.getRows()) {
+                int cnt = 0;
+                
+                for (int i = 0, size = r.size(); i < size; i++) {
+                    if (visibleState[i]) {
+                        Object cell = r.get(i);
+                     
+                        if (cell != null) {                    
+                            String value = cell.toString();
+                            int len = value.length();
+                            String upperValue = value.toUpperCase();
+                            if (value.equals(upperValue)) len += len / 7 + 1;
+                            if (len < 4) len++;
+                            cnt += len;
+                        }
+                    }
+                }
+                
+                if (cnt > width) width = cnt;
+            }
+            
+            if (ddc.isVisibleCheckBoxes()) width += 3;
+            
+            width *= 6.6; //TODO: Hardcoded character width.        
+            
+            if (ddc.getParent() instanceof DropDownGridBox) {
+                int ddWidth = ((DropDownGridBox)ddc.getParent()).getWidth();
+                if (ddWidth > width) width = ddWidth;
+            }
+            
+            int maxWidth = Application.current().getFrame().getInnerWidth() / 2 - 10;
+            if (width > maxWidth) width = maxWidth;
+            if (width < MIN_SIZE) width = MIN_SIZE;
+            return width;
+		}
+
+		public int getOptimalHeight() {
+            int height = ddc.getRows().size();
+            if (height < 3) height = 3;
+            height *= 14; //TODO: Hardcoded row height        
+            height += 10; //TODO: Hardcoded fudge factor for border        
+            if (ddc.isVisibleHeader()) height += 16; //TODO: Hardcoded column header size
+            int maxHeight = Application.current().getFrame().getInnerHeight() / 2 - 20;
+            if (ddc.getParent() instanceof DropDownGridBox) maxHeight -= ((DropDownGridBox)ddc.getParent()).getHeight();
+            if (height > maxHeight) height = maxHeight;
+            if (height < MIN_SIZE) height = MIN_SIZE; 
+            return height;
+		}
     }
 	
 	/**
