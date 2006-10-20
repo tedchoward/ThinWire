@@ -123,15 +123,15 @@ public class DropDown<T extends Component> extends AbstractMaskEditorComponent {
     
     public static abstract class AbstractView<T extends Component> implements View {
     	
-    	DropDown<T> dd;
-    	T ddc;
+    	protected DropDown<T> dd;
+    	protected T ddc;
     	
-    	void init(DropDown<T> dropDown, T comp) {
+    	protected void init(DropDown<T> dropDown, T comp) {
     		dd = dropDown;
     		ddc = comp;
     	}
     	
-    	void addCloseComponent(final ActionEventComponent comp) {
+    	protected void addCloseComponent(final ActionEventComponent comp) {
             if (dd == null) throw new RuntimeException();
             final WebApplication app = (WebApplication) Application.current();
             app.invokeAfterRendered(comp, new RenderStateListener() {
@@ -151,7 +151,7 @@ public class DropDown<T extends Component> extends AbstractMaskEditorComponent {
     private DropDown.View<T> view;
     private T comp;
     
-    DropDown(DropDown.View<T> view, T comp) {
+    protected DropDown(DropDown.View<T> view, T comp) {
         if (view == null) throw new IllegalArgumentException("view == null");
         if (comp == null) throw new IllegalArgumentException("comp == null");
         setView(view);

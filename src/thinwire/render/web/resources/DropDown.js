@@ -88,18 +88,13 @@ var tw_DropDown = tw_BaseText.extend({
     
     addCloseComponent: function(compId) {
         var comp = tw_Component.instances[compId];
+        comp._dropDownId = this._id;
         comp.fireCompAction = comp.fireAction;
         comp.fireAction = this._fireCloseAction;
     },
     
-    removeCloseComponent: function(compId) {
-        var comp = tw_Component.instances[compId];
-        comp.fireAction = comp.fireCompAction;
-        delete comp.fireCompAction;
-    },
-    
     _fireCloseAction: function(subType, eventData) {
-        if (subType == "click") this.setVisible(false);
+        if (subType == "click") tw_Component.instances[this._dropDownId]._ddComp.setVisible(false);
         this.fireCompAction(subType, eventData);
     },
     

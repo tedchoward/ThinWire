@@ -155,21 +155,21 @@ abstract class AbstractComponent implements Component {
         pcei.removeListener(listener);
     }
 
-    final boolean firePropertyChange(Object source, String propertyName, int oldValue, int newValue) {
+    protected final boolean firePropertyChange(Object source, String propertyName, int oldValue, int newValue) {
         if (oldValue == newValue) return false;
         if (ignoreFirePropertyChange) return true;
         pcei.firePropertyChange(source, propertyName, oldValue, newValue);            
         return true;
     }
 
-    final boolean firePropertyChange(Object source, String propertyName, boolean oldValue, boolean newValue) {
+    protected final boolean firePropertyChange(Object source, String propertyName, boolean oldValue, boolean newValue) {
         if (oldValue == newValue) return false;
         if (ignoreFirePropertyChange) return true;
         pcei.firePropertyChange(source, propertyName, oldValue, newValue);
         return true;
     }
 
-    final boolean firePropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
+    protected final boolean firePropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
         if (oldValue == newValue || (oldValue != null && oldValue.equals(newValue)) || (newValue != null && newValue.equals(oldValue))) return false;
         if (ignoreFirePropertyChange) return true;
         pcei.firePropertyChange(source, propertyName, oldValue, newValue);        
