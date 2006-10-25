@@ -88,7 +88,6 @@ var tw_Frame = tw_BaseContainer.extend({
     _getFrameBounds: function() {        
         var innerWidth = document.body.clientWidth;
         var innerHeight = tw_getVisibleHeight();
-        
         if (window.outerWidth) {        
             var outerWidth = window.outerWidth;
             var outerHeight = window.outerHeight;
@@ -98,7 +97,7 @@ var tw_Frame = tw_BaseContainer.extend({
                 this._resizeInProgress = true;
                 window.resizeTo(innerWidth, innerHeight);
                 var outerWidth = innerWidth + (innerWidth - document.body.clientWidth);
-                var outerHeight = innerHeight + (innerHeight - document.body.clientHeight);
+                var outerHeight = innerHeight + (innerHeight - tw_getVisibleHeight());
                 window.resizeTo(outerWidth, outerHeight);
                 setTimeout(function() { this._resizeInProgress = false; }.bind(this), 250);
             } catch (e) {
