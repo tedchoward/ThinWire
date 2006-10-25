@@ -86,14 +86,9 @@ var tw_Frame = tw_BaseContainer.extend({
     },
     
     _getFrameBounds: function() {        
-        if (window.innerWidth) {
-            var innerWidth = window.innerWidth;
-            var innerHeight = window.innerHeight;
-        } else {
-            var innerWidth = document.body.clientWidth;
-            var innerHeight = document.body.clientHeight;
-        }
-
+        var innerWidth = document.body.clientWidth;
+        var innerHeight = tw_getVisibleHeight();
+        
         if (window.outerWidth) {        
             var outerWidth = window.outerWidth;
             var outerHeight = window.outerHeight;
