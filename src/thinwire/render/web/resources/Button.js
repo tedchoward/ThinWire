@@ -143,7 +143,7 @@ var tw_Button = tw_Component.extend({
     
     setText: function(text) {
         var b = this._fontBox;         
-        b.replaceChild(document.createTextNode(text), b.firstChild);
+        b.replaceChild(tw_Component.setRichText(text), b.firstChild);
     },
     
     setImage: function(image) {

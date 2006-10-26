@@ -124,7 +124,7 @@ var tw_Tree = tw_Component.extend({
             
             var textNode = this._createTextNode();
             node.appendChild(textNode);
-            textNode.appendChild(document.createTextNode(text));
+            textNode.appendChild(tw_Component.setRichText(text));
             node.textNode = textNode;
             tw_addEventListener(textNode, ["click", "dblClick"], this._textClickListener);
             tw_addEventListener(textNode, "dblclick", this._buttonClickListener);
@@ -294,7 +294,7 @@ var tw_Tree = tw_Component.extend({
         var textNode = this._createTextNode();
         node.appendChild(textNode);
         node.textNode = textNode;
-        textNode.appendChild(document.createTextNode(text));
+        textNode.appendChild(tw_Component.setRichText(text));
         tw_addEventListener(textNode, ["click", "dblclick"], this._textClickListener);
         tw_addEventListener(textNode, "dblclick", this._buttonClickListener);
         
@@ -535,7 +535,7 @@ var tw_Tree = tw_Component.extend({
     
     itemChange: function(value, text, itemImg) {
         var node = this._fullIndexItem(value);        
-        node.textNode.replaceChild(document.createTextNode(text), node.textNode.firstChild); 
+        node.textNode.replaceChild(tw_Component.setRichText(text), node.textNode.firstChild); 
         itemImg = this._expandImageURL(itemImg);        
     
         if (itemImg == null) {

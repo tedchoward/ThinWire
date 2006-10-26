@@ -333,7 +333,7 @@ var tw_GridBox = tw_Component.extend({
             }            
         }
         
-        if (value != undefined) cell.appendChild(document.createTextNode(value));
+        if (value != undefined) cell.appendChild(tw_Component.setRichText(value));
         tw_addEventListener(cell, "focus", this._focusListener);
         tw_addEventListener(cell, "blur", this._blurListener);        
         tw_addEventListener(cell, ["click", "dblclick"], this._cellClickListener);                        
@@ -663,7 +663,7 @@ var tw_GridBox = tw_Component.extend({
 
     setColumnName: function(index, name) {
         var b = this._header.childNodes.item(index);
-        b.replaceChild(document.createTextNode(name), b.firstChild);
+        b.replaceChild(tw_Component.setRichText(name), b.firstChild);
     },
 
     setColumnWidth: function(index, width, sendEvent) {   
@@ -754,7 +754,7 @@ var tw_GridBox = tw_Component.extend({
         s.borderStyle = bs.borderType; 
         s.borderColor = tw_Component.getIEBorder(bs.borderColor, bs.borderType);
         
-        columnHeader.appendChild(document.createTextNode(name));
+        columnHeader.appendChild(tw_Component.setRichText(name));
                 
         tw_addEventListener(columnHeader, "focus", this._focusListener);
         tw_addEventListener(columnHeader, "blur", this._blurListener);    
@@ -801,7 +801,7 @@ var tw_GridBox = tw_Component.extend({
         var columnHeader = this._header.childNodes.item(index);    
         var column = this._content.childNodes.item(index);
         
-        columnHeader.replaceChild(document.createTextNode(name), columnHeader.firstChild);
+        columnHeader.replaceChild(tw_Component.setRichText(name), columnHeader.firstChild);
                 
         column.style.width = width + "px";
         columnHeader.style.width = width <= this._borderSizeSub ? "0px" : width - this._borderSizeSub + "px";
@@ -812,7 +812,7 @@ var tw_GridBox = tw_Component.extend({
                 
         for (var i = 0, cnt = values.length; i < cnt; i++) {
             var cell = column.childNodes.item(i);
-            cell.replaceChild(document.createTextNode(values[i]), cell.firstChild);
+            cell.replaceChild(tw_Component.setRichText(values[i]), cell.firstChild);
         }
     },
     
@@ -877,7 +877,7 @@ var tw_GridBox = tw_Component.extend({
         
         for (var i = 0, cnt = values.length; i < cnt; i++) {
             var cell = content.childNodes.item(i).childNodes.item(index);
-            cell.replaceChild(document.createTextNode(values[i]), cell.firstChild);
+            cell.replaceChild(tw_Component.setRichText(values[i]), cell.firstChild);
         }
         
         this.setRowIndexCheckState(index, checked == 1, false);
@@ -890,7 +890,7 @@ var tw_GridBox = tw_Component.extend({
         
         if (rowIndex < childNodes.length) {
             var cell = childNodes.item(rowIndex);
-            cell.replaceChild(document.createTextNode(value), cell.firstChild);
+            cell.replaceChild(tw_Component.setRichText(value), cell.firstChild);
         }
     },
     

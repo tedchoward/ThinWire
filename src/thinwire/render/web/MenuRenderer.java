@@ -200,8 +200,13 @@ final class MenuRenderer extends ComponentRenderer implements ItemChangeListener
 	private void buildMenuInit(Menu.Item item, int index, boolean isRoot) {
 		sb.append('{');
 		sb.append("en:").append(item.isEnabled());
-		String text = getEscapedText(item.getText());		
-		if (text.length() > 0) sb.append(",t:\"").append(text.replaceAll("\"", "\\\"")).append('"');
+        Object textValue = RICH_TEXT_PARSER.parseRichText(convertAmpToUnderline(item.getText()), this);
+        if (textValue instanceof String) {
+    		String text = getEscapedText(item.getText());		
+    		if (text.length() > 0) sb.append(",t:\"").append(text.replaceAll("\"", "\\\"")).append('"');
+        } else {
+            sb.append(",t:").append(textValue);
+        }
         String keyPressCombo = item.getKeyPressCombo();
         
         if (keyPressCombo.length() > 0) {
@@ -249,6 +254,26 @@ final class MenuRenderer extends ComponentRenderer implements ItemChangeListener
 		if (index != -1) sb.append(",x:").append(index);
 		sb.append('}');
 	}
+    
+    private String convertAmpToUnderline(String text) {
+        int index = -2;
+        do {
+            index = text.indexOf("&", index + 2);
+        } while (text.charAt(index + 1) == '&');
+        
+        if (index >= 0) {
+            String first = text.substring(0, index);
+            if (first.length() > 0) first = first.replaceAll("([^&])&([^&])", "$1$2");
+            System.out.println(first);
+            if (first.length() > 0) first = first.replaceAll("&&", "&");
+            String last = text.substring(index + 2);
+            if (last.length() > 0) last = last.replaceAll("([^&])&([^&])", "$1$2");
+            if (last.length() > 0) last = last.replaceAll("&&", "&");
+            return first + "<u>" + text.charAt(index + 1) + "</u>" + last;
+        } else {
+            return text;
+        }
+    }
 
 	private static Menu.Item fullIndexItem(Menu root, String value) {
 		Menu.Item mi = (Menu.Item)root.getRootItem();

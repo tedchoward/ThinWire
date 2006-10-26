@@ -216,14 +216,14 @@ var tw_Menu = tw_Component.extend({
         var update = false;
         
         //Need better size calc routine
-        var width = new Number((this._getText(item).length - item.tw_textAmpCnt) * .7);                
+        var width = this._getText(item).length * .7;                
         
         if (parent.tw_maxTextWidth < width) {
             parent.tw_maxTextWidth = width;
             update = true;
         }
         
-        width = new Number(this._getKeyPressCombo(item).length * .7);
+        width = this._getKeyPressCombo(item).length * .7;
         
         if (parent.tw_maxShortcutTextWidth < width) {
             parent.tw_maxShortcutTextWidth = width;
@@ -324,44 +324,11 @@ var tw_Menu = tw_Component.extend({
             }
         }        
     },
-
-    _appendSetTextItem: function(node, text) {
-        text = text.replace(/([^&])&([^&])/g, "$1$2");
-        text = text.replace(/&&/g, "&");
-        node.appendChild(document.createTextNode(text));        
-    },
-    
+   
     _setText: function(item, text) {
         var child = item.firstChild;
-        child.tw_text = text;        
-        var index = -2;
-        
-        do {
-            index = text.indexOf("&", index + 2);
-        } while (text.charAt(index + 1) == "&");
-        
-        if (index >= 0) {            
-            item.tw_textAmpCnt = 1;
-            //Replace first single ampersand with an underline span tag
-            var first = text.substring(0, index);
-            var under = text.charAt(index + 1); 
-            var second = text.substring(index + 2);
-            
-            var text = document.createElement("span");
-            if (first.length > 0) this._appendSetTextItem(text, first);
-            
-            if (under.length > 0) {
-                var underSpan = document.createElement("span");
-                underSpan.appendChild(document.createTextNode(under));
-                underSpan.style.textDecoration = "underline";
-                text.appendChild(underSpan);
-            }
-            
-            if (second.length > 0) this._appendSetTextItem(text, second);
-        } else {
-            item.tw_textAmpCnt = 0;
-            text = document.createTextNode(text);
-        }
+        child.tw_text = this._parseRichText(text);
+        text = tw_Component.setRichText(text);
 
         if (item.className == "menuItem") {
             var textNode = child.childNodes.item(1); 
@@ -380,6 +347,20 @@ var tw_Menu = tw_Component.extend({
                 child.replaceChild(text, child.firstChild);
             }
         }
+    },
+    
+    _parseRichText: function(text, sb) {
+        if (!(text instanceof Object)) return text;
+        if (sb == null) sb = [];
+        for (n in text) {
+            var node = text[n];
+            if (node instanceof Object) {
+                if (node.c != undefined) sb.push(this._parseRichText(node.c, sb));
+            } else {
+                sb.push(node);
+            }
+        }
+        return sb.join("");
     },
     
     _getText: function(item) {

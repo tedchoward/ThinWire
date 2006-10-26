@@ -235,7 +235,7 @@ var tw_Dialog = tw_BaseContainer.extend({
     
     setTitle: function(title) {
         var b = this._box.firstChild;
-        b.replaceChild(document.createTextNode(title), b.firstChild);
+        b.replaceChild(tw_Component.setRichText(title), b.firstChild);
     },
     
     setFocus: function(focus) {

@@ -40,7 +40,7 @@ final class CheckBoxRenderer extends ComponentRenderer {
         init(CHECKBOX_CLASS, wr, c, container);
         CheckBox cb = (CheckBox)c;
         addClientSideProperty(CheckBox.PROPERTY_CHECKED);
-        addInitProperty(CheckBox.PROPERTY_TEXT, cb.getText());
+        addInitProperty(CheckBox.PROPERTY_TEXT, RICH_TEXT_PARSER.parseRichText(cb.getText(), this));
         addInitProperty(CheckBox.PROPERTY_CHECKED, cb.isChecked());
         super.render(wr, c, container);
 	}
@@ -51,7 +51,7 @@ final class CheckBoxRenderer extends ComponentRenderer {
         Object newValue = pce.getNewValue();        
 
         if (name.equals(CheckBox.PROPERTY_TEXT)) {
-            postClientEvent(SET_TEXT, newValue);
+            postClientEvent(SET_TEXT, RICH_TEXT_PARSER.parseRichText((String) newValue, this));
         } else if (name.equals(CheckBox.PROPERTY_CHECKED)) {
             postClientEvent(SET_CHECKED, newValue);
         } else {

@@ -25,6 +25,10 @@
  */
 package thinwire.ui;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 /**
  * A <code>WebBrowser</code> inserts a web browser object in your application.
  * <p>
@@ -71,6 +75,7 @@ public class WebBrowser extends AbstractComponent {
     
     public void setLocation(String location) {
         String oldLocation = this.location;
+        if (!oldLocation.startsWith("http")) new File(oldLocation).delete();
         location = location == null ? "" : location;
         this.location = location;
         firePropertyChange(this, PROPERTY_LOCATION, oldLocation, location);        
@@ -78,5 +83,26 @@ public class WebBrowser extends AbstractComponent {
     
     public String getLocation() {
         return this.location;
+    }
+    
+    /**
+     * A convenience method that writes out the HTML passed into a temp file and
+     * then sets the location of the component to the temp file.
+     * 
+     * @param content
+     *            HTML to display in the <code>WebBrowser</code>
+     */
+    public void setContent(String content) {
+        try {
+            File tmpFile = File.createTempFile("wb_" + System.currentTimeMillis(), ".html");
+            tmpFile.deleteOnExit();
+            FileOutputStream fos = new FileOutputStream(tmpFile);
+            fos.write(content.getBytes());
+            fos.flush();
+            fos.close();
+            setLocation(tmpFile.getAbsolutePath());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

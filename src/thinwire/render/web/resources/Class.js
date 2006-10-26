@@ -47,7 +47,6 @@ Class.extend = function(def) {
         
         if (item instanceof Function) {
             item.$ = superClass[n];
-            item.$$ = superClass;
         }
         
         proto[n] = item;

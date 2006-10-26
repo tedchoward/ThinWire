@@ -341,7 +341,8 @@ var tw_Component = Class.extend({
 
     setText: function(text) {
         if (!this._supportText) { alert("'text' property not supported by this component"); return; }
-        this._box.replaceChild(document.createTextNode(text), this._box.firstChild);
+        //this._box.replaceChild(document.createTextNode(text), this._box.firstChild);
+        this._box.replaceChild(tw_Component.setRichText(text), this._box.firstChild);
     },
         
     getBaseWindow: function() {
@@ -668,5 +669,41 @@ tw_Component.getClickAction = function(type, index) {
     } else if (type == "dblclick") {
         return "doubleClick";
     }
+}
+
+tw_Component.setRichText = function(text) {
+    if (!(text instanceof Array)) return document.createTextNode(text);
+    var span = document.createElement("span");
+    for (n in text) {
+        var node = text[n];
+        if (node instanceof Object) {
+            var element = document.createElement(node.t);
+            if (node.s != undefined) {
+                for (sty in node.s) {
+                    if (sty == "backgroundImage") {
+                        element.style.backgroundImage = tw_Component.expandUrl(node.s[sty], true);
+                    } else {
+                        element.style[sty] = node.s[sty];
+                    }
+                }
+            }
+            if (node.a != undefined) {
+                for (atr in node.a) {
+                    if (atr == "src") {
+                        element.src = tw_Component.expandUrl(node.a[atr]);
+                    } else if (atr == "href") {
+                        element.href = tw_Component.expandUrl(node.a[atr]);
+                    } else {
+                        element[atr] = node.a[atr];
+                    }
+                }
+            }
+            if (node.c != undefined) element.appendChild(tw_Component.setRichText(node.c));
+            span.appendChild(element);
+        } else {
+            span.appendChild(document.createTextNode(node));
+        }
+    }
+    return span;
 }
 

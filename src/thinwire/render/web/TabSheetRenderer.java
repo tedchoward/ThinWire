@@ -49,7 +49,7 @@ class TabSheetRenderer extends ContainerRenderer {
         setPropertyChangeIgnored(Border.PROPERTY_BORDER_COLOR, true);
         setPropertyChangeIgnored(Border.PROPERTY_BORDER_SIZE, true);
         TabSheet ts = (TabSheet)c;
-        addInitProperty(TabSheet.PROPERTY_TEXT, ts.getText());
+        addInitProperty(TabSheet.PROPERTY_TEXT, RICH_TEXT_PARSER.parseRichText(ts.getText(), this));
         addInitProperty(TabSheet.PROPERTY_IMAGE, getQualifiedURL(ts.getImage()));
         addInitProperty("tabIndex", ((TabFolder)ts.getParent()).getChildren().indexOf(ts));        
         super.render(wr, c, container);
@@ -62,7 +62,7 @@ class TabSheetRenderer extends ContainerRenderer {
         if (name.equals(TabSheet.PROPERTY_IMAGE)) {
             postClientEvent(SET_IMAGE, getQualifiedURL((String)newValue));
         } else if (name.equals(TabSheet.PROPERTY_TEXT)) {
-            postClientEvent(SET_TEXT, newValue);
+            postClientEvent(SET_TEXT, RICH_TEXT_PARSER.parseRichText((String) newValue, this));
         } else {
             super.propertyChange(pce);
         }

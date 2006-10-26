@@ -71,7 +71,10 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     static final Logger log = Logger.getLogger(ComponentRenderer.class.getName()); 
     static final Pattern REGEX_DOUBLE_SLASH = Pattern.compile("\\\\"); 
     static final Pattern REGEX_DOUBLE_QUOTE = Pattern.compile("\"");
-    static final Pattern REGEX_CRLF = Pattern.compile("\\r?\\n");                 
+    static final Pattern REGEX_CRLF = Pattern.compile("\\r?\\n");         
+    
+    static final RichTextParser RICH_TEXT_PARSER = new RichTextParser();
+    
     private static final Object NO_VALUE = new Object();
     
     private Map<String, Object> ignoredProperties = new HashMap<String, Object>(3);

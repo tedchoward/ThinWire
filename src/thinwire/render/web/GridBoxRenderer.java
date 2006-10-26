@@ -106,15 +106,21 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
         
         List<Column> columns = gb.getColumns();
         colDefs.append('[');
-
+        System.out.println(columns.size());
         for (int i = 0, cnt = columns.size(); i < cnt; i++) {
             Column col = (Column)columns.get(i);
             columnState.add(System.identityHashCode(col));        
 
             if (col.isVisible()) {
+                System.out.println(col.getDisplayName());
                 colDefs.append("{v:");
                 getValues(col, col.getDisplayFormat(), colDefs);
-                colDefs.append(",n:\"").append(getValue(col.getDisplayName(), null)).append("\"");
+                Object headerValue = RICH_TEXT_PARSER.parseRichText(col.getDisplayName(), this);
+                if (headerValue instanceof String) {
+                    colDefs.append(",n:\"").append(getValue(col.getDisplayName(), null)).append("\"");
+                } else {
+                    colDefs.append(",n:").append(headerValue);
+                }
                 int width = col.getWidth();
                 if (width == -1) width = autoColumnWidth;
                 colDefs.append(",w:").append(width);
@@ -253,9 +259,9 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
                 }
             } else if (column.isVisible()) {   
                 if (name.equals(GridBox.Column.PROPERTY_COLUMN_NAME) && ((String)newValue).equals(column.getDisplayName())) {
-                    postClientEvent(SET_COLUMN_NAME, getVisibleIndex(index), newValue);
+                    postClientEvent(SET_COLUMN_NAME, getVisibleIndex(index), RICH_TEXT_PARSER.parseRichText((String) newValue, this));
                 } else if (name.equals(GridBox.Column.PROPERTY_COLUMN_DISPLAY_NAME)) {
-                    postClientEvent(SET_COLUMN_NAME, getVisibleIndex(index), newValue);                    
+                    postClientEvent(SET_COLUMN_NAME, getVisibleIndex(index), RICH_TEXT_PARSER.parseRichText((String) newValue, this));                    
                 } else if (name.equals(GridBox.Column.PROPERTY_COLUMN_WIDTH)) {
                     if ((Integer) newValue == -1) {
                         calcAutoColumnWidth();
@@ -335,8 +341,13 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
         } else { // Cell Change
             if (gb.getColumns().get(columnIndex).isVisible()) {
                 //Wrapping the outbound value in a StringBuilder is a hack to get around a second layer of back-slash escaping.
-                postClientEvent(SET_CELL, getVisibleIndex(columnIndex), rowIndex,
+                Object textValue = RICH_TEXT_PARSER.parseRichText(newValue.toString(), this);
+                if (textValue instanceof String) {
+                    postClientEvent(SET_CELL, getVisibleIndex(columnIndex), rowIndex,
                         new StringBuilder("\"" + getValue(newValue, gb.getColumns().get(columnIndex).getDisplayFormat())+ "\""));
+                } else {
+                    postClientEvent(SET_CELL, getVisibleIndex(columnIndex), rowIndex, textValue);
+                }
             }
         }
     }    
@@ -393,11 +404,14 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
         calcAutoColumnWidth();        
         int width = c.getWidth();
         if (width == -1) width = autoColumnWidth;
+        
+        Object headerValue = RICH_TEXT_PARSER.parseRichText(c.getDisplayName(), this);
+        if (headerValue instanceof String) headerValue = getValue(headerValue, null);
 
         postClientEvent(method, new Object[] {
                 getVisibleIndex(c.getIndex()),
                 getValues(c, c.getDisplayFormat(), null).toString(),
-                getValue(c.getDisplayName(), null), width,
+                headerValue, width,
                 ((AlignX) c.getAlignX()).name().toLowerCase(),
                 getSortOrderId(c.getSortOrder())});
         
@@ -445,7 +459,8 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
         return s;
     }
 
-    private static StringBuilder getValues(List<Object> l, Object formats, StringBuilder sb) {
+    //TODO: I made this not static, is that okay?
+    private StringBuilder getValues(List<Object> l, Object formats, StringBuilder sb) {
         if (sb == null) sb = new StringBuilder();
         
         sb.append('[');
@@ -467,13 +482,26 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
                     visible = false;
                 }
 
-                if (visible) sb.append("\"").append(getValue(l.get(i), format)).append("\",");
+                Object textValue = RICH_TEXT_PARSER.parseRichText(l.get(i).toString(), this);
+                if (visible) {
+                    if (textValue instanceof String) {
+                        sb.append("\"").append(getValue(l.get(i), format)).append("\",");
+                    } else {
+                        sb.append(textValue).append(",");
+                    }
+                }
             }
         } else {
             Column.Format format = (Column.Format)formats;
 
-            for (int i = 0, cnt = l.size(); i < cnt; i++)
-                sb.append("\"").append(getValue(l.get(i), format)).append("\",");
+            for (int i = 0, cnt = l.size(); i < cnt; i++) {
+                Object textValue = RICH_TEXT_PARSER.parseRichText(l.get(i).toString(), this);
+                if (textValue instanceof String) {
+                    sb.append("\"").append(getValue(l.get(i), format)).append("\",");
+                } else {
+                    sb.append(textValue).append(",");
+                }
+            }
         }
 
         if (sb.charAt(sb.length() - 1) != '[')

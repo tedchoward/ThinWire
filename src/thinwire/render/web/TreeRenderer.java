@@ -81,7 +81,9 @@ final class TreeRenderer extends ComponentRenderer implements ItemChangeListener
                 log.finest(ITEM_EXPAND+","+fullIndex+","+newValue);
                 if (((Tree.Item) source).hasChildren()) postClientEvent(ITEM_EXPAND, fullIndex, newValue);
             } else if (name.equals(HierarchyComponent.Item.PROPERTY_ITEM_IMAGE) || name.equals(HierarchyComponent.Item.PROPERTY_ITEM_TEXT)) {
-                postClientEvent(ITEM_CHANGE, fullIndex, getEscapedText(((Tree.Item)source).getText()), getQualifiedURL(((Tree.Item)source).getImage()));
+                Object newTextValue = RICH_TEXT_PARSER.parseRichText(((Tree.Item)source).getText(), this);
+                if (newTextValue instanceof String) newTextValue = getEscapedText((String) newTextValue);
+                postClientEvent(ITEM_CHANGE, fullIndex, newTextValue, getQualifiedURL(((Tree.Item)source).getImage()));
             } else if (name.equals(Tree.Item.PROPERTY_ITEM_SELECTED)) {
                 postClientEvent(ITEM_SELECT, fullIndex);
             }
@@ -189,7 +191,12 @@ final class TreeRenderer extends ComponentRenderer implements ItemChangeListener
 	    sb.append("{ch:").append(tree.getHeight());
 	    sb.append(",cw:").append(tree.getWidth());
 	    sb.append(",fo:").append(tree.isFocus());
-	   	sb.append(",rt:\"").append(getEscapedText(ri.getText())).append("\"");
+        Object textValue = RICH_TEXT_PARSER.parseRichText(ri.getText(), this);
+        if (textValue instanceof String) {
+            sb.append(",rt:\"").append(getEscapedText((String) textValue)).append("\"");
+        } else {
+            sb.append(",rt:").append(textValue);
+        }
         sb.append(",ri:\"").append(getQualifiedURL(ri.getImage())).append('"');        
 	    sb.append(",re:").append(ri.isExpanded());
 	    sb.append(",rv:").append(tree.isRootItemVisible());
@@ -208,7 +215,12 @@ final class TreeRenderer extends ComponentRenderer implements ItemChangeListener
             if (ti != null) {
 			    sb.append("{ix:").append(i);
                 sb.append(",tm:\"").append(getQualifiedURL(ti.getImage())).append('"');
-			    sb.append(",tt:\"").append(getEscapedText(ti.getText())).append("\"");
+                Object textValue = RICH_TEXT_PARSER.parseRichText(ti.getText(), this);
+                if (textValue instanceof String) {
+                    sb.append(",tt:\"").append(getEscapedText((String) textValue)).append("\"");
+                } else {
+                    sb.append(",tt:").append(textValue);
+                }
 			    sb.append(",te:").append(ti.isExpanded());
                 sb.append(',');
 				prepareInitData(sb, ti);

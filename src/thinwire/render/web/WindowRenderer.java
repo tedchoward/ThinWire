@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import thinwire.ui.Component;
+import thinwire.ui.Frame;
 import thinwire.ui.Menu;
 import thinwire.ui.Window;
 import thinwire.ui.event.PropertyChangeEvent;
@@ -46,8 +47,12 @@ class WindowRenderer extends ContainerRenderer {
     
     void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         setPropertyChangeIgnored(Component.PROPERTY_VISIBLE, true);
-        Window w = (Window)c;        
-        addInitProperty(Window.PROPERTY_TITLE, w.getTitle());
+        Window w = (Window)c;
+        if (!(w instanceof Frame)) {
+            addInitProperty(Window.PROPERTY_TITLE, RICH_TEXT_PARSER.parseRichText(w.getTitle(), this));
+        } else {
+            addInitProperty(Window.PROPERTY_TITLE, w.getTitle());
+        }
         compToId = new HashMap<Component, Integer>(w.getChildren().size());        
         super.render(wr, c, container);
         Menu m = w.getMenu();

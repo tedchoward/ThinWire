@@ -39,7 +39,7 @@ final class HyperlinkRenderer extends ComponentRenderer {
     void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         init(HYPERLINK_CLASS, wr, c, container);
         Hyperlink hl = (Hyperlink)c;
-        addInitProperty(Hyperlink.PROPERTY_TEXT, hl.getText());
+        addInitProperty(Hyperlink.PROPERTY_TEXT, RICH_TEXT_PARSER.parseRichText(hl.getText(), this));
         addInitProperty(Hyperlink.PROPERTY_LOCATION, getQualifiedURL(hl.getLocation()));
         super.render(wr, c, container);
     }
@@ -50,7 +50,7 @@ final class HyperlinkRenderer extends ComponentRenderer {
         Object newValue = pce.getNewValue();        
 
         if (name.equals(Hyperlink.PROPERTY_TEXT)) {
-            postClientEvent(SET_TEXT, newValue);
+            postClientEvent(SET_TEXT, RICH_TEXT_PARSER.parseRichText((String) newValue, this));
         } else if (name.equals(Hyperlink.PROPERTY_LOCATION)) {
             postClientEvent(SET_LOCATION, getQualifiedURL((String)newValue));
         } else {

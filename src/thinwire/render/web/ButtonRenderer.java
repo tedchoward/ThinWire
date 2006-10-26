@@ -38,7 +38,7 @@ final class ButtonRenderer extends ComponentRenderer {
     void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         init(BUTTON_CLASS, wr, c, container);
         Button b = (Button)c;
-        addInitProperty(Button.PROPERTY_TEXT, b.getText());
+        addInitProperty(Button.PROPERTY_TEXT, RICH_TEXT_PARSER.parseRichText(b.getText(), this));
         addInitProperty(Button.PROPERTY_IMAGE, getQualifiedURL(b.getImage()));
         addInitProperty(Button.PROPERTY_STANDARD, b.isStandard());        
         super.render(wr, c, container);
@@ -50,7 +50,7 @@ final class ButtonRenderer extends ComponentRenderer {
         Object newValue = pce.getNewValue();        
 
         if (name.equals(Button.PROPERTY_TEXT)) {
-            postClientEvent(SET_TEXT, newValue);
+            postClientEvent(SET_TEXT, RICH_TEXT_PARSER.parseRichText((String) newValue, this));
         } else if (name.equals(Button.PROPERTY_IMAGE)) {
             postClientEvent(SET_IMAGE, getQualifiedURL((String)newValue));
         } else {

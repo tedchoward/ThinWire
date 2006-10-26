@@ -31,7 +31,7 @@ import thinwire.ui.Slider;
 /**
  * @author Ted C. Howard
  */
-public class SliderRenderer extends RangeComponentRenderer {
+final class SliderRenderer extends RangeComponentRenderer {
     private static final String SLIDER_CLASS = "tw_Slider";
     
     public void render(WindowRenderer wr, Component c, ComponentRenderer container) {

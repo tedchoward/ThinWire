@@ -56,7 +56,7 @@ final class RadioButtonRenderer extends ComponentRenderer {
         init(RADIOBUTTON_CLASS, wr, c, container);
 		RadioButton rb = (RadioButton)c;
         addClientSideProperty(RadioButton.PROPERTY_CHECKED);
-        addInitProperty(RadioButton.PROPERTY_TEXT, rb.getText());
+        addInitProperty(RadioButton.PROPERTY_TEXT, RICH_TEXT_PARSER.parseRichText(rb.getText(), this));
         addInitProperty(RadioButton.PROPERTY_CHECKED, rb.isChecked());
         setGroup(System.identityHashCode(rb.getGroup()));
         addInitProperty(RadioButton.PROPERTY_GROUP, groupId);
@@ -89,7 +89,7 @@ final class RadioButtonRenderer extends ComponentRenderer {
         if (isPropertyChangeIgnored(name)) return;
 
         if (name.equals(RadioButton.PROPERTY_TEXT)) {
-            postClientEvent(SET_TEXT, pce.getNewValue());
+            postClientEvent(SET_TEXT, RICH_TEXT_PARSER.parseRichText((String) pce.getNewValue(), this));
         } else if (name.equals(RadioButton.PROPERTY_CHECKED)) {
             postClientEvent(SET_CHECKED, pce.getNewValue());
         } else if (name.equals(RadioButton.PROPERTY_GROUP)) {

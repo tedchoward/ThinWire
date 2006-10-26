@@ -77,7 +77,7 @@ var tw_TabSheet = tw_BaseContainer.extend({
     },
     
     setText: function(text) {        
-        this._tab.replaceChild(document.createTextNode(text), this._tab.lastChild);    
+        this._tab.replaceChild(tw_Component.setRichText(text), this._tab.lastChild);    
     },
             
     setImage: function(image) {
