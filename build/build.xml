@@ -11,9 +11,9 @@
 		<property name="path.binary" value="${path.temp}_bin"/>
 		
 		<!-- Preprocessor Defines -->
-<!--		<property name="PREPROCESSOR_DEFINES" value=""/>-->
+		<property name="PREPROCESSOR_DEFINES" value=""/>
 		<!-- Uncomment the following line to enable a v1.1 compatible API -->
-		<property name="PREPROCESSOR_DEFINES" value="|V1_1_COMPAT"/>
+		<!--<property name="PREPROCESSOR_DEFINES" value="|V1_1_COMPAT"/>-->
 		
 		<!-- Delete working folders -->
 		<delete dir="${path.temp}"/>
