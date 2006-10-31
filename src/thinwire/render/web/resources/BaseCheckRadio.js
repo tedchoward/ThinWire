@@ -31,7 +31,8 @@ var tw_BaseCheckRadio = tw_Component.extend({
     _image: null,
     
     construct: function(className, id, containerId) {
-        arguments.callee.$.call(this, "a", className, id, containerId, "text,lineHeight");
+        arguments.callee.$.call(this, "a", className, id, containerId);
+        this._box.appendChild(document.createTextNode(""));
 
         var s = this._box.style;
         s.display = "block";
@@ -41,6 +42,8 @@ var tw_BaseCheckRadio = tw_Component.extend({
         s.backgroundColor = tw_COLOR_TRANSPARENT;        
         s.textDecoration = "none";
         s.border = "0px";
+        s.padding = "0px";
+        s.margin = "0px";
         s.whiteSpace = "nowrap";
         s.paddingLeft = "18px";
 
@@ -49,7 +52,8 @@ var tw_BaseCheckRadio = tw_Component.extend({
         s.position = "absolute";
         s.width = "9px";
         s.height = "9px";
-        s.overflow = "hidden";
+        s.overflow = "hidden"; 
+        s.fontSize = "0px";
         s.zIndex = 0;
         this._box.appendChild(this._backgroundBox);     
         
@@ -60,6 +64,7 @@ var tw_BaseCheckRadio = tw_Component.extend({
         s.width = "9px";
         s.height = "9px";
         s.left = "1px";
+        s.fontSize = "0px";
         s.zIndex = 1;
         this._box.appendChild(this._borderBox);
         
@@ -69,6 +74,7 @@ var tw_BaseCheckRadio = tw_Component.extend({
         s.backgroundRepeat = "no-repeat";
         s.position = "absolute";
         s.left = "1px";
+        s.lineHeight = "0px";
         s.zIndex = 1;
         this._box.appendChild(this._image);
         
@@ -106,6 +112,7 @@ var tw_BaseCheckRadio = tw_Component.extend({
     
     setHeight: function(height) {
         arguments.callee.$.call(this, height);
+        this._box.style.lineHeight = this._box.style.height;
         var top = height / 2 - 8;        
         if (top < 0) top = 0;
         this._image.style.top = top + "px";
@@ -137,6 +144,8 @@ var tw_BaseCheckRadio = tw_Component.extend({
     },
     
     keyPressNotify: tw_Component.keyPressNotifySpaceFireAction,
+    
+    setText: tw_Component.setText,
    
     isChecked: function() {
         return this._image.style.backgroundImage.indexOf("Checked") != -1;

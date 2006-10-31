@@ -42,6 +42,10 @@ var tw_TextArea = tw_BaseText.extend({
     keyPressNotify: function(keyPressCombo) {
         return arguments.callee.$.call(this, keyPressCombo);
     },
+    
+    setEditMask: function(editMask) {
+        alert("'editMask' property not supported by this component");
+    },
         
     _validateInput: function(te) {
         if (this._maxLength <= 0) return; //don't validate if maxLength not defined    

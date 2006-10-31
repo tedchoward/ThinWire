@@ -49,6 +49,7 @@ import thinwire.ui.*;
 import thinwire.ui.FileChooser.FileInfo;
 import thinwire.ui.style.*;
 import thinwire.util.Grid;
+import thinwire.util.ImageInfo;
 
 /**
  * @author Joshua J. Gertzen
@@ -333,12 +334,12 @@ public final class WebApplication extends Application {
         appThread.start();
     }
     
-    String getColorValue(Color color, boolean border) {
+    String getStyleColorValue(Color color, boolean border) {
         if (color.isSystemColor()) color = systemColors.get(color.toString());
         return color.toRGBString();
     }
     
-    String getRepeatValue(Background.Repeat repeat) {
+    String getStyleRepeatValue(Background.Repeat repeat) {
         switch (repeat) {
             case BOTH: return "repeat";
             case X: return "repeat-x";
@@ -347,33 +348,45 @@ public final class WebApplication extends Application {
         }
     }
     
+    String getStyleImageValue(WindowRenderer wr, ImageInfo ii, boolean includeSize) {
+        String value = ii.getName();
+        
+        if (value.length() > 0) {
+            value = wr.getQualifiedURL(value);
+            
+            if (includeSize) {
+                StringBuffer sb = new StringBuffer(value);
+                sb.append(',').append(ii.getWidth()).append(',').append(ii.getHeight());
+                value = sb.toString();
+            }
+        }
+        
+        return value;
+    }
+    
     Integer getNextComponentId() {
         nextCompId = nextCompId == Integer.MAX_VALUE ? 1 : nextCompId + 1;
         return new Integer(nextCompId);
     }
     
     private void sendStyleClass(String styleName, Style s) {
+        WindowRenderer frameRenderer = windowToRenderer.get(getFrame());
         StringBuilder sb = new StringBuilder();
         sb.append('{');
-        sb.append("backgroundColor:\"").append(getColorValue(s.getBackground().getColor(), false)).append("\",");
-        String backgroundImage = s.getBackground().getImage();
-        
-        if (backgroundImage.length() > 0) {
-            WindowRenderer wr = windowToRenderer.get(getFrame());
-            backgroundImage = wr.getQualifiedURL(backgroundImage);
-        }
-        
-        sb.append("backgroundImage:\"").append(backgroundImage).append("\",");
-        sb.append("backgroundRepeat:\"").append(getRepeatValue(s.getBackground().getRepeat())).append("\",");
-        sb.append("backgroundPosition:\"").append(s.getBackground().getPosition()).append("\",");
+        Background bg = s.getBackground();
+        sb.append("backgroundColor:\"").append(getStyleColorValue(bg.getColor(), false)).append("\",");
+        sb.append("backgroundImage:\"").append(getStyleImageValue(frameRenderer, bg.getImageInfo(), false)).append("\",");
+        sb.append("backgroundRepeat:\"").append(getStyleRepeatValue(bg.getRepeat())).append("\",");
+        sb.append("backgroundPosition:\"").append(bg.getPosition()).append("\",");
         
         Font f = s.getFont();
         sb.append("fontFamily:\"").append(f.getFamily()).append("\",");
-        sb.append("fontColor:\"").append(getColorValue(f.getColor(), false)).append("\",");
+        sb.append("fontColor:\"").append(getStyleColorValue(f.getColor(), false)).append("\",");
         sb.append("fontSize:").append(f.getSize()).append(",");
         sb.append("fontItalic:").append(f.isItalic()).append(",");
         sb.append("fontBold:").append(f.isBold()).append(",");
         sb.append("fontUnderline:").append(f.isUnderline()).append(",");
+        
         Border b = s.getBorder();
         sb.append("borderSize:").append(b.getSize()).append(",");
         Border.Type borderType = b.getType();
@@ -385,7 +398,8 @@ public final class WebApplication extends Application {
         }
 
         sb.append("borderType:\"").append(borderType).append("\",");
-        sb.append("borderColor:\"").append(getColorValue(borderColor, true)).append("\"");
+        sb.append("borderColor:\"").append(getStyleColorValue(borderColor, true)).append("\",");
+        sb.append("borderImage:\"").append(getStyleImageValue(frameRenderer, b.getImageInfo(), true)).append("\"");
         sb.append('}');
         clientSideMethodCall("tw_Component", "setDefaultStyle", styleName, sb);
     }

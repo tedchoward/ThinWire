@@ -83,7 +83,7 @@ public class Button extends AbstractTextComponent implements ImageComponent, Act
     public static final String PROPERTY_STANDARD = "standard";
 
     private boolean standard;
-	private ImageInfo imageDetail = new ImageInfo();
+	private ImageInfo imageInfo = new ImageInfo(null);
     private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>();
 	
 	/**
@@ -116,24 +116,19 @@ public class Button extends AbstractTextComponent implements ImageComponent, Act
         aei.setRenderer(r);
     }
         
-	/**
-	 * @return the filename of the image on the button.
-	 */
 	public String getImage() {
-	    return imageDetail.getName();
+	    return imageInfo.getName();
 	}
 	
-	/**
-	 * Places an image on a button.
-	 * @param image The file name or resource name of the image.
-	 * @throws IllegalArgumentException thrown if the image file does not exist
-	 * @throws RuntimeException thrown if an I/O error occurs
-	 */
 	public void setImage(String image) {
-        String oldImage = this.imageDetail.getName();
-        imageDetail.setName(image);        
-        firePropertyChange(this, PROPERTY_IMAGE, oldImage, this.imageDetail.getName());
-    }	
+        String oldImage = this.imageInfo.getName();
+        imageInfo = new ImageInfo(image);        
+        firePropertyChange(this, PROPERTY_IMAGE, oldImage, this.imageInfo.getName());
+    }
+    
+    public ImageInfo getImageInfo() {
+        return imageInfo;
+    }
 
 	/**
 	 * Returns whether the button is the standard button (i.e. default).

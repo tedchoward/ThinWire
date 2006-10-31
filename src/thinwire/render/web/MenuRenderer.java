@@ -264,7 +264,6 @@ final class MenuRenderer extends ComponentRenderer implements ItemChangeListener
         if (index >= 0) {
             String first = text.substring(0, index);
             if (first.length() > 0) first = first.replaceAll("([^&])&([^&])", "$1$2");
-            System.out.println(first);
             if (first.length() > 0) first = first.replaceAll("&&", "&");
             String last = text.substring(index + 2);
             if (last.length() > 0) last = last.replaceAll("([^&])&([^&])", "$1$2");

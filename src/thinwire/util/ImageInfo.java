@@ -47,11 +47,7 @@ public class ImageInfo {
     private Format format;
     private int width;
     private int height;
-    
-    public ImageInfo() {
-        this(null);
-    }
-    
+
     public ImageInfo(String name) {
         setName(name);
     }
@@ -72,7 +68,7 @@ public class ImageInfo {
         return name;
     }
     
-    public void setName(String name) {        
+    private void setName(String name) {        
         try {                       
             InputStream is = null;
 
@@ -89,7 +85,8 @@ public class ImageInfo {
                     URLConnection remoteImageConnection = remoteImageURL.openConnection();
                     is = remoteImageConnection.getInputStream();
                 } else {
-                    File file = Application.current().getRelativeFile(name);
+                    Application app = Application.current();
+                    File file = app == null ? new File(name) : app.getRelativeFile(name);
                     if (file.exists()) is = new FileInputStream(file);
                 }
                 

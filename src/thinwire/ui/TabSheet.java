@@ -81,7 +81,7 @@ import thinwire.util.ImageInfo;
 public class TabSheet extends AbstractContainer<Component> implements TextComponent, ImageComponent {
 	private String text = "";
     private boolean allowBoundsChange;
-	private ImageInfo imageDetail = new ImageInfo();
+	private ImageInfo imageInfo = new ImageInfo(null);
     
 	/**
 	 * Construct a new TabSheet with no text.
@@ -103,25 +103,20 @@ public class TabSheet extends AbstractContainer<Component> implements TextCompon
 		setImage(image);
 	}
 
-	/**
-	 * @return the filename of the image on the tabsheet
-	 */
 	public String getImage() {
-	    return imageDetail.getName();
+	    return imageInfo.getName();
 	}
 
-	/**
-     * Places an image on a tabsheet
-     * @param image The file name or resource name of the image.
-     * @throws IllegalArgumentException thrown if the image file does not exist
-     * @throws RuntimeException thrown if an I/O error occurs
-     */
     public void setImage(String image) {
-        String oldImage = this.imageDetail.getName();
-        imageDetail.setName(image);        
-        firePropertyChange(this, PROPERTY_IMAGE, oldImage, this.imageDetail.getName());
+        String oldImage = this.imageInfo.getName();
+        imageInfo = new ImageInfo(image);        
+        firePropertyChange(this, PROPERTY_IMAGE, oldImage, this.imageInfo.getName());
     }	
-	
+
+    public ImageInfo getImageInfo() {
+        return imageInfo;
+    }
+    
 	/**
 	 * Returns the text displayed on the tab part of the TabSheet.
 	 * @return the text displayed on the tab part of the TabSheet.

@@ -80,7 +80,7 @@ import thinwire.util.ImageInfo;
  */
 public class Image extends AbstractComponent implements ImageComponent, ActionEventComponent {
     private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>();    
-	private ImageInfo imageDetail = new ImageInfo();
+	private ImageInfo imageInfo = new ImageInfo(null);
     
 	/**
 	 * Constructs a new Image with no image fileName.
@@ -96,7 +96,7 @@ public class Image extends AbstractComponent implements ImageComponent, ActionEv
 	public Image(String fileName) {
 	    if (fileName != null) {
             setImage(fileName);
-            if (imageDetail.getWidth() >= 0 && imageDetail.getHeight() >= 0) setSize(imageDetail.getWidth(), imageDetail.getHeight());
+            if (imageInfo.getWidth() >= 0 && imageInfo.getHeight() >= 0) setSize(imageInfo.getWidth(), imageInfo.getHeight());
         }
         
         setFocusCapable(false);
@@ -142,32 +142,25 @@ public class Image extends AbstractComponent implements ImageComponent, ActionEv
         aei.fireAction(this, action);
     }    
 	
-	/**
-	 * Returns the name of the image file.
-	 * @return a String
-	 */
 	public String getImage() {
-	    return imageDetail.getName();
+	    return imageInfo.getName();
 	}
-	
-	/**
-     * Associates an image file with this <code>Image</code> object.
-     * @param image name of the image file (or key associated with the name of the image file)
-     * @throws IllegalArgumentException if the image file does not exist.
-     * @throws UnsupportedOperationException if the file does not have an acceptable format.
-     * @throws RuntimeException if an I/O problem occurs.
-     */
+
     public void setImage(String image) {
-        String oldImage = this.imageDetail.getName();
-        imageDetail.setName(image);        
-        firePropertyChange(this, PROPERTY_IMAGE, oldImage, this.imageDetail.getName());
+        String oldImage = this.imageInfo.getName();
+        imageInfo = new ImageInfo(image);        
+        firePropertyChange(this, PROPERTY_IMAGE, oldImage, this.imageInfo.getName());
+    }
+
+    public ImageInfo getImageInfo() {
+        return imageInfo;
     }
 	
 	/**
 	 * Returns a string representation of the image including file name and size information.
 	 */
 	public String toString() {
-	    return Image.class.getName() + "{fileName: " + imageDetail.getName() + 
-	    	", imageHeight: " + imageDetail.getHeight() + ", imageWidth: " + imageDetail.getWidth() + "}";
+	    return Image.class.getName() + "{fileName: " + imageInfo.getName() + 
+	    	", imageHeight: " + imageInfo.getHeight() + ", imageWidth: " + imageInfo.getWidth() + "}";
 	}
 }

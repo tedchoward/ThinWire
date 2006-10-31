@@ -34,7 +34,7 @@ var tw_DropDown = tw_BaseText.extend({
     construct: function(id, containerId, props) {
         var button = this._button = document.createElement("div");
         var buttonBorder = this._buttonBorder = document.createElement("div");
-        arguments.callee.$.call(this, ["div", "input", "text"], "dropDownGridBox", id, containerId, "editMask");
+        arguments.callee.$.call(this, ["div", "input", "text"], "dropDownGridBox", id, containerId);
         this._box.style.fontSize = "1px"; //Hack to work around IE height sizing issue
         this._subtractEditorWidth += this._buttonWidth;
         

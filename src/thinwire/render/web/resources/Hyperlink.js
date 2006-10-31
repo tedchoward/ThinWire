@@ -30,7 +30,9 @@ var tw_Hyperlink = tw_BaseBrowserLink.extend({
     _location: "",
     
     construct: function(id, containerId, props) {
-        arguments.callee.$.call(this, "a", "hyperlink", id, containerId, "text");
+        arguments.callee.$.call(this, "a", "hyperlink", id, containerId);
+        this._box.appendChild(document.createTextNode(""));
+        
         var s = this._box.style;
         s.whiteSpace = "nowrap";
         s.overflow = "hidden";        
@@ -47,6 +49,8 @@ var tw_Hyperlink = tw_BaseBrowserLink.extend({
     _superClick: tw_Component.clickListener,
     
     keyPressNotify: tw_Component.keyPressNotifySpaceFireAction,
+    
+    setText: tw_Component.setText,
     
     setStyle: function(name, value) {
         arguments.callee.$.call(this, name, value);

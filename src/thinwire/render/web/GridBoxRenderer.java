@@ -106,13 +106,12 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
         
         List<Column> columns = gb.getColumns();
         colDefs.append('[');
-        System.out.println(columns.size());
+        
         for (int i = 0, cnt = columns.size(); i < cnt; i++) {
             Column col = (Column)columns.get(i);
             columnState.add(System.identityHashCode(col));        
 
             if (col.isVisible()) {
-                System.out.println(col.getDisplayName());
                 colDefs.append("{v:");
                 getValues(col, col.getDisplayFormat(), colDefs);
                 Object headerValue = RICH_TEXT_PARSER.parseRichText(col.getDisplayName(), this);

@@ -241,7 +241,6 @@ class RichTextParser {
                 sb.append("[");
                 processNode(document.getFirstChild(), cr);
                 sb.deleteCharAt(sb.length() - 1).append("]");
-                System.out.println(sb.toString());
                 return sb;
             } catch (Exception e) {
                 log.log(Level.WARNING, "Exception Caught While Parsing Rich Text", e);

@@ -26,8 +26,6 @@
 //TODO: scrollIntoView is not supported by Opera and therefore keyboard nav is somewhat unusable.
 //TODO: A column should be visible by default
 var tw_GridBox = tw_Component.extend({
-    _y: -1,
-    _x: -1,    
     _header: null,
     _hresize: null,    
     _content: null,
@@ -169,7 +167,7 @@ var tw_GridBox = tw_Component.extend({
             }
             
             container._childGridBoxes.push(this);
-                
+
             //If this gridbox is a member of a dropdown, then an actual click event must
             //be reported to the server so the dropdown text value gets populated.
             //if (this._root.getParent() instanceof tw_DropDown) this.registerEventNotifier("action", "click");                
@@ -449,24 +447,29 @@ var tw_GridBox = tw_Component.extend({
     },
     
     setX: function(x) {
-        this._x = x;
-        if (this._parent instanceof tw_GridBox) x += parseInt(this._parent._box.style.left);
-        arguments.callee.$.call(this, x);
+        if (this._parent instanceof tw_GridBox) {
+            var ox = x + parseInt(this._parent._box.style.left);
+            arguments.callee.$.call(this, ox);
+            this._x = x;
+        } else {
+            arguments.callee.$.call(this, x);
+        }
     },
         
     setY: function(y) {
-        this._y = y;
-        
-        if (this._parent instanceof tw_GridBox) {      
-            y += parseInt(this._parent._box.style.top);
+        if (this._parent instanceof tw_GridBox) {
+            var oy = y + parseInt(this._parent._box.style.top);
             
             if (this._root.getParent() instanceof tw_BaseContainer && this._root === this._parent) {
                 var win = this.getBaseWindow();
-                if (win instanceof tw_Dialog) y += win.getOffsetY();
+                if (win instanceof tw_Dialog) oy += win.getOffsetY();
             }
-        }    
-        
-        arguments.callee.$.call(this, y);
+            
+            arguments.callee.$.call(this, oy);
+            this._y = y;        
+        } else {
+            arguments.callee.$.call(this, y);
+        }
     },
         
     setWidth: function(width) {

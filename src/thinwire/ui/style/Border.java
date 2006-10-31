@@ -25,6 +25,13 @@
  */
 package thinwire.ui.style;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
+import thinwire.util.ImageInfo;
+
 /**
  * @author Joshua J. Gertzen
  */
@@ -32,7 +39,8 @@ public class Border {
     public static final String PROPERTY_BORDER_COLOR = "borderColor";
     public static final String PROPERTY_BORDER_SIZE = "borderSize";
     public static final String PROPERTY_BORDER_TYPE = "borderType";
-
+    public static final String PROPERTY_BORDER_IMAGE = "borderImage";
+    
     public enum Type {
         NONE, SOLID, DOUBLE, INSET, OUTSET, RIDGE, GROOVE, DASHED, DOTTED;
         
@@ -45,6 +53,7 @@ public class Border {
     private Type type;
     private int size = -1;
     private Color color;
+    private ImageInfo imageInfo = new ImageInfo(null);
     
     Border(Style parent) {
         this.parent = parent;
@@ -63,10 +72,12 @@ public class Border {
             if (getType().equals(db.getType())) setType(border.getType());
             if (getSize() == db.getSize()) setSize(border.getSize());
             if (getColor().equals(db.getColor())) setColor(border.getColor());            
+            if (getImage().equals(db.getImage())) setImage(border.getImage());            
         } else {
             setType(border.getType());
             setSize(border.getSize());
             setColor(border.getColor());
+            setImage(border.getImage());
         }
     }
     
@@ -84,7 +95,7 @@ public class Border {
         if (type == null) throw new IllegalArgumentException("type == null");
         Type oldType = this.type; 
         this.type = type;
-        if (parent != null) parent.firePropertyChange(this, PROPERTY_BORDER_TYPE, oldType, this.type);        
+        if (parent != null) parent.firePropertyChange(this, PROPERTY_BORDER_TYPE, oldType, this.type);
     }
     
     public int getSize() {
@@ -111,5 +122,21 @@ public class Border {
         Color oldColor = this.color;
         this.color = color;        
         if (parent != null) parent.firePropertyChange(this, PROPERTY_BORDER_COLOR, oldColor, this.color);
+    }
+    
+    public String getImage() {
+        return imageInfo.getName();
+    }
+    
+    public void setImage(String image) {
+        if (image == null && parent.defaultStyle != null) image = parent.defaultStyle.getBorder().getImage();
+        if (image == null) throw new IllegalArgumentException("image == null && defaultStyle.getBorder().getImage() == null");
+        String oldImage = imageInfo.getName();        
+        imageInfo = new ImageInfo(image);
+        if (parent != null) parent.firePropertyChange(this, PROPERTY_BORDER_IMAGE, oldImage, imageInfo.getName());
+    }
+    
+    public ImageInfo getImageInfo() {
+        return imageInfo;
     }
 }

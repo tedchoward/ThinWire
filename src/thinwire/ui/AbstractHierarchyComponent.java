@@ -85,7 +85,7 @@ abstract class AbstractHierarchyComponent<HI extends AbstractHierarchyComponent.
     
     static class Item<H extends AbstractHierarchyComponent, I extends AbstractHierarchyComponent.Item> implements HierarchyComponent.Item<H, I> {        
         private String text = "";
-        private ImageInfo imageDetail = new ImageInfo();
+        private ImageInfo imageInfo = new ImageInfo(null);
         private Object userObject;        
         private Object parent;
         private List<I> children;
@@ -103,14 +103,18 @@ abstract class AbstractHierarchyComponent<HI extends AbstractHierarchyComponent.
         }
         
         public String getImage() {
-            return imageDetail.getName();
+            return imageInfo.getName();
         }
 
         public void setImage(String image) {
-            String oldImage = this.imageDetail.getName();
-            imageDetail.setName(image);        
+            String oldImage = this.imageInfo.getName();
+            imageInfo = new ImageInfo(image);        
             H hier = getHierarchy();
-            if (hier != null) hier.firePropertyChange(this, PROPERTY_ITEM_IMAGE, oldImage, this.imageDetail.getName());
+            if (hier != null) hier.firePropertyChange(this, PROPERTY_ITEM_IMAGE, oldImage, this.imageInfo.getName());
+        }
+        
+        public ImageInfo getImageInfo() {
+            return imageInfo;
         }
 
         public Object getUserObject() {

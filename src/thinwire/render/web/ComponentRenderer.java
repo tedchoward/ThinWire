@@ -44,6 +44,7 @@ import thinwire.ui.Component;
 import thinwire.ui.Container;
 import thinwire.ui.event.PropertyChangeEvent;
 import thinwire.ui.style.*;
+import thinwire.util.ImageInfo;
 
 /**
  * @author Joshua J. Gertzen
@@ -155,7 +156,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         
         value = s.getBackground().getColor();
         defaultValue = ds.getBackground().getColor();
-        if (!value.equals(defaultValue)) sb.append("backgroundColor:\"").append(wr.ai.getColorValue((Color)value, false)).append("\",");
+        if (!value.equals(defaultValue)) sb.append("backgroundColor:\"").append(wr.ai.getStyleColorValue((Color)value, false)).append("\",");
 
         value = s.getBackground().getImage();
         defaultValue = ds.getBackground().getImage();
@@ -163,7 +164,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         
         value = s.getBackground().getRepeat();
         defaultValue = ds.getBackground().getRepeat();
-        if (!value.equals(defaultValue)) sb.append("backgroundRepeat:\"").append(wr.ai.getRepeatValue((Background.Repeat)value)).append("\",");
+        if (!value.equals(defaultValue)) sb.append("backgroundRepeat:\"").append(wr.ai.getStyleRepeatValue((Background.Repeat)value)).append("\",");
 
         value = s.getBackground().getPosition();
         defaultValue = ds.getBackground().getPosition();
@@ -183,16 +184,20 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
             }
 
             sb.append("borderType:\"").append(value).append("\",");
-            if (borderColor != null) sb.append("borderColor:\"").append(wr.ai.getColorValue((Color)borderColor, true)).append("\",");
+            if (borderColor != null) sb.append("borderColor:\"").append(wr.ai.getStyleColorValue((Color)borderColor, true)).append("\",");
         } else {
             value = s.getBorder().getColor();
             defaultValue = ds.getBorder().getColor();
-            if (!value.equals(defaultValue)) sb.append("borderColor:\"").append(wr.ai.getColorValue((Color)value, true)).append("\",");
+            if (!value.equals(defaultValue)) sb.append("borderColor:\"").append(wr.ai.getStyleColorValue((Color)value, true)).append("\",");
         }
         
         value = s.getBorder().getSize();
         defaultValue = ds.getBorder().getSize(); 
         if (!value.equals(defaultValue)) sb.append("borderSize:").append(value).append(",");
+
+        value = s.getBorder().getImage();
+        defaultValue = ds.getBorder().getImage();
+        if (!value.equals(defaultValue)) sb.append("borderImage:\"").append(wr.ai.getStyleImageValue(wr, s.getBorder().getImageInfo(), true)).append("\",");
         
         value = s.getFont().getFamily();
         defaultValue = ds.getFont().getFamily(); 
@@ -204,7 +209,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
             
         value = s.getFont().getColor();
         defaultValue = ds.getFont().getColor(); 
-        if (!value.equals(defaultValue)) sb.append("fontColor:\"").append(wr.ai.getColorValue((Color)value, false)).append("\",");
+        if (!value.equals(defaultValue)) sb.append("fontColor:\"").append(wr.ai.getStyleColorValue((Color)value, false)).append("\",");
             
         value = s.getFont().isBold();
         defaultValue = ds.getFont().isBold(); 
@@ -237,7 +242,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         } else if (propertyName.equals(Background.PROPERTY_BACKGROUND_IMAGE)) {
             value = getQualifiedURL(s.getBackground().getImage());
         } else if (propertyName.equals(Background.PROPERTY_BACKGROUND_REPEAT)) {
-            value = wr.ai.getRepeatValue(s.getBackground().getRepeat());
+            value = wr.ai.getStyleRepeatValue(s.getBackground().getRepeat());
         } else if (propertyName.equals(Background.PROPERTY_BACKGROUND_POSITION)) {
             value = s.getBackground().getPosition();
         } else if (propertyName.equals(Border.PROPERTY_BORDER_COLOR)) {
@@ -247,6 +252,8 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
             value = s.getBorder().getSize();
         } else if (propertyName.equals(Border.PROPERTY_BORDER_TYPE)) {            
             value = s.getBorder().getType();
+        } else if (propertyName.equals(Border.PROPERTY_BORDER_IMAGE)) {
+            value = wr.ai.getStyleImageValue(wr, s.getBorder().getImageInfo(), true);
         } else if (propertyName.equals(Font.PROPERTY_FONT_FAMILY)) {
             value = s.getFont().getFamily();
         } else if (propertyName.equals(Font.PROPERTY_FONT_SIZE)) {
@@ -264,13 +271,13 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         }
         
         if (value instanceof Color) {
-            value = wr.ai.getColorValue((Color)value, propertyName.equals(Border.PROPERTY_BORDER_COLOR));
+            value = wr.ai.getStyleColorValue((Color)value, propertyName.equals(Border.PROPERTY_BORDER_COLOR));
         } else if (value instanceof Border.Type) {
             if (value == Border.Type.NONE) {
                 value = Border.Type.SOLID;
-                postClientEvent(SET_STYLE, Border.PROPERTY_BORDER_COLOR, wr.ai.getColorValue(s.getBackground().getColor(), true));
+                postClientEvent(SET_STYLE, Border.PROPERTY_BORDER_COLOR, wr.ai.getStyleColorValue(s.getBackground().getColor(), true));
             } else if (oldValue == Border.Type.NONE) {
-                postClientEvent(SET_STYLE, Border.PROPERTY_BORDER_COLOR, wr.ai.getColorValue(s.getBorder().getColor(), true));
+                postClientEvent(SET_STYLE, Border.PROPERTY_BORDER_COLOR, wr.ai.getStyleColorValue(s.getBorder().getColor(), true));
             }
         } else {
             value = value.toString();

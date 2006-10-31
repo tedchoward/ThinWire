@@ -42,11 +42,11 @@ var tw_Component = Class.extend({
     _id: -1,
     _parent: null,
     _parentIndex: -1,
+    _x: 0,
+    _y: 0,
     _width: 0,
     _height: 0,
     _eventNotifiers: null,
-    _supportLineHeight: false,
-    _supportText: false,
     _enabled: true,
     _focusCapable: true,
     _backgroundBox: null,
@@ -55,13 +55,14 @@ var tw_Component = Class.extend({
     _borderBox: null,
     _borderColor: null,
     _borderType: null,
+    _borderImage: null,
     _borderSize: 0,
     _borderSizeSub: 0,
     _boxSizeSub: 0,
     _fontBox: null,
     _clickTime: null,
     
-    construct: function(tagName, className, id, containerId, support) {
+    construct: function(tagName, className, id, containerId) {
         var box = document.createElement(tagName);
         box.className = className;
         var s = box.style;
@@ -72,15 +73,6 @@ var tw_Component = Class.extend({
         box.id = id;
         this._box = this._focusBox = this._backgroundBox = this._borderBox = this._fontBox = box;
         this._id = id;
-        
-        support = support == null ? ",," : "," + support + ",";
-
-        if (support.indexOf(",lineHeight,") >= 0) this._supportLineHeight = true;
-
-        if (support.indexOf(",text,") >= 0) {
-            this._supportText = true;
-            this._box.appendChild(document.createTextNode(""));
-        }
         
         tw_Component.instances[id] = this;
         this._parent = containerId instanceof Class ? containerId : tw_Component.instances[containerId];
@@ -99,27 +91,30 @@ var tw_Component = Class.extend({
     },
             
     setX: function(x) {
+        this._x = x;
         this._box.style.left = x + "px";
     },
     
     getX: function() {
-        return parseInt(this._box.style.left);
+        return this._x;
     },
     
     setY: function(y) {
+        this._y = y;
         this._box.style.top = y + "px";
     },
 
     getY: function() {
-        return parseInt(this._box.style.top);
+        return this._y;
     },    
 
     setWidth: function(width) {
         this._width = width;
         width -= this._boxSizeSub;        
-        if (this._box == this._borderBox) width -= this._borderSizeSub;
+        if (this._box === this._borderBox && this._borderImage == null) width -= this._borderSizeSub;
         if (width < 0) this._width = width = 0;
         this._box.style.width = width + "px";
+        if (this._borderImage != null) this._borderImage.setWidth(this._width);
     },
     
     getWidth: function() {
@@ -129,10 +124,10 @@ var tw_Component = Class.extend({
     setHeight: function(height) {
         this._height = height;
         height -= this._boxSizeSub;
-        if (this._box == this._borderBox) height -= this._borderSizeSub;
+        if (this._box === this._borderBox && this._borderImage == null) height -= this._borderSizeSub;
         if (height < 0) this._height = height = 0;
         this._box.style.height = height + "px";
-        if (this._supportLineHeight) this._box.style.lineHeight = this._box.style.height;
+        if (this._borderImage != null) this._borderImage.setHeight(this._height);
     },
     
     getHeight: function() {
@@ -205,13 +200,7 @@ var tw_Component = Class.extend({
                 //component will trigger a false event on the prior.
                 if (tw_Component.currentFocus != null) {
                     tw_Component.currentFocus.setFocus(false);
-
-                    try {
-                        if (tw_Component.currentFocus._focusBox.blur) tw_Component.currentFocus._focusBox.blur();
-                    } catch (e) {
-                        //Firefox sometimes throws an error when attemptting to set focus.
-                        //ignore the error for now until solution is found.
-                    }
+                    tw_setElementFocus(tw_Component.currentFocus._focusBox, false);
                 }
                 
                 tw_Component.priorFocus = tw_Component.currentFocus; 
@@ -219,14 +208,7 @@ var tw_Component = Class.extend({
                 tw_em.removeQueuedViewStateChange("focus");
                 this.firePropertyChange("focus", true, "focus");
                 if (tw_Component.priorFocus != null && tw_Component.priorFocus.hasPropertyChangeListener("focus")) tw_em.sendGetEvents();
-                
-                try {
-                    if (this._focusBox.focus) this._focusBox.focus();
-                } catch (e) {
-                    //Firefox sometimes throws an error when attemptting to set focus.
-                    //ignore the error for now until solution is found.
-                }
-                
+                tw_setElementFocus(this._focusBox, true);                
                 var isPriorButton = tw_Component.priorFocus instanceof tw_Button;
                 var isButton = this instanceof tw_Button;
                 
@@ -273,9 +255,14 @@ var tw_Component = Class.extend({
         } else if (this._borderBox != null && name.indexOf("border") == 0) {
             if (name == "borderSize") {
                 this._borderSize = parseInt(value);
-                this._borderSizeSub = tw_sizeIncludesBorders ? 0 : this._borderSize * 2;                
-                value += "px";
-                this._borderBox.style[realName] = value;
+                this._borderSizeSub = tw_sizeIncludesBorders ? 0 : this._borderSize * 2;
+                
+                if (this._borderImage == null) {
+                    this._borderBox.style[realName] = value + "px";
+                } else {
+                    this._borderBox.style[realName] = "0px";
+                    this._borderImage.setBorderSize(this._borderSize);
+                }
                 
                 if (this._inited) {
                     this.setWidth(this.getWidth());
@@ -285,7 +272,24 @@ var tw_Component = Class.extend({
                 this._borderColor = value;
                 this._borderBox.style[realName] = tw_Component.getIEBorder(value, this._borderType);
             } else if (name == "borderImage") {
-                var borderImage = tw_Component.expandUrl(value, true);
+                if (value.length == 0 && this._borderImage != null) {
+                    this._borderImage.destroy();
+                    this._borderImage = null;
+                    this.setStyle("borderSize", this._borderSize + "");
+                } else if (value.length > 0) {
+                    if (this._borderImage == null) this._borderImage = new tw_BorderImage(this);
+                    this.setStyle("borderSize", this._borderSize + "");
+                    this._borderImage.setComponent(this);
+                    var ary = value.split(',');
+                    this._borderImage.setImage(ary[0], ary[1], ary[2]);
+                    this._borderImage.setBorderSize(this._borderSize);
+                    this.setStyle("borderSize", this._borderSize + "");
+                }
+                
+                if (this._inited) {
+                    this.setX(this.getX());
+                    this.setY(this.getY());
+                }
             } else {
                 this._borderType = value;
                 this._borderBox.style[realName] = value;
@@ -337,12 +341,6 @@ var tw_Component = Class.extend({
         }
         
         return value;
-    },
-
-    setText: function(text) {
-        if (!this._supportText) { alert("'text' property not supported by this component"); return; }
-        //this._box.replaceChild(document.createTextNode(text), this._box.firstChild);
-        this._box.replaceChild(tw_Component.setRichText(text), this._box.firstChild);
     },
         
     getBaseWindow: function() {
@@ -669,6 +667,10 @@ tw_Component.getClickAction = function(type, index) {
     } else if (type == "dblclick") {
         return "doubleClick";
     }
+}
+
+tw_Component.setText = function(text) {
+    this._box.replaceChild(tw_Component.setRichText(text), this._box.firstChild);
 }
 
 tw_Component.setRichText = function(text) {

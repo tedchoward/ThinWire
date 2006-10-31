@@ -49,6 +49,7 @@ public class Style {
         b.setColor(Color.WHITE);
         b.setSize(0);
         b.setType(Border.Type.NONE);
+        b.setImage("");
         
         FX fx = s.getFX();
         fx.setPositionChange(FX.Type.NONE);

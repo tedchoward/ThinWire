@@ -27,6 +27,8 @@ package thinwire.ui;
 
 import java.util.List;
 
+import thinwire.util.ImageInfo;
+
 /**
  * @author Joshua J. Gertzen
  */
@@ -62,6 +64,13 @@ public interface HierarchyComponent<HI extends HierarchyComponent.Item> extends 
          */
         public void setImage(String image);
 
+        /**
+         * Returns an immutable <code>ImageInfo</code> class that provides information
+         * about the assigned image, such as width, height, format, etc.
+         * @return an immutable <code>ImageInfo</code> describing this item's image.
+         */
+        public ImageInfo getImageInfo();
+        
         /**
          * Get the user defined value for this item.
          * @return the user defined value for this item if one is defined, null otherwise.

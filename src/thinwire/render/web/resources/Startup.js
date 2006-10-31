@@ -73,6 +73,18 @@ function tw_getVisibleHeight() {
     }
 }
 
+function tw_setElementFocus(elem, state) {
+    try {
+        if (state && elem.focus) elem.focus();
+        else if (!state && elem.blur) elem.blur();
+    } catch (e) {
+        //Firefox sometimes throws an error when attemptting to set focus.
+        //ignore the error for now until solution is found.
+        //Additionally, this can throw an error in IE if the element or one
+        //of it's parents is not visible.
+    }
+}
+
 //Should be a function of Component
 //Allow buttons in mozilla to get focus, but prevent click noise in IE
 function tw_setFocusCapable(comp, state) {

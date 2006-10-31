@@ -173,7 +173,7 @@ public class Background {
     
     private Style parent;
     private Color color;
-    private ImageInfo imageInfo = new ImageInfo();
+    private ImageInfo imageInfo = new ImageInfo(null);
     private Repeat repeat;
     private Position position;
 
@@ -228,8 +228,12 @@ public class Background {
         if (image == null && parent.defaultStyle != null) image = parent.defaultStyle.getBackground().getImage();
         if (image == null) throw new IllegalArgumentException("image == null && defaultStyle.getBackground().getImage() == null");
         String oldImage = imageInfo.getName();        
-        imageInfo.setName(image);
+        imageInfo = new ImageInfo(image);
         if (parent != null) parent.firePropertyChange(this, PROPERTY_BACKGROUND_IMAGE, oldImage, imageInfo.getName());
+    }
+    
+    public ImageInfo getImageInfo() {
+        return imageInfo;
     }
 
     public void setRepeat(Repeat repeat) {

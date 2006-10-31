@@ -36,8 +36,8 @@ var tw_BaseText = tw_Component.extend({
     _valueOnFocus: null,
     _selectionOld: undefined,
     
-    construct: function(tagNames, className, id, containerId, support) {
-        arguments.callee.$.call(this, tagNames[0], className, id, containerId, support);
+    construct: function(tagNames, className, id, containerId) {
+        arguments.callee.$.call(this, tagNames[0], className, id, containerId);
         var s = this._box.style;
         
         var editor = document.createElement(tagNames[1]);    
@@ -51,7 +51,6 @@ var tw_BaseText = tw_Component.extend({
         
         s.backgroundColor = tw_COLOR_TRANSPARENT;
 
-                
         if (tagNames.length > 2) editor.type = tagNames[2];
         this._box.appendChild(editor);
         this._editor = this._focusBox = this._fontBox = editor;
@@ -64,8 +63,6 @@ var tw_BaseText = tw_Component.extend({
         tw_addEventListener(editor, "focus", this._focusListener);
         tw_addEventListener(editor, "blur", this._blurListener);        
         
-        support = support == null ? ",," : "," + support + ",";            
-        if (support.indexOf(",editMask,") >= 0) this._supportEditMask = true;                    
     },
         
     _keyUpListener: function(event) {
@@ -280,13 +277,6 @@ var tw_BaseText = tw_Component.extend({
         this.firePropertyChange("text", this._lastValue);
         if (this._useToolTip) this._editor.title = this._lastValue;
         this._handleSelectionChange(noSelectChange); //call selection notify
-        
-        /*if (this._lastValue.length == this._editMask.length) {
-            if (this._parent instanceof tw_BaseContainer) {
-                var children = this._parent._children;
-                for (
-            }
-        }*/
     },    
 
     setAlignX: function(alignX) {
@@ -294,7 +284,6 @@ var tw_BaseText = tw_Component.extend({
     },
     
     setEditMask: function(editMask) {
-        if (!this._supportEditMask) { alert("'editMask' property not supported by this component"); return; }
         this._lastValue = this._editor.value;
         if (this._useToolTip) this._editor.title = this._lastValue;
     

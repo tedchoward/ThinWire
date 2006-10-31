@@ -25,8 +25,11 @@
  */
 var tw_Label = tw_Component.extend({
     construct: function(id, containerId, props) {
-        arguments.callee.$.call(this, "div", "label", id, containerId, "text,lineHeight");
+        arguments.callee.$.call(this, "div", "label", id, containerId);
+        this._box.appendChild(document.createTextNode(""));
+        
         var s = this._box.style;
+        s.verticalAlign = "middle";
         s.whiteSpace = "nowrap";        
         tw_addEventListener(this._box, ["click", "dblclick"], this._clickListener.bind(this));
         this.init(-1, props);
@@ -36,19 +39,25 @@ var tw_Label = tw_Component.extend({
     
     keyPressNotify: tw_Component.keyPressNotifySpaceFireAction,
     
+    setText: tw_Component.setText,
+    
     setAlignX: function(alignX) {
         this._box.style.textAlign = alignX;
     },
     
+    setHeight: function(height) {
+        arguments.callee.$.call(this, height);
+        if (this._box.style.whiteSpace == "nowrap") this._box.style.lineHeight = this._box.style.height;
+    },
+    
     setWrapText: function(wrapText) {
         var s = this._box.style;
+
         if (wrapText) {
             s.whiteSpace = "";
             s.lineHeight = "";
-            this._supportLineHeight = false;
         } else {
             s.whiteSpace = "nowrap";
-            this._supportLineHeight = true;
             this.setHeight(this.getHeight());
         }
     }

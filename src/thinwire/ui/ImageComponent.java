@@ -25,11 +25,30 @@
  */
 package thinwire.ui;
 
+import thinwire.util.ImageInfo;
+
 /**
  * @author Joshua J. Gertzen
  */
 public interface ImageComponent extends Component {
     public static final String PROPERTY_IMAGE = "image";
+    
+    /**
+     * Returns the image file name that was specified for this component.
+     * @return the image file name that was specified for this component.
+     */
     public String getImage();
+    
+    /**
+     * Places an image on this component.
+     * @param image The file name or resource name of the image.
+     */
     public void setImage(String image);
+    
+    /**
+     * Returns an immutable <code>ImageInfo</code> class that provides information
+     * about the assigned image, such as width, height, format, etc.
+     * @return an immutable <code>ImageInfo</code> describing this component's image, never null.
+     */
+    public ImageInfo getImageInfo();
 }

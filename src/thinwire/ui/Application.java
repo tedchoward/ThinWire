@@ -165,7 +165,7 @@ public abstract class Application {
     }
     
     /**
-     * @return the current instance of the application
+     * @return the current instance of the application, or null if called from a thread other than the UI thread.
      */
 	public static Application current() {
         Thread t = Thread.currentThread();
@@ -173,7 +173,7 @@ public abstract class Application {
         if (t instanceof AppThread) {
             return ((AppThread)t).app;
         } else {
-            throw new IllegalArgumentException("You may only get the current application instance from a UI thread");
+            return null;
         }
 	}
     
