@@ -61,6 +61,7 @@ var tw_Component = Class.extend({
     _boxSizeSub: 0,
     _fontBox: null,
     _clickTime: null,
+    _dragAndDropHandler: null,
     
     construct: function(tagName, className, id, containerId) {
         var box = document.createElement(tagName);
@@ -514,6 +515,24 @@ var tw_Component = Class.extend({
         }
 
         return true;
+    },
+    
+    addDragTarget: function(compId) {
+        if (this._dragAndDropHandler == null) this._dragAndDropHandler = new tw_DragAndDropHandler(this);
+        var target = tw_Component.instances[compId];
+        this._dragAndDropHandler.addTarget(target);
+    },
+    
+    getDragBox: function(event) {
+        return this._box.cloneNode(true);
+    },
+    
+    getDragArea: function() {
+        return this._box;
+    },
+    
+    getDropTarget: function() {
+        return this._box;
     },
             
     init: function(insertAtIndex, props) {

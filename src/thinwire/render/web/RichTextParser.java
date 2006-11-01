@@ -227,7 +227,10 @@ class RichTextParser {
         imgStyleAtts.put("height", new NumberValidator("height", 0, Short.MAX_VALUE));
     }
     
-    public Object parseRichText(String richText, ComponentRenderer cr) {
+    public Object parseRichText(Object textValue, ComponentRenderer cr) {
+        if (textValue == null) return "";
+        String richText = textValue.toString();
+        
         if (richText.indexOf('<') >= 0) {
             try {
                 String tmpText = richText;

@@ -340,7 +340,7 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
         } else { // Cell Change
             if (gb.getColumns().get(columnIndex).isVisible()) {
                 //Wrapping the outbound value in a StringBuilder is a hack to get around a second layer of back-slash escaping.
-                Object textValue = RICH_TEXT_PARSER.parseRichText(newValue.toString(), this);
+                Object textValue = RICH_TEXT_PARSER.parseRichText(newValue, this);
                 if (textValue instanceof String) {
                     postClientEvent(SET_CELL, getVisibleIndex(columnIndex), rowIndex,
                         new StringBuilder("\"" + getValue(newValue, gb.getColumns().get(columnIndex).getDisplayFormat())+ "\""));
@@ -481,7 +481,7 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
                     visible = false;
                 }
 
-                Object textValue = RICH_TEXT_PARSER.parseRichText(l.get(i).toString(), this);
+                Object textValue = RICH_TEXT_PARSER.parseRichText(l.get(i), this);
                 if (visible) {
                     if (textValue instanceof String) {
                         sb.append("\"").append(getValue(l.get(i), format)).append("\",");
@@ -494,7 +494,7 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
             Column.Format format = (Column.Format)formats;
 
             for (int i = 0, cnt = l.size(); i < cnt; i++) {
-                Object textValue = RICH_TEXT_PARSER.parseRichText(l.get(i).toString(), this);
+                Object textValue = RICH_TEXT_PARSER.parseRichText(l.get(i), this);
                 if (textValue instanceof String) {
                     sb.append("\"").append(getValue(l.get(i), format)).append("\",");
                 } else {

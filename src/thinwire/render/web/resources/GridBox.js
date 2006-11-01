@@ -395,7 +395,7 @@ var tw_GridBox = tw_Component.extend({
     },
     
     _toggleHighlight: function(index, state) {
-        if (this._getColumnCount() < 1) return; 
+        if (this._getColumnCount() < 1) return;
         var content = this._content;
         var childNodes = content.childNodes;
     
@@ -912,7 +912,47 @@ var tw_GridBox = tw_Component.extend({
         }
     
         this._childOpen = false;
-    },    
+    },
+    
+    getDragBox: function(event) {
+        var dragBox = document.createElement("div");
+        var s = dragBox.style;
+        s.position = "absolute";
+        s.fontFamily = this._box.style.fontFamily;
+        s.fontSize = this._box.style.fontSize;
+        
+        s.color = tw_COLOR_HIGHLIGHTTEXT;
+        
+        var cell = tw_getEventTarget(event);
+        
+        var column = cell.parentNode;    
+        var index = 1;
+        
+        while ((cell = cell.nextSibling) != null) index++;
+        
+        index = column.childNodes.length - index;
+        
+        var content = this._content;
+        var childNodes = content.childNodes;
+        
+        var x = 0;
+        
+        for (var i = 0, cnt = this._getColumnCount(); i < cnt; i++) {
+            var tmpCell = childNodes.item(i).childNodes.item(index).cloneNode(true);
+            var s = tmpCell.style;
+            s.position = "absolute";
+            s.width = childNodes.item(i).style.width;
+            s.height = tw_GridBox.rowHeight + "px";
+            s.left = x + "px";
+            s.top = "0px";
+            s.backgroundColor = tw_COLOR_HIGHLIGHT;
+            x += parseInt(s.width);
+            dragBox.appendChild(tmpCell);
+        }
+        
+        //alert(tw_getEventTarget(event).firstChild.nodeValue);
+        return dragBox;
+    },
     
     destroy: function(keepChildColumn) {
         this._destroyChildren();

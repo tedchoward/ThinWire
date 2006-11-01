@@ -92,6 +92,7 @@ public final class WebApplication extends Application {
         "Dialog.js",
         "Divider.js",
         "DragHandler.js",
+        "DragAndDropHandler.js",
         "DropDown.js",
         "EventManager.js",
         "Frame.js",

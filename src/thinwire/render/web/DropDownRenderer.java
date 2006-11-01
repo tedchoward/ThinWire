@@ -39,7 +39,6 @@ final class DropDownRenderer extends MaskEditorComponentRenderer {
     private static final String SET_COMPONENT = "setComponent";
     private static final int MIN_SIZE = 25;
     private ComponentRenderer ddcr;
-    private WebApplication app;
 
 	void render(WindowRenderer wr, Component c, ComponentRenderer container) {
 	    init(DROPDOWN_CLASS, wr, c, container);
@@ -56,8 +55,8 @@ final class DropDownRenderer extends MaskEditorComponentRenderer {
         ddcr.setPropertyChangeIgnored(Component.PROPERTY_X, true);
         ddcr.setPropertyChangeIgnored(Component.PROPERTY_Y, true);
         ddcr.render(wr, ddc, this);
-        app = (WebApplication) Application.current();
-        postClientEvent(SET_COMPONENT, app.getComponentId(ddc));
+        
+        postClientEvent(SET_COMPONENT, wr.ai.getComponentId(ddc));
 	}
     
     void destroy() {
@@ -83,7 +82,7 @@ final class DropDownRenderer extends MaskEditorComponentRenderer {
             ddcr.setPropertyChangeIgnored(Component.PROPERTY_X, true);
             ddcr.setPropertyChangeIgnored(Component.PROPERTY_Y, true);
             ddcr.render(wr, ddc, this);
-            postClientEvent(SET_COMPONENT, app.getComponentId(ddc));
+            postClientEvent(SET_COMPONENT, wr.ai.getComponentId(ddc));
         } else {
             super.propertyChange(pce);
         }
