@@ -24,6 +24,7 @@
  #VERSION_HEADER#
  */
 var tw_Label = tw_Component.extend({
+    
     construct: function(id, containerId, props) {
         arguments.callee.$.call(this, "div", "label", id, containerId);
         this._box.appendChild(document.createTextNode(""));

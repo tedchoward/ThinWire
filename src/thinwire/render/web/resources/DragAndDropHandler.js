@@ -29,18 +29,23 @@ var tw_DragAndDropHandler = Class.extend({
     _dragBox: null,
     _dragBoxHandler: null,
     
-    construct: function(source, target) {
+    construct: function(source) {
         this._mouseDown = this._mouseDown.bind(this);
         this._mouseUp = this._mouseUp.bind(this);
         this._source = source;
         this._dragBoxHandler = new tw_DragHandler(this._source.getDragArea(), this._dragBoxListener.bind(this));
         tw_addEventListener(this._source.getDragArea(), "mousedown", this._mouseDown);
-        this._targets = [];
-        if (target != null) this.addTarget(target);
+        this._targets = {};
     },
     
     addTarget: function(target) {
-        this._targets.push(target);
+        this._targets[target.getId()] = target;
+    },
+    
+    removeTarget: function(id) {
+        delete this._targets[id];
+        for (t in this._targets) if (tw_Component.instances[t] != undefined) return false;
+        return true;
     },
     
     _mouseDown: function(event) {
@@ -55,7 +60,7 @@ var tw_DragAndDropHandler = Class.extend({
         s.left = this._dragBoxHandler._startX + 4 + "px";
         s.top = this._dragBoxHandler._startY + 4 + "px";
         s.zIndex = ++tw_Component.zIndex;
-        s.display = "block";        
+        s.display = "block";
         s.opacity = .5;
         if (tw_isIE) s.filter = "alpha(opacity=50)";
         document.body.appendChild(this._dragBox);
@@ -84,5 +89,11 @@ var tw_DragAndDropHandler = Class.extend({
                 tw_Component.zIndex--;
             }
         }
+    },
+    
+    destroy: function() {
+        this._dragBoxHandler.destroy();
+        tw_removeEventListener(this._source.getDragArea(), "mousedown", this._mouseDown);
+        this._source = this._targets = this._dragBox = null;
     }
 });

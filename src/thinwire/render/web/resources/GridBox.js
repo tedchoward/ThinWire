@@ -954,6 +954,10 @@ var tw_GridBox = tw_Component.extend({
         return dragBox;
     },
     
+    getDragArea: function() {
+        return this._content;
+    },
+    
     destroy: function(keepChildColumn) {
         this._destroyChildren();
         

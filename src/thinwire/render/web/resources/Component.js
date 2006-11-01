@@ -523,6 +523,13 @@ var tw_Component = Class.extend({
         this._dragAndDropHandler.addTarget(target);
     },
     
+    
+    removeDragTarget: function(compId) {
+        if (this._dragAndDropHandler.removeTarget(compId)) return;
+        this._dragAndDropHandler.destroy();
+        this._dragAndDropHandler = null;
+    },
+    
     getDragBox: function(event) {
         return this._box.cloneNode(true);
     },
@@ -603,13 +610,17 @@ var tw_Component = Class.extend({
         this._inited = true;
     },
     
-    destroy: function() {        
+    destroy: function() {
         this._inited = false;
-        delete tw_Component.instances[this._id];                   
+        delete tw_Component.instances[this._id];
         this._box = this._focusBox = this._eventNotifiers = this._backgroundBox = 
             this._borderBox = this._fontBox = this._parent = null;
         if (tw_Component.priorFocus === this) tw_Component.priorFocus = null;
         if (tw_Component.currentFocus === this) tw_Component.currentFocus = null;
+        if (this._dragAndDropHandler != null) {
+            this._dragAndDropHandler.destroy();
+            this._dragAndDropHandler = null;
+        }
     }
 });
 

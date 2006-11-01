@@ -560,6 +560,18 @@ var tw_Tree = tw_Component.extend({
         this._setTopImage();
     },
     
+    getDragBox: function(event) {
+        if (!this.isEnabled()) return false;
+        var dragBox = tw_getEventTarget(event, "treeRow").cloneNode(true);
+        var s = dragBox.style
+        s.position = "absolute";
+        s.fontFamily = this._box.style.fontFamily;
+        s.fontSize = this._box.style.fontSize;
+        s.color = tw_COLOR_HIGHLIGHTTEXT;
+        s.backgroundColor = tw_COLOR_HIGHLIGHT;
+        return dragBox;
+    },
+    
     destroy: function() {
         this._treeTop = this._currentItem = this._rootItem.textNode = this._rootItem.assignedImageNode = null;
         this._rootItem = null;         
