@@ -28,7 +28,6 @@ package thinwire.render.web;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -83,255 +82,31 @@ public final class WebServlet extends HttpServlet {
         }
     }
         
-    private static final String USER_RESOURCE = "/resources/";
 	private static final Logger log = Logger.getLogger(WebServlet.class.getName());
-
-    //Shared library of static framework resources
-    private static final Map<String, byte[]> sysResCache = new HashMap<String, byte[]>(50);
-
-    private boolean loadFromDisk = false;
-    
-	public void init(ServletConfig config) throws ServletException {
-        super.init(config);
-        loadFromDisk = new File(getServletContext().getRealPath("") + "/src/thinwire/render/web/resources/").exists();
-    }
 
     public void service(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         String method = request.getMethod();
-        
-        String requestURI = request.getRequestURI();
-        int index = requestURI.indexOf(USER_RESOURCE);
-        
-		if (index >= 0) {
-            handleUserResource(request, response, requestURI.substring(index));
-		} else {            
-	        if (method.equals("GET")) {
-	            String resource = request.getParameter("_twr_");
-	            
-	            if (resource == null) {
-                    handleStart(request, response);
-	            } else {
-	                handlePlatformResource(request, response, resource);
-	            }
-	        } else if (method.equals("POST")) {
-                String action = request.getParameter("_twa_");
-                
-                if (action == null) {
-                    handlePostEvent(request, response);
-                } else if (action.equals("upload")) {
-                    handleUserUpload(request, response);
-                }
+
+        if (method.equals("GET")) {
+            String resource = request.getParameter("_twr_");
+            
+            if (resource == null) {
+                handleStart(request, response);
             } else {
-	            response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+                handleResource(request, response, resource);
             }
+        } else if (method.equals("POST")) {
+            String action = request.getParameter("_twa_");
+            
+            if (action == null) {
+                handlePostEvent(request, response);
+            } else if (action.equals("upload")) {
+                handleUserUpload(request, response);
+            }
+        } else {
+            response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
         }
     }   
- 
-    private void handlePostEvent(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        HttpSession httpSession = request.getSession();        
-        WebApplication app = (WebApplication)httpSession.getAttribute("instance");
-        if (app == null) return;
-        BufferedReader r = request.getReader();
-        StringBuilder sb = new StringBuilder();
-        
-        do {
-	        readSimpleValue(sb, r);
-	        int eventType = Integer.parseInt(sb.toString());
-	        readComplexValue(sb, r);
-            CharArrayReader car = new CharArrayReader(sb.toString().toCharArray());
-	        
-	        switch (eventType) {                
-	        	case EVENT_WEB_COMPONENT: {
-	        	    readSimpleValue(sb, car);
-	        	    Integer source = Integer.valueOf(sb.toString());
-	        	    WebComponentListener wcl = app.getWebComponentListener(source);
-	        	    
-	                if (wcl != null) {
-	                    readSimpleValue(sb, car);
-	                    String name = sb.toString();
-	                    readComplexValue(sb, car);
-	                    String value = sb.toString();	                    
-	                    if (log.isLoggable(Level.FINEST)) log.finest("EVENT_WEB_COMPONENT:source=" + source + ",name=" + name + ",value=" + value);
-	                    WebComponentEvent wce = new WebComponentEvent(source, name, value);
-	                    app.queueWebComponentEvent(wce);
-	                }
-	                
-	        	    break;	        	    
-	        	}
-                
-                case EVENT_GET_EVENTS: break;
-	        	
-	        	case EVENT_LOG_MESSAGE: {
-	        	    readSimpleValue(sb, car);
-	        	    String levelName = sb.toString();
-	        	    readComplexValue(sb, car);                    
-                    String message = sb.toString();                    
-                    app.queueWebComponentEvent(new WebComponentEvent(WebApplication.APPEVENT_ID, WebApplication.APPEVENT_LOG_MESSAGE,
-                            new String[] {levelName, message}));
-                    break;
-	        	}
-                
-                case EVENT_SYNC_CALL: {
-                    readComplexValue(sb, car);
-                    String value = sb.toString();
-                    app.notifySyncCallResponse(value);
-                    if (log.isLoggable(Level.FINEST)) log.finest("EVENT_SYNC_CALL:response=" + value);
-                    break;
-                }
-                
-                case EVENT_RUN_TIMER: {
-                    readSimpleValue(sb, car);
-                    String timerId = sb.toString();
-                    app.queueWebComponentEvent(new WebComponentEvent(WebApplication.APPEVENT_ID, WebApplication.APPEVENT_RUN_TIMER, timerId));
-                    break;
-                }
-	        }            
-        } while (r.read() == ':');
-        
-        String events = app.getClientEvents();
-        if (log.isLoggable(Level.FINEST)) log.finest("handleGetEvents:" + events);
-        
-        if (events != null) {
-            response.setContentType("text/plain; charset=utf-8");
-            response.setHeader("Cache-Control", "no-store");
-            response.getWriter().print(events);
-        }
-    }
-    
-    private void readSimpleValue(StringBuilder sb, Reader r) throws IOException, ServletException {
-        sb.setLength(0);
-        int ch;
-        
-        while ((ch = r.read()) != ':') {
-            if (ch == -1) throw new ServletException("premature end of post event encountered[" + sb.toString() + "]");
-            sb.append((char)ch);
-        }        
-    }
-    
-    private void readComplexValue(StringBuilder sb, Reader r) throws IOException, ServletException {
-        readSimpleValue(sb, r);
-        int length = Integer.parseInt(sb.toString()) - 1;
-        sb.setLength(0);        
-
-        for (; length >= 0; length--)
-            sb.append((char)r.read());
-    }
-        
-    private byte[] getPlatformResource(String resource) throws IOException {
-        if (log.isLoggable(Level.FINEST)) log.finest("getting platform resource: " + resource); 
-        
-        if (loadFromDisk) {
-            File f = new File(getServletContext().getRealPath("") + "/src/thinwire/render/web/resources/" + resource);
-            FileInputStream is = new FileInputStream(f);
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            byte[] buffer = new byte[1024];
-            int size;
-            
-            while ((size = is.read(buffer)) != -1)
-                baos.write(buffer, 0, size);
-
-            return baos.toByteArray();
-        } else {
-            byte[] res = null;
-            
-            synchronized(sysResCache){
-                 res = (byte[])sysResCache.get(resource);
-            }
-            
-            if (res == null) {
-                InputStream is = WebServlet.class.getResourceAsStream("resources/" + resource);    
-                
-                if (is != null) {
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    byte[] b = new byte[256];
-                    int size;
-                    
-                    while ((size = is.read(b)) != -1)
-                        baos.write(b, 0, size);
-                    
-                    res = baos.toByteArray();
-                    baos.close();
-                    is.close();
-                    
-                    synchronized (sysResCache) {
-                        sysResCache.put(resource, res);
-                    }
-                }
-            }
-        
-            return res;
-        }
-    }
-    
-    private void handlePlatformResource(HttpServletRequest request, HttpServletResponse response, String resource) throws IOException, ServletException {
-        if (log.isLoggable(Level.FINEST)) log.finest("getting platform resource: " + resource);        
-        handleResource(resource, getPlatformResource(resource), response);
-    }
-    
-    private void handleUserResource(HttpServletRequest request, HttpServletResponse response, String servletPath) throws IOException, ServletException {
-        if (log.isLoggable(Level.FINEST)) log.finest("getting user resource: " + servletPath);
-        
-        if (servletPath.length() > USER_RESOURCE.length()) {
-            String resourceName = servletPath.substring(USER_RESOURCE.length());
-            handleResource(resourceName, RemoteFileMap.INSTANCE.load(resourceName), response);
-        } else
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST);        
-    }
-    
-    private void handleResource(String resourceName, byte[] data, HttpServletResponse response) throws IOException, ServletException {        
-        if (data == null) {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND);
-        } else {
-            try {
-                String mimeType;
-                            
-                //Necessary because the XMLHttpRequest object in certain browsers, such as Opera
-                //do not properly handle text/javascript as the content type.  
-                if (resourceName.endsWith(".js")) {
-                    mimeType = "text/plain";
-                } else {
-                    mimeType = getServletContext().getMimeType(resourceName.toLowerCase());
-                    if (mimeType != null && mimeType.startsWith("image/")) response.setHeader("Cache-Control", "max-age=43200");
-                }
-                
-                response.setContentType(mimeType);
-                response.getOutputStream().write(data);
-            } catch (Exception e){
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
-            }
-        }        
-    }
-
-    private void handleUserUpload(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        HttpSession httpSession = request.getSession();
-        WebApplication app = (WebApplication)httpSession.getAttribute("instance");        
-        if (app != null) {
-            try {
-                DiskFileUpload upload = new DiskFileUpload();
-                upload.setSizeThreshold(1000000);
-                upload.setSizeMax(25000000);
-                upload.setRepositoryPath("C:\\");
-                List<FileItem> items = upload.parseRequest(request);
-                if (items.size() > 0) {
-                    FileChooser.FileInfo f = null;
-                    synchronized(app.fileList) {
-                        for (FileItem fi : items) {
-                            if (!fi.isFormField() && fi.getSize() > 0) {
-                                f = new FileChooser.FileInfo();
-                                f.setName(fi.getName());
-                                f.setInputStream(fi.getInputStream());
-                                f.setDescription("");
-                                app.fileList[0] = f;
-                            }
-                        }
-                        app.fileList.notify();
-                    }
-                }
-            } catch (FileUploadException e) {
-                log.log(Level.SEVERE, null, e);
-            }            
-        }
-    }
     
     private void handleStart(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         HttpSession httpSession = request.getSession();
@@ -347,7 +122,7 @@ public final class WebServlet extends HttpServlet {
         }
 
         response.setContentType("text/html");        
-        response.getOutputStream().write(getPlatformResource("MainPage.html"));        
+        response.getOutputStream().write(RemoteFileMap.INSTANCE.load(WebApplication.MAIN_PAGE));        
 
         List<String> args = new ArrayList<String>();
         StringBuilder sb = new StringBuilder();        
@@ -413,4 +188,152 @@ public final class WebServlet extends HttpServlet {
         app = new WebApplication(this, httpSession, getInitParameter(InitParam.MAIN_CLASS.mixedCaseName()), getInitParameter(InitParam.STYLE_SHEET.mixedCaseName()), args.toArray(new String[args.size()]));
         httpSession.setAttribute("instance", app);        
     }    
+    
+    private void handleResource(HttpServletRequest request, HttpServletResponse response, String resourceName) throws IOException, ServletException {        
+        if (log.isLoggable(Level.FINEST)) log.finest("getting resource: " + resourceName);
+        byte[] data = RemoteFileMap.INSTANCE.load(resourceName);
+        
+        if (data == null) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        } else {
+            try {
+                String mimeType;
+                            
+                //Necessary because the XMLHttpRequest object in certain browsers, such as Opera
+                //do not properly handle text/javascript as the content type.  
+                if (resourceName.endsWith(".js")) {
+                    mimeType = "text/plain";
+                } else {
+                    mimeType = getServletContext().getMimeType(resourceName.toLowerCase());
+                    if (mimeType != null && mimeType.startsWith("image/")) response.setHeader("Cache-Control", "max-age=43200");
+                }
+                
+                response.setContentType(mimeType);
+                response.getOutputStream().write(data);
+            } catch (Exception e){
+                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            }
+        }        
+    }
+    
+    private void handlePostEvent(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        HttpSession httpSession = request.getSession();        
+        WebApplication app = (WebApplication)httpSession.getAttribute("instance");
+        if (app == null) return;
+        BufferedReader r = request.getReader();
+        StringBuilder sb = new StringBuilder();
+        
+        do {
+            readSimpleValue(sb, r);
+            int eventType = Integer.parseInt(sb.toString());
+            readComplexValue(sb, r);
+            CharArrayReader car = new CharArrayReader(sb.toString().toCharArray());
+            
+            switch (eventType) {                
+                case EVENT_WEB_COMPONENT: {
+                    readSimpleValue(sb, car);
+                    Integer source = Integer.valueOf(sb.toString());
+                    WebComponentListener wcl = app.getWebComponentListener(source);
+                    
+                    if (wcl != null) {
+                        readSimpleValue(sb, car);
+                        String name = sb.toString();
+                        readComplexValue(sb, car);
+                        String value = sb.toString();                       
+                        if (log.isLoggable(Level.FINEST)) log.finest("EVENT_WEB_COMPONENT:source=" + source + ",name=" + name + ",value=" + value);
+                        WebComponentEvent wce = new WebComponentEvent(source, name, value);
+                        app.queueWebComponentEvent(wce);
+                    }
+                    
+                    break;                  
+                }
+                
+                case EVENT_GET_EVENTS: break;
+                
+                case EVENT_LOG_MESSAGE: {
+                    readSimpleValue(sb, car);
+                    String levelName = sb.toString();
+                    readComplexValue(sb, car);                    
+                    String message = sb.toString();                    
+                    app.queueWebComponentEvent(new WebComponentEvent(WebApplication.APPEVENT_ID, WebApplication.APPEVENT_LOG_MESSAGE,
+                            new String[] {levelName, message}));
+                    break;
+                }
+                
+                case EVENT_SYNC_CALL: {
+                    readComplexValue(sb, car);
+                    String value = sb.toString();
+                    app.notifySyncCallResponse(value);
+                    if (log.isLoggable(Level.FINEST)) log.finest("EVENT_SYNC_CALL:response=" + value);
+                    break;
+                }
+                
+                case EVENT_RUN_TIMER: {
+                    readSimpleValue(sb, car);
+                    String timerId = sb.toString();
+                    app.queueWebComponentEvent(new WebComponentEvent(WebApplication.APPEVENT_ID, WebApplication.APPEVENT_RUN_TIMER, timerId));
+                    break;
+                }
+            }            
+        } while (r.read() == ':');
+        
+        String events = app.getClientEvents();
+        if (log.isLoggable(Level.FINEST)) log.finest("handleGetEvents:" + events);
+        
+        if (events != null) {
+            response.setContentType("text/plain; charset=utf-8");
+            response.setHeader("Cache-Control", "no-store");
+            response.getWriter().print(events);
+        }
+    }
+    
+    private void readSimpleValue(StringBuilder sb, Reader r) throws IOException, ServletException {
+        sb.setLength(0);
+        int ch;
+        
+        while ((ch = r.read()) != ':') {
+            if (ch == -1) throw new ServletException("premature end of post event encountered[" + sb.toString() + "]");
+            sb.append((char)ch);
+        }        
+    }
+    
+    private void readComplexValue(StringBuilder sb, Reader r) throws IOException, ServletException {
+        readSimpleValue(sb, r);
+        int length = Integer.parseInt(sb.toString()) - 1;
+        sb.setLength(0);        
+
+        for (; length >= 0; length--)
+            sb.append((char)r.read());
+    }
+    
+    private void handleUserUpload(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        HttpSession httpSession = request.getSession();
+        WebApplication app = (WebApplication)httpSession.getAttribute("instance");        
+        if (app != null) {
+            try {
+                DiskFileUpload upload = new DiskFileUpload();
+                upload.setSizeThreshold(1000000);
+                upload.setSizeMax(25000000);
+                upload.setRepositoryPath("C:\\");
+                List<FileItem> items = upload.parseRequest(request);
+                if (items.size() > 0) {
+                    FileChooser.FileInfo f = null;
+                    synchronized(app.fileList) {
+                        for (FileItem fi : items) {
+                            if (!fi.isFormField() && fi.getSize() > 0) {
+                                f = new FileChooser.FileInfo();
+                                f.setName(fi.getName());
+                                f.setInputStream(fi.getInputStream());
+                                f.setDescription("");
+                                app.fileList[0] = f;
+                            }
+                        }
+                        app.fileList.notify();
+                    }
+                }
+            } catch (FileUploadException e) {
+                log.log(Level.SEVERE, null, e);
+            }            
+        }
+    }
 }

@@ -76,7 +76,7 @@ tw_APP_URL += tw_BASE_PATH;
 function tw_include(name) {
     try {
         if (tw_include.tw_request == undefined) tw_include.tw_request = new tw_HttpRequest();
-        var script = tw_include.tw_request.send("GET", tw_APP_URL + "resources/" + name, "");
+        var script = tw_include.tw_request.send("GET", tw_APP_URL + "?_twr_=" + name, "");
     
         if (tw_isIE && window.execScript) {
             window.execScript(script);
@@ -92,7 +92,7 @@ function tw_include(name) {
             //This causes the same file to be loaded using a script tag, which allows the file to be
             //easily debugged. However a script tag loads content async so it is not appropriate for
             //loading scripts on the fly.
-            document.getElementById("jsidebug").src = "?_twr_=" + name + ".js"; 
+            document.getElementById("jsidebug").src = tw_APP_URL + "?_twr_=" + name + ".js"; 
         }
     }       
 }

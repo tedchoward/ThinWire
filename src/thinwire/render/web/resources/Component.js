@@ -634,7 +634,7 @@ tw_Component.setSystemColors = function(systemColors) {
 
 tw_Component.expandUrl = function(url, wrapInUrl) {
     if (url == null) return "";
-    if (url.indexOf("%SYSROOT%") == 0) url = tw_BASE_PATH + "resources/" + url.substring(9);
+    if (url.indexOf("%SYSROOT%") == 0) url = tw_APP_URL + "?_twr_=" + url.substring(9);
     if (wrapInUrl && url.length > 0) url = "url(" + url + ")";
     return url;
 };

@@ -26,6 +26,10 @@
 package thinwire.render.web;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -69,8 +73,142 @@ public final class WebApplication extends Application {
     private static final long INSTANCE_MONITOR_THREAD_CYCLE = INSTANCE_TIMEOUT / 2;
     private static final Set<WebApplication> allApps = new HashSet<WebApplication>();
     private static Thread instanceMonitorThread;
+    private static String[] BUILT_IN_RESOURCES = {
+        "Main.js",
+        "Class.js",
+        "HttpRequest.js",
+        "Component.js",
+        "Animation.js",
+        "BaseBrowserLink.js",
+        "BaseCheckRadio.js",
+        "BaseContainer.js",
+        "BaseRange.js",
+        "BaseText.js",
+        "BorderImage.js",
+        "Button.js",
+        "CheckBox.js",
+        "Container.js",
+        "DateBox.js",
+        "Dialog.js",
+        "Divider.js",
+        "DragHandler.js",
+        "DropDown.js",
+        "EventManager.js",
+        "Frame.js",
+        "GridBox.js",
+        //"Logger.js",
+        "Hyperlink.js",
+        "Image.js",
+        "KeyboardManager.js",
+        "Label.js",
+        "Menu.js",
+        "ProgressBar.js",
+        "RadioButton.js",
+        "Slider.js",
+        "TabFolder.js",
+        "TabSheet.js",
+        "TextArea.js",
+        "TextField.js",
+        "Tree.js",
+        "WebBrowser.js",        
+        "Startup.js",
+        "FileUploadPage.html",
+        "activityInd.gif",
+        "cbChecked.png",
+        "cbDisabledChecked.png",
+        "ddButton.png",
+        "ddDisabledButton.png",
+        "dResize.png",
+        "gbChecked.png",
+        "gbUnchecked.png",
+        "gbChildArrow.png",
+        "gbChildArrowInvert.png",
+        "gbSortOrderAsc.png",
+        "gbSortOrderDesc.png",
+        "leftArrow.png",
+        "rightArrow.png",
+        "menuArrow.png",
+        "menuArrowInvert.png",
+        "rbChecked.png",
+        "rbDisabledChecked.png",
+        "treeEmpty.png",
+        "treeExpand.png",
+        "treeExpandBottom.png",
+        "treeExpandBottomTop.png",
+        "treeExpandTop.png",
+        "treeLeaf.png",
+        "treeLeafBottom.png",
+        "treeLeafBottomTop.png",
+        "treeLeafTop.png",
+        "treeStraight.png",
+        "treeUnexpand.png",
+        "treeUnexpandBottomTop.png",
+        "treeUnexpandTop.png",
+    };
     
+    static final String MAIN_PAGE;
     
+    static {
+        String classURL = "class:///" + CLASS_NAME + "/resources/";
+        
+        for (String res : BUILT_IN_RESOURCES) {
+            if (!res.endsWith(".js")) {
+                RemoteFileMap.INSTANCE.add(classURL + res);
+            }
+        }
+
+        try {
+            MAIN_PAGE = "MainPage.html";
+            String twLib = loadJSLibrary(classURL);
+
+            //Write out the MainPage.html after replacing the JS lib name
+            File f = File.createTempFile(twLib.substring(0, twLib.lastIndexOf('.')), ".html");
+            f.deleteOnExit();
+            FileOutputStream fos = new FileOutputStream(f);
+            fos.write(new String(RemoteFileMap.INSTANCE.getLocalData(classURL + MAIN_PAGE))
+                .replaceAll("[$][{]ThinWire[.]js[}]", twLib).getBytes());
+            fos.close();
+            RemoteFileMap.INSTANCE.add(f.getCanonicalPath(), MAIN_PAGE);
+        } catch (Exception e) {
+            if (!(e instanceof RuntimeException)) e = new RuntimeException(e);
+            throw (RuntimeException)e;
+        }
+    }
+    
+    private static String loadJSLibrary(String resURL) {
+        if (log.isLoggable(Level.INFO)) log.info("loading js library from: " + resURL);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        
+        for (String res : BUILT_IN_RESOURCES) {
+            if (res.endsWith(".js")) RemoteFileMap.INSTANCE.loadLocalData(resURL + res, os);
+        }
+
+        try {
+            //Write out the library JS
+            String twPrefix = "ThinWire_v" + Application.getPlatformVersionInfo().get("productVersion");
+            File f = File.createTempFile(twPrefix, ".js");
+            f.deleteOnExit();
+            FileOutputStream fos = new FileOutputStream(f);
+            os.flush();
+            os.writeTo(fos);
+            fos.close();
+
+            String twLib = twPrefix + ".js";
+            String localName = RemoteFileMap.INSTANCE.getLocalName(twLib);
+            
+            if (localName != null) {
+                RemoteFileMap.INSTANCE.remove(localName);
+                new File(localName).delete();
+            }
+            
+            RemoteFileMap.INSTANCE.add(f.getCanonicalPath(), twLib);
+            return twLib;
+        } catch (Exception e) {
+            if (!(e instanceof RuntimeException)) e = new RuntimeException(e);
+            throw (RuntimeException)e;
+        }
+    }
+        
     private static final Runnable instanceMonitorRunnable = new Runnable() {
         public void run() {
             log.fine("Starting instance monitoring thread");
@@ -313,7 +451,7 @@ public final class WebApplication extends Application {
             Properties props = new Properties();
             if (styleSheet == null) styleSheet = DEFAULT_STYLE_SHEET;
             if (!styleSheet.startsWith("class:///")) styleSheet = this.getRelativeFile(styleSheet).getAbsolutePath();
-            props.load(new ByteArrayInputStream(RemoteFileMap.INSTANCE.loadLocalData(styleSheet)));
+            props.load(new ByteArrayInputStream(RemoteFileMap.INSTANCE.getLocalData(styleSheet)));
             loadStyleSheet(props);
             systemColors = getSystemColors();
             
@@ -333,7 +471,7 @@ public final class WebApplication extends Application {
         
         appThread.start();
     }
-    
+
     String getStyleColorValue(Color color, boolean border) {
         if (color.isSystemColor()) color = systemColors.get(color.toString());
         return color.toRGBString();

@@ -32,6 +32,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -59,7 +60,7 @@ final class RemoteFileMap {
         localToFileInfo = new HashMap<String, RemoteFileInfo>(initialMapSize);
     }
     
-    final byte[] loadLocalData(String localName) {
+    final void loadLocalData(String localName, ByteArrayOutputStream os) {
         try {
             InputStream is;
             
@@ -75,28 +76,45 @@ final class RemoteFileMap {
                 is = new BufferedInputStream(new FileInputStream(localName));
             }
             
-            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            if (os == null) os = new ByteArrayOutputStream();
             byte[] bytes = new byte[128];
             int size;
             
             while ((size = is.read(bytes)) != -1)
                 os.write(bytes, 0, size);
             
-            byte[] data = os.toByteArray();        
-            os.close();
             is.close();
-            return data;
+        } catch (Exception e) {
+            if (!(e instanceof RuntimeException)) e = new RuntimeException(e);
+            throw (RuntimeException)e;
+        }        
+    }
+    
+    final byte[] getLocalData(String localName) {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        loadLocalData(localName, os);
+        byte[] data = os.toByteArray();        
+
+        try {
+            os.close();
         } catch (Exception e) {
             if (!(e instanceof RuntimeException)) e = new RuntimeException(e);
             throw (RuntimeException)e;
         }
+        
+        return data;
     }
 
+    final String getLocalName(String remoteName) {
+        RemoteFileInfo fileInfo = remoteToFileInfo.get(remoteName);
+        return fileInfo == null ? null : fileInfo.localName;
+    }
+    
     final byte[] load(String remoteName) {
         RemoteFileInfo fileInfo = remoteToFileInfo.get(remoteName);
         
         if (fileInfo != null) {
-            byte[] data = loadLocalData(fileInfo.localName);
+            byte[] data = getLocalData(fileInfo.localName);
             if (log.isLoggable(LEVEL)) log.log(LEVEL, "Loaded file data for local file: localName='" + 
                     fileInfo.localName + "', remoteName='" + fileInfo.remoteName + "', refCount='" + 
                     fileInfo.refCount + "', data.length='" + data.length + "'");                        
@@ -106,7 +124,11 @@ final class RemoteFileMap {
         }
     }
     
-    String add(String localName) {               
+    String add(String localName) {
+        return add(localName, null);
+    }
+    
+    String add(String localName, String remoteName) {               
         synchronized (localToFileInfo) {
             RemoteFileInfo fileInfo = localToFileInfo.get(localName);
             
@@ -115,31 +137,35 @@ final class RemoteFileMap {
                 fileInfo.localName = localName;
                 fileInfo.refCount = 1;
                 
-                int lastIndex = fileInfo.localName.lastIndexOf(File.separatorChar);
-                if (lastIndex == -1) lastIndex = fileInfo.localName.lastIndexOf(File.separatorChar == '/' ? '\\' : '/');  
-                fileInfo.remoteName = fileInfo.localName.substring(lastIndex + 1);
-                
-                if (remoteToFileInfo.containsKey(fileInfo.remoteName)) {                
-                    lastIndex = fileInfo.remoteName.lastIndexOf('.');
-                    String file, ext;
+                if (remoteName == null) {
+                    int lastIndex = fileInfo.localName.lastIndexOf(File.separatorChar);
+                    if (lastIndex == -1) lastIndex = fileInfo.localName.lastIndexOf(File.separatorChar == '/' ? '\\' : '/');  
+                    fileInfo.remoteName = fileInfo.localName.substring(lastIndex + 1);
                     
-                    if (lastIndex == -1) {
-                        file = fileInfo.remoteName;
-                        ext = "";
-                    } else {
-                        file = fileInfo.remoteName.substring(0, lastIndex);
-                        ext = fileInfo.remoteName.substring(lastIndex);
+                    if (remoteToFileInfo.containsKey(fileInfo.remoteName)) {                
+                        lastIndex = fileInfo.remoteName.lastIndexOf('.');
+                        String file, ext;
+                        
+                        if (lastIndex == -1) {
+                            file = fileInfo.remoteName;
+                            ext = "";
+                        } else {
+                            file = fileInfo.remoteName.substring(0, lastIndex);
+                            ext = fileInfo.remoteName.substring(lastIndex);
+                        }
+                        
+                        StringBuilder sb = new StringBuilder();
+                        int i = 0;
+                        
+                        do {
+                            i++;
+                            sb.append(file).append('-').append(i).append(ext);
+                            fileInfo.remoteName = sb.toString();
+                            sb.setLength(0);
+                        } while (remoteToFileInfo.containsKey(fileInfo.remoteName));
                     }
-                    
-                    StringBuilder sb = new StringBuilder();
-                    int i = 0;
-                    
-                    do {
-                        i++;
-                        sb.append(file).append('-').append(i).append(ext);
-                        fileInfo.remoteName = sb.toString();
-                        sb.setLength(0);
-                    } while (remoteToFileInfo.containsKey(fileInfo.remoteName));
+                } else {
+                    fileInfo.remoteName = remoteName;
                 }
                 
                 localToFileInfo.put(localName, fileInfo);
