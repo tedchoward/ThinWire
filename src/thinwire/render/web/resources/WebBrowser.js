@@ -68,6 +68,19 @@ var tw_WebBrowser = tw_BaseBrowserLink.extend({
         this._dragLayer.style.display = state ? "block" : "none";
     },
     
+    getDragBox: function() {
+        var dragBox = document.createElement("div");
+        var s = dragBox.style;
+        s.position = "absolute";
+        s.textAlign = "center";
+        s.height = "20px";
+        s.backgroundColor = tw_COLOR_WINDOW;
+        s.fontColor = "blue";
+        s.textDecoration = "underline";
+        dragBox.appendChild(document.createTextNode(this._browser.src));
+        return dragBox;
+    },
+    
     destroy: function() {
         delete tw_WebBrowser.instances[this._id];
         this._browser = this._dragLayer = null;

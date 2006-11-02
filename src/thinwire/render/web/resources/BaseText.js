@@ -605,6 +605,20 @@ var tw_BaseText = tw_Component.extend({
             return arguments.callee.$.call(this, keyPressCombo);
         }        
     },
+    
+    getDragBox: function() {
+        var dragBox = document.createElement("div");
+        var s = dragBox.style;
+        s.position = "absolute";
+        s.width = this.getWidth() + "px";
+        s.height = this.getHeight() + "px";
+        s.backgroundColor = tw_COLOR_WINDOW;
+        s.border = "1px solid black";
+        s.fontFamily = this.getStyle("fontFamily");
+        s.fontSize = this.getStyle("fontSize") + "pt";
+        dragBox.appendChild(document.createTextNode(this._editor.value));
+        return dragBox;
+    },
         
     destroy: function() {
         this._editor = null;

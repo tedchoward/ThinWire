@@ -27,6 +27,7 @@ var tw_ProgressBar = tw_BaseRange.extend({
     construct: function(id, containerId, props) {
         arguments.callee.$.call(this, "div", "progressBar", id, containerId);
         this._backgroundBox = this._box;
+        this._fontBox = this._selection;
         this._selection.style.left = "0px";
         //this._selection.style.backgroundColor = tw_COLOR_ACTIVECAPTION; 
         this.init(-1, props);

@@ -50,7 +50,7 @@ var tw_DragAndDropHandler = Class.extend({
     
     _mouseDown: function(event) {
         this._dragBox = this._source.getDragBox(event);
-        if (this._dragBox == null) {
+        if (this._dragBox == undefined || this._dragBox == null) {
             this._dragBoxHandler.releaseDrag();
             return;
         }
@@ -71,29 +71,33 @@ var tw_DragAndDropHandler = Class.extend({
         
         for (target in this._targets) {
             var curTarget = this._targets[target];
-            if (tw_getEventTarget(event, curTarget.getDropTarget().className) == curTarget.getDropTarget()) {
-                alert(typeof(curTarget) + ".fireAction(\"drop\", " + typeof(this._source) + ");");
+            if (tw_getEventTarget(event, curTarget.getDropArea().className) == curTarget.getDropArea()) {
+                if (this._dragBox._index != undefined) alert("index = " + this._dragBox._index);
+                alert("source = " + curTarget.getDropTarget(event) + ", sourceComponent = " + curTarget.getDropArea().className + 
+                    ", dragObject = " + this._dragBox._index + ", dragComponent = " + this._source.getDragArea().className);
             }
         }
+        
+        document.body.removeChild(this._dragBox);
+        this._dragBox = null;
+        tw_Component.zIndex--;
     },
     
     _dragBoxListener: function(ev) {
         if (ev.type == 1) {
-            var s = this._dragBox.style;
-            s.left = this._dragBoxHandler._lastX + 4 + "px";
-            s.top = this._dragBoxHandler._lastY + 4 + "px";
-        } else if (ev.type == 2) {
             if (this._dragBox != null) {
-                document.body.removeChild(this._dragBox);
-                this._dragBox = null;
-                tw_Component.zIndex--;
+                var s = this._dragBox.style;
+                s.left = this._dragBoxHandler._lastX + 4 + "px";
+                s.top = this._dragBoxHandler._lastY + 4 + "px";
             }
         }
     },
     
     destroy: function() {
         this._dragBoxHandler.destroy();
-        tw_removeEventListener(this._source.getDragArea(), "mousedown", this._mouseDown);
+        if (this._source.getDragArea() != null) {
+            tw_removeEventListener(this._source.getDragArea(), "mousedown", this._mouseDown);
+        }
         this._source = this._targets = this._dragBox = null;
     }
 });

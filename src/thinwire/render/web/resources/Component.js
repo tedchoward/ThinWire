@@ -538,6 +538,10 @@ var tw_Component = Class.extend({
         return this._box;
     },
     
+    getDropArea: function() {
+        return this._box;
+    },
+    
     getDropTarget: function() {
         return this._box;
     },

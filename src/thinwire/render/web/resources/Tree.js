@@ -561,15 +561,32 @@ var tw_Tree = tw_Component.extend({
     },
     
     getDragBox: function(event) {
-        if (!this.isEnabled()) return false;
-        var dragBox = tw_getEventTarget(event, "treeRow").cloneNode(true);
-        var s = dragBox.style
+        if (!this.isEnabled()) return null;
+        
+        var item = tw_getEventTarget(event, "treeRow");
+        if (item == null) return null;
+        var dragBox = document.createElement("div");
+        var images = item.getElementsByTagName("img");
+        dragBox.appendChild(images[images.length - 1].cloneNode(true));
+        dragBox.appendChild(item.getElementsByTagName("span")[0].cloneNode(true));
+        
+        var s = dragBox.style;
         s.position = "absolute";
+        s.height = tw_Tree.rowHeight + "px";
         s.fontFamily = this._box.style.fontFamily;
         s.fontSize = this._box.style.fontSize;
         s.color = tw_COLOR_HIGHLIGHTTEXT;
         s.backgroundColor = tw_COLOR_HIGHLIGHT;
+        
+        dragBox._index = this._fullIndex(item);
+        
         return dragBox;
+    },
+    
+    getDropTarget: function(event) {
+        var item = tw_getEventTarget(event, "treeRow");
+        if (item == null) return null;
+        return this._fullIndex(item);
     },
     
     destroy: function() {

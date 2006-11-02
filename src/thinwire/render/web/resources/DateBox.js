@@ -146,6 +146,7 @@ var tw_DateBox = tw_Component.extend({
     
     _buildTable: function() {
         var table = document.createElement("table");
+        table.className = "dateBoxTable";
         var tbody = document.createElement("tbody");
         table.appendChild(tbody);
         var s = table.style;
@@ -226,6 +227,18 @@ var tw_DateBox = tw_Component.extend({
         this.fireAction(action, formattedDate);
     },
     
+    _getDate: function(cell) {
+        var rowIdx = this._getRowIndex(cell);
+        var newDt = parseInt(cell.firstChild.nodeValue);
+        var tmpDate = this._selectedDate;
+        if (rowIdx == 0 && newDt >= 23) {
+            tmpDate = new Date(this._curDate.getFullYear(), this._curDate.getMonth() - 1, this._curDate.getDate());
+        } else if (rowIdx >= 4 && newDt <= 14) {
+            tmpDate = new Date(this._curDate.getFullYear(), this._curDate.getMonth() + 1, this._curDate.getDate());
+        }
+        return new Date(tmpDate.getFullYear(), tmpDate.getMonth(), newDt);
+    },
+    
     _getRowIndex: function(cell) {
         for (var rowIdx in this._table.firstChild.childNodes) {
             if (this._table.firstChild.childNodes[rowIdx] == cell.parentNode) return rowIdx;
@@ -298,6 +311,38 @@ var tw_DateBox = tw_Component.extend({
                 }
             }
         }
+    },
+    
+    getDragArea: function() {
+        return this._table;
+    },
+    
+    getDragBox: function(event) {
+        var cell = tw_getEventTarget(event);
+        if (cell == null) return null;
+        var dragBox = document.createElement("div");
+        var s = dragBox.style;
+        s.position = "absolute";
+        s.textAlign = "center";
+        s.width = "75px";
+        s.height = "20px";
+        s.fontFamily = this.getStyle("fontFamily");
+        s.fontSize = this.getStyle("fontSize") + "pt";
+        s.backgroundColor = tw_COLOR_WINDOW;
+        dragBox._index = this._getFormattedDate(this._getDate(cell));
+        dragBox.appendChild(document.createTextNode(dragBox._index));
+        
+        return dragBox;
+    },
+    
+    getDropArea: function() {
+        return this._table;
+    },
+    
+    getDropTarget: function(event) {
+        var cell = tw_getEventTarget(event);
+        if (cell == null) return null;
+        return this._getFormattedDate(this._getDate(cell));
     }
 });
 

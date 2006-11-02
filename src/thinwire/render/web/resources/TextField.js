@@ -37,18 +37,6 @@ var tw_TextField = tw_BaseText.extend({
             "enabled": this.isEnabled(), "text": this._box.value, "editMask": this._editMask,
             "alignX": this._editor.style.textAlign, "inputHidden": inputHidden});
         _parent.removeComponent(this);
-    },
-    
-    getDragBox: function() {
-        var dragBox = document.createElement("div");
-        var s = dragBox.style;
-        s.position = "absolute";
-        s.width = this.getWidth() + "px";
-        s.height = this.getHeight() + "px";
-        s.backgroundColor = tw_COLOR_WINDOW;
-        s.border = "1px solid black";
-        dragBox.appendChild(document.createTextNode("Hello"));
-        return dragBox;
     }
 });
 

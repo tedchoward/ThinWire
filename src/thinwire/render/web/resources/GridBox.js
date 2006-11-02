@@ -951,11 +951,28 @@ var tw_GridBox = tw_Component.extend({
         }
         
         //alert(tw_getEventTarget(event).firstChild.nodeValue);
+        dragBox._index = index;
         return dragBox;
     },
     
     getDragArea: function() {
         return this._content;
+    },
+    
+    getDropArea: function() {
+        return this._content;
+    },
+    
+    getDropTarget: function(event) {
+        var cell = tw_getEventTarget(event);
+        
+        var column = cell.parentNode;    
+        var index = 1;
+        
+        while ((cell = cell.nextSibling) != null) index++;
+        
+        index = column.childNodes.length - index;
+        return index;
     },
     
     destroy: function(keepChildColumn) {
