@@ -130,6 +130,27 @@ var tw_TabSheet = tw_BaseContainer.extend({
         this._tab.style.opacity = opacity / 100;
         if (tw_isIE) this._tab.style.filter = opacity >= 100 ? "" : "alpha(opacity=" + opacity + ")";
     },
+    
+    getDragArea: function() {
+        return this._tab;
+    },
+    
+    getDragBox: function() {
+        var dragBox = this._tab.cloneNode(true);
+        var s = dragBox.style;
+        s.position = "absolute";
+        s.textAlign = "center";
+        s.height = "16px";
+        s.fontFamily = this.getStyle("fontFamily");
+        s.fontSize = this.getStyle("fontSize") + "pt";
+        s.backgroundColor = this.getStyle("backgroundColor");
+        s.border = this._tab.style.border;
+        return dragBox;
+    },
+    
+    getDropArea: function() {
+        return this._tab;
+    },
 
     destroy: function() {
         arguments.callee.$.call(this);

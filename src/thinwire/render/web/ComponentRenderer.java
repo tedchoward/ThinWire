@@ -38,6 +38,8 @@ import java.util.regex.Pattern;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
+import thinwire.render.RenderStateEvent;
+import thinwire.render.RenderStateListener;
 import thinwire.render.Renderer;
 import thinwire.ui.event.*;
 import thinwire.ui.Component;
@@ -63,6 +65,8 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     static final String SET_HEIGHT = "setHeight";
     static final String SET_VISIBLE = "setVisible";
     static final String SET_PROPERTY_WITH_EFFECT = "setPropertyWithEffect";
+    static final String ADD_DRAG_TARGET = "addDragTarget";
+    static final String REMOVE_DRAG_TARGET = "removeDragTarget";
 
     //Shared by other renderers
     static final String DESTROY = "destroy";
@@ -354,8 +358,12 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         } else if (KeyPressListener.class.isAssignableFrom(clazz)) {
             postClientEvent(REGISTER_EVENT_NOTIFIER, "keyPress", subType);
         } else if (DropListener.class.isAssignableFrom(clazz)) {
-            DropEventComponent dragSource = (DropEventComponent)subType;
-            //TODO DROP: Call client-side method to establish relationship. Must delay until dragSource is rendered.
+            final DropEventComponent dragSource = (DropEventComponent)subType;
+            wr.ai.invokeAfterRendered(dragSource, new RenderStateListener() {
+                public void renderStateChange(RenderStateEvent ev) {
+                    wr.ai.clientSideMethodCall(wr.ai.getComponentId(dragSource), ADD_DRAG_TARGET, id);
+                }
+            });
         }
     }
     
@@ -384,8 +392,9 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         } else if (DropListener.class.isAssignableFrom(clazz)) {
             DropEventComponent dragSource = (DropEventComponent)subType;
             
-            if (wr.ai.getComponentId(dragSource) != null) {
-                //TODO DROP: Call client-side method to establish relationship.
+            Integer dragSourceId = wr.ai.getComponentId(dragSource);
+            if (dragSourceId != null) {
+                wr.ai.clientSideMethodCall(dragSourceId, REMOVE_DRAG_TARGET, id);
             }
         }
     }    

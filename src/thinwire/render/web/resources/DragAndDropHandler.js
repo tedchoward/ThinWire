@@ -28,9 +28,11 @@ var tw_DragAndDropHandler = Class.extend({
     _targets: null,
     _dragBox: null,
     _dragBoxHandler: null,
+    _cnt: null,
     
     construct: function(source) {
         this._mouseDown = this._mouseDown.bind(this);
+        this._mouseMove = this._mouseMove.bind(this);
         this._mouseUp = this._mouseUp.bind(this);
         this._source = source;
         this._dragBoxHandler = new tw_DragHandler(this._source.getDragArea(), this._dragBoxListener.bind(this));
@@ -49,38 +51,54 @@ var tw_DragAndDropHandler = Class.extend({
     },
     
     _mouseDown: function(event) {
-        this._dragBox = this._source.getDragBox(event);
-        if (this._dragBox == undefined || this._dragBox == null) {
-            this._dragBoxHandler.releaseDrag();
-            return;
-        }
-        
+        this._cnt = 0;
+        tw_addEventListener(document, "mousemove", this._mouseMove);
         tw_addEventListener(document, "mouseup", this._mouseUp);
-        var s = this._dragBox.style;
-        s.left = this._dragBoxHandler._startX + 4 + "px";
-        s.top = this._dragBoxHandler._startY + 4 + "px";
-        s.zIndex = ++tw_Component.zIndex;
-        s.display = "block";
-        s.opacity = .5;
-        if (tw_isIE) s.filter = "alpha(opacity=50)";
-        document.body.appendChild(this._dragBox);
+        for (t in this._targets) this._targets[t].getDropArea().style.cursor = "pointer";
+    },
+    
+    _mouseMove: function(event) {
+        if (this._cnt == null) return;
+        if (this._cnt < 4) {
+            this._cnt++;
+        } else if (this._cnt == 4) {
+            this._cnt++;
+            this._dragBox = this._source.getDragBox(event);
+            if (this._dragBox == undefined || this._dragBox == null) {
+                this._dragBoxHandler.releaseDrag();
+                return;
+            }
+            
+            var s = this._dragBox.style;
+            s.left = this._dragBoxHandler._startX + 4 + "px";
+            s.top = this._dragBoxHandler._startY + 4 + "px";
+            s.zIndex = ++tw_Component.zIndex;
+            s.display = "block";
+            s.opacity = .5;
+            if (tw_isIE) s.filter = "alpha(opacity=50)";
+            document.body.appendChild(this._dragBox);
+        }
     },
     
     _mouseUp: function(event) {
         tw_removeEventListener(document, "mouseup", this._mouseUp);
-        
-        for (target in this._targets) {
-            var curTarget = this._targets[target];
-            if (tw_getEventTarget(event, curTarget.getDropArea().className) == curTarget.getDropArea()) {
-                if (this._dragBox._index != undefined) alert("index = " + this._dragBox._index);
-                alert("source = " + curTarget.getDropTarget(event) + ", sourceComponent = " + curTarget.getDropArea().className + 
-                    ", dragObject = " + this._dragBox._index + ", dragComponent = " + this._source.getDragArea().className);
+        tw_removeEventListener(document, "mousemove", this._mouseMove);
+        for (t in this._targets) this._targets[t].getDropArea().style.cursor = "default";
+        this._cnt = null;
+        if (this._dragBox != null) {
+            for (target in this._targets) {
+                var curTarget = this._targets[target];
+                if (tw_getEventTarget(event, curTarget.getDropArea().className) == curTarget.getDropArea()) {
+                    if (this._dragBox._index != undefined) alert("index = " + this._dragBox._index);
+                    alert("source = " + curTarget.getDropTarget(event) + ", sourceComponent = " + curTarget.getDropArea().className + 
+                        ", dragObject = " + this._dragBox._index + ", dragComponent = " + this._source.getDragArea().className);
+                }
             }
+            
+            document.body.removeChild(this._dragBox);
+            this._dragBox = null;
+            tw_Component.zIndex--;
         }
-        
-        document.body.removeChild(this._dragBox);
-        this._dragBox = null;
-        tw_Component.zIndex--;
     },
     
     _dragBoxListener: function(ev) {
