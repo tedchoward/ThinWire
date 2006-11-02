@@ -170,8 +170,8 @@ public class Menu extends AbstractHierarchyComponent<Menu.Item> {
      */
     public Menu() {
         super(new Item(), new EventListenerImpl.SubTypeValidator() {
-            public boolean isValid(Object subType) {
-                return subType != null && (subType.equals(ActionEventComponent.ACTION_CLICK));
+            public Object validate(Object subType) {
+                return subType != null && (subType.equals(ActionEventComponent.ACTION_CLICK)) ? subType : null;
             }
         });
     }

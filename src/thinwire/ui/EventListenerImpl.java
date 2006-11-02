@@ -47,18 +47,24 @@ class EventListenerImpl<E extends EventListener> {
     private SubTypeValidator subTypeValidator;
             
     interface SubTypeValidator {
-        public boolean isValid(Object subType);
+        public Object validate(Object subType);
     }
     
     static SubTypeValidator DEFAULT_VALIDATOR = new SubTypeValidator() {
-        public boolean isValid(Object subType) {
-            return subType != null && !subType.equals("");
+        public Object validate(Object subType) {
+            return subType != null && !subType.equals("") ? subType : null;
         }
     };
     
     static final EventListenerImpl.SubTypeValidator ACTION_VALIDATOR = new EventListenerImpl.SubTypeValidator() {
-        public boolean isValid(Object subType) {
-            return subType != null && (subType.equals(ActionEventComponent.ACTION_CLICK) || subType.equals(ActionEventComponent.ACTION_DOUBLE_CLICK));
+        public Object validate(Object subType) {
+            return subType != null && (subType.equals(ActionEventComponent.ACTION_CLICK) || subType.equals(ActionEventComponent.ACTION_DOUBLE_CLICK)) ? subType : null;
+        }
+    };
+    
+    static final EventListenerImpl.SubTypeValidator KEY_PRESS_VALIDATOR = new EventListenerImpl.SubTypeValidator() {
+        public Object validate(Object subType) {
+            return KeyPressEvent.normalizeKeyPressCombo((String)subType);
         }
     };
     
@@ -130,7 +136,7 @@ class EventListenerImpl<E extends EventListener> {
     
     void addListener(Object eventSubType, E listener) {
         if (listener == null) throw new IllegalArgumentException("listener == null");
-        if (!subTypeValidator.isValid(eventSubType)) throw new IllegalArgumentException("!subTypeValidator.isValid(eventSubType)");
+        if ((eventSubType = subTypeValidator.validate(eventSubType)) == null) throw new IllegalArgumentException("eventSubType is not valid:" + eventSubType);
         addEventListener(eventSubType, listener);
     }
 
@@ -139,7 +145,7 @@ class EventListenerImpl<E extends EventListener> {
         if (eventSubTypes == null || eventSubTypes.length == 0) throw new IllegalArgumentException("eventSubTypes == null || eventSubTypes.length == 0");
 
         for (int i = eventSubTypes.length; --i >= 0;) {
-            if (!subTypeValidator.isValid(eventSubTypes[i])) throw new IllegalArgumentException("!subTypeValidator.isValid(eventSubTypes[i])");
+            if ((eventSubTypes[i] = subTypeValidator.validate(eventSubTypes[i])) == null) throw new IllegalArgumentException("eventSubType[" + i + "] is not valid:" + eventSubTypes[i]);
         }
         
         addEventListener(eventSubTypes, listener);
@@ -222,9 +228,9 @@ class EventListenerImpl<E extends EventListener> {
         fireEvent(ev, ev.getSourceComponent());
     }
     
-    void fireKeyPress(Object source, String keyPressCombo) {
-        if (!hasListeners()) return;
+    void fireKeyPress(Component source, String keyPressCombo) {
         KeyPressEvent kpe = new KeyPressEvent(source, keyPressCombo);
+        if (!hasListeners()) return;
         fireEvent(kpe, kpe.getKeyPressCombo());        
     }
         

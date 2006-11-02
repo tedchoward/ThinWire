@@ -28,6 +28,8 @@ package thinwire.ui.event;
 import java.util.Arrays;
 import java.util.EventObject;
 
+import thinwire.ui.Component;
+
 /**
  * @author Joshua J. Gertzen
  */
@@ -144,7 +146,7 @@ public class KeyPressEvent extends EventObject {
     private String key;
     private String keyPressCombo;
     
-    public KeyPressEvent(Object source, String keyPressCombo) {
+    public KeyPressEvent(Component source, String keyPressCombo) {
         super(source);
         this.keyPressCombo = keyPressCombo = normalizeKeyPressCombo(keyPressCombo);
         ctrl = keyPressCombo.indexOf("Ctrl-") >= 0;

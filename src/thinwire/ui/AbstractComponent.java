@@ -69,7 +69,7 @@ abstract class AbstractComponent implements Component {
         this.visible = visible;
         app = Application.current();
         pcei = new EventListenerImpl<PropertyChangeListener>(this, null, app.getGloalPropertyChangeListenerImpl());
-        kpei = new EventListenerImpl<KeyPressListener>(this);
+        kpei = new EventListenerImpl<KeyPressListener>(this, EventListenerImpl.KEY_PRESS_VALIDATOR);
             
         this.style = new Style(app.getDefaultStyle(this.getClass()), this) {
             protected void firePropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
@@ -177,17 +177,10 @@ abstract class AbstractComponent implements Component {
     }
         
     public void addKeyPressListener(String keyPressCombo, KeyPressListener listener) {
-        keyPressCombo = KeyPressEvent.normalizeKeyPressCombo(keyPressCombo);
         kpei.addListener(keyPressCombo, listener);
     }
     
     public void addKeyPressListener(String[] keyPressCombos, KeyPressListener listener) {
-        if (keyPressCombos != null) {
-            for (int i = keyPressCombos.length; --i >= 0;) {                
-                if (keyPressCombos[i] != null) keyPressCombos[i] = KeyPressEvent.normalizeKeyPressCombo(keyPressCombos[i]);
-            }
-        }
-        
         kpei.addListener(keyPressCombos, listener);
     }
     
