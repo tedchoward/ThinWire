@@ -26,6 +26,7 @@
 package thinwire.ui;
 
 import thinwire.render.Renderer;
+import thinwire.ui.event.ActionEvent;
 import thinwire.ui.event.ActionListener;
 
 /**
@@ -54,7 +55,7 @@ import thinwire.ui.event.ActionListener;
  * @author Joshua J. Gertzen
  */
 public class Divider extends AbstractComponent implements ActionEventComponent {    
-    private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>(this);    
+    private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>(this, EventListenerImpl.ACTION_VALIDATOR);    
     
     /**
      * Constructs a new Divider. 
@@ -80,7 +81,15 @@ public class Divider extends AbstractComponent implements ActionEventComponent {
         aei.removeListener(listener);
     }
 
+    public void fireAction(ActionEvent ev) {
+        aei.fireAction(ev, null);
+    }
+
+    /**
+     * A convienence method that is equivalent to <code>fireAction(new ActionEvent(this, action))</code>.
+     * @param action the action name
+     */
     public void fireAction(String action) {
-        aei.fireAction(this, action);
+        aei.fireAction(new ActionEvent(this, action), null);
     }
 }

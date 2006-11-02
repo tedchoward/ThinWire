@@ -44,12 +44,33 @@ class EventListenerImpl<E extends EventListener> {
     private Map<E, Set<Object>> specificListeners;
     private Renderer renderer;
     private Component comp;
+    private SubTypeValidator subTypeValidator;
             
+    interface SubTypeValidator {
+        public boolean isValid(Object subType);
+    }
+    
+    static SubTypeValidator DEFAULT_VALIDATOR = new SubTypeValidator() {
+        public boolean isValid(Object subType) {
+            return subType != null && !subType.equals("");
+        }
+    };
+    
+    static final EventListenerImpl.SubTypeValidator ACTION_VALIDATOR = new EventListenerImpl.SubTypeValidator() {
+        public boolean isValid(Object subType) {
+            return subType != null && (subType.equals(ActionEventComponent.ACTION_CLICK) || subType.equals(ActionEventComponent.ACTION_DOUBLE_CLICK));
+        }
+    };
+    
     EventListenerImpl(Component comp) {
-        this(comp, null);
+        this(comp, null, null);
     }
 
-    EventListenerImpl(Component comp, EventListenerImpl<E> copy) {
+    EventListenerImpl(Component comp, SubTypeValidator subTypeValidator) {
+        this(comp, subTypeValidator, null);
+    }
+
+    EventListenerImpl(Component comp, SubTypeValidator subTypeValidator, EventListenerImpl<E> copy) {
         if (copy != null && copy.hasListeners()) {
             for (Map.Entry<E, Set<Object>> e : copy.specificListeners.entrySet()) {
                 Set<Object> subTypes = e.getValue();
@@ -65,7 +86,9 @@ class EventListenerImpl<E extends EventListener> {
                 }
             }
         }
+
         this.comp = comp;
+        this.subTypeValidator = subTypeValidator == null ? DEFAULT_VALIDATOR : subTypeValidator;
     }    
     
     private boolean hasListeners() {
@@ -107,7 +130,7 @@ class EventListenerImpl<E extends EventListener> {
     
     void addListener(Object eventSubType, E listener) {
         if (listener == null) throw new IllegalArgumentException("listener == null");
-        if (eventSubType == null || eventSubType.equals("")) throw new IllegalArgumentException("eventSubType == null || eventSubType.equals(\"\")");
+        if (!subTypeValidator.isValid(eventSubType)) throw new IllegalArgumentException("!subTypeValidator.isValid(eventSubType)");
         addEventListener(eventSubType, listener);
     }
 
@@ -116,7 +139,7 @@ class EventListenerImpl<E extends EventListener> {
         if (eventSubTypes == null || eventSubTypes.length == 0) throw new IllegalArgumentException("eventSubTypes == null || eventSubTypes.length == 0");
 
         for (int i = eventSubTypes.length; --i >= 0;) {
-            if (eventSubTypes[i] == null || eventSubTypes[i].equals("")) throw new IllegalArgumentException("eventSubTypes[" + i + "] == null || eventSubTypes[" + i + "].equals(\"\")");
+            if (!subTypeValidator.isValid(eventSubTypes[i])) throw new IllegalArgumentException("!subTypeValidator.isValid(eventSubTypes[i])");
         }
         
         addEventListener(eventSubTypes, listener);
@@ -180,17 +203,16 @@ class EventListenerImpl<E extends EventListener> {
         if (hasListeners()) fireEvent(pce, propertyName);        
     }
 
-    void fireAction(String action) {
-        if (!hasListeners()) return;
-        fireEvent(new ActionEvent((ActionEventComponent)comp, action), action);
-    }
-
-    void fireAction(Object source, String action) {
-        if (!hasListeners()) return;
-        fireEvent(new ActionEvent((ActionEventComponent)comp, source, action), action);
-    }
-
-    void fireAction(ActionEvent ev) {
+    void fireAction(ActionEvent ev, Class sourceType) {
+        if (ev == null) throw new IllegalArgumentException("ev == null");
+        if (comp != ev.getSourceComponent()) throw new IllegalArgumentException("this != ev.getSourceComponent()");
+        
+        if (sourceType == null) {
+            if (ev.getSource() != ev.getSourceComponent()) throw new IllegalArgumentException("ev.getSource() != ev.getSourceComponent()");
+        } else {
+            if (!(sourceType.isInstance(ev.getSource()))) throw new IllegalArgumentException("!(ev.getSource() instanceof " + sourceType.getName() + ")");
+        }
+        
         if (!hasListeners()) return;
         fireEvent(ev, ev.getAction());
     }

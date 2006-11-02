@@ -25,6 +25,9 @@
  */
 package thinwire.ui;
 
+import thinwire.ui.event.ActionEvent;
+import thinwire.ui.event.ActionListener;
+
 /**
  * A ProgressBar is a screen element that has a visible selection that can be set to any size between zero and a specified length.
  * ProgressBars are either horizontal or vertical depending on their dimensions.  If the width is greater than the height,
@@ -61,7 +64,9 @@ package thinwire.ui;
  * @author Ted C. Howard
  *
  */
-public class ProgressBar extends AbstractRangeComponent {
+public class ProgressBar extends AbstractRangeComponent implements ActionEventComponent {
+    private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>(this, EventListenerImpl.ACTION_VALIDATOR);    
+    
     /**
      * Constructs a new <code>ProgressBar</code> with a length of 100 and a currentIndex of 0.
      *
@@ -86,5 +91,29 @@ public class ProgressBar extends AbstractRangeComponent {
     public ProgressBar(int length, int currentIndex) {
         setLength(length);
         setCurrentIndex(currentIndex);
+    }
+    
+    public void addActionListener(String action, ActionListener listener) {
+        aei.addListener(action, listener);
+    }
+    
+    public void addActionListener(String[] actions, ActionListener listener) {
+        aei.addListener(actions, listener);
+    }    
+    
+    public void removeActionListener(ActionListener listener) {
+        aei.removeListener(listener);
+    }    
+
+    public void fireAction(ActionEvent ev) {
+        aei.fireAction(ev, null);
+    }
+
+    /**
+     * A convienence method that is equivalent to <code>fireAction(new ActionEvent(this, action))</code>.
+     * @param action the action name
+     */
+    public void fireAction(String action) {
+        aei.fireAction(new ActionEvent(this, action), null);
     }
 }

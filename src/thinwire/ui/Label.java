@@ -26,6 +26,7 @@
 package thinwire.ui;
 
 import thinwire.render.Renderer;
+import thinwire.ui.event.ActionEvent;
 import thinwire.ui.event.ActionListener;
 
 /**
@@ -79,7 +80,7 @@ public class Label extends AbstractTextComponent implements AlignTextComponent, 
     public static final String PROPERTY_LABEL_FOR = "labelFor";
     public static final String PROPERTY_WRAP_TEXT = "wrapText";
     
-    private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>(this);
+    private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>(this, EventListenerImpl.ACTION_VALIDATOR);
     private AlignX alignX = AlignX.LEFT;
     private Component labelFor = null;
     private boolean wrapText;
@@ -117,15 +118,18 @@ public class Label extends AbstractTextComponent implements AlignTextComponent, 
     public void removeActionListener(ActionListener listener) {
         aei.removeListener(listener);
     }    
-    
+
+    public void fireAction(ActionEvent ev) {
+        aei.fireAction(ev, null);
+    }
+
     /**
-     * Programmatically signals an action which triggers the appropriate listener which calls
-     * the desired method.
+     * A convienence method that is equivalent to <code>fireAction(new ActionEvent(this, action))</code>.
      * @param action the action name
      */
     public void fireAction(String action) {
-        aei.fireAction(this, action);
-    }    
+        aei.fireAction(new ActionEvent(this, action), null);
+    }
     
     /*
      *  (non-Javadoc)

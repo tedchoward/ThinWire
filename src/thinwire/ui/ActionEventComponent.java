@@ -25,6 +25,7 @@
  */
 package thinwire.ui;
 
+import thinwire.ui.event.ActionEvent;
 import thinwire.ui.event.ActionListener;
 
 /**
@@ -34,7 +35,6 @@ public interface ActionEventComponent extends Component {
     public static final String ACTION_CLICK = "click";
     public static final String ACTION_DOUBLE_CLICK = "doubleClick";
 
-    
     /**
      * Add an actionListener which associates an action (ex: "click") with some method call.
      * @param action the action to specficially be notified of
@@ -54,4 +54,11 @@ public interface ActionEventComponent extends Component {
      * @param listener the listener that should no longer receive action occurred notifications.
      */
     public void removeActionListener(ActionListener listener);
+    
+    /**
+     * Programmatically signals an action which triggers the appropriate listener which calls
+     * the desired method.
+     * @param ev the event to signal
+     */
+    public void fireAction(ActionEvent ev);
 }

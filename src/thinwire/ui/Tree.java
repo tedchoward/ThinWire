@@ -25,6 +25,8 @@
  */
 package thinwire.ui;
 
+import thinwire.ui.event.ActionEvent;
+
 /**
  * A component that displays a set of hierarchical data as an outline.
  * <p>
@@ -201,7 +203,7 @@ public class Tree extends AbstractHierarchyComponent<Tree.Item> {
      * Constructs a new Tree.
      */
     public Tree() {
-        super(new Item());
+        super(new Item(), EventListenerImpl.ACTION_VALIDATOR);
         selectedItem = getRootItem();
         selectedItem.setExpanded(true);
     }
@@ -231,10 +233,11 @@ public class Tree extends AbstractHierarchyComponent<Tree.Item> {
     public Item getSelectedItem() {
         return selectedItem;
     }
-    
-    @Override
-    public void fireAction(String action, Tree.Item item) {
-        if (action != null && item != null && action.equals(ACTION_CLICK)) item.setSelected(true);        
-        super.fireAction(action, item);
-    }    
+
+    public void fireAction(ActionEvent ev) {
+        if (ev == null) throw new IllegalArgumentException("ev == null");
+        if (!(ev.getSource() instanceof Item)) throw new IllegalArgumentException("!(ev.getSource() instanceof Tree.Item)");
+        if (ev.getAction().equals(ACTION_CLICK)) ((Item)ev.getSource()).setSelected(true);        
+        aei.fireAction(ev, Tree.Item.class);
+    }
 }

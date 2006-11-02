@@ -38,14 +38,13 @@ import thinwire.render.Renderer;
 import thinwire.ui.AlignX;
 import thinwire.ui.DropDownGridBox;
 import thinwire.ui.DropDownGridBox.DefaultView;
+import thinwire.ui.event.ActionEvent;
 import thinwire.ui.event.ActionListener;
 import thinwire.ui.event.ItemChangeEvent;
 import thinwire.ui.event.ItemChangeListener;
 import thinwire.ui.event.PropertyChangeEvent;
 import thinwire.ui.event.PropertyChangeListener;
 import thinwire.ui.event.ItemChangeEvent.Type;
-import thinwire.ui.style.Border;
-import thinwire.ui.style.Color;
 import thinwire.ui.style.Style;
 import thinwire.util.ArrayGrid;
 import thinwire.util.Grid;
@@ -485,7 +484,7 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
     private Column.SortOrder sortedColumnOrder = GridBox.Column.SortOrder.NONE; 
     
     private EventListenerImpl<ItemChangeListener> icei = new EventListenerImpl<ItemChangeListener>(this);
-    private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>(this);
+    private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>(this, EventListenerImpl.ACTION_VALIDATOR);
     private ArrayGrid<Row, Column> grid;
     private SortedSet<Row> checkedRows;
     private SortedSet<Row> roCheckedRows;
@@ -642,18 +641,20 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
         aei.removeListener(listener);
     }
     
+    public void fireAction(ActionEvent ev) {
+        if (ev == null) throw new IllegalArgumentException("ev == null");
+        if (!(ev.getSource() instanceof Row)) throw new IllegalArgumentException("!(ev.getSource() instanceof GridBox.Row)");
+        ((Row)ev.getSource()).setSelected(true);        
+        aei.fireAction(ev, Row.class);
+    }
+    
     /**
-     * Programmatically fires an action which triggers the appropriate listener.
-     * @param action the action to fire.  ACTION_CLICK is the only permissible value.
-     * @param row the modified Row
-     * @throws IllegalArgumentException if action is null or not equal to ACTION_CLICK.
+     * A convienence method that is equivalent to <code>fireAction(new ActionEvent(this, action, row))</code>.
+     * @param action the action that occured.
+     * @param date the Row in the GridBox on which the action occured.
      */
     public void fireAction(String action, Row row) {
-        if (action == null || !(action.equals(ACTION_CLICK) || action.equals(ACTION_DOUBLE_CLICK))) throw new IllegalArgumentException("the specified action is not supported");        
-        if (row == null) throw new IllegalArgumentException("row == null");
-        GridBox gb = (GridBox)row.getParent();
-        row.setSelected(true);        
-        aei.fireAction(row, action);
+        fireAction(new ActionEvent(this, action, row));
     }
 	
 	public List<GridBox.Column> getColumns() {

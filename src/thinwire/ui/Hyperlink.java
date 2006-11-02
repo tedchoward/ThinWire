@@ -27,6 +27,7 @@ package thinwire.ui;
 
 import thinwire.render.Renderer;
 import thinwire.render.web.WebApplication;
+import thinwire.ui.event.ActionEvent;
 import thinwire.ui.event.ActionListener;
 
 /**
@@ -85,7 +86,7 @@ public class Hyperlink extends AbstractTextComponent implements ActionEventCompo
         ((WebApplication)WebApplication.current()).clientSideMethodCall("tw_Hyperlink", "openLocation", location, target);
     }
     
-    private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>(this);    
+    private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>(this, EventListenerImpl.ACTION_VALIDATOR);    
     private String location = "";
         
     public Hyperlink() {}
@@ -115,15 +116,18 @@ public class Hyperlink extends AbstractTextComponent implements ActionEventCompo
     public void removeActionListener(ActionListener listener) {
         aei.removeListener(listener);
     }
-    
+
+    public void fireAction(ActionEvent ev) {
+        aei.fireAction(ev, null);
+    }
+
     /**
-     * Programmatically signals an action which triggers the appropriate listener which calls
-     * the desired method.
+     * A convienence method that is equivalent to <code>fireAction(new ActionEvent(this, action))</code>.
      * @param action the action name
      */
     public void fireAction(String action) {
-        aei.fireAction(this, action);
-    }    
+        aei.fireAction(new ActionEvent(this, action), null);
+    }
     
     public void setLocation(String location) {
         String oldLocation = this.location;

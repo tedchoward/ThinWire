@@ -25,6 +25,7 @@
  */
 package thinwire.ui;
 
+import thinwire.ui.event.ActionEvent;
 import thinwire.ui.event.KeyPressEvent;
 
 /**
@@ -168,9 +169,19 @@ public class Menu extends AbstractHierarchyComponent<Menu.Item> {
      * Constructs a new Menu.
      */
     public Menu() {
-        super(new Item());
+        super(new Item(), new EventListenerImpl.SubTypeValidator() {
+            public boolean isValid(Object subType) {
+                return subType != null && (subType.equals(ActionEventComponent.ACTION_CLICK));
+            }
+        });
     }
-
+    
+    public void fireAction(ActionEvent ev) {
+        if (ev == null) throw new IllegalArgumentException("ev == null");
+        if (!ev.getAction().equals(ACTION_CLICK)) throw new IllegalArgumentException("!ev.getAction().equals(ACTION_CLICK)");
+        aei.fireAction(ev, Menu.Item.class);
+    }
+    
     public int getHeight() {
         Container cont = getContainer();
 

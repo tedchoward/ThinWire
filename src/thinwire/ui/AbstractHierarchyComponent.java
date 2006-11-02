@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import thinwire.render.Renderer;
+import thinwire.ui.event.ActionEvent;
 import thinwire.ui.event.ActionListener;
 import thinwire.ui.event.ItemChangeListener;
 import thinwire.ui.event.ItemChangeEvent.Type;
@@ -185,9 +186,10 @@ abstract class AbstractHierarchyComponent<HI extends AbstractHierarchyComponent.
 
     private HI rootItem;    
     private EventListenerImpl<ItemChangeListener> icei = new EventListenerImpl<ItemChangeListener>(this);
-    private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>(this);
+    EventListenerImpl<ActionListener> aei;
     
-    AbstractHierarchyComponent(HI rootItem) {
+    AbstractHierarchyComponent(HI rootItem, EventListenerImpl.SubTypeValidator actionValidator) {
+        aei = new EventListenerImpl<ActionListener>(this, actionValidator);
         this.rootItem = rootItem;
         rootItem.setParent(this);
     }
@@ -233,15 +235,13 @@ abstract class AbstractHierarchyComponent<HI extends AbstractHierarchyComponent.
     public void removeActionListener(ActionListener listener) {
         aei.removeListener(listener);
     }
-
+    
     /**
-     * Programmatically cause an action to occur for the given Menu.Item.
-     * @param action the name of the action to trigger, such as Menu.ACTION_CLICK.
-     * @param item the Menu.Item that the action should be triggered for.
+     * A convienence method that is equivalent to <code>fireAction(new ActionEvent(this, action, row))</code>.
+     * @param action the action that occured.
+     * @param date the Row in the GridBox on which the action occured.
      */
     public void fireAction(String action, HI item) {
-        if (action == null || !(action.equals(ACTION_CLICK) || action.equals(ACTION_DOUBLE_CLICK))) throw new IllegalArgumentException("the specified action is not supported");
-        if (item == null) throw new IllegalArgumentException("item == null");
-        aei.fireAction(item, action);
+        fireAction(new ActionEvent(this, action, item));
     }
 }

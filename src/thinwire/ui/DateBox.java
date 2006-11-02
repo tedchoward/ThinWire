@@ -28,6 +28,7 @@ package thinwire.ui;
 import java.util.Date;
 
 import thinwire.render.Renderer;
+import thinwire.ui.event.ActionEvent;
 import thinwire.ui.event.ActionListener;
 
 /**
@@ -65,7 +66,7 @@ public class DateBox extends AbstractComponent implements ActionEventComponent {
     
     public static final String PROPERTY_SELECTED_DATE = "selectedDate";
     
-    private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>(this);
+    private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>(this, EventListenerImpl.ACTION_VALIDATOR);
     private Date selectedDate;
     
     public DateBox() {
@@ -115,7 +116,16 @@ public class DateBox extends AbstractComponent implements ActionEventComponent {
         aei.addListener(listener);
     }
     
-    public void fireAction(String action, Date selectedDate) {
-        aei.fireAction(selectedDate, action);
+    public void fireAction(ActionEvent ev) {
+        aei.fireAction(ev, Date.class);
+    }
+    
+    /**
+     * A convienence method that is equivalent to <code>fireAction(new ActionEvent(this, action, date))</code>.
+     * @param action the action that occured.
+     * @param date the Date cell in the DateBox on which the action occured.
+     */
+    public void fireAction(String action, Date date) {
+        aei.fireAction(new ActionEvent(this, action, date), Date.class);
     }
 }

@@ -26,6 +26,7 @@
 package thinwire.ui;
 
 import thinwire.render.Renderer;
+import thinwire.ui.event.ActionEvent;
 import thinwire.ui.event.ActionListener;
 import thinwire.util.ImageInfo;
 
@@ -84,7 +85,7 @@ public class Button extends AbstractTextComponent implements ImageComponent, Act
 
     private boolean standard;
 	private ImageInfo imageInfo = new ImageInfo(null);
-    private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>(this);
+    private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>(this, EventListenerImpl.ACTION_VALIDATOR);
 	
 	/**
 	 * Constructs a new Button with no text or image.
@@ -176,38 +177,27 @@ public class Button extends AbstractTextComponent implements ImageComponent, Act
 	}
     //#ENDIF
 
-    /**
-     * Add an actionListener which associates an action (ex: "click") with some method call.
-     * @param action the action to specficially be notified of
-     * @param listener the listener to add
-     */
     public void addActionListener(String action, ActionListener listener) {
         aei.addListener(action, listener);
     }
     
-    /**
-     * Add an actionListener which associates an action (ex: "click") with some method call.
-     * @param actions the actions to specficially be notified of
-     * @param listener the listener to add
-     */
     public void addActionListener(String[] actions, ActionListener listener) {
         aei.addListener(actions, listener);
     }    
 	
-	/**
-	 * Removes an existing actionListener.
-	 * @param listener the listener to remove
-	 */
 	public void removeActionListener(ActionListener listener) {
         aei.removeListener(listener);
 	}
-	
+
+    public void fireAction(ActionEvent ev) {
+        aei.fireAction(ev, null);
+    }
+
 	/**
-	 * Programmatically signals an action which triggers the appropriate listener which calls
-	 * the desired method.
+	 * A convienence method that is equivalent to <code>fireAction(new ActionEvent(this, action))</code>.
 	 * @param action the action name
 	 */
 	public void fireAction(String action) {
-        aei.fireAction(this, action);
+        aei.fireAction(new ActionEvent(this, action), null);
 	}
 }

@@ -26,6 +26,7 @@
 package thinwire.ui;
 
 import thinwire.render.Renderer;
+import thinwire.ui.event.ActionEvent;
 import thinwire.ui.event.ActionListener;
 import thinwire.util.ImageInfo;
 
@@ -79,7 +80,7 @@ import thinwire.util.ImageInfo;
  * @author Joshua J. Gertzen
  */
 public class Image extends AbstractComponent implements ImageComponent, ActionEventComponent {
-    private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>(this);    
+    private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>(this, EventListenerImpl.ACTION_VALIDATOR);    
 	private ImageInfo imageInfo = new ImageInfo(null);
     
 	/**
@@ -118,15 +119,18 @@ public class Image extends AbstractComponent implements ImageComponent, ActionEv
     public void removeActionListener(ActionListener listener) {
         aei.removeListener(listener);
     }    
-    
+
+    public void fireAction(ActionEvent ev) {
+        aei.fireAction(ev, null);
+    }
+
     /**
-     * Programmatically signals an action which triggers the appropriate listener which calls
-     * the desired method.
+     * A convienence method that is equivalent to <code>fireAction(new ActionEvent(this, action))</code>.
      * @param action the action name
      */
     public void fireAction(String action) {
-        aei.fireAction(this, action);
-    }    
+        aei.fireAction(new ActionEvent(this, action), null);
+    }
 	
 	public String getImage() {
 	    return imageInfo.getName();
@@ -141,12 +145,4 @@ public class Image extends AbstractComponent implements ImageComponent, ActionEv
     public ImageInfo getImageInfo() {
         return imageInfo;
     }
-	
-	/**
-	 * Returns a string representation of the image including file name and size information.
-	 */
-	public String toString() {
-	    return Image.class.getName() + "{fileName: " + imageInfo.getName() + 
-	    	", imageHeight: " + imageInfo.getHeight() + ", imageWidth: " + imageInfo.getWidth() + "}";
-	}
 }
