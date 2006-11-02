@@ -68,8 +68,8 @@ abstract class AbstractComponent implements Component {
     AbstractComponent(boolean visible) {
         this.visible = visible;
         app = Application.current();
-        pcei = new EventListenerImpl<PropertyChangeListener>(app.getGloalPropertyChangeListenerImpl());
-        kpei = new EventListenerImpl<KeyPressListener>();
+        pcei = new EventListenerImpl<PropertyChangeListener>(this, app.getGloalPropertyChangeListenerImpl());
+        kpei = new EventListenerImpl<KeyPressListener>(this);
             
         this.style = new Style(app.getDefaultStyle(this.getClass()), this) {
             protected void firePropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {

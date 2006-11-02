@@ -27,6 +27,9 @@ package thinwire.ui.event;
 
 import java.util.EventListener;
 
+/**
+ * @author Ted C. Howard
+ */
 public interface DropListener extends EventListener {
     public void dropPerformed(DropEvent ev);
 }

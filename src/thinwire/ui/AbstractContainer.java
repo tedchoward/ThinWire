@@ -107,7 +107,7 @@ abstract class AbstractContainer<T extends Component> extends AbstractComponent 
     }
 
     private ScrollType scroll = ScrollType.NONE;
-    private EventListenerImpl<ItemChangeListener> icei = new EventListenerImpl<ItemChangeListener>();
+    private EventListenerImpl<ItemChangeListener> icei = new EventListenerImpl<ItemChangeListener>(this);
     private List<T> children;
     private T childWithFocus;
     private Button standardButton;

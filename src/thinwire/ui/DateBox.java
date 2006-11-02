@@ -65,7 +65,7 @@ public class DateBox extends AbstractComponent implements ActionEventComponent {
     
     public static final String PROPERTY_SELECTED_DATE = "selectedDate";
     
-    private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>();
+    private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>(this);
     private Date selectedDate;
     
     public DateBox() {

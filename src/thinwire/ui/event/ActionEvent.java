@@ -27,15 +27,28 @@ package thinwire.ui.event;
 
 import java.util.EventObject;
 
+import thinwire.ui.ActionEventComponent;
+
 /**
  * @author Joshua J. Gertzen
  */
 public final class ActionEvent extends EventObject {
+    private ActionEventComponent sourceComponent;
     private String action;
+
+    public ActionEvent(ActionEventComponent sourceComponent, String action) {
+        this(sourceComponent, null, action);
+    }
     
-    public ActionEvent(Object source, String action) {
-        super(source);
+    public ActionEvent(ActionEventComponent sourceComponent, Object source, String action) {
+        super(source == null ? sourceComponent : source);
+        if (sourceComponent == null) throw new IllegalArgumentException("sourceComponent == null");
+        if (action == null || !(action.equals(ActionEventComponent.ACTION_CLICK) || action.equals(ActionEventComponent.ACTION_DOUBLE_CLICK))) throw new IllegalArgumentException("action == null || !(action.equals(ActionEventComponent.ACTION_CLICK) || action.equals(ActionEventComponent.ACTION_DOUBLE_CLICK))");
         this.action = action;
+    }
+    
+    public ActionEventComponent getSourceComponent() {
+        return sourceComponent;
     }
     
     public String getAction() {

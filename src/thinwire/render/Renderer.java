@@ -34,7 +34,7 @@ import thinwire.ui.event.PropertyChangeListener;
  * @author Joshua J. Gertzen
  */
 public interface Renderer extends PropertyChangeListener {
-    void eventSubTypeListenerInit(Class<? extends EventListener> clazz, Set<String> subTypes);
-    void eventSubTypeListenerAdded(Class<? extends EventListener> clazz, String subType);
-    void eventSubTypeListenerRemoved(Class<? extends EventListener> clazz, String subType);
+    void eventSubTypeListenerInit(Class<? extends EventListener> clazz, Set<Object> subTypes);
+    void eventSubTypeListenerAdded(Class<? extends EventListener> clazz, Object subType);
+    void eventSubTypeListenerRemoved(Class<? extends EventListener> clazz, Object subType);
 }

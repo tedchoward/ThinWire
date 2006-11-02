@@ -484,8 +484,8 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
     private Column sortedColumn;
     private Column.SortOrder sortedColumnOrder = GridBox.Column.SortOrder.NONE; 
     
-    private EventListenerImpl<ItemChangeListener> icei = new EventListenerImpl<ItemChangeListener>();
-    private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>();
+    private EventListenerImpl<ItemChangeListener> icei = new EventListenerImpl<ItemChangeListener>(this);
+    private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>(this);
     private ArrayGrid<Row, Column> grid;
     private SortedSet<Row> checkedRows;
     private SortedSet<Row> roCheckedRows;

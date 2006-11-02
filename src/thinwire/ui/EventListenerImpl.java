@@ -35,37 +35,31 @@ import java.util.Map;
 import java.util.Set;
 
 import thinwire.render.Renderer;
-import thinwire.ui.event.ActionEvent;
-import thinwire.ui.event.ActionListener;
-import thinwire.ui.event.ItemChangeEvent;
-import thinwire.ui.event.ItemChangeListener;
-import thinwire.ui.event.KeyPressEvent;
-import thinwire.ui.event.KeyPressListener;
-import thinwire.ui.event.PropertyChangeEvent;
-import thinwire.ui.event.PropertyChangeListener;
+import thinwire.ui.event.*;
 
 /**
  * @author Joshua J. Gertzen
  */
 class EventListenerImpl<E extends EventListener> {
-    private Map<E, Set<String>> specificListeners;
+    private Map<E, Set<Object>> specificListeners;
     private Renderer renderer;
+    private Component comp;
             
-    EventListenerImpl() {
-        this(null);
+    EventListenerImpl(Component comp) {
+        this(comp, null);
     }
 
-    EventListenerImpl(EventListenerImpl<E> copy) {
+    EventListenerImpl(Component comp, EventListenerImpl<E> copy) {
         if (copy != null && copy.hasListeners()) {
-            for (Map.Entry<E, Set<String>> e : copy.specificListeners.entrySet()) {
-                Set<String> subTypes = e.getValue();
+            for (Map.Entry<E, Set<Object>> e : copy.specificListeners.entrySet()) {
+                Set<Object> subTypes = e.getValue();
                 
                 if (subTypes == null) {
                     this.addListener(e.getKey());
                 } else {
                     E listener = e.getKey();
                     
-                    for (String subType : subTypes) {
+                    for (Object subType : subTypes) {
                         this.addListener(subType, listener);
                     }
                 }
@@ -81,16 +75,16 @@ class EventListenerImpl<E extends EventListener> {
         this.renderer = r;                                   
         
         if (specificListeners != null && renderer != null) {
-            Set<String> allSubTypes = new HashSet<String>();
+            Set<Object> allSubTypes = new HashSet<Object>();
             Class<? extends EventListener> clazz = null;
             
-            for (Map.Entry<E, Set<String>> e : specificListeners.entrySet()) {
+            for (Map.Entry<E, Set<Object>> e : specificListeners.entrySet()) {
                 EventListener listener = e.getKey();
                 
                 //Do not process the renderer's listener
                 if (listener != r) { 
                     if (clazz == null) clazz = listener.getClass();
-                    Set<String> subTypes = e.getValue();
+                    Set<Object> subTypes = e.getValue();
                     
                     if (subTypes == null) {
                         allSubTypes.clear();
@@ -110,18 +104,18 @@ class EventListenerImpl<E extends EventListener> {
         addEventListener(null, listener);
     }
     
-    void addListener(String eventSubType, E listener) {
+    void addListener(Object eventSubType, E listener) {
         if (listener == null) throw new IllegalArgumentException("listener == null");
-        if (eventSubType == null || eventSubType.length() == 0) throw new IllegalArgumentException("eventSubType == null || eventSubType.length() == 0");
+        if (eventSubType == null || eventSubType.equals("")) throw new IllegalArgumentException("eventSubType == null || eventSubType.equals(\"\")");
         addEventListener(eventSubType, listener);
     }
 
-    void addListener(String[] eventSubTypes, E listener) {
+    void addListener(Object[] eventSubTypes, E listener) {
         if (listener == null) throw new IllegalArgumentException("listener == null");
         if (eventSubTypes == null || eventSubTypes.length == 0) throw new IllegalArgumentException("eventSubTypes == null || eventSubTypes.length == 0");
 
         for (int i = eventSubTypes.length; --i >= 0;) {
-            if (eventSubTypes[i] == null || eventSubTypes[i].length() == 0) throw new IllegalArgumentException("eventSubTypes[" + i + "] == null || eventSubTypes[" + i + "].length() == 0");
+            if (eventSubTypes[i] == null || eventSubTypes[i].equals("")) throw new IllegalArgumentException("eventSubTypes[" + i + "] == null || eventSubTypes[" + i + "].equals(\"\")");
         }
         
         addEventListener(eventSubTypes, listener);
@@ -129,22 +123,22 @@ class EventListenerImpl<E extends EventListener> {
     
     private void addEventListener(Object eventSubType, E listener) {
         if (listener == null) throw new IllegalArgumentException("listener == null");            
-        if (specificListeners == null) specificListeners = new HashMap<E, Set<String>>(3);
+        if (specificListeners == null) specificListeners = new HashMap<E, Set<Object>>(3);
         
         //If no sub type specified, then add non-specific listener
         if (eventSubType == null) {
             if (specificListeners.containsKey(listener)) {
-                Set<String> subTypes = specificListeners.get(listener);                    
+                Set<Object> subTypes = specificListeners.get(listener);                    
                 if (subTypes != null) throw new IllegalArgumentException("the specified listener has already been added for specific event types:" + subTypes);
             } else {
                 specificListeners.put(listener, null);
             }
         } else {
-            Set<String> subTypes = specificListeners.get(listener);
+            Set<Object> subTypes = specificListeners.get(listener);
             
             if (subTypes == null) {
                 if (specificListeners.containsKey(listener)) throw new IllegalArgumentException("the specified listener has already been added without specific event sub types");                    
-                subTypes = new HashSet<String>(2);                        
+                subTypes = new HashSet<Object>(2);                        
                 specificListeners.put(listener, subTypes);
             }                
             
@@ -166,10 +160,10 @@ class EventListenerImpl<E extends EventListener> {
         if (renderer == null) {
             specificListeners.remove(listener);
         } else {
-            outer: for (String subType : specificListeners.remove(listener)) {                
+            outer: for (Object subType : specificListeners.remove(listener)) {                
                 //If there is another listener listening to the same sub type then we don't
                 //want to tell the renderer that the subtype is no longer being listened to.
-                for (Set<String> subTypes : specificListeners.values()) {
+                for (Set<Object> subTypes : specificListeners.values()) {
                     if (subTypes.contains(subType)) continue outer;  
                 }
                 
@@ -184,12 +178,25 @@ class EventListenerImpl<E extends EventListener> {
         if (renderer != null) renderer.propertyChange(pce);
         if (hasListeners()) fireEvent(pce, propertyName);        
     }
-        
-    void fireAction(Object source, String action) {
-        if (action == null || !(action.equals(ActionEventComponent.ACTION_CLICK) || action.equals(ActionEventComponent.ACTION_DOUBLE_CLICK))) throw new IllegalArgumentException("the specified action is not supported");        
+
+    void fireAction(String action) {
         if (!hasListeners()) return;
-        ActionEvent ae = new ActionEvent(source, action);
-        fireEvent(ae, action);
+        fireEvent(new ActionEvent((ActionEventComponent)comp, action), action);
+    }
+
+    void fireAction(Object source, String action) {
+        if (!hasListeners()) return;
+        fireEvent(new ActionEvent((ActionEventComponent)comp, source, action), action);
+    }
+
+    void fireAction(ActionEvent ev) {
+        if (!hasListeners()) return;
+        fireEvent(ev, ev.getAction());
+    }
+    
+    void fireDrop(DropEvent ev) {
+        if (!hasListeners()) return;
+        fireEvent(ev, ev.getSourceComponent());
     }
     
     void fireKeyPress(Object source, String keyPressCombo) {
@@ -210,16 +217,16 @@ class EventListenerImpl<E extends EventListener> {
         fireEvent(ice, null);
     }
                 
-    private void fireEvent(EventObject eo, String eventSubType) {
+    private void fireEvent(EventObject eo, Object eventSubType) {
         List<EventListener> listeners = new ArrayList<EventListener>(specificListeners.size());
             
-        for (Map.Entry<E, Set<String>> e : specificListeners.entrySet()) {
-            Set<String> subTypes = e.getValue();
+        for (Map.Entry<E, Set<Object>> e : specificListeners.entrySet()) {
+            Set<Object> subTypes = e.getValue();
             
             if (subTypes == null) {
                 listeners.add(e.getKey());
             } else {
-                for (String subType : subTypes) {
+                for (Object subType : subTypes) {
                     if (subType.equals(eventSubType)) {
                         listeners.add(e.getKey());
                         break;

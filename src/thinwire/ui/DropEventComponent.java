@@ -25,14 +25,19 @@
  */
 package thinwire.ui;
 
-import thinwire.ui.event.DropListener;
+import thinwire.ui.event.*;
 
+/**
+ * @author Joshua J. Gertzen
+ * @author Ted C. Howard
+ */
 public interface DropEventComponent extends Component {
-    
+
     public void addDropListener(DropEventComponent dragSource, DropListener listener);
     
     public void addDropListener(DropEventComponent[] dragSources, DropListener listener);
     
     public void removeDropListener(DropListener listener);
 
+    public void fireDrop(DropEvent ev);
 }

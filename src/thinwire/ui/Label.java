@@ -79,7 +79,7 @@ public class Label extends AbstractTextComponent implements AlignTextComponent, 
     public static final String PROPERTY_LABEL_FOR = "labelFor";
     public static final String PROPERTY_WRAP_TEXT = "wrapText";
     
-    private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>();
+    private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>(this);
     private AlignX alignX = AlignX.LEFT;
     private Component labelFor = null;
     private boolean wrapText;
@@ -106,28 +106,14 @@ public class Label extends AbstractTextComponent implements AlignTextComponent, 
         aei.setRenderer(r);
     }    
 		
-    /**
-     * Add an actionListener which associates an action (ex: "click") with some method call.
-     * @param action the action to specficially be notified of
-     * @param listener the listener to add
-     */
     public void addActionListener(String action, ActionListener listener) {
         aei.addListener(action, listener);
     }
     
-    /**
-     * Add an actionListener which associates an action (ex: "click") with some method call.
-     * @param actions the actions to specficially be notified of
-     * @param listener the listener to add
-     */
     public void addActionListener(String[] actions, ActionListener listener) {
         aei.addListener(actions, listener);
     }    
     
-    /**
-     * Removes an existing actionListener.
-     * @param listener the listener to remove
-     */
     public void removeActionListener(ActionListener listener) {
         aei.removeListener(listener);
     }    

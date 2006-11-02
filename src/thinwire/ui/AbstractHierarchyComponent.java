@@ -184,8 +184,8 @@ abstract class AbstractHierarchyComponent<HI extends AbstractHierarchyComponent.
     }
 
     private HI rootItem;    
-    private EventListenerImpl<ItemChangeListener> icei = new EventListenerImpl<ItemChangeListener>();
-    private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>();
+    private EventListenerImpl<ItemChangeListener> icei = new EventListenerImpl<ItemChangeListener>(this);
+    private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>(this);
     
     AbstractHierarchyComponent(HI rootItem) {
         this.rootItem = rootItem;

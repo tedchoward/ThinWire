@@ -84,7 +84,7 @@ public class Button extends AbstractTextComponent implements ImageComponent, Act
 
     private boolean standard;
 	private ImageInfo imageInfo = new ImageInfo(null);
-    private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>();
+    private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>(this);
 	
 	/**
 	 * Constructs a new Button with no text or image.

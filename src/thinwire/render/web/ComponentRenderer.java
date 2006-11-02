@@ -42,6 +42,7 @@ import thinwire.render.Renderer;
 import thinwire.ui.event.*;
 import thinwire.ui.Component;
 import thinwire.ui.Container;
+import thinwire.ui.DropEventComponent;
 import thinwire.ui.event.PropertyChangeEvent;
 import thinwire.ui.style.*;
 import thinwire.util.ImageInfo;
@@ -324,13 +325,13 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         this.clientSideProps.put(name, clientName);
     }
 
-    public void eventSubTypeListenerInit(Class<? extends EventListener> clazz, Set<String> subTypes) {
-        for (String subType : subTypes) {
+    public void eventSubTypeListenerInit(Class<? extends EventListener> clazz, Set<Object> subTypes) {
+        for (Object subType : subTypes) {
             eventSubTypeListenerAdded(clazz, subType);
         }
     }
     
-    public void eventSubTypeListenerAdded(Class<? extends EventListener> clazz, String subType) {
+    public void eventSubTypeListenerAdded(Class<? extends EventListener> clazz, Object subType) {
         if (PropertyChangeListener.class.isAssignableFrom(clazz)) {
             String prop = clientSideProps.get(subType);
 
@@ -352,10 +353,13 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
             postClientEvent(REGISTER_EVENT_NOTIFIER, "action", subType);
         } else if (KeyPressListener.class.isAssignableFrom(clazz)) {
             postClientEvent(REGISTER_EVENT_NOTIFIER, "keyPress", subType);
+        } else if (DropListener.class.isAssignableFrom(clazz)) {
+            DropEventComponent dragSource = (DropEventComponent)subType;
+            //TODO DROP: Call client-side method to establish relationship. Must delay until dragSource is rendered.
         }
     }
     
-    public void eventSubTypeListenerRemoved(Class<? extends EventListener> clazz, String subType) {
+    public void eventSubTypeListenerRemoved(Class<? extends EventListener> clazz, Object subType) {
         if (PropertyChangeListener.class.isAssignableFrom(clazz)) {
             String prop = clientSideProps.get(subType);
 
@@ -377,6 +381,12 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
             postClientEvent(UNREGISTER_EVENT_NOTIFIER, "action", subType);            
         } else if (KeyPressListener.class.isAssignableFrom(clazz)) {
             postClientEvent(UNREGISTER_EVENT_NOTIFIER, "keyPress", subType);
+        } else if (DropListener.class.isAssignableFrom(clazz)) {
+            DropEventComponent dragSource = (DropEventComponent)subType;
+            
+            if (wr.ai.getComponentId(dragSource) != null) {
+                //TODO DROP: Call client-side method to establish relationship.
+            }
         }
     }    
     
