@@ -27,7 +27,9 @@ package thinwire.ui;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
+
+import thinwire.ui.event.DropEvent;
+import thinwire.ui.event.DropListener;
 
 /**
  * A <code>WebBrowser</code> inserts a web browser object in your application.
@@ -62,15 +64,33 @@ import java.io.IOException;
  */
 // TODO Nice to haves on the client side Iframe - Back/Forward/Stop/Refresh.
 // i.e. Browser like functionality.
-public class WebBrowser extends AbstractComponent {
+public class WebBrowser extends AbstractComponent implements DropEventComponent {
     public static final String PROPERTY_LOCATION = "location";
     
+    private EventListenerImpl<DropListener> dei = new EventListenerImpl<DropListener>(this);
     private String location = "";
+    private File content;
  
     public WebBrowser() {}
     
     public WebBrowser(String location) {
         this.setLocation(location);
+    }
+    
+    public void addDropListener(DropEventComponent dragComponent, DropListener listener) {
+        dei.addListener(dragComponent, listener);
+    }
+    
+    public void addDropListener(DropEventComponent[] dragComponents, DropListener listener) {
+        dei.addListener(dragComponents, listener);
+    }    
+    
+    public void removeDropListener(DropListener listener) {
+        dei.removeListener(listener);
+    }    
+
+    public void fireDrop(DropEvent ev) {
+        dei.fireDrop(ev);
     }
     
     public void setLocation(String location) {
@@ -79,6 +99,11 @@ public class WebBrowser extends AbstractComponent {
         location = location == null ? "" : location;
         this.location = location;
         firePropertyChange(this, PROPERTY_LOCATION, oldLocation, location);        
+
+        if (this.content != null) {
+            this.content.delete();
+            this.content = null;
+        }
     }
     
     public String getLocation() {
@@ -94,13 +119,19 @@ public class WebBrowser extends AbstractComponent {
      */
     public void setContent(String content) {
         try {
-            File tmpFile = File.createTempFile("wb_" + System.currentTimeMillis(), ".html");
+            if (this.content != null) {
+                this.content.delete();
+                this.content = null;
+            }
+            
+            File tmpFile = File.createTempFile("ThinWire_WebBrowser_", ".html");
             tmpFile.deleteOnExit();
             FileOutputStream fos = new FileOutputStream(tmpFile);
             fos.write(content.getBytes());
             fos.flush();
             fos.close();
-            setLocation(tmpFile.getAbsolutePath());
+            setLocation(tmpFile.getCanonicalPath());
+            this.content = tmpFile;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

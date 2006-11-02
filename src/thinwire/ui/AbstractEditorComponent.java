@@ -28,7 +28,7 @@ package thinwire.ui;
 /**
  * @author Joshua J. Gertzen
  */
-abstract class AbstractEditorComponent extends AbstractTextComponent implements EditorComponent {    
+abstract class AbstractEditorComponent extends AbstractTextComponent implements EditorComponent, DropEventComponent {    
     private int maxLength = 0;    
     private int selectionBeginIndex;
     private int selectionEndIndex;
@@ -104,7 +104,6 @@ abstract class AbstractEditorComponent extends AbstractTextComponent implements 
     public int getMaxLength() {
         return maxLength;
     }
-    
 
     public AlignX getAlignX() {
         return alignX;
@@ -115,5 +114,5 @@ abstract class AbstractEditorComponent extends AbstractTextComponent implements 
         AlignX oldAlignX = this.alignX;
         this.alignX = alignX;
         firePropertyChange(this, PROPERTY_ALIGN_X, oldAlignX, alignX);
-    }    
+    }
 }

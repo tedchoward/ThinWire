@@ -26,6 +26,8 @@
 package thinwire.ui;
 
 import thinwire.ui.event.ActionEvent;
+import thinwire.ui.event.DropEvent;
+import thinwire.ui.event.DropListener;
 
 /**
  * A component that displays a set of hierarchical data as an outline.
@@ -116,7 +118,7 @@ import thinwire.ui.event.ActionEvent;
  * 
  * @author Joshua J. Gertzen
  */
-public class Tree extends AbstractHierarchyComponent<Tree.Item> {    
+public class Tree extends AbstractHierarchyComponent<Tree.Item> implements DropEventComponent {    
     /**
      * An object that represents an item in a <code>Tree</code> component.
      */
@@ -196,6 +198,7 @@ public class Tree extends AbstractHierarchyComponent<Tree.Item> {
 
     public static final String PROPERTY_ROOT_ITEM_VISIBLE = "rootItemVisible";
     
+    private EventListenerImpl<DropListener> dei = new EventListenerImpl<DropListener>(this);
     private boolean rootItemVisible;
     private Item selectedItem;
 
@@ -239,5 +242,21 @@ public class Tree extends AbstractHierarchyComponent<Tree.Item> {
         if (!(ev.getSource() instanceof Item)) throw new IllegalArgumentException("!(ev.getSource() instanceof Tree.Item)");
         if (ev.getAction().equals(ACTION_CLICK)) ((Item)ev.getSource()).setSelected(true);        
         aei.fireAction(ev, Tree.Item.class);
+    }
+    
+    public void addDropListener(DropEventComponent dragComponent, DropListener listener) {
+        dei.addListener(dragComponent, listener);
+    }
+    
+    public void addDropListener(DropEventComponent[] dragComponents, DropListener listener) {
+        dei.addListener(dragComponents, listener);
+    }    
+    
+    public void removeDropListener(DropListener listener) {
+        dei.removeListener(listener);
+    }    
+
+    public void fireDrop(DropEvent ev) {
+        dei.fireDrop(ev);
     }
 }

@@ -40,6 +40,8 @@ import thinwire.ui.DropDownGridBox;
 import thinwire.ui.DropDownGridBox.DefaultView;
 import thinwire.ui.event.ActionEvent;
 import thinwire.ui.event.ActionListener;
+import thinwire.ui.event.DropEvent;
+import thinwire.ui.event.DropListener;
 import thinwire.ui.event.ItemChangeEvent;
 import thinwire.ui.event.ItemChangeListener;
 import thinwire.ui.event.PropertyChangeEvent;
@@ -127,7 +129,7 @@ import thinwire.util.Grid;
  * 
  * @author Joshua J. Gertzen
  */
-public class GridBox extends AbstractComponent implements Grid<GridBox.Row, GridBox.Column>, ActionEventComponent, ItemChangeEventComponent {
+public class GridBox extends AbstractComponent implements Grid<GridBox.Row, GridBox.Column>, ActionEventComponent, ItemChangeEventComponent, DropEventComponent {
     private static Logger log = Logger.getLogger(GridBox.class.getName());
     public static final class CellPosition {
         private int rowIndex;
@@ -485,6 +487,7 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
     
     private EventListenerImpl<ItemChangeListener> icei = new EventListenerImpl<ItemChangeListener>(this);
     private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>(this, EventListenerImpl.ACTION_VALIDATOR);
+    private EventListenerImpl<DropListener> dei = new EventListenerImpl<DropListener>(this);
     private ArrayGrid<Row, Column> grid;
     private SortedSet<Row> checkedRows;
     private SortedSet<Row> roCheckedRows;
@@ -655,6 +658,22 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
      */
     public void fireAction(String action, Row row) {
         fireAction(new ActionEvent(this, action, row));
+    }
+    
+    public void addDropListener(DropEventComponent dragComponent, DropListener listener) {
+        dei.addListener(dragComponent, listener);
+    }
+    
+    public void addDropListener(DropEventComponent[] dragComponents, DropListener listener) {
+        dei.addListener(dragComponents, listener);
+    }    
+    
+    public void removeDropListener(DropListener listener) {
+        dei.removeListener(listener);
+    }    
+
+    public void fireDrop(DropEvent ev) {
+        dei.fireDrop(ev);
     }
 	
 	public List<GridBox.Column> getColumns() {

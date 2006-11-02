@@ -28,6 +28,8 @@ package thinwire.ui;
 import thinwire.render.Renderer;
 import thinwire.ui.event.ActionEvent;
 import thinwire.ui.event.ActionListener;
+import thinwire.ui.event.DropEvent;
+import thinwire.ui.event.DropListener;
 import thinwire.util.ImageInfo;
 
 /**
@@ -79,8 +81,9 @@ import thinwire.util.ImageInfo;
  * 
  * @author Joshua J. Gertzen
  */
-public class Image extends AbstractComponent implements ImageComponent, ActionEventComponent {
+public class Image extends AbstractComponent implements ImageComponent, ActionEventComponent, DropEventComponent {
     private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>(this, EventListenerImpl.ACTION_VALIDATOR);    
+    private EventListenerImpl<DropListener> dei = new EventListenerImpl<DropListener>(this);
 	private ImageInfo imageInfo = new ImageInfo(null);
     
 	/**
@@ -130,6 +133,22 @@ public class Image extends AbstractComponent implements ImageComponent, ActionEv
      */
     public void fireAction(String action) {
         aei.fireAction(new ActionEvent(this, action), null);
+    }
+    
+    public void addDropListener(DropEventComponent dragComponent, DropListener listener) {
+        dei.addListener(dragComponent, listener);
+    }
+    
+    public void addDropListener(DropEventComponent[] dragComponents, DropListener listener) {
+        dei.addListener(dragComponents, listener);
+    }    
+    
+    public void removeDropListener(DropListener listener) {
+        dei.removeListener(listener);
+    }    
+
+    public void fireDrop(DropEvent ev) {
+        dei.fireDrop(ev);
     }
 	
 	public String getImage() {

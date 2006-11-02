@@ -30,6 +30,8 @@ import java.util.Date;
 import thinwire.render.Renderer;
 import thinwire.ui.event.ActionEvent;
 import thinwire.ui.event.ActionListener;
+import thinwire.ui.event.DropEvent;
+import thinwire.ui.event.DropListener;
 
 /**
  * A <code>DateBox</code> is a <code>Component</code> that displays a
@@ -62,11 +64,11 @@ import thinwire.ui.event.ActionListener;
  * </p>
  * @author Ted C. Howard
  */
-public class DateBox extends AbstractComponent implements ActionEventComponent {
-    
+public class DateBox extends AbstractComponent implements ActionEventComponent, DropEventComponent {
     public static final String PROPERTY_SELECTED_DATE = "selectedDate";
     
     private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>(this, EventListenerImpl.ACTION_VALIDATOR);
+    private EventListenerImpl<DropListener> dei = new EventListenerImpl<DropListener>(this);
     private Date selectedDate;
     
     public DateBox() {
@@ -127,5 +129,21 @@ public class DateBox extends AbstractComponent implements ActionEventComponent {
      */
     public void fireAction(String action, Date date) {
         aei.fireAction(new ActionEvent(this, action, date), Date.class);
+    }
+    
+    public void addDropListener(DropEventComponent dragComponent, DropListener listener) {
+        dei.addListener(dragComponent, listener);
+    }
+    
+    public void addDropListener(DropEventComponent[] dragComponents, DropListener listener) {
+        dei.addListener(dragComponents, listener);
+    }    
+    
+    public void removeDropListener(DropListener listener) {
+        dei.removeListener(listener);
+    }
+
+    public void fireDrop(DropEvent ev) {
+        dei.fireDrop(ev);
     }
 }

@@ -26,6 +26,7 @@
 package thinwire.ui;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.EventListener;
 import java.util.EventObject;
 import java.util.HashMap;
@@ -67,6 +68,22 @@ class EventListenerImpl<E extends EventListener> {
             return KeyPressEvent.normalizeKeyPressCombo((String)subType);
         }
     };
+    
+    static Class getDragDropType(DropEventComponent comp) {
+        Class clazz;
+        
+        if (comp instanceof GridBox) {
+            clazz = GridBox.Row.class;
+        } else if (comp instanceof DateBox) {
+            clazz = Date.class;
+        } else if (comp instanceof Tree) {
+            clazz = Tree.Item.class;
+        } else {
+            clazz = comp.getClass();
+        }
+        
+        return clazz;
+    }
     
     EventListenerImpl(Component comp) {
         this(comp, null, null);
@@ -224,6 +241,24 @@ class EventListenerImpl<E extends EventListener> {
     }
     
     void fireDrop(DropEvent ev) {
+        if (ev == null) throw new IllegalArgumentException("ev == null");
+        if (comp != ev.getSourceComponent()) throw new IllegalArgumentException("this != ev.getSourceComponent()");
+        Class sourceType = getDragDropType(ev.getSourceComponent());
+        
+        if (sourceType == null) {
+            if (ev.getSource() != ev.getSourceComponent()) throw new IllegalArgumentException("ev.getSource() != ev.getSourceComponent()");
+        } else {
+            if (!(sourceType.isInstance(ev.getSource()))) throw new IllegalArgumentException("!(ev.getSource() instanceof " + sourceType.getName() + ")");
+        }
+
+        Class dragType = getDragDropType(ev.getDragComponent());
+        
+        if (dragType == null) {
+            if (ev.getDragObject() != ev.getDragComponent()) throw new IllegalArgumentException("ev.getDragObject() != ev.getDragComponent()");
+        } else {
+            if (!(dragType.isInstance(ev.getDragObject()))) throw new IllegalArgumentException("!(ev.getDragObject() instanceof " + dragType.getName() + ")");
+        }
+        
         if (!hasListeners()) return;
         fireEvent(ev, ev.getSourceComponent());
     }

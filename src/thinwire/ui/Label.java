@@ -122,7 +122,7 @@ public class Label extends AbstractTextComponent implements AlignTextComponent, 
     public void fireAction(ActionEvent ev) {
         aei.fireAction(ev, null);
     }
-
+    
     /**
      * A convienence method that is equivalent to <code>fireAction(new ActionEvent(this, action))</code>.
      * @param action the action name
@@ -131,18 +131,10 @@ public class Label extends AbstractTextComponent implements AlignTextComponent, 
         aei.fireAction(new ActionEvent(this, action), null);
     }
     
-    /*
-     *  (non-Javadoc)
-     * @see thinwire.ui.TextAlignComponent#getAlignX()
-     */
     public AlignX getAlignX() {
         return alignX;
     }
 
-    /*
-     *  (non-Javadoc)
-     * @see thinwire.ui.TextAlignComponent#setAlignX(thinwire.ui.AlignX)
-     */
     public void setAlignX(AlignX alignX) {
         if (alignX == null) throw new IllegalArgumentException(PROPERTY_ALIGN_X + " == null");
         AlignX oldAlignX = this.alignX;

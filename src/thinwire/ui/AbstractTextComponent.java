@@ -27,12 +27,16 @@ package thinwire.ui;
 
 import java.util.regex.Pattern;
 
+import thinwire.ui.event.DropEvent;
+import thinwire.ui.event.DropListener;
+
 /**
  * @author Joshua J. Gertzen
  */
-abstract class AbstractTextComponent extends AbstractComponent implements TextComponent {
+abstract class AbstractTextComponent extends AbstractComponent implements TextComponent, DropEventComponent {
     private static final Pattern NEW_LINE_PATTERN = Pattern.compile("(?<!\\r)\\n|\\r(?!\\n)");
 
+    private EventListenerImpl<DropListener> dei = new EventListenerImpl<DropListener>(this);
     private String text = "";
 
     public String getText() {
@@ -51,5 +55,21 @@ abstract class AbstractTextComponent extends AbstractComponent implements TextCo
         } else {
             this.text = NEW_LINE_PATTERN.matcher(text).replaceAll("\r\n");
         }
+    }
+    
+    public void addDropListener(DropEventComponent dragComponent, DropListener listener) {
+        dei.addListener(dragComponent, listener);
+    }
+    
+    public void addDropListener(DropEventComponent[] dragComponents, DropListener listener) {
+        dei.addListener(dragComponents, listener);
+    }    
+    
+    public void removeDropListener(DropListener listener) {
+        dei.removeListener(listener);
+    }    
+
+    public void fireDrop(DropEvent ev) {
+        dei.fireDrop(ev);
     }
 }

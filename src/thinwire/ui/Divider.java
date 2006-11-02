@@ -28,6 +28,8 @@ package thinwire.ui;
 import thinwire.render.Renderer;
 import thinwire.ui.event.ActionEvent;
 import thinwire.ui.event.ActionListener;
+import thinwire.ui.event.DropEvent;
+import thinwire.ui.event.DropListener;
 
 /**
  * A Divider provides a visual separation between two sections of a container.
@@ -54,8 +56,9 @@ import thinwire.ui.event.ActionListener;
  * </p>
  * @author Joshua J. Gertzen
  */
-public class Divider extends AbstractComponent implements ActionEventComponent {    
+public class Divider extends AbstractComponent implements ActionEventComponent, DropEventComponent {    
     private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>(this, EventListenerImpl.ACTION_VALIDATOR);    
+    private EventListenerImpl<DropListener> dei = new EventListenerImpl<DropListener>(this);
     
     /**
      * Constructs a new Divider. 
@@ -91,5 +94,21 @@ public class Divider extends AbstractComponent implements ActionEventComponent {
      */
     public void fireAction(String action) {
         aei.fireAction(new ActionEvent(this, action), null);
+    }
+    
+    public void addDropListener(DropEventComponent dragComponent, DropListener listener) {
+        dei.addListener(dragComponent, listener);
+    }
+    
+    public void addDropListener(DropEventComponent[] dragComponents, DropListener listener) {
+        dei.addListener(dragComponents, listener);
+    }    
+    
+    public void removeDropListener(DropListener listener) {
+        dei.removeListener(listener);
+    }    
+
+    public void fireDrop(DropEvent ev) {
+        dei.fireDrop(ev);
     }
 }
