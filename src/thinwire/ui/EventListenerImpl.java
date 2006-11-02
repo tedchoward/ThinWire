@@ -65,6 +65,7 @@ class EventListenerImpl<E extends EventListener> {
                 }
             }
         }
+        this.comp = comp;
     }    
     
     private boolean hasListeners() {
