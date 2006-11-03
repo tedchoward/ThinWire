@@ -53,14 +53,6 @@ final class ImageRenderer extends ComponentRenderer {
     }
     
     public void componentChange(WebComponentEvent event) {
-        String name = event.getName();
-        
-        if (name.equals(Image.ACTION_CLICK)) {
-            ((Image)comp).fireAction(Image.ACTION_CLICK);
-        } else if (name.equals(Image.ACTION_DOUBLE_CLICK)) {
-            ((Image)comp).fireAction(Image.ACTION_DOUBLE_CLICK);
-        } else {
-            super.componentChange(event);
-        }        
-    }        
+        if (!componentChangeFireAction(event, null) && !componentChangeFireDrop(event)) super.componentChange(event);
+    }           
 }

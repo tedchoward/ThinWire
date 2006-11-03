@@ -27,6 +27,8 @@ package thinwire.ui;
 
 import java.util.List;
 
+import thinwire.ui.event.ActionEvent;
+import thinwire.ui.event.ActionListener;
 import thinwire.util.ImageInfo;
 
 /**
@@ -78,7 +80,8 @@ import thinwire.util.ImageInfo;
  * 
  * @author Joshua J. Gertzen
  */
-public class TabSheet extends AbstractContainer<Component> implements TextComponent, ImageComponent {
+public class TabSheet extends AbstractContainer<Component> implements TextComponent, ImageComponent, ActionEventComponent {
+    private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>(this, EventListenerImpl.ACTION_VALIDATOR);    
 	private String text = "";
     private boolean allowBoundsChange;
 	private ImageInfo imageInfo = new ImageInfo(null);
@@ -103,6 +106,30 @@ public class TabSheet extends AbstractContainer<Component> implements TextCompon
 		setImage(image);
 	}
 
+    public void addActionListener(String action, ActionListener listener) {
+        aei.addListener(action, listener);
+    }
+    
+    public void addActionListener(String[] actions, ActionListener listener) {
+        aei.addListener(actions, listener);
+    }    
+    
+    public void removeActionListener(ActionListener listener) {
+        aei.removeListener(listener);
+    }    
+
+    public void fireAction(ActionEvent ev) {
+        aei.fireAction(ev, null);
+    }
+
+    /**
+     * A convienence method that is equivalent to <code>fireAction(new ActionEvent(this, action))</code>.
+     * @param action the action name
+     */
+    public void fireAction(String action) {
+        aei.fireAction(new ActionEvent(this, action), null);
+    }
+    
 	public String getImage() {
 	    return imageInfo.getName();
 	}

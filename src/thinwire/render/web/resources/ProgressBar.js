@@ -26,10 +26,10 @@
 var tw_ProgressBar = tw_BaseRange.extend({
     construct: function(id, containerId, props) {
         arguments.callee.$.call(this, "div", "progressBar", id, containerId);
+        tw_addEventListener(this._box, ["click", "dblclick"], this._clickListener.bind(this));
         this._backgroundBox = this._box;
         this._fontBox = this._selection;
         this._selection.style.left = "0px";
-        //this._selection.style.backgroundColor = tw_COLOR_ACTIVECAPTION; 
         this.init(-1, props);
     },
     
@@ -45,6 +45,8 @@ var tw_ProgressBar = tw_BaseRange.extend({
         }
         arguments.callee.$.call(this);
     },
+    
+    _clickListener: tw_Component.clickListener,    
     
     _updateSelection: function() {
         arguments.callee.$.call(this, "width");

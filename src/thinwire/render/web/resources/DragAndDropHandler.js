@@ -85,13 +85,13 @@ var tw_DragAndDropHandler = Class.extend({
         tw_removeEventListener(document, "mousemove", this._mouseMove);
         for (t in this._targets) this._targets[t].getDropArea().style.cursor = "default";
         this._cnt = null;
+        
         if (this._dragBox != null) {
             for (target in this._targets) {
                 var curTarget = this._targets[target];
+                
                 if (tw_getEventTarget(event, curTarget.getDropArea().className) == curTarget.getDropArea()) {
-                    if (this._dragBox._index != undefined) alert("index = " + this._dragBox._index);
-                    alert("source = " + curTarget.getDropTarget(event) + ", sourceComponent = " + curTarget.getDropArea().className + 
-                        ", dragObject = " + this._dragBox._index + ", dragComponent = " + this._source.getDragArea().className);
+                    curTarget.fireDrop(curTarget.getDropTarget(event), this._source, this._dragBox._dragObject);                    
                 }
             }
             

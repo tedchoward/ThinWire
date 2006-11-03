@@ -578,8 +578,7 @@ var tw_Tree = tw_Component.extend({
         s.color = tw_COLOR_HIGHLIGHTTEXT;
         s.backgroundColor = tw_COLOR_HIGHLIGHT;
         
-        dragBox._index = this._fullIndex(item);
-        
+        dragBox._dragObject = this._fullIndex(item);
         return dragBox;
     },
     

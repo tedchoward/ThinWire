@@ -33,14 +33,13 @@ import thinwire.ui.event.PropertyChangeEvent;
 /**
  * @author Joshua J. Gertzen
  */
-final class LabelRenderer extends ComponentRenderer {
+final class LabelRenderer extends TextComponentRenderer {
     private static final String LABEL_CLASS = "tw_Label";
     private static final String SET_WRAP_TEXT = "setWrapText";
     
 	void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         init(LABEL_CLASS, wr, c, container);
 		Label l = (Label)c;
-        addInitProperty(Label.PROPERTY_TEXT, RICH_TEXT_PARSER.parseRichText(l.getText(), this));
         addInitProperty(Label.PROPERTY_ALIGN_X, l.getAlignX().name().toLowerCase());
         addInitProperty(Label.PROPERTY_WRAP_TEXT, l.isWrapText());
         super.render(wr, c, container);                
@@ -51,9 +50,7 @@ final class LabelRenderer extends ComponentRenderer {
         if (isPropertyChangeIgnored(name)) return;
         Object newValue = pce.getNewValue();
         
-        if (name.equals(Label.PROPERTY_TEXT)) {
-            postClientEvent(SET_TEXT, RICH_TEXT_PARSER.parseRichText((String) newValue, this));
-        } else if (name.equals(Label.PROPERTY_ALIGN_X)) {
+        if (name.equals(Label.PROPERTY_ALIGN_X)) {
             postClientEvent(SET_ALIGN_X, ((AlignX)newValue).name().toLowerCase());
         } else if (name.equals(Label.PROPERTY_WRAP_TEXT)) {
             postClientEvent(SET_WRAP_TEXT, newValue);
@@ -63,14 +60,6 @@ final class LabelRenderer extends ComponentRenderer {
     }    
     
     public void componentChange(WebComponentEvent event) {
-        String name = event.getName();
-        
-        if (name.equals(Label.ACTION_CLICK)) {
-            ((Label)comp).fireAction(Label.ACTION_CLICK);
-        } else if (name.equals(Label.ACTION_DOUBLE_CLICK)) {
-            ((Label)comp).fireAction(Label.ACTION_DOUBLE_CLICK);
-        } else {
-            super.componentChange(event);
-        }        
-    }        
+        if (!componentChangeFireAction(event, null)) super.componentChange(event);
+    }           
 }

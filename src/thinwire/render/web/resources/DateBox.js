@@ -329,8 +329,8 @@ var tw_DateBox = tw_Component.extend({
         s.fontFamily = this.getStyle("fontFamily");
         s.fontSize = this.getStyle("fontSize") + "pt";
         s.backgroundColor = tw_COLOR_WINDOW;
-        dragBox._index = this._getFormattedDate(this._getDate(cell));
-        dragBox.appendChild(document.createTextNode(dragBox._index));
+        dragBox._dragObject = this._getFormattedDate(this._getDate(cell));
+        dragBox.appendChild(document.createTextNode(dragBox._dragObject));
         
         return dragBox;
     },

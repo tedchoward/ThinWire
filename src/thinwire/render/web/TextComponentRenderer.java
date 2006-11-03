@@ -26,16 +26,33 @@
 package thinwire.render.web;
 
 import thinwire.ui.Component;
+import thinwire.ui.TextComponent;
+import thinwire.ui.event.PropertyChangeEvent;
 
-final class ProgressBarRenderer extends RangeComponentRenderer {
-    private static String PROGRESS_BAR_CLASS = "tw_ProgressBar";
+/**
+ * @author Joshua J. Gertzen
+ */
+abstract class TextComponentRenderer extends ComponentRenderer {
+    static final String SET_TEXT = "setText";
+
+    void render(WindowRenderer wr, Component c, ComponentRenderer container) {
+        TextComponent tc = (TextComponent)c;
+        addInitProperty(TextComponent.PROPERTY_TEXT, RICH_TEXT_PARSER.parseRichText(tc.getText(), this));
+        super.render(wr, c, container);
+    }
     
-    public void render(WindowRenderer wr, Component c, ComponentRenderer container) {
-        init(PROGRESS_BAR_CLASS, wr, c, container);
-        super.render(wr, comp, container);
+    public void propertyChange(PropertyChangeEvent pce) {
+        String name = pce.getPropertyName();
+        if (isPropertyChangeIgnored(name)) return;
+
+        if (name.equals(TextComponent.PROPERTY_TEXT)) {
+            postClientEvent(SET_TEXT, RICH_TEXT_PARSER.parseRichText((String)pce.getNewValue(), this));
+        } else {
+            super.propertyChange(pce);
+        }
     }
     
     public void componentChange(WebComponentEvent event) {
-        if (!componentChangeFireAction(event, null) && !componentChangeFireDrop(event)) super.componentChange(event);
-    }           
+        if (!componentChangeFireDrop(event)) super.componentChange(event);
+    }
 }

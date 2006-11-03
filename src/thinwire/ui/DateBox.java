@@ -28,6 +28,7 @@ package thinwire.ui;
 import java.util.Date;
 
 import thinwire.render.Renderer;
+import thinwire.ui.Tree.Item;
 import thinwire.ui.event.ActionEvent;
 import thinwire.ui.event.ActionListener;
 import thinwire.ui.event.DropEvent;
@@ -120,6 +121,9 @@ public class DateBox extends AbstractComponent implements ActionEventComponent, 
     }
     
     public void fireAction(ActionEvent ev) {
+        if (ev == null) throw new IllegalArgumentException("ev == null");
+        if (!(ev.getSource() instanceof Date)) throw new IllegalArgumentException("!(ev.getSource() instanceof Date)");
+        setSelectedDate((Date)ev.getSource());        
         aei.fireAction(ev, Date.class);
     }
     
@@ -129,7 +133,7 @@ public class DateBox extends AbstractComponent implements ActionEventComponent, 
      * @param date the Date cell in the DateBox on which the action occured.
      */
     public void fireAction(String action, Date date) {
-        aei.fireAction(new ActionEvent(this, action, date), Date.class);
+        fireAction(new ActionEvent(this, action, date));
     }
     
     public void addDropListener(DropEventComponent dragComponent, DropListener listener) {

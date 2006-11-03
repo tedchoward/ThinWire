@@ -78,7 +78,6 @@ final class TreeRenderer extends ComponentRenderer implements ItemChangeListener
             String fullIndex = fullIndex((Tree.Item)source);
 
             if (name.equals(Tree.Item.PROPERTY_ITEM_EXPANDED)) {
-                log.finest(ITEM_EXPAND+","+fullIndex+","+newValue);
                 if (((Tree.Item) source).hasChildren()) postClientEvent(ITEM_EXPAND, fullIndex, newValue);
             } else if (name.equals(HierarchyComponent.Item.PROPERTY_ITEM_IMAGE) || name.equals(HierarchyComponent.Item.PROPERTY_ITEM_TEXT)) {
                 Object newTextValue = RICH_TEXT_PARSER.parseRichText(((Tree.Item)source).getText(), this);
@@ -134,52 +133,42 @@ final class TreeRenderer extends ComponentRenderer implements ItemChangeListener
         String name = event.getName();
         String value = (String)event.getValue();
 
-        if(name.equals(Tree.ACTION_CLICK)) {
-            Tree.Item ti = fullIndexItem(tree, value);
-            setPropertyChangeIgnored(Tree.Item.PROPERTY_ITEM_SELECTED, true);
-            tree.fireAction(Tree.ACTION_CLICK, ti);
-            setPropertyChangeIgnored(Tree.Item.PROPERTY_ITEM_SELECTED, false);
-        } else if (name.equals(Tree.ACTION_DOUBLE_CLICK)) {
-            Tree.Item ti = fullIndexItem(tree, value);
-            setPropertyChangeIgnored(Tree.Item.PROPERTY_ITEM_SELECTED, true);
-            tree.fireAction(Tree.ACTION_DOUBLE_CLICK, ti);
-            setPropertyChangeIgnored(Tree.Item.PROPERTY_ITEM_SELECTED, false);
-        } else if (name.equals(Tree.Item.PROPERTY_ITEM_SELECTED)) {
-            Tree.Item ti = fullIndexItem(tree, value);
+        if (name.equals(Tree.Item.PROPERTY_ITEM_SELECTED)) {
+            Tree.Item ti = (Tree.Item)fullIndexItem(tree, value);
             setPropertyChangeIgnored(name, true);
             ti.setSelected(true);
             setPropertyChangeIgnored(name, false);
         } else if (name.equals(Tree.Item.PROPERTY_ITEM_EXPANDED)) {
-            Tree.Item ti = fullIndexItem(tree, value.substring(1));
+            Tree.Item ti = (Tree.Item)fullIndexItem(tree, value.substring(1));
             setPropertyChangeIgnored(name, true);
             ti.setExpanded(value.charAt(0) == 't');
             setPropertyChangeIgnored(name, false);            
-        } else {
+        } else if (!componentChangeFireAction(event, Tree.Item.PROPERTY_ITEM_SELECTED) && !componentChangeFireDrop(event)) {
             super.componentChange(event);
         }
     }    
 
-	private static Tree.Item fullIndexItem(Tree root, String value) {
-		Tree.Item ti = (Tree.Item)root.getRootItem();
+	static HierarchyComponent.Item fullIndexItem(HierarchyComponent root, String value) {
+        HierarchyComponent.Item ti = (HierarchyComponent.Item)root.getRootItem();
 		if (value.equals("rootItem")) return ti;
 		String ary[] = value.split("\\.");
         
 		for (int i=0; i < ary.length; i++) {
 			int index = Integer.parseInt(ary[i]);
-			ti = (Tree.Item) ti.getChildren().get(index);
+			ti = (HierarchyComponent.Item) ti.getChildren().get(index);
 		}
         
-		if (ary.length == 0) ti = (Tree.Item) ti.getChildren().get(Integer.parseInt(value));
+		if (ary.length == 0) ti = (HierarchyComponent.Item)ti.getChildren().get(Integer.parseInt(value));
 		return ti;
 	}
 
-	private static String fullIndex(Tree.Item item) {
+	static String fullIndex(HierarchyComponent.Item item) {
 		if (item == item.getHierarchy().getRootItem()) return "rootItem";
         StringBuilder sb = new StringBuilder(String.valueOf(item.getIndex()));
 		Object root = item.getHierarchy().getRootItem();
         
 		while (item.getParent() != root) {
-			item = (Tree.Item) item.getParent();
+			item = (HierarchyComponent.Item) item.getParent();
             sb.insert(0, '.').insert(0, item.getIndex());
 		}
         

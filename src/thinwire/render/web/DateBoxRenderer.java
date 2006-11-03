@@ -34,7 +34,7 @@ import thinwire.ui.event.PropertyChangeEvent;
 
 final class DateBoxRenderer extends ComponentRenderer {
     private static final String DATE_BOX_CLASS = "tw_DateBox";
-    private static final SimpleDateFormat dateBoxFormat = new SimpleDateFormat("MM/dd/yyyy");
+    static final SimpleDateFormat dateBoxFormat = new SimpleDateFormat("MM/dd/yyyy");
     
     void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         init(DATE_BOX_CLASS, wr, c, container);
@@ -59,32 +59,13 @@ final class DateBoxRenderer extends ComponentRenderer {
     public void componentChange(WebComponentEvent event) {
         String name = event.getName();
         DateBox db = (DateBox) comp;
+        
         if (name.equals(DateBox.PROPERTY_SELECTED_DATE)) {
-            String value = (String) event.getValue();
-            try {
-                Date dt = dateBoxFormat.parse(value);
-                setPropertyChangeIgnored(name, dt, true);
-                db.setSelectedDate(dt);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            } finally {
-                setPropertyChangeIgnored(name, false);
-            }
-        } else if (name.equals(DateBox.ACTION_CLICK)) {
-            String value = (String) event.getValue();
-            try {
-                db.fireAction(DateBox.ACTION_CLICK, dateBoxFormat.parse(value));
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        } else if (name.equals(DateBox.ACTION_DOUBLE_CLICK)) {
-            String value = (String) event.getValue();
-            try {
-                db.fireAction(DateBox.ACTION_DOUBLE_CLICK, dateBoxFormat.parse(value));
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        } else {
+            Date dt = (Date)getEventObject(comp, (String)event.getValue());
+            setPropertyChangeIgnored(name, true);
+            db.setSelectedDate(dt);
+            setPropertyChangeIgnored(name, false);
+        } else if (!componentChangeFireAction(event, DateBox.PROPERTY_SELECTED_DATE) && !componentChangeFireDrop(event)) {
             super.componentChange(event);
         }
     }

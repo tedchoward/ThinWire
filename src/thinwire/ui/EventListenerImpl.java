@@ -260,7 +260,7 @@ class EventListenerImpl<E extends EventListener> {
         }
         
         if (!hasListeners()) return;
-        fireEvent(ev, ev.getSourceComponent());
+        fireEvent(ev, ev.getDragComponent());
     }
     
     void fireKeyPress(Component source, String keyPressCombo) {
@@ -307,6 +307,8 @@ class EventListenerImpl<E extends EventListener> {
                     ((ItemChangeListener) el).itemChange((ItemChangeEvent) eo);
                 else if (eo instanceof ActionEvent)
                     ((ActionListener) el).actionPerformed((ActionEvent) eo);
+                else if (eo instanceof DropEvent)
+                    ((DropListener) el).dropPerformed((DropEvent) eo);
                 else if (eo instanceof KeyPressEvent)
                     ((KeyPressListener) el).keyPress((KeyPressEvent) eo);
                 else {

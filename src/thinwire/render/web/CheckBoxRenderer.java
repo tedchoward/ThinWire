@@ -32,7 +32,7 @@ import thinwire.ui.event.PropertyChangeEvent;
 /**
  * @author Joshua J. Gertzen
  */
-final class CheckBoxRenderer extends ComponentRenderer {
+final class CheckBoxRenderer extends TextComponentRenderer {
     private static final String CHECKBOX_CLASS = "tw_CheckBox";
     private static final String SET_CHECKED = "setChecked";
 
@@ -40,7 +40,6 @@ final class CheckBoxRenderer extends ComponentRenderer {
         init(CHECKBOX_CLASS, wr, c, container);
         CheckBox cb = (CheckBox)c;
         addClientSideProperty(CheckBox.PROPERTY_CHECKED);
-        addInitProperty(CheckBox.PROPERTY_TEXT, RICH_TEXT_PARSER.parseRichText(cb.getText(), this));
         addInitProperty(CheckBox.PROPERTY_CHECKED, cb.isChecked());
         super.render(wr, c, container);
 	}
@@ -50,9 +49,7 @@ final class CheckBoxRenderer extends ComponentRenderer {
         if (isPropertyChangeIgnored(name)) return;
         Object newValue = pce.getNewValue();        
 
-        if (name.equals(CheckBox.PROPERTY_TEXT)) {
-            postClientEvent(SET_TEXT, RICH_TEXT_PARSER.parseRichText((String) newValue, this));
-        } else if (name.equals(CheckBox.PROPERTY_CHECKED)) {
+        if (name.equals(CheckBox.PROPERTY_CHECKED)) {
             postClientEvent(SET_CHECKED, newValue);
         } else {
             super.propertyChange(pce);           

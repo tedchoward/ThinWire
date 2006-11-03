@@ -228,6 +228,7 @@ class RichTextParser {
     }
     
     public Object parseRichText(Object textValue, ComponentRenderer cr) {
+        if (cr instanceof EditorComponentRenderer) return textValue;
         if (textValue == null) return "";
         String richText = textValue.toString();
         

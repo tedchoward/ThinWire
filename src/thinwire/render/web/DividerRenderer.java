@@ -25,7 +25,6 @@
  */
 package thinwire.render.web;
 
-import thinwire.ui.Divider;
 import thinwire.ui.Component;
 
 /**
@@ -40,14 +39,6 @@ final class DividerRenderer extends ComponentRenderer {
 	}
     
     public void componentChange(WebComponentEvent event) {
-        String name = event.getName();
-        
-        if (name.equals(Divider.ACTION_CLICK)) {
-            ((Divider)comp).fireAction(Divider.ACTION_CLICK);
-        } else if (name.equals(Divider.ACTION_DOUBLE_CLICK)) {
-            ((Divider)comp).fireAction(Divider.ACTION_DOUBLE_CLICK);
-        } else {
-            super.componentChange(event);
-        }        
-    }        
+        if (!componentChangeFireAction(event, null) && !componentChangeFireDrop(event)) super.componentChange(event);
+    }           
 }

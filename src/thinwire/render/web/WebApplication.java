@@ -29,7 +29,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -143,6 +142,7 @@ public final class WebApplication extends Application {
         "treeLeafTop.png",
         "treeStraight.png",
         "treeUnexpand.png",
+        "treeUnexpandBottom.png",
         "treeUnexpandBottomTop.png",
         "treeUnexpandTop.png",
     };
@@ -177,7 +177,6 @@ public final class WebApplication extends Application {
     }
     
     private static String loadJSLibrary(String resURL) {
-        if (log.isLoggable(Level.INFO)) log.info("loading js library from: " + resURL);
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         
         for (String res : BUILT_IN_RESOURCES) {
@@ -195,13 +194,6 @@ public final class WebApplication extends Application {
             fos.close();
 
             String twLib = twPrefix + ".js";
-            String localName = RemoteFileMap.INSTANCE.getLocalName(twLib);
-            
-            if (localName != null) {
-                RemoteFileMap.INSTANCE.remove(localName);
-                new File(localName).delete();
-            }
-            
             RemoteFileMap.INSTANCE.add(f.getCanonicalPath(), twLib);
             return twLib;
         } catch (Exception e) {
@@ -801,6 +793,10 @@ public final class WebApplication extends Application {
         } else {
             return null;
         }
+    }
+    
+    public Component getComponentFromId(Integer id) {
+        return ((ComponentRenderer)getWebComponentListener(id)).comp;
     }
 
     String getClientEvents() {

@@ -46,11 +46,11 @@ abstract class RangeComponentRenderer extends ComponentRenderer {
     }
     
     public void propertyChange(PropertyChangeEvent pce) {
-        Object newValue = pce.getNewValue();
         String name = pce.getPropertyName();
+        if (isPropertyChangeIgnored(name)) return;
+        Object newValue = pce.getNewValue();
         RangeComponent rc = (RangeComponent) comp;
         
-        if (isPropertyChangeIgnored(name)) return;
         if (name.equals(RangeComponent.PROPERTY_LENGTH)) {
             if (rc.getLength() == 1) {
                 postClientEvent("setLength", 2);

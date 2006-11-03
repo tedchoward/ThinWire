@@ -42,9 +42,15 @@ import thinwire.render.RenderStateEvent;
 import thinwire.render.RenderStateListener;
 import thinwire.render.Renderer;
 import thinwire.ui.event.*;
+import thinwire.ui.ActionEventComponent;
 import thinwire.ui.Component;
 import thinwire.ui.Container;
+import thinwire.ui.DateBox;
 import thinwire.ui.DropEventComponent;
+import thinwire.ui.GridBox;
+import thinwire.ui.HierarchyComponent;
+import thinwire.ui.Menu;
+import thinwire.ui.Tree;
 import thinwire.ui.event.PropertyChangeEvent;
 import thinwire.ui.style.*;
 
@@ -67,9 +73,10 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
 
     //Shared by other renderers
     static final String DESTROY = "destroy";
-    static final String SET_TEXT = "setText";
     static final String SET_IMAGE = "setImage";
     static final String SET_ALIGN_X = "setAlignX";
+    
+    static final String CLIENT_EVENT_DROP = "drop";
     
     static final Logger log = Logger.getLogger(ComponentRenderer.class.getName()); 
     static final Pattern REGEX_DOUBLE_SLASH = Pattern.compile("\\\\"); 
@@ -105,7 +112,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     
 	void render(WindowRenderer wr, Component comp, ComponentRenderer container) {
         id = wr.addComponentId(comp);
-        if (this instanceof WebComponentListener) wr.ai.setWebComponentListener(id, (WebComponentListener)this);
+        if (this instanceof WebComponentListener) wr.ai.setWebComponentListener(id, this);
         FX.Type visibleChange = comp.getStyle().getFX().getVisibleChange();
         addClientSideProperty(Component.PROPERTY_FOCUS);
         
@@ -355,11 +362,11 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         } else if (KeyPressListener.class.isAssignableFrom(clazz)) {
             postClientEvent(REGISTER_EVENT_NOTIFIER, "keyPress", subType);
         } else if (DropListener.class.isAssignableFrom(clazz)) {
-            final DropEventComponent dragSource = (DropEventComponent)subType;
+            final DropEventComponent dragComponent = (DropEventComponent)subType;
             
-            wr.ai.invokeAfterRendered(dragSource, new RenderStateListener() {
+            wr.ai.invokeAfterRendered(dragComponent, new RenderStateListener() {
                 public void renderStateChange(RenderStateEvent ev) {
-                    wr.ai.clientSideMethodCall(wr.ai.getComponentId(dragSource), "addDragTarget", id);
+                    wr.ai.clientSideMethodCall(wr.ai.getComponentId(dragComponent), "addDragTarget", id);
                 }
             });
         }
@@ -388,8 +395,8 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         } else if (KeyPressListener.class.isAssignableFrom(clazz)) {
             postClientEvent(UNREGISTER_EVENT_NOTIFIER, "keyPress", subType);
         } else if (DropListener.class.isAssignableFrom(clazz)) {
-            Integer dragSourceId = wr.ai.getComponentId((DropEventComponent)subType);
-            if (dragSourceId != null) wr.ai.clientSideMethodCall(dragSourceId, "removeDragTarget", id);
+            Integer dragComponentId = wr.ai.getComponentId((DropEventComponent)subType);
+            if (dragComponentId != null) wr.ai.clientSideMethodCall(dragComponentId, "removeDragTarget", id);
         }
     }    
     
@@ -521,16 +528,21 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         wr.ai.clientSideMethodCall(id, methodName, args);
     }
     
-    final void setPropertyChangeIgnored(String name, Object value, boolean ignore) {
+    /*final void setPropertyChangeIgnored(String name, Object value, boolean ignore) {
         if (ignore) {            
             ignoredProperties.put(name, value);
         } else {
             ignoredProperties.remove(name);
         }
-    }
+    }*/
 
     final void setPropertyChangeIgnored(String name, boolean ignore) {
-        setPropertyChangeIgnored(name, NO_VALUE, ignore);
+        if (ignore) {            
+            ignoredProperties.put(name, NO_VALUE);
+        } else {
+            ignoredProperties.remove(name);
+        }
+        //setPropertyChangeIgnored(name, NO_VALUE, ignore);
     }
 
     final boolean isPropertyChangeIgnored(String name, Object value) {
@@ -565,6 +577,54 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         s = REGEX_DOUBLE_QUOTE.matcher(s).replaceAll("\\\\\"");
         s = REGEX_CRLF.matcher(s).replaceAll(" ");
         return s;
+    }
+
+    static Object getEventObject(Component comp, String data) {
+        Object o;
+        
+        if (comp instanceof GridBox) {
+            o = ((GridBox)comp).getRows().get(Integer.parseInt(data));
+        } else if (comp instanceof Tree || comp instanceof Menu) {
+            o = TreeRenderer.fullIndexItem((HierarchyComponent)comp, data);
+        } else if (comp instanceof DateBox) {
+            try {
+                o = DateBoxRenderer.dateBoxFormat.parse(data);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            o = null;
+        }
+        
+        return o;
+    }
+    
+    boolean componentChangeFireDrop(WebComponentEvent event) {
+        DropEventComponent comp = (DropEventComponent)this.comp;
+
+        if (event.getName().equals(CLIENT_EVENT_DROP)) {
+            log.info("parts=" + event.getValue());
+            String[] parts = ((String)event.getValue()).split(",", -1);
+            DropEventComponent dragComponent = (DropEventComponent)wr.ai.getComponentFromId(Integer.parseInt(parts[1]));
+            comp.fireDrop(new DropEvent(comp, getEventObject(comp, parts[0]), dragComponent, getEventObject(dragComponent, parts[2])));
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    boolean componentChangeFireAction(WebComponentEvent event, String ignoreProperty) {
+        ActionEventComponent comp = (ActionEventComponent)this.comp;
+        String name = event.getName();
+        
+        if (name.equals(ActionEventComponent.ACTION_CLICK) || name.equals(ActionEventComponent.ACTION_DOUBLE_CLICK)) {
+            if (ignoreProperty != null) setPropertyChangeIgnored(ignoreProperty, true);
+            comp.fireAction(new ActionEvent(comp, name, getEventObject(comp, (String)event.getValue())));
+            if (ignoreProperty != null) setPropertyChangeIgnored(ignoreProperty, false);
+            return true;
+        } else {
+            return false;
+        }
     }
     
     final String getQualifiedURL(String location) {        

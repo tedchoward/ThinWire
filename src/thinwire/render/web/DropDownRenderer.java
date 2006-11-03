@@ -25,7 +25,6 @@
  */
 package thinwire.render.web;
 
-import thinwire.ui.Application;
 import thinwire.ui.Component;
 import thinwire.ui.DropDown;
 import thinwire.ui.event.PropertyChangeEvent;

@@ -57,7 +57,7 @@ var tw_TabSheet = tw_BaseContainer.extend({
 
         tab.appendChild(tabImage);       
         tab.appendChild(document.createTextNode(""));
-        tw_addEventListener(tab, "click", this._tabClickListener.bind(this));        
+        tw_addEventListener(tab, ["click", "dblclick"], this._tabClickListener.bind(this));        
                 
         var tabIndex = props.tabIndex;
         delete props.tabIndex;
@@ -71,6 +71,7 @@ var tw_TabSheet = tw_BaseContainer.extend({
         for (var i = children.length; --i >= 0;) {
             if (children[i] == this) {
                 this._parent.setCurrentIndex(i, true);
+                tw_Component.clickListener(event, this);
                 break;
             }
         }

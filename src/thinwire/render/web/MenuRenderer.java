@@ -102,7 +102,7 @@ final class MenuRenderer extends ComponentRenderer implements ItemChangeListener
         
         if (source instanceof Menu.Item) {
             Menu.Item item = (Menu.Item)source;
-            String fullIndex = fullIndex(item);
+            String fullIndex = TreeRenderer.fullIndex(item);
 
             if (name.equals(HierarchyComponent.Item.PROPERTY_ITEM_TEXT)) {
                 String text = (String)newValue;
@@ -112,7 +112,7 @@ final class MenuRenderer extends ComponentRenderer implements ItemChangeListener
                 
                 if (oldDivider != newDivider) {
                     postClientEvent(ITEM_REMOVE, fullIndex);
-                    fullIndex = fullIndex((Menu.Item)item.getParent());
+                    fullIndex = TreeRenderer.fullIndex((Menu.Item)item.getParent());
                     
                     if (text.length() == 0) {
                         buildDividerInit((Menu.Item)source, item.getIndex());
@@ -145,12 +145,12 @@ final class MenuRenderer extends ComponentRenderer implements ItemChangeListener
         
         if (type == ItemChangeEvent.Type.REMOVE || type == ItemChangeEvent.Type.SET) {
             String fullIndex = pos.toString();
-            if (menu.getRootItem() != container) fullIndex = fullIndex(container) + "." + fullIndex;
+            if (menu.getRootItem() != container) fullIndex = TreeRenderer.fullIndex(container) + "." + fullIndex;
             postClientEvent(ITEM_REMOVE, fullIndex);            
         }
 
         if (type == ItemChangeEvent.Type.ADD || type == ItemChangeEvent.Type.SET) {
-            String fullIndex = fullIndex(container);
+            String fullIndex = TreeRenderer.fullIndex(container);
             Menu.Item nc = (Menu.Item)ice.getNewValue();
             
             if (nc.getText().length() == 0) { 
@@ -165,15 +165,7 @@ final class MenuRenderer extends ComponentRenderer implements ItemChangeListener
     }
     
     public void componentChange(WebComponentEvent event) {
-        String name = event.getName();
-        String value = (String) event.getValue();
-        
-        if (name.equals(Menu.ACTION_CLICK)) {
-            Menu.Item item = fullIndexItem(menu, value);
-            menu.fireAction(Menu.ACTION_CLICK, item);
-        } else {
-            super.componentChange(event);
-        }
+        if (!componentChangeFireAction(event, null)) super.componentChange(event);
     }    
 
     private void setupKeyPressListener(final Menu.Item item) {
@@ -273,31 +265,4 @@ final class MenuRenderer extends ComponentRenderer implements ItemChangeListener
             return text;
         }
     }
-
-	private static Menu.Item fullIndexItem(Menu root, String value) {
-		Menu.Item mi = (Menu.Item)root.getRootItem();
-        if (value.equals("rootItem")) return mi;
-		String ary[] = value.split("\\.");
-		
-        for (int i=0; i < ary.length; i++) {
-			int index = Integer.parseInt(ary[i]);
-			mi = (Menu.Item) mi.getChildren().get(index);
-		}
-        
-		if (ary.length == 0) mi = (Menu.Item)mi.getChildren().get(Integer.parseInt(value));
-		return mi;
-	}
-
-	private static String fullIndex(Menu.Item item) {
-        if (item == item.getHierarchy().getRootItem()) return "rootItem";        
-		String value = String.valueOf(item.getIndex());
-		Object root = item.getHierarchy().getRootItem();
-
-        while (item.getParent() != root) {
-			item = (Menu.Item) item.getParent();
-			value = item.getIndex() + "." + value;
-		}
-        
-		return value;  
-	}
 }

@@ -39,7 +39,7 @@ import thinwire.ui.event.PropertyChangeEvent;
 /**
  * @author Joshua J. Gertzen
  */
-final class RadioButtonRenderer extends ComponentRenderer {
+final class RadioButtonRenderer extends TextComponentRenderer {
     private static final String RADIOBUTTON_CLASS = "tw_RadioButton";
     private static final String SET_CHECKED = "setChecked";
     private static final String SET_GROUP = "setGroup";
@@ -56,7 +56,6 @@ final class RadioButtonRenderer extends ComponentRenderer {
         init(RADIOBUTTON_CLASS, wr, c, container);
 		RadioButton rb = (RadioButton)c;
         addClientSideProperty(RadioButton.PROPERTY_CHECKED);
-        addInitProperty(RadioButton.PROPERTY_TEXT, RICH_TEXT_PARSER.parseRichText(rb.getText(), this));
         addInitProperty(RadioButton.PROPERTY_CHECKED, rb.isChecked());
         setGroup(System.identityHashCode(rb.getGroup()));
         addInitProperty(RadioButton.PROPERTY_GROUP, groupId);
@@ -88,9 +87,7 @@ final class RadioButtonRenderer extends ComponentRenderer {
         String name = pce.getPropertyName();
         if (isPropertyChangeIgnored(name)) return;
 
-        if (name.equals(RadioButton.PROPERTY_TEXT)) {
-            postClientEvent(SET_TEXT, RICH_TEXT_PARSER.parseRichText((String) pce.getNewValue(), this));
-        } else if (name.equals(RadioButton.PROPERTY_CHECKED)) {
+        if (name.equals(RadioButton.PROPERTY_CHECKED)) {
             postClientEvent(SET_CHECKED, pce.getNewValue());
         } else if (name.equals(RadioButton.PROPERTY_GROUP)) {
             setGroup(System.identityHashCode(pce.getNewValue()));
@@ -125,7 +122,7 @@ final class RadioButtonRenderer extends ComponentRenderer {
                 rb.setChecked(Boolean.valueOf(value).booleanValue());
                 setPropertyChangeIgnored(RadioButton.PROPERTY_CHECKED, false);
             }
-        } else {
+        } else if (!componentChangeFireDrop(event)) {
             super.componentChange(event);
         }
     }

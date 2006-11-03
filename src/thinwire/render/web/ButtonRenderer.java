@@ -32,13 +32,12 @@ import thinwire.ui.event.PropertyChangeEvent;
 /**
  * @author Joshua J. Gertzen
  */
-final class ButtonRenderer extends ComponentRenderer {
+final class ButtonRenderer extends TextComponentRenderer {
     private static final String BUTTON_CLASS = "tw_Button";
 
     void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         init(BUTTON_CLASS, wr, c, container);
         Button b = (Button)c;
-        addInitProperty(Button.PROPERTY_TEXT, RICH_TEXT_PARSER.parseRichText(b.getText(), this));
         addInitProperty(Button.PROPERTY_IMAGE, getQualifiedURL(b.getImage()));
         addInitProperty(Button.PROPERTY_STANDARD, b.isStandard());        
         super.render(wr, c, container);
@@ -49,9 +48,7 @@ final class ButtonRenderer extends ComponentRenderer {
         if (isPropertyChangeIgnored(name)) return;
         Object newValue = pce.getNewValue();        
 
-        if (name.equals(Button.PROPERTY_TEXT)) {
-            postClientEvent(SET_TEXT, RICH_TEXT_PARSER.parseRichText((String) newValue, this));
-        } else if (name.equals(Button.PROPERTY_IMAGE)) {
+        if (name.equals(Button.PROPERTY_IMAGE)) {
             postClientEvent(SET_IMAGE, getQualifiedURL((String)newValue));
         } else {
             super.propertyChange(pce);
@@ -59,15 +56,6 @@ final class ButtonRenderer extends ComponentRenderer {
     }   
     
     public void componentChange(WebComponentEvent event) {
-        String name = event.getName();
-        Button b = (Button)comp;
-        
-        if (name.equals(Button.ACTION_CLICK)) {
-            b.fireAction(Button.ACTION_CLICK);
-        } else if (name.equals(Button.ACTION_DOUBLE_CLICK)) {
-            b.fireAction(Button.ACTION_DOUBLE_CLICK);
-        } else {
-            super.componentChange(event);
-        }
+        if (!componentChangeFireAction(event, null)) super.componentChange(event);
     }        	
 }

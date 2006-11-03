@@ -62,9 +62,13 @@ class TabSheetRenderer extends ContainerRenderer {
         if (name.equals(TabSheet.PROPERTY_IMAGE)) {
             postClientEvent(SET_IMAGE, getQualifiedURL((String)newValue));
         } else if (name.equals(TabSheet.PROPERTY_TEXT)) {
-            postClientEvent(SET_TEXT, RICH_TEXT_PARSER.parseRichText((String) newValue, this));
+            postClientEvent(TextComponentRenderer.SET_TEXT, RICH_TEXT_PARSER.parseRichText((String) newValue, this));
         } else {
             super.propertyChange(pce);
         }
     }
+    
+    public void componentChange(WebComponentEvent event) {
+        if (!componentChangeFireAction(event, null) && !componentChangeFireDrop(event)) super.componentChange(event);
+    }           
 }

@@ -38,6 +38,7 @@ import thinwire.render.Renderer;
 import thinwire.ui.AlignX;
 import thinwire.ui.DropDownGridBox;
 import thinwire.ui.DropDownGridBox.DefaultView;
+import thinwire.ui.Tree.Item;
 import thinwire.ui.event.ActionEvent;
 import thinwire.ui.event.ActionListener;
 import thinwire.ui.event.DropEvent;

@@ -354,12 +354,42 @@ var tw_Component = Class.extend({
         return parent;
     },
     
+    getDragBox: function(event) {
+        var box = this._box.cloneNode(true);
+        box._dragObject = "";
+        return box;
+    },
+    
+    getDragArea: function() {
+        return this._box;
+    },
+    
+    getDropArea: function() {
+        return this._box;
+    },
+    
+    getDropTarget: function() {
+        return "";
+    },
+    
+    addDragTarget: function(compId) {
+        if (this._dragAndDropHandler == null) this._dragAndDropHandler = new tw_DragAndDropHandler(this);
+        var target = tw_Component.instances[compId];
+        this._dragAndDropHandler.addTarget(target);
+    },
+    
+    removeDragTarget: function(compId) {
+        if (this._dragAndDropHandler.removeTarget(compId)) return;
+        this._dragAndDropHandler.destroy();
+        this._dragAndDropHandler = null;
+    },
+    
     registerEventNotifier: function(type, subType) {
         if (this._eventNotifiers == null) this._eventNotifiers = {};
         var subTypes = this._eventNotifiers[type];       
         if (subTypes == undefined) subTypes = this._eventNotifiers[type] = {};
         
-        if (subTypes[type] == undefined) {
+        if (subTypes[subType] == undefined) {
             subTypes[subType] = true;
             subTypes.count++;
         }
@@ -375,16 +405,20 @@ var tw_Component = Class.extend({
         }
     },
     
-    //NOTE: We never need to update the server about a clicked event if their are no listeners
+    //NOTE: We never need to update the server about a clicked event if there are no listeners
     // since no state change occurs.
-    fireAction: function(subType, eventData) {
+    fireAction: function(action, source) {
         if (this._eventNotifiers != null) {
-            var subTypes = this._eventNotifiers["action"];            
+            var actions = this._eventNotifiers["action"];            
             
-            if (subTypes != undefined && subTypes[subType] === true) {
-                tw_em.postViewStateChanged(this._id, subType, eventData);
+            if (actions != undefined && actions[action] === true) {
+                tw_em.sendViewStateChanged(this._id, action, source);
             }
         }
+    },
+        
+    fireDrop: function(source, dragComponent, dragObject) {
+        tw_em.sendViewStateChanged(this._id, "drop", source + "," + dragComponent._id + "," + dragObject);
     },
     
     firePropertyChange: function(name, value, key) {
@@ -515,35 +549,6 @@ var tw_Component = Class.extend({
         }
 
         return true;
-    },
-    
-    addDragTarget: function(compId) {
-        if (this._dragAndDropHandler == null) this._dragAndDropHandler = new tw_DragAndDropHandler(this);
-        var target = tw_Component.instances[compId];
-        this._dragAndDropHandler.addTarget(target);
-    },
-    
-    
-    removeDragTarget: function(compId) {
-        if (this._dragAndDropHandler.removeTarget(compId)) return;
-        this._dragAndDropHandler.destroy();
-        this._dragAndDropHandler = null;
-    },
-    
-    getDragBox: function(event) {
-        return this._box.cloneNode(true);
-    },
-    
-    getDragArea: function() {
-        return this._box;
-    },
-    
-    getDropArea: function() {
-        return this._box;
-    },
-    
-    getDropTarget: function() {
-        return this._box;
     },
             
     init: function(insertAtIndex, props) {
@@ -683,12 +688,13 @@ tw_Component.keyPressNotifySpaceFireAction = function(keyPressCombo) {
     }
 };
 
-tw_Component.clickListener = function(ev) {
-    if (!this.isEnabled()) return;
-    if (this.isFocusCapable()) this.setFocus(true);
+tw_Component.clickListener = function(ev, comp) {
+    if (comp == null) comp = this;
+    if (!comp.isEnabled()) return;
+    if (comp.isFocusCapable()) comp.setFocus(true);
     var action = tw_Component.getClickAction(ev.type);
     if (action == null) return;
-    this.fireAction(action);
+    comp.fireAction(action);
 };
 
 tw_Component.getClickAction = function(type, index) {

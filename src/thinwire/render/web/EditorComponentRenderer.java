@@ -33,7 +33,7 @@ import thinwire.ui.event.PropertyChangeEvent;
 /**
  * @author Joshua J. Gertzen
  */
-abstract class EditorComponentRenderer extends ComponentRenderer {
+abstract class EditorComponentRenderer extends TextComponentRenderer {
     private static final String SET_SELECTION_RANGE = "setSelectionRange";    
     private static final String VIEW_STATE_SELECTION_RANGE = "selectionRange";
     
@@ -43,7 +43,6 @@ abstract class EditorComponentRenderer extends ComponentRenderer {
         addClientSideProperty(EditorComponent.PROPERTY_SELECTION_BEGIN_INDEX, VIEW_STATE_SELECTION_RANGE);
         addClientSideProperty(EditorComponent.PROPERTY_SELECTION_END_INDEX, VIEW_STATE_SELECTION_RANGE);
         addClientSideProperty(EditorComponent.PROPERTY_CURSOR_INDEX, VIEW_STATE_SELECTION_RANGE);
-        addInitProperty(EditorComponent.PROPERTY_TEXT, ed.getText());
         addInitProperty(EditorComponent.PROPERTY_ALIGN_X, ed.getAlignX().name().toLowerCase());
         super.render(wr, c, container);
     }    
@@ -52,9 +51,7 @@ abstract class EditorComponentRenderer extends ComponentRenderer {
         String name = pce.getPropertyName();
         if (isPropertyChangeIgnored(name)) return;
 
-        if (name.equals(EditorComponent.PROPERTY_TEXT)) {
-            postClientEvent(SET_TEXT, pce.getNewValue());
-        } else if (name.equals(EditorComponent.PROPERTY_ALIGN_X)) {
+        if (name.equals(EditorComponent.PROPERTY_ALIGN_X)) {
             postClientEvent(SET_ALIGN_X, ((AlignX)pce.getNewValue()).name().toLowerCase());
         } else if (name.equals(EditorComponent.PROPERTY_SELECTION_BEGIN_INDEX) || name.equals(EditorComponent.PROPERTY_SELECTION_END_INDEX)) {
             //TODO: This may fire twice if the begin index and end index change at the same time.
@@ -71,7 +68,7 @@ abstract class EditorComponentRenderer extends ComponentRenderer {
         EditorComponent ed = (EditorComponent)comp;
         
         if (name.equals(EditorComponent.PROPERTY_TEXT)) {
-            setPropertyChangeIgnored(name, value, true);
+            setPropertyChangeIgnored(name, true);
             ed.setText(value);
             setPropertyChangeIgnored(name, false);
         } else {

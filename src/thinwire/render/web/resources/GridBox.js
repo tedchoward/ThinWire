@@ -950,8 +950,7 @@ var tw_GridBox = tw_Component.extend({
             dragBox.appendChild(tmpCell);
         }
         
-        //alert(tw_getEventTarget(event).firstChild.nodeValue);
-        dragBox._index = index;
+        dragBox._dragObject = index;
         return dragBox;
     },
     

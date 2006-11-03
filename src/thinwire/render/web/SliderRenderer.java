@@ -46,17 +46,18 @@ final class SliderRenderer extends RangeComponentRenderer {
         
         if (name.equals(Slider.PROPERTY_CURRENT_INDEX)) {
             int value = Integer.parseInt((String) event.getValue());
-            setPropertyChangeIgnored(name, value, true);
+            setPropertyChangeIgnored(name, true);
+            
             if (s.getLength() == 1) {
                 s.setCurrentIndex(value - 1);
             } else {
                 s.setCurrentIndex(value);
             }
+
+            setPropertyChangeIgnored(name, false);
         } else {
-            setPropertyChangeIgnored(name, true);
             super.componentChange(event);
         }
-        setPropertyChangeIgnored(name, false);
     }
 
 }

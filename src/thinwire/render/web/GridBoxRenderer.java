@@ -365,18 +365,6 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
             int index = Integer.parseInt(value.substring(1));
             ((Row)gb.getRows().get(index)).setChecked(state);
             setPropertyChangeIgnored(name, false);            
-        } else if(name.equals(GridBox.ACTION_CLICK)) {
-            setPropertyChangeIgnored(GridBox.Row.PROPERTY_ROW_SELECTED, true);
-            setPropertyChangeIgnored(GridBox.Row.PROPERTY_ROW_CHECKED, true);
-            gb.fireAction(GridBox.ACTION_CLICK, (Row)gb.getRows().get(Integer.parseInt(value)));
-            setPropertyChangeIgnored(GridBox.Row.PROPERTY_ROW_CHECKED, false);
-            setPropertyChangeIgnored(GridBox.Row.PROPERTY_ROW_SELECTED, false);
-        } else if(name.equals(GridBox.ACTION_DOUBLE_CLICK)) {
-            setPropertyChangeIgnored(GridBox.Row.PROPERTY_ROW_SELECTED, true);
-            setPropertyChangeIgnored(GridBox.Row.PROPERTY_ROW_CHECKED, true);
-            gb.fireAction(GridBox.ACTION_DOUBLE_CLICK, (Row)gb.getRows().get(Integer.parseInt(value)));
-            setPropertyChangeIgnored(GridBox.Row.PROPERTY_ROW_CHECKED, false);
-            setPropertyChangeIgnored(GridBox.Row.PROPERTY_ROW_SELECTED, false);
         } else if (name.equals(VIEW_STATE_COLUMN_SORT)) {
             Column col = gb.getColumns().get(Integer.parseInt(value));
             col.setSortOrder(col.getSortOrder() == Column.SortOrder.ASC ? Column.SortOrder.DESC : Column.SortOrder.ASC); 
@@ -387,7 +375,7 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
             GridBox.Column col = gb.getColumns().get(Integer.parseInt(values[0]));
             if (col.getWidth() != -1) col.setWidth(Integer.parseInt(values[1]));
             setPropertyChangeIgnored(GridBox.Column.PROPERTY_COLUMN_WIDTH, false);
-        } else {
+        } else if (!componentChangeFireAction(event, GridBox.Row.PROPERTY_ROW_SELECTED) && !componentChangeFireDrop(event)) {
             super.componentChange(event);
         }
     }        

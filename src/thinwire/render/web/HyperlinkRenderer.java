@@ -32,14 +32,13 @@ import thinwire.ui.event.PropertyChangeEvent;
 /**
  * @author Joshua J. Gertzen
  */
-final class HyperlinkRenderer extends ComponentRenderer {	
+final class HyperlinkRenderer extends TextComponentRenderer {	
     private static final String HYPERLINK_CLASS = "tw_Hyperlink";
     private static final String SET_LOCATION = "setLocation";
 
     void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         init(HYPERLINK_CLASS, wr, c, container);
         Hyperlink hl = (Hyperlink)c;
-        addInitProperty(Hyperlink.PROPERTY_TEXT, RICH_TEXT_PARSER.parseRichText(hl.getText(), this));
         addInitProperty(Hyperlink.PROPERTY_LOCATION, getQualifiedURL(hl.getLocation()));
         super.render(wr, c, container);
     }
@@ -49,9 +48,7 @@ final class HyperlinkRenderer extends ComponentRenderer {
         if (isPropertyChangeIgnored(name)) return;
         Object newValue = pce.getNewValue();        
 
-        if (name.equals(Hyperlink.PROPERTY_TEXT)) {
-            postClientEvent(SET_TEXT, RICH_TEXT_PARSER.parseRichText((String) newValue, this));
-        } else if (name.equals(Hyperlink.PROPERTY_LOCATION)) {
+        if (name.equals(Hyperlink.PROPERTY_LOCATION)) {
             postClientEvent(SET_LOCATION, getQualifiedURL((String)newValue));
         } else {
             super.propertyChange(pce);
@@ -59,14 +56,6 @@ final class HyperlinkRenderer extends ComponentRenderer {
     }
     
     public void componentChange(WebComponentEvent event) {
-        String name = event.getName();
-        
-        if (name.equals(Hyperlink.ACTION_CLICK)) {
-            ((Hyperlink)comp).fireAction(Hyperlink.ACTION_CLICK);
-        } else if (name.equals(Hyperlink.ACTION_DOUBLE_CLICK)) {
-            ((Hyperlink)comp).fireAction(Hyperlink.ACTION_DOUBLE_CLICK);
-        } else {
-            super.componentChange(event);
-        }        
-    }    
+        if (!componentChangeFireAction(event, null) && !componentChangeFireDrop(event)) super.componentChange(event);
+    }           
 }
