@@ -44,6 +44,7 @@ class WindowRenderer extends ContainerRenderer {
     private Map<Component, Integer> compToId;
     private MenuRenderer mr;
     WebApplication ai;
+    int[] compBounds;
     
     void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         setPropertyChangeIgnored(Component.PROPERTY_VISIBLE, true);
@@ -53,7 +54,8 @@ class WindowRenderer extends ContainerRenderer {
         } else {
             addInitProperty(Window.PROPERTY_TITLE, w.getTitle());
         }
-        compToId = new HashMap<Component, Integer>(w.getChildren().size());        
+        compToId = new HashMap<Component, Integer>(w.getChildren().size());
+        compBounds = new int[4];
         super.render(wr, c, container);
         Menu m = w.getMenu();
         if (m != null) (mr = (MenuRenderer)ai.getRenderer(m)).render(wr, m, this);
@@ -67,6 +69,7 @@ class WindowRenderer extends ContainerRenderer {
         ai = null;
         compToId.clear();
         compToId = null;
+        compBounds = null;
     }
     
     Integer getComponentId(Component comp) {

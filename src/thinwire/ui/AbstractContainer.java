@@ -31,6 +31,8 @@ import java.util.List;
 
 import thinwire.ui.event.ItemChangeListener;
 import thinwire.ui.event.ItemChangeEvent.Type;
+import thinwire.ui.layout.DefaultUnitModel;
+import thinwire.ui.layout.UnitModel;
 
 /**
  * @author Joshua J. Gertzen
@@ -111,6 +113,7 @@ abstract class AbstractContainer<T extends Component> extends AbstractComponent 
     private List<T> children;
     private T childWithFocus;
     private Button standardButton;
+    private UnitModel unitModel;
     
     AbstractContainer() {        
         this(true);
@@ -119,6 +122,7 @@ abstract class AbstractContainer<T extends Component> extends AbstractComponent 
     AbstractContainer(boolean visible) {
         super(visible);
         children = new ItemChangeList();
+        setUnitModel(new DefaultUnitModel());
     }
     
 
@@ -207,4 +211,15 @@ abstract class AbstractContainer<T extends Component> extends AbstractComponent 
         int innerHeight = getHeight() - getStyle().getBorder().getSize() * 2;
         return innerHeight < 0 ? 0 : innerHeight;
     }    
+    
+    public void setUnitModel(UnitModel unitModel) {
+        UnitModel oldModel = this.unitModel;
+        this.unitModel = unitModel;
+        this.unitModel.init(this);
+        firePropertyChange(this, PROPERTY_UNIT_MODEL, oldModel, this.unitModel);
+    }
+
+    public UnitModel getUnitModel() {
+        return unitModel;
+    }
 }

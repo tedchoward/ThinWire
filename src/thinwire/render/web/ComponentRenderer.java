@@ -52,6 +52,8 @@ import thinwire.ui.HierarchyComponent;
 import thinwire.ui.Menu;
 import thinwire.ui.Tree;
 import thinwire.ui.event.PropertyChangeEvent;
+import thinwire.ui.layout.DefaultUnitModel;
+import thinwire.ui.layout.UnitModel;
 import thinwire.ui.style.*;
 
 /**
@@ -84,6 +86,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     static final Pattern REGEX_CRLF = Pattern.compile("\\r?\\n");         
     
     static final RichTextParser RICH_TEXT_PARSER = new RichTextParser();
+    static final UnitModel DEFAULT_UNIT_MODEL = new DefaultUnitModel();
     
     private static final Object NO_VALUE = new Object();
     
@@ -116,10 +119,20 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         FX.Type visibleChange = comp.getStyle().getFX().getVisibleChange();
         addClientSideProperty(Component.PROPERTY_FOCUS);
         
-        if (!isPropertyChangeIgnored(Component.PROPERTY_X)) addInitProperty(Component.PROPERTY_X, comp.getX());
-        if (!isPropertyChangeIgnored(Component.PROPERTY_Y)) addInitProperty(Component.PROPERTY_Y, comp.getY());
-        if (!isPropertyChangeIgnored(Component.PROPERTY_WIDTH)) addInitProperty(Component.PROPERTY_WIDTH, comp.getWidth());
-        if (!isPropertyChangeIgnored(Component.PROPERTY_HEIGHT)) addInitProperty(Component.PROPERTY_HEIGHT, comp.getHeight());        
+        Object parent = comp.getParent();
+        if (parent instanceof Container) {
+            ((Container) parent).getUnitModel().getBounds(comp, wr.compBounds);
+            if (!isPropertyChangeIgnored(Component.PROPERTY_X)) addInitProperty(Component.PROPERTY_X, wr.compBounds[0]);
+            if (!isPropertyChangeIgnored(Component.PROPERTY_Y)) addInitProperty(Component.PROPERTY_Y, wr.compBounds[1]);
+            if (!isPropertyChangeIgnored(Component.PROPERTY_WIDTH)) addInitProperty(Component.PROPERTY_WIDTH, wr.compBounds[2]);
+            if (!isPropertyChangeIgnored(Component.PROPERTY_HEIGHT)) addInitProperty(Component.PROPERTY_HEIGHT, wr.compBounds[3]);
+        } else {
+            if (!isPropertyChangeIgnored(Component.PROPERTY_X)) addInitProperty(Component.PROPERTY_X, comp.getX());
+            if (!isPropertyChangeIgnored(Component.PROPERTY_Y)) addInitProperty(Component.PROPERTY_Y, comp.getY());
+            if (!isPropertyChangeIgnored(Component.PROPERTY_WIDTH)) addInitProperty(Component.PROPERTY_WIDTH, comp.getWidth());
+            if (!isPropertyChangeIgnored(Component.PROPERTY_HEIGHT)) addInitProperty(Component.PROPERTY_HEIGHT, comp.getHeight());
+        }
+        
         if (!isPropertyChangeIgnored(Component.PROPERTY_VISIBLE)) addInitProperty(Component.PROPERTY_VISIBLE, 
                 visibleChange != FX.Type.NONE && cr != null && cr.isFullyRendered() ? Boolean.FALSE : comp.isVisible());                
         if (!isPropertyChangeIgnored(Component.PROPERTY_ENABLED)) addInitProperty(Component.PROPERTY_ENABLED, comp.isEnabled());
@@ -132,7 +145,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         
         if (comp.isFocus()) addInitProperty(Component.PROPERTY_FOCUS, true);
 
-        Object parent = comp.getParent();
+        
         if (parent instanceof Container) addInitProperty("insertAtIndex", ((Container)parent).getChildren().indexOf(comp));
         
         if (jsClass != null) {
@@ -402,19 +415,28 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     
     public void componentChange(WebComponentEvent event) {
         String name = event.getName();
+        Object parent = comp.getParent();
         
         if (name.equals("size")) {
             this.setPropertyChangeIgnored(Component.PROPERTY_WIDTH, true);
             this.setPropertyChangeIgnored(Component.PROPERTY_HEIGHT, true);
             String[] args = ((String)event.getValue()).split(",");
-            comp.setSize(Integer.valueOf(args[0]), Integer.valueOf(args[1]));                        
+            if (parent instanceof Container) {
+                ((Container) parent).getUnitModel().setSize(comp, Integer.parseInt(args[0]), Integer.parseInt(args[1])); 
+            } else {
+                comp.setSize(Integer.parseInt(args[0]), Integer.parseInt(args[1]));
+            }
             this.setPropertyChangeIgnored(Component.PROPERTY_WIDTH, false);
             this.setPropertyChangeIgnored(Component.PROPERTY_HEIGHT, false);
         } else if (name.equals("position")) {
             this.setPropertyChangeIgnored(Component.PROPERTY_X, true);
             this.setPropertyChangeIgnored(Component.PROPERTY_Y, true);
             String[] args = ((String)event.getValue()).split(",");
-            comp.setPosition(Integer.valueOf(args[0]), Integer.valueOf(args[1]));            
+            if (parent instanceof Container) {
+                ((Container) parent).getUnitModel().setPosition(comp, Integer.parseInt(args[0]), Integer.parseInt(args[1])); 
+            } else {
+                comp.setPosition(Integer.parseInt(args[0]), Integer.parseInt(args[1]));
+            }
             this.setPropertyChangeIgnored(Component.PROPERTY_X, false);
             this.setPropertyChangeIgnored(Component.PROPERTY_Y, false);
         } else if (name.equals("bounds")) {
@@ -422,8 +444,12 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
             this.setPropertyChangeIgnored(Component.PROPERTY_Y, true);
             this.setPropertyChangeIgnored(Component.PROPERTY_WIDTH, true);
             this.setPropertyChangeIgnored(Component.PROPERTY_HEIGHT, true);
-            String[] args = ((String)event.getValue()).split(",");            
-            comp.setBounds(Integer.valueOf(args[0]), Integer.valueOf(args[1]), Integer.valueOf(args[2]), Integer.valueOf(args[3]));            
+            String[] args = ((String)event.getValue()).split(",");
+            if (parent instanceof Container) {
+                ((Container) parent).getUnitModel().setBounds(comp, Integer.parseInt(args[0]), Integer.parseInt(args[1]), Integer.parseInt(args[2]), Integer.parseInt(args[3]));
+            } else {
+                comp.setBounds(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Integer.parseInt(args[2]), Integer.parseInt(args[3]));
+            }
             this.setPropertyChangeIgnored(Component.PROPERTY_WIDTH, false);
             this.setPropertyChangeIgnored(Component.PROPERTY_HEIGHT, false);
             this.setPropertyChangeIgnored(Component.PROPERTY_X, false);
@@ -500,6 +526,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     public void propertyChange(PropertyChangeEvent pce) {
         String name = pce.getPropertyName();
         if (isPropertyChangeIgnored(name)) return;
+        UnitModel unitModel = comp.getParent() instanceof Container ? ((Container) comp.getParent()).getUnitModel() : DEFAULT_UNIT_MODEL;
         
         if (name.equals(Component.PROPERTY_ENABLED)) {
             postClientEvent(SET_ENABLED, pce.getNewValue());
@@ -509,13 +536,17 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         } else if (name.equals(Component.PROPERTY_FOCUS_CAPABLE)) {
             postClientEvent(SET_FOCUS_CAPABLE, pce.getNewValue());
         } else if (name.equals(Component.PROPERTY_X)) {
-            setPropertyWithEffect(name, pce.getNewValue(), pce.getOldValue(), SET_X, FX.PROPERTY_FX_POSITION_CHANGE);
+            unitModel.apply();
+            setPropertyWithEffect(name, unitModel.getX(comp), unitModel.getActualX((Integer) pce.getOldValue()), SET_X, FX.PROPERTY_FX_POSITION_CHANGE);
         } else if (name.equals(Component.PROPERTY_Y)) {
-            setPropertyWithEffect(name, pce.getNewValue(), pce.getOldValue(), SET_Y, FX.PROPERTY_FX_POSITION_CHANGE);
+            unitModel.apply();
+            setPropertyWithEffect(name, unitModel.getY(comp), unitModel.getActualY((Integer) pce.getOldValue()), SET_Y, FX.PROPERTY_FX_POSITION_CHANGE);
         } else if (name.equals(Component.PROPERTY_WIDTH)) {
-            setPropertyWithEffect(name, pce.getNewValue(), pce.getOldValue(), SET_WIDTH, FX.PROPERTY_FX_SIZE_CHANGE);
+            unitModel.apply();
+            setPropertyWithEffect(name, unitModel.getWidth(comp), unitModel.getActualWidth((Integer)pce.getOldValue()), SET_WIDTH, FX.PROPERTY_FX_SIZE_CHANGE);
         } else if (name.equals(Component.PROPERTY_HEIGHT)) {
-            setPropertyWithEffect(name, pce.getNewValue(), pce.getOldValue(), SET_HEIGHT, FX.PROPERTY_FX_SIZE_CHANGE);
+            unitModel.apply();
+            setPropertyWithEffect(name, unitModel.getHeight(comp), unitModel.getActualHeight((Integer)pce.getOldValue()), SET_HEIGHT, FX.PROPERTY_FX_SIZE_CHANGE);
         } else if (name.equals(Component.PROPERTY_VISIBLE)) {
             setPropertyWithEffect(name, pce.getNewValue(), pce.getOldValue(), SET_VISIBLE, FX.PROPERTY_FX_VISIBLE_CHANGE);
         } else {

@@ -27,6 +27,8 @@ package thinwire.ui;
 
 import java.util.List;
 
+import thinwire.ui.layout.UnitModel;
+
 /**
  * A <code>Container</code> is a <code>Component</code> that maintains a collection of other <code>Component</code>s as a group.
  * Additionally, <code>Container</code> is the foundation of all other container types in the framework such as <code>Panel</code>, <code>Frame</code>,
@@ -44,6 +46,8 @@ public interface Container<T extends Component> extends ItemChangeEventComponent
      * @see ScrollType
      */
     public static final String PROPERTY_SCROLL = "scroll";
+    
+    public static final String PROPERTY_UNIT_MODEL = "unitModel";
 
     /**
      * Sets the scrollType for the X and Y axis of this Container.
@@ -95,5 +99,9 @@ public interface Container<T extends Component> extends ItemChangeEventComponent
      * @return the usable inner height of the Container.
      */
     int getInnerHeight();
+    
+    void setUnitModel(UnitModel unitModel);
+    
+    UnitModel getUnitModel();
 
 }
