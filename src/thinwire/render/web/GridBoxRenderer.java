@@ -65,7 +65,6 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
     private static final String ADD_COLUMN = "addColumn";
     private static final String SET_COLUMN = "setColumn";
     private static final String REMOVE_COLUMN = "removeColumn";
-    private static final int MIN_SIZE = 25;
     private static final String VIEW_STATE_COLUMN_SORT = "columnSort";
 
     private Set<Integer> rowState = new HashSet<Integer>();

@@ -39,10 +39,7 @@ import thinwire.ui.style.Style;
  */
 public class SplitLayout implements Layout {
     public enum SplitType {VERTICAL, HORIZONTAL};
-        
-    private static final String RES_PATH = "class:///" + SplitLayout.class.getName() + "/resources/";
-    private static final String CLIENT_SIDE_LIB = RES_PATH + "SplitLayout.js";
-    
+
     private PropertyChangeListener pcl = new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent ev) {
             if (autoLayout) apply();
@@ -66,7 +63,6 @@ public class SplitLayout implements Layout {
         
     public SplitLayout(Container<Component> container, SplitType split, double size) {
         final WebApplication app = (WebApplication)Application.current();        
-        app.clientSideIncludeFile(CLIENT_SIDE_LIB);
         divider = new Label();
         divider.addPropertyChangeListener(new String[] {Component.PROPERTY_X, Component.PROPERTY_Y}, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent ev) {

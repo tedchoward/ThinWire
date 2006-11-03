@@ -32,6 +32,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -59,7 +60,7 @@ final class RemoteFileMap {
         localToFileInfo = new HashMap<String, RemoteFileInfo>(initialMapSize);
     }
     
-    final void loadLocalData(String localName, ByteArrayOutputStream os) {
+    final void loadLocalData(String localName, OutputStream os) {
         try {
             InputStream is;
             
@@ -75,7 +76,7 @@ final class RemoteFileMap {
                 is = new BufferedInputStream(new FileInputStream(localName));
             }
             
-            if (os == null) os = new ByteArrayOutputStream();
+            //if (os == null) os = new ByteArrayOutputStream();
             byte[] bytes = new byte[128];
             int size;
             

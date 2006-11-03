@@ -208,6 +208,7 @@ public final class WebServlet extends HttpServlet {
                     if (mimeType != null && mimeType.startsWith("image/")) response.setHeader("Cache-Control", "max-age=43200");
                 }
                 
+                if (data[0] == 31 && data[1] == -117) response.setHeader("Content-Encoding", "gzip");
                 response.setContentType(mimeType);
                 response.getOutputStream().write(data);
             } catch (Exception e){

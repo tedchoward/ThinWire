@@ -43,6 +43,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPOutputStream;
 
 import javax.servlet.http.HttpSession;
 
@@ -50,6 +51,7 @@ import thinwire.render.RenderStateEvent;
 import thinwire.render.RenderStateListener;
 import thinwire.ui.*;
 import thinwire.ui.FileChooser.FileInfo;
+import thinwire.ui.layout.SplitLayout;
 import thinwire.ui.style.*;
 import thinwire.util.Grid;
 import thinwire.util.ImageInfo;
@@ -110,7 +112,8 @@ public final class WebApplication extends Application {
         "TextArea.js",
         "TextField.js",
         "Tree.js",
-        "WebBrowser.js",        
+        "WebBrowser.js",
+        "class:///" + SplitLayout.class.getName() + "/resources/SplitLayout.js",
         "Startup.js",
         "FileUploadPage.html",
         "activityInd.gif",
@@ -154,7 +157,8 @@ public final class WebApplication extends Application {
         
         for (String res : BUILT_IN_RESOURCES) {
             if (!res.endsWith(".js")) {
-                RemoteFileMap.INSTANCE.add(classURL + res);
+                if (!res.startsWith("class:///")) res = classURL + res;
+                RemoteFileMap.INSTANCE.add(res);
             }
         }
 
@@ -177,25 +181,22 @@ public final class WebApplication extends Application {
     }
     
     private static String loadJSLibrary(String resURL) {
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        
-        for (String res : BUILT_IN_RESOURCES) {
-            if (res.endsWith(".js")) RemoteFileMap.INSTANCE.loadLocalData(resURL + res, os);
-        }
-
         try {
             //Write out the library JS
             String twPrefix = "ThinWire_v" + Application.getPlatformVersionInfo().get("productVersion");
             File f = File.createTempFile(twPrefix, ".js");
-            f.deleteOnExit();
-            FileOutputStream fos = new FileOutputStream(f);
-            os.flush();
-            os.writeTo(fos);
-            fos.close();
+            GZIPOutputStream os = new GZIPOutputStream(new FileOutputStream(f));
+            
+            for (String res : BUILT_IN_RESOURCES) {
+                if (res.endsWith(".js")) {
+                    if (!res.startsWith("class:///")) res = resURL + res;
+                    RemoteFileMap.INSTANCE.loadLocalData(res, os);
+                }
+            }
 
-            String twLib = twPrefix + ".js";
-            RemoteFileMap.INSTANCE.add(f.getCanonicalPath(), twLib);
-            return twLib;
+            os.close();
+            f.deleteOnExit();
+            return RemoteFileMap.INSTANCE.add(f.getCanonicalPath(), twPrefix + ".js");
         } catch (Exception e) {
             if (!(e instanceof RuntimeException)) e = new RuntimeException(e);
             throw (RuntimeException)e;
