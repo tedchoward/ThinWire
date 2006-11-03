@@ -28,7 +28,7 @@ package thinwire.ui;
 /**
  * @author Joshua J. Gertzen
  */
-public interface TextComponent extends Component {
+public interface TextComponent extends Component, DropEventComponent {
     public static final String PROPERTY_TEXT = "text";        
     
     /**

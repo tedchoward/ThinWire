@@ -27,7 +27,6 @@ package thinwire.ui;
 
 import thinwire.render.Renderer;
 import thinwire.ui.event.PropertyChangeListener;
-import thinwire.ui.event.KeyPressEvent;
 import thinwire.ui.event.KeyPressListener;
 import thinwire.ui.style.*;
 

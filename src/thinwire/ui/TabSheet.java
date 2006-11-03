@@ -29,6 +29,8 @@ import java.util.List;
 
 import thinwire.ui.event.ActionEvent;
 import thinwire.ui.event.ActionListener;
+import thinwire.ui.event.DropEvent;
+import thinwire.ui.event.DropListener;
 import thinwire.util.ImageInfo;
 
 /**
@@ -82,6 +84,7 @@ import thinwire.util.ImageInfo;
  */
 public class TabSheet extends AbstractContainer<Component> implements TextComponent, ImageComponent, ActionEventComponent {
     private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>(this, EventListenerImpl.ACTION_VALIDATOR);    
+    private EventListenerImpl<DropListener> dei = new EventListenerImpl<DropListener>(this);
 	private String text = "";
     private boolean allowBoundsChange;
 	private ImageInfo imageInfo = new ImageInfo(null);
@@ -122,6 +125,22 @@ public class TabSheet extends AbstractContainer<Component> implements TextCompon
         aei.fireAction(ev, null);
     }
 
+    public void addDropListener(DropEventComponent dragComponent, DropListener listener) {
+        dei.addListener(dragComponent, listener);
+    }
+    
+    public void addDropListener(DropEventComponent[] dragComponents, DropListener listener) {
+        dei.addListener(dragComponents, listener);
+    }    
+    
+    public void removeDropListener(DropListener listener) {
+        dei.removeListener(listener);
+    }    
+
+    public void fireDrop(DropEvent ev) {
+        dei.fireDrop(ev);
+    }
+    
     /**
      * A convienence method that is equivalent to <code>fireAction(new ActionEvent(this, action))</code>.
      * @param action the action name

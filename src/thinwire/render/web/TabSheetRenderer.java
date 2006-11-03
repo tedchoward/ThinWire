@@ -69,6 +69,7 @@ class TabSheetRenderer extends ContainerRenderer {
     }
     
     public void componentChange(WebComponentEvent event) {
+        log.info("TabSheetRenderer: WebComponentEvent: " + event.getName() + "," + event.getValue());
         if (!componentChangeFireAction(event, null) && !componentChangeFireDrop(event)) super.componentChange(event);
     }           
 }
