@@ -78,6 +78,7 @@ public class DateBox extends AbstractComponent implements ActionEventComponent, 
     void setRenderer(Renderer r) {
         super.setRenderer(r);
         aei.setRenderer(r);
+        dei.setRenderer(r);
     }
     
     /**

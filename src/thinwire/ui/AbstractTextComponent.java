@@ -27,6 +27,7 @@ package thinwire.ui;
 
 import java.util.regex.Pattern;
 
+import thinwire.render.Renderer;
 import thinwire.ui.event.DropEvent;
 import thinwire.ui.event.DropListener;
 
@@ -38,6 +39,11 @@ abstract class AbstractTextComponent extends AbstractComponent implements TextCo
 
     private EventListenerImpl<DropListener> dei = new EventListenerImpl<DropListener>(this);
     private String text = "";
+    
+    void setRenderer(Renderer r) {
+        super.setRenderer(r);
+        dei.setRenderer(r);
+    }
 
     public String getText() {
         return text;

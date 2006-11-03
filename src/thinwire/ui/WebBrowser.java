@@ -28,6 +28,7 @@ package thinwire.ui;
 import java.io.File;
 import java.io.FileOutputStream;
 
+import thinwire.render.Renderer;
 import thinwire.ui.event.DropEvent;
 import thinwire.ui.event.DropListener;
 
@@ -75,6 +76,11 @@ public class WebBrowser extends AbstractComponent implements DropEventComponent 
     
     public WebBrowser(String location) {
         this.setLocation(location);
+    }
+    
+    void setRenderer(Renderer r) {
+        super.setRenderer(r);
+        dei.setRenderer(r);
     }
     
     public void addDropListener(DropEventComponent dragComponent, DropListener listener) {

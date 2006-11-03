@@ -47,7 +47,6 @@ import thinwire.ui.Container;
 import thinwire.ui.DropEventComponent;
 import thinwire.ui.event.PropertyChangeEvent;
 import thinwire.ui.style.*;
-import thinwire.util.ImageInfo;
 
 /**
  * @author Joshua J. Gertzen
@@ -65,8 +64,6 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     static final String SET_HEIGHT = "setHeight";
     static final String SET_VISIBLE = "setVisible";
     static final String SET_PROPERTY_WITH_EFFECT = "setPropertyWithEffect";
-    static final String ADD_DRAG_TARGET = "addDragTarget";
-    static final String REMOVE_DRAG_TARGET = "removeDragTarget";
 
     //Shared by other renderers
     static final String DESTROY = "destroy";
@@ -359,9 +356,10 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
             postClientEvent(REGISTER_EVENT_NOTIFIER, "keyPress", subType);
         } else if (DropListener.class.isAssignableFrom(clazz)) {
             final DropEventComponent dragSource = (DropEventComponent)subType;
+            
             wr.ai.invokeAfterRendered(dragSource, new RenderStateListener() {
                 public void renderStateChange(RenderStateEvent ev) {
-                    wr.ai.clientSideMethodCall(wr.ai.getComponentId(dragSource), ADD_DRAG_TARGET, id);
+                    wr.ai.clientSideMethodCall(wr.ai.getComponentId(dragSource), "addDragTarget", id);
                 }
             });
         }
@@ -390,12 +388,8 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         } else if (KeyPressListener.class.isAssignableFrom(clazz)) {
             postClientEvent(UNREGISTER_EVENT_NOTIFIER, "keyPress", subType);
         } else if (DropListener.class.isAssignableFrom(clazz)) {
-            DropEventComponent dragSource = (DropEventComponent)subType;
-            
-            Integer dragSourceId = wr.ai.getComponentId(dragSource);
-            if (dragSourceId != null) {
-                wr.ai.clientSideMethodCall(dragSourceId, REMOVE_DRAG_TARGET, id);
-            }
+            Integer dragSourceId = wr.ai.getComponentId((DropEventComponent)subType);
+            if (dragSourceId != null) wr.ai.clientSideMethodCall(dragSourceId, "removeDragTarget", id);
         }
     }    
     

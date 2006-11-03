@@ -25,6 +25,7 @@
  */
 package thinwire.ui;
 
+import thinwire.render.Renderer;
 import thinwire.ui.event.ActionEvent;
 import thinwire.ui.event.ActionListener;
 import thinwire.ui.event.DropEvent;
@@ -94,6 +95,12 @@ public class ProgressBar extends AbstractRangeComponent implements ActionEventCo
     public ProgressBar(int length, int currentIndex) {
         setLength(length);
         setCurrentIndex(currentIndex);
+    }
+    
+    void setRenderer(Renderer r) {
+        super.setRenderer(r);
+        aei.setRenderer(r);
+        dei.setRenderer(r);
     }
     
     public void addActionListener(String action, ActionListener listener) {

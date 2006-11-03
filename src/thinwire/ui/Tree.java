@@ -25,6 +25,7 @@
  */
 package thinwire.ui;
 
+import thinwire.render.Renderer;
 import thinwire.ui.event.ActionEvent;
 import thinwire.ui.event.DropEvent;
 import thinwire.ui.event.DropListener;
@@ -209,6 +210,11 @@ public class Tree extends AbstractHierarchyComponent<Tree.Item> implements DropE
         super(new Item(), EventListenerImpl.ACTION_VALIDATOR);
         selectedItem = getRootItem();
         selectedItem.setExpanded(true);
+    }
+    
+    void setRenderer(Renderer r) {
+        super.setRenderer(r);
+        dei.setRenderer(r);
     }
 
     /**

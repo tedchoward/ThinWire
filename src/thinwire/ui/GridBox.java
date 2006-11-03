@@ -589,6 +589,7 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
     void setRenderer(Renderer r) {
         super.setRenderer(r);
         aei.setRenderer(r);
+        dei.setRenderer(r);
     }
     
     private void sort() {

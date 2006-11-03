@@ -70,6 +70,7 @@ public class Divider extends AbstractComponent implements ActionEventComponent, 
     void setRenderer(Renderer r) {
         super.setRenderer(r);
         aei.setRenderer(r);
+        dei.setRenderer(r);
     }
 
     public void addActionListener(String action, ActionListener listener) {

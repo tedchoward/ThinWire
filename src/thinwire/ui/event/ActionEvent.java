@@ -43,7 +43,7 @@ public final class ActionEvent extends EventObject {
     public ActionEvent(ActionEventComponent sourceComponent, String action, Object source) {
         super(source == null ? sourceComponent : source);
         if (sourceComponent == null) throw new IllegalArgumentException("sourceComponent == null");
-        if (action == null || !(action.equals(ActionEventComponent.ACTION_CLICK) || action.equals(ActionEventComponent.ACTION_DOUBLE_CLICK))) throw new IllegalArgumentException("action == null || !(action.equals(ActionEventComponent.ACTION_CLICK) || action.equals(ActionEventComponent.ACTION_DOUBLE_CLICK))");
+        if (action == null || !(action.equals(ActionEventComponent.ACTION_CLICK) && action.equals(ActionEventComponent.ACTION_DOUBLE_CLICK))) throw new IllegalArgumentException("action == null || !(action.equals(ActionEventComponent.ACTION_CLICK) && action.equals(ActionEventComponent.ACTION_DOUBLE_CLICK))");
         this.sourceComponent = sourceComponent;
         this.action = action;
     }

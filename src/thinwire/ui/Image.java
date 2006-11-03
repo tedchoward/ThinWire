@@ -109,6 +109,7 @@ public class Image extends AbstractComponent implements ImageComponent, ActionEv
     void setRenderer(Renderer r) {
         super.setRenderer(r);
         aei.setRenderer(r);
+        dei.setRenderer(r);
     }    
     
     public void addActionListener(String action, ActionListener listener) {

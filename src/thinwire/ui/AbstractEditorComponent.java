@@ -28,7 +28,7 @@ package thinwire.ui;
 /**
  * @author Joshua J. Gertzen
  */
-abstract class AbstractEditorComponent extends AbstractTextComponent implements EditorComponent, DropEventComponent {    
+abstract class AbstractEditorComponent extends AbstractTextComponent implements EditorComponent {    
     private int maxLength = 0;    
     private int selectionBeginIndex;
     private int selectionEndIndex;

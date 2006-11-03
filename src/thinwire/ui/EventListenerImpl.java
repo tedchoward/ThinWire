@@ -189,14 +189,14 @@ class EventListenerImpl<E extends EventListener> {
                 specificListeners.put(listener, subTypes);
             }                
             
-            if (eventSubType instanceof String[]) {
-                for (String subType : (String[])eventSubType) {
+            if (eventSubType instanceof Object[]) {
+                for (Object subType : (Object[])eventSubType) {
                    subTypes.add(subType);
                    if (renderer != null) renderer.eventSubTypeListenerAdded(listener.getClass(), subType);
                 }
             } else {
-                subTypes.add((String)eventSubType);
-                if (renderer != null) renderer.eventSubTypeListenerAdded(listener.getClass(), (String)eventSubType);
+                subTypes.add(eventSubType);
+                if (renderer != null) renderer.eventSubTypeListenerAdded(listener.getClass(), eventSubType);
             }
         }
     }
