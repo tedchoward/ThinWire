@@ -634,7 +634,6 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         DropEventComponent comp = (DropEventComponent)this.comp;
 
         if (event.getName().equals(CLIENT_EVENT_DROP)) {
-            log.info("parts=" + event.getValue());
             String[] parts = ((String)event.getValue()).split(",", -1);
             DropEventComponent dragComponent = (DropEventComponent)wr.ai.getComponentFromId(Integer.parseInt(parts[1]));
             comp.fireDrop(new DropEvent(comp, getEventObject(comp, parts[0]), dragComponent, getEventObject(dragComponent, parts[2])));
