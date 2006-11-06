@@ -84,8 +84,14 @@
 			</classpath>
 		</taskdef>
 
-		<jso srcdir="${path.temp}" destdir="${path.temp}"
-			includes="/thinwire/render/web/resources/*.js;/thinwire/ui/layout/resources/*.js"/>
+		<jso srcdir="${path.temp}" destdir="${path.temp}" namemap="thinwire/render/web/resources/Main.js">
+			<include name="thinwire/render/web/resources/*.js"/>
+			<include name="thinwire/ui/layout/resources/*.js"/>
+		</jso>
+
+		
+		<!--<jso srcdir="" destdir="${path.temp}"
+			includes="/thinwire/render/web/resources/*.js;/thinwire/ui/layout/resources/*.js"/>-->
     </target>
 	
 	<target name="-retroweaver">
