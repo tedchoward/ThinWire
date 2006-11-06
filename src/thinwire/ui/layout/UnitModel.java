@@ -59,10 +59,12 @@ public interface UnitModel {
     public void init(Container container);
     public Container getContainer();
     
+    public boolean isModelValid();
+    
     
 
     //Called by renderer when:
     //1. Component x, y, width, height changes
     //2. Container width, height changes
-    public boolean apply();
+    public void apply();
 }

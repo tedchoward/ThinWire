@@ -8,6 +8,8 @@ import java.util.logging.Logger;
 import thinwire.ui.Component;
 import thinwire.ui.Container;
 import thinwire.ui.Window;
+import thinwire.ui.event.ItemChangeEvent;
+import thinwire.ui.event.ItemChangeListener;
 import thinwire.ui.event.PropertyChangeEvent;
 import thinwire.ui.event.PropertyChangeListener;
 
@@ -28,17 +30,25 @@ public class TableUnitModel implements UnitModel {
     private double[] heights;
     private int columnSpace;
     private int rowSpace;
+    private boolean modelValid;
     
     public void init(Container container) {
         if (this.container != null) throw new IllegalStateException("this.container != null");
         this.container = container;
+        modelValid = false;
         if (this.container instanceof Window) {
             this.container.addPropertyChangeListener(new String[] {Window.PROPERTY_WIDTH, Window.PROPERTY_HEIGHT}, new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent ev) {
                     // Empty Listener makes sure size change properties are fired back up to the server
+                    modelValid = false;
                 }
             });
         }
+        this.container.addItemChangeListener(new ItemChangeListener() {
+            public void itemChange(ItemChangeEvent ev) {
+                modelValid = false;
+            }
+        });
     }
     
     public void setWidths(double...widths) {
@@ -103,9 +113,8 @@ public class TableUnitModel implements UnitModel {
         return absoluteHeights;
     }
 
-    public boolean apply() {
-        log.entering(TableUnitModel.class.getName(), "apply");
-        boolean render = false;
+    public void apply() {
+        if (modelValid) return;
         double[] absoluteWidths = getAbsoluteWidths();
         double[] absoluteHeights = getAbsoluteHeights();
         for (Component c : (List<Component>) container.getChildren()) {
@@ -116,23 +125,22 @@ public class TableUnitModel implements UnitModel {
             }
             int actual = 0;
             for (int i = 0, cnt = c.getX(); i < cnt; i++) actual += absoluteWidths[i] + columnSpace;
-            if (tumc.x != actual) render = true;
             tumc.x = actual;
             actual = 0;
             for (int i = 0, cnt = c.getY(); i < cnt; i++) actual += absoluteHeights[i] + rowSpace;
-            if (tumc.y != actual) render = true;
             tumc.y = actual;
             actual = 0;
             for (int i = 0, cnt = c.getWidth(), x = c.getX(); i < cnt; i++) actual += absoluteWidths[i + x] + columnSpace;
-            if (tumc.width != actual) render = true;
             tumc.width = actual - columnSpace;
             actual = 0;
             for (int i = 0, cnt = c.getHeight(), y = c.getY(); i < cnt; i++) actual += absoluteHeights[i + y] + rowSpace;
-            if (tumc.height != actual) render = true;
             tumc.height = actual - rowSpace;
         }
-        log.exiting(TableUnitModel.class.getName(), "apply", render);
-        return render;
+        modelValid = true;
+    }
+    
+    public boolean isModelValid() {
+        return modelValid;
     }
 
     public int getActualHeight(int modelHeight) {

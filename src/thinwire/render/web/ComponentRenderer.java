@@ -670,14 +670,15 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         if (!(comp instanceof Container)) throw new IllegalStateException("!(comp instanceof Container)");
         Container container = (Container) comp;
         UnitModel um = container.getUnitModel();
-        List<Component> kids = container.getChildren();
-        int size = kids.size();
-        int[][] bounds = new int[size][4];
-        for (int i = 0; i < size; i++) {
-            Component c = kids.get(i);
-            um.getBounds(c, bounds[i]);
-        }
-        if (um.apply()) {
+        if (!um.isModelValid()) {
+            List<Component> kids = container.getChildren();
+            int size = kids.size();
+            int[][] bounds = new int[size][4];
+            for (int i = 0; i < size; i++) {
+                Component c = kids.get(i);
+                um.getBounds(c, bounds[i]);
+            }
+            um.apply();
             int[] tmpBounds = new int[4];
             for (int i = 0; i < size; i++) {
                 Component c = kids.get(i);

@@ -31,8 +31,7 @@ import thinwire.ui.Container;
 public class DefaultUnitModel implements UnitModel {
     private Container container;
 
-    public boolean apply() {
-        return false;
+    public void apply() {
     }
 
     public void getBounds(Component c, int[] bounds) {
@@ -122,6 +121,10 @@ public class DefaultUnitModel implements UnitModel {
 
     public void setSize(Component c, int width, int height) {
         c.setSize(width, height);
+    }
+
+    public boolean isModelValid() {
+        return true;
     }
 
 }
