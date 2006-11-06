@@ -1,3 +1,28 @@
+/*
+                         ThinWire(TM) RIA Ajax Framework
+               Copyright (C) 2003-2006 Custom Credit Systems
+  
+  This program is free software; you can redistribute it and/or modify it under
+  the terms of the GNU General Public License as published by the Free Software
+  Foundation; either version 2 of the License, or (at your option) any later
+  version.
+  
+  This program is distributed in the hope that it will be useful, but WITHOUT
+  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+  FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+  
+  You should have received a copy of the GNU General Public License along with
+  this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+  Place, Suite 330, Boston, MA 02111-1307 USA
+ 
+  Users wishing to use this library in proprietary products which are not 
+  themselves to be released under the GNU Public License should contact Custom
+  Credit Systems for a license to do so.
+  
+                Custom Credit Systems, Richardson, TX 75081, USA.
+                           http://www.thinwire.com
+ #VERSION_HEADER#
+ */
 package thinwire.ui.layout;
 
 import thinwire.ui.Component;
@@ -6,7 +31,8 @@ import thinwire.ui.Container;
 public class DefaultUnitModel implements UnitModel {
     private Container container;
 
-    public void apply() {
+    public boolean apply() {
+        return false;
     }
 
     public void getBounds(Component c, int[] bounds) {
@@ -79,13 +105,13 @@ public class DefaultUnitModel implements UnitModel {
     }
 
     public void getPosition(Component c, int[] position) {
-        if (position == null || position.length >= 2) throw new IllegalArgumentException("position == null || position.length >= 2");
+        if (position == null || position.length < 2 || position.length > 4) throw new IllegalArgumentException("position == null || position.length < 2 || position.length > 4");
         position[0] = c.getX();
         position[1] = c.getY();
     }
 
     public void getSize(Component c, int[] size) {
-        if (size == null || size.length >= 2) throw new IllegalArgumentException("size == null || size.length >= 2");
+        if (size == null || size.length < 2 || size.length > 4) throw new IllegalArgumentException("size == null || size.length < 2 || size.length > 4");
         size[0] = c.getWidth();
         size[1] = c.getHeight();
     }

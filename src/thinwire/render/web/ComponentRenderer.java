@@ -121,7 +121,9 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         
         Object parent = comp.getParent();
         if (parent instanceof Container) {
-            ((Container) parent).getUnitModel().getBounds(comp, wr.compBounds);
+            UnitModel unitModel = ((Container) parent).getUnitModel(); 
+            unitModel.apply();
+            unitModel.getBounds(comp, wr.compBounds);
             if (!isPropertyChangeIgnored(Component.PROPERTY_X)) addInitProperty(Component.PROPERTY_X, wr.compBounds[0]);
             if (!isPropertyChangeIgnored(Component.PROPERTY_Y)) addInitProperty(Component.PROPERTY_Y, wr.compBounds[1]);
             if (!isPropertyChangeIgnored(Component.PROPERTY_WIDTH)) addInitProperty(Component.PROPERTY_WIDTH, wr.compBounds[2]);
@@ -426,6 +428,8 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
             } else {
                 comp.setSize(Integer.parseInt(args[0]), Integer.parseInt(args[1]));
             }
+            //if (comp instanceof Container) ((Container) comp).getUnitModel().apply();
+            if (comp instanceof Container) applyUnitModel();
             this.setPropertyChangeIgnored(Component.PROPERTY_WIDTH, false);
             this.setPropertyChangeIgnored(Component.PROPERTY_HEIGHT, false);
         } else if (name.equals("position")) {
@@ -450,6 +454,8 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
             } else {
                 comp.setBounds(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Integer.parseInt(args[2]), Integer.parseInt(args[3]));
             }
+            //if (comp instanceof Container) ((Container) comp).getUnitModel().apply();
+            if (comp instanceof Container) applyUnitModel();
             this.setPropertyChangeIgnored(Component.PROPERTY_WIDTH, false);
             this.setPropertyChangeIgnored(Component.PROPERTY_HEIGHT, false);
             this.setPropertyChangeIgnored(Component.PROPERTY_X, false);
@@ -544,9 +550,11 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         } else if (name.equals(Component.PROPERTY_WIDTH)) {
             unitModel.apply();
             setPropertyWithEffect(name, unitModel.getWidth(comp), unitModel.getActualWidth((Integer)pce.getOldValue()), SET_WIDTH, FX.PROPERTY_FX_SIZE_CHANGE);
+            if (comp instanceof Container) ((Container) comp).getUnitModel().apply();
         } else if (name.equals(Component.PROPERTY_HEIGHT)) {
             unitModel.apply();
             setPropertyWithEffect(name, unitModel.getHeight(comp), unitModel.getActualHeight((Integer)pce.getOldValue()), SET_HEIGHT, FX.PROPERTY_FX_SIZE_CHANGE);
+            if (comp instanceof Container) ((Container) comp).getUnitModel().apply();
         } else if (name.equals(Component.PROPERTY_VISIBLE)) {
             setPropertyWithEffect(name, pce.getNewValue(), pce.getOldValue(), SET_VISIBLE, FX.PROPERTY_FX_VISIBLE_CHANGE);
         } else {
@@ -655,6 +663,40 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         } else {
             return false;
         }
+    }
+    
+    private void applyUnitModel() {
+        log.entering(ComponentRenderer.class.getName(), "applyUnitModel");
+        if (!(comp instanceof Container)) throw new IllegalStateException("!(comp instanceof Container)");
+        Container container = (Container) comp;
+        UnitModel um = container.getUnitModel();
+        List<Component> kids = container.getChildren();
+        int size = kids.size();
+        int[][] bounds = new int[size][4];
+        for (int i = 0; i < size; i++) {
+            Component c = kids.get(i);
+            um.getBounds(c, bounds[i]);
+        }
+        if (um.apply()) {
+            int[] tmpBounds = new int[4];
+            for (int i = 0; i < size; i++) {
+                Component c = kids.get(i);
+                um.getBounds(c, tmpBounds);
+                if (tmpBounds[0] != bounds[i][0]) { //x
+                    wr.ai.clientSideMethodCall(wr.getComponentId(c), SET_X, tmpBounds[0]);
+                }
+                if (tmpBounds[1] != bounds[i][1]) { //y
+                    wr.ai.clientSideMethodCall(wr.getComponentId(c), SET_Y, tmpBounds[1]);
+                }
+                if (tmpBounds[2] != bounds[i][2]) { //width
+                    wr.ai.clientSideMethodCall(wr.getComponentId(c), SET_WIDTH, tmpBounds[2]);
+                }
+                if (tmpBounds[3] != bounds[i][3]) { //height
+                    wr.ai.clientSideMethodCall(wr.getComponentId(c), SET_HEIGHT, tmpBounds[3]);
+                }
+            }
+        }
+        log.exiting(ComponentRenderer.class.getName(), "applyUnitModel");
     }
     
     final String getQualifiedURL(String location) {        

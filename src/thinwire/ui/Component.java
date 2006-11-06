@@ -706,7 +706,7 @@ public interface Component {
      * @see #PROPERTY_HEIGHT
      * @see thinwire.ui.event.PropertyChangeEvent
      */
-    void setBounds(int x, int y, int width, int height);
+    Component setBounds(int x, int y, int width, int height);
 
     /**
      * Returns a boolean value indicating whether this <code>Component</code> may be displayed in a window. See

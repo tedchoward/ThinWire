@@ -420,7 +420,7 @@ abstract class AbstractComponent implements Component {
         }
     }
     
-    public void setBounds(int x, int y, int width, int height) {
+    public Component setBounds(int x, int y, int width, int height) {
         rangeCheck(PROPERTY_X, x, Short.MIN_VALUE, Short.MAX_VALUE);
         rangeCheck(PROPERTY_Y, y, Short.MIN_VALUE, Short.MAX_VALUE);
         rangeCheck(PROPERTY_WIDTH, width, 0, Short.MAX_VALUE);
@@ -459,6 +459,7 @@ abstract class AbstractComponent implements Component {
                 firePropertyChange(this, PROPERTY_HEIGHT, oHeight, height);                
             }
         }
+        return this;
     }    
     
     public boolean isVisible() {
