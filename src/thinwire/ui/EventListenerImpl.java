@@ -94,6 +94,8 @@ class EventListenerImpl<E extends EventListener> {
     }
 
     EventListenerImpl(Component comp, SubTypeValidator subTypeValidator, EventListenerImpl<E> copy) {
+        this.subTypeValidator = subTypeValidator == null ? DEFAULT_VALIDATOR : subTypeValidator;
+        
         if (copy != null && copy.hasListeners()) {
             for (Map.Entry<E, Set<Object>> e : copy.specificListeners.entrySet()) {
                 Set<Object> subTypes = e.getValue();
@@ -111,7 +113,6 @@ class EventListenerImpl<E extends EventListener> {
         }
 
         this.comp = comp;
-        this.subTypeValidator = subTypeValidator == null ? DEFAULT_VALIDATOR : subTypeValidator;
     }    
     
     private boolean hasListeners() {
