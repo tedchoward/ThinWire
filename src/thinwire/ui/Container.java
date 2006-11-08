@@ -89,13 +89,17 @@ public interface Container<T extends Component> extends ItemChangeEventComponent
     T getComponentWithFocus();
 
     /**
-     * Returns the usable inner width of the Container.
+     * Returns the usable inner width of the Container. Always returns the value
+     * in pixels regardless of the UnitModel.
+     * 
      * @return the usable inner width of the Container.
      */
     int getInnerWidth();
 
     /**
-     * Returns the usable inner height of the Container.
+     * Returns the usable inner height of the Container. Always returns the
+     * value in pixels regardless of the UnitModel.
+     * 
      * @return the usable inner height of the Container.
      */
     int getInnerHeight();

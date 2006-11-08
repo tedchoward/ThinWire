@@ -428,8 +428,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
             } else {
                 comp.setSize(Integer.parseInt(args[0]), Integer.parseInt(args[1]));
             }
-            //if (comp instanceof Container) ((Container) comp).getUnitModel().apply();
-            if (comp instanceof Container) applyUnitModel();
+            if (comp instanceof Container) applyUnitModel((Container) comp);
             this.setPropertyChangeIgnored(Component.PROPERTY_WIDTH, false);
             this.setPropertyChangeIgnored(Component.PROPERTY_HEIGHT, false);
         } else if (name.equals("position")) {
@@ -454,8 +453,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
             } else {
                 comp.setBounds(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Integer.parseInt(args[2]), Integer.parseInt(args[3]));
             }
-            //if (comp instanceof Container) ((Container) comp).getUnitModel().apply();
-            if (comp instanceof Container) applyUnitModel();
+            if (comp instanceof Container) applyUnitModel((Container) comp);
             this.setPropertyChangeIgnored(Component.PROPERTY_WIDTH, false);
             this.setPropertyChangeIgnored(Component.PROPERTY_HEIGHT, false);
             this.setPropertyChangeIgnored(Component.PROPERTY_X, false);
@@ -550,11 +548,11 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         } else if (name.equals(Component.PROPERTY_WIDTH)) {
             unitModel.apply();
             setPropertyWithEffect(name, unitModel.getWidth(comp), unitModel.getActualWidth((Integer)pce.getOldValue()), SET_WIDTH, FX.PROPERTY_FX_SIZE_CHANGE);
-            if (comp instanceof Container) ((Container) comp).getUnitModel().apply();
+            if (comp instanceof Container) applyUnitModel((Container) comp);
         } else if (name.equals(Component.PROPERTY_HEIGHT)) {
             unitModel.apply();
             setPropertyWithEffect(name, unitModel.getHeight(comp), unitModel.getActualHeight((Integer)pce.getOldValue()), SET_HEIGHT, FX.PROPERTY_FX_SIZE_CHANGE);
-            if (comp instanceof Container) ((Container) comp).getUnitModel().apply();
+            if (comp instanceof Container) applyUnitModel((Container) comp);
         } else if (name.equals(Component.PROPERTY_VISIBLE)) {
             setPropertyWithEffect(name, pce.getNewValue(), pce.getOldValue(), SET_VISIBLE, FX.PROPERTY_FX_VISIBLE_CHANGE);
         } else {
@@ -665,19 +663,19 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         }
     }
     
-    private void applyUnitModel() {
+    private void applyUnitModel(Container container) {
         log.entering(ComponentRenderer.class.getName(), "applyUnitModel");
-        if (!(comp instanceof Container)) throw new IllegalStateException("!(comp instanceof Container)");
-        Container container = (Container) comp;
         UnitModel um = container.getUnitModel();
+        log.fine(container + ", valid = " + um.isModelValid());
+        List<Component> kids = container.getChildren();
+        int size = kids.size();
+        int[][] bounds = new int[size][4];
+        for (int i = 0; i < size; i++) {
+            Component c = kids.get(i);
+            um.getBounds(c, bounds[i]);
+            if (c instanceof Container) applyUnitModel((Container) c);
+        }
         if (!um.isModelValid()) {
-            List<Component> kids = container.getChildren();
-            int size = kids.size();
-            int[][] bounds = new int[size][4];
-            for (int i = 0; i < size; i++) {
-                Component c = kids.get(i);
-                um.getBounds(c, bounds[i]);
-            }
             um.apply();
             int[] tmpBounds = new int[4];
             for (int i = 0; i < size; i++) {

@@ -203,12 +203,12 @@ abstract class AbstractContainer<T extends Component> extends AbstractComponent 
     }
     
     public int getInnerWidth() {
-        int innerWidth = getWidth() - getStyle().getBorder().getSize() * 2;
+        int innerWidth = ((Container) getParent()).getUnitModel().getWidth(this) - getStyle().getBorder().getSize() * 2;
         return innerWidth < 0 ? 0 : innerWidth;
     }
     
     public int getInnerHeight() {
-        int innerHeight = getHeight() - getStyle().getBorder().getSize() * 2;
+        int innerHeight = ((Container) getParent()).getUnitModel().getHeight(this) - getStyle().getBorder().getSize() * 2;
         return innerHeight < 0 ? 0 : innerHeight;
     }    
     
