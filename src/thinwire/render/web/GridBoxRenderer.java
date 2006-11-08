@@ -365,13 +365,13 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
             ((Row)gb.getRows().get(index)).setChecked(state);
             setPropertyChangeIgnored(name, false);            
         } else if (name.equals(VIEW_STATE_COLUMN_SORT)) {
-            Column col = gb.getColumns().get(Integer.parseInt(value));
+            Column col = gb.getColumns().get(getRealIndex(Integer.parseInt(value)));
             col.setSortOrder(col.getSortOrder() == Column.SortOrder.ASC ? Column.SortOrder.DESC : Column.SortOrder.ASC); 
             postClientEvent(SET_ROW_INDEX_SELECTED, gb.getSelectedRow().getIndex(), Boolean.FALSE);
         } else if (name.equals(GridBox.Column.PROPERTY_COLUMN_WIDTH)) {
             setPropertyChangeIgnored(GridBox.Column.PROPERTY_COLUMN_WIDTH, true);
             String[] values = value.split(",");
-            GridBox.Column col = gb.getColumns().get(Integer.parseInt(values[0]));
+            GridBox.Column col = gb.getColumns().get(getRealIndex(Integer.parseInt(values[0])));
             if (col.getWidth() != -1) col.setWidth(Integer.parseInt(values[1]));
             setPropertyChangeIgnored(GridBox.Column.PROPERTY_COLUMN_WIDTH, false);
         } else if (!componentChangeFireAction(event, GridBox.Row.PROPERTY_ROW_SELECTED) && !componentChangeFireDrop(event)) {
@@ -433,6 +433,14 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
         }
         
         return visibleIndex;
+    }
+    
+    private int getRealIndex(int index) {
+        int realIndex = index;
+        List<GridBox.Column> cols = gb.getColumns();
+        for (int i = 0; i < realIndex; i++) if (!cols.get(i).isVisible()) realIndex++;
+        while(!cols.get(realIndex).isVisible()) realIndex++;
+        return realIndex;
     }
         
     static String getValue(Object o, GridBox.Column.Format format) {
