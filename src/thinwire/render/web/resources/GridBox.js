@@ -448,6 +448,7 @@ var tw_GridBox = tw_Component.extend({
     
     setX: function(x) {
         if (this._parent instanceof tw_GridBox) {
+            if (this._parent._box.style.left == "") this._parent._box.style.left = 0;
             var ox = x + parseInt(this._parent._box.style.left);
             arguments.callee.$.call(this, ox);
             this._x = x;
@@ -458,6 +459,7 @@ var tw_GridBox = tw_Component.extend({
         
     setY: function(y) {
         if (this._parent instanceof tw_GridBox) {
+            if (this._parent._box.style.top == "") this._parent._box.style.top = 0;
             var oy = y + parseInt(this._parent._box.style.top);
             
             if (this._root.getParent() instanceof tw_BaseContainer && this._root === this._parent) {

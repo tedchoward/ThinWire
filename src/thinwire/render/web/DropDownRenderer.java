@@ -73,7 +73,10 @@ final class DropDownRenderer extends MaskEditorComponentRenderer {
             postClientEvent(SET_EDIT_ALLOWED, newValue);
         } else if (name.equals(DropDown.PROPERTY_COMPONENT)) {
             if (ddcr != null) ddcr.destroy();
-            Component ddc = ((DropDown)comp).getComponent();
+            DropDown dd = (DropDown) comp;
+            Component ddc = dd.getComponent();
+            if (ddc.getWidth() == 0 || ddc.getWidth() < dd.getWidth()) ddc.setWidth(dd.getView().getOptimalWidth());
+            if (ddc.getHeight() == 0 || ddc.getHeight() < MIN_SIZE) ddc.setHeight(dd.getView().getOptimalHeight());
             ddc.setVisible(false);
             ddcr = wr.ai.getRenderer(ddc);
             ddcr.setPropertyChangeIgnored(Component.PROPERTY_FOCUS, true);

@@ -244,6 +244,7 @@ var tw_DropDown = tw_BaseText.extend({
             comp.setCompVisible(true);
             comp.setFocus(true);
         } else {
+            if (!this._ddComp.isVisible()) return;
             this._ddComp.setCompVisible(false);
             this.setFocus(true);
         }
