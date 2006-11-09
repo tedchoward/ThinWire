@@ -86,7 +86,8 @@ public class DropDownDateBox extends DropDown<DateBox> {
 
         }
         
-        void init(DropDownDateBox ddDb, DateBox db) {
+        @Override
+        protected void init(DropDown<DateBox> ddDb, DateBox db) {
             super.init(ddDb, db);
             addCloseComponent(ddc);
             ddc.addActionListener(DateBox.ACTION_CLICK, new ActionListener() {

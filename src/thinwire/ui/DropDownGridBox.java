@@ -147,7 +147,8 @@ public class DropDownGridBox extends DropDown<GridBox> {
             setDelimiter(",");
         }
         
-        void init(DropDownGridBox ddgb, GridBox gb) {
+        @Override
+        protected void init(DropDown<GridBox> ddgb, GridBox gb) {
             super.init(ddgb, gb);
             if (dd != null) {
                 ddc.addPropertyChangeListener(GridBox.Row.PROPERTY_ROW_CHILD, childChangePcl);
