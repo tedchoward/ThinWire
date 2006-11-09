@@ -119,9 +119,10 @@ public class DropDown<T extends Component> extends AbstractMaskEditorComponent {
         void setValue(Object value);
         int getOptimalWidth();
         int getOptimalHeight();
+        void setComponent(T comp);
     }
     
-    public static abstract class AbstractView<T extends Component> implements View {
+    public static abstract class AbstractView<T extends Component> implements View<T> {
     	
     	protected DropDown<T> dd;
     	protected T ddc;
@@ -144,6 +145,10 @@ public class DropDown<T extends Component> extends AbstractMaskEditorComponent {
     	public int getOptimalWidth() {
     		return dd.getWidth();
     	}
+        
+        public void setComponent(T comp) {
+            init(dd, comp);
+        }
     	
     }
     
@@ -206,6 +211,7 @@ public class DropDown<T extends Component> extends AbstractMaskEditorComponent {
         this.comp = comp;
         ((AbstractComponent)comp).setParent(this);
         copyDropDownStyle(this, comp, true);
+        getView().setComponent(comp);
         firePropertyChange(this, PROPERTY_COMPONENT, oldComp, comp);
     }
     
