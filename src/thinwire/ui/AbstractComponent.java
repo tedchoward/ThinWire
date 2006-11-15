@@ -336,7 +336,7 @@ abstract class AbstractComponent implements Component {
         firePropertyChange(this, PROPERTY_Y, oldY, y);
     }
         
-    public void setPosition(int x, int y) {
+    public Component setPosition(int x, int y) {
         rangeCheck(PROPERTY_X, x, Short.MIN_VALUE, Short.MAX_VALUE);
         rangeCheck(PROPERTY_Y, y, Short.MIN_VALUE, Short.MAX_VALUE);
         int oX = -1, oY = -1;
@@ -365,6 +365,8 @@ abstract class AbstractComponent implements Component {
                 firePropertyChange(this, PROPERTY_Y, oY, y);                
             }
         }
+        
+        return this;
     }    
 
     public int getWidth() {
@@ -389,7 +391,7 @@ abstract class AbstractComponent implements Component {
         firePropertyChange(this, PROPERTY_HEIGHT, oldHeight, height);
     }
     
-    public void setSize(int width, int height) {
+    public Component setSize(int width, int height) {
         rangeCheck(PROPERTY_WIDTH, width, 0, Short.MAX_VALUE);
         rangeCheck(PROPERTY_HEIGHT, height, 0, Short.MAX_VALUE);
         int oWidth = -1, oHeight = -1;
@@ -418,6 +420,8 @@ abstract class AbstractComponent implements Component {
                 firePropertyChange(this, PROPERTY_HEIGHT, oHeight, height);                
             }
         }
+        
+        return this;
     }
     
     public Component setBounds(int x, int y, int width, int height) {

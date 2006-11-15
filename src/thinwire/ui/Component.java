@@ -602,6 +602,7 @@ public interface Component {
      * </p>
      * @param x the x coordinate (in pixels) to assign to this <code>Component</code>
      * @param y the y coordinate (in pixels) to assign to this <code>Component</code>
+     * @return this <code>Component</code> so that you can perform operations like container.getChildren().add(new Button().setPosition(x, y))
      * @throws IllegalArgumentException if the x or y value is < -32768 or >= 32767
      * @see #setX
      * @see #setY
@@ -610,7 +611,7 @@ public interface Component {
      * @see #PROPERTY_Y
      * @see thinwire.ui.event.PropertyChangeEvent
      */
-    void setPosition(int x, int y);
+    Component setPosition(int x, int y);
 
     /**
      * Returns the width of this <code>Component</code>.
@@ -671,6 +672,7 @@ public interface Component {
      * </p>
      * @param width the width (in pixels) to assign to this <code>Component</code>
      * @param height the height (in pixels) to assign to this <code>Component</code>
+     * @return this <code>Component</code> so that you can perform operations like container.getChildren().add(new Button().setSize(width, height))
      * @throws IllegalArgumentException if the width or height value is < 0 or >= 32767
      * @see #setWidth
      * @see #setHeight
@@ -679,7 +681,7 @@ public interface Component {
      * @see #PROPERTY_HEIGHT
      * @see thinwire.ui.event.PropertyChangeEvent
      */
-    void setSize(int width, int height);
+    Component setSize(int width, int height);
 
     /**
      * Assigns the specified width, height, X and Y values to this <code>Component</code> atomically, in one operation.
@@ -694,6 +696,7 @@ public interface Component {
      * @param y the y coordinate (in pixels) to assign to this <code>Component</code>
      * @param width the width (in pixels) to assign to this <code>Component</code>
      * @param height the height (in pixels) to assign to this <code>Component</code>
+     * @return this <code>Component</code> so that you can perform operations like container.getChildren().add(new Button().setBounds(x, y, width, height))
      * @throws IllegalArgumentException if the width or height value is < 0 or >= 32767, or if the x or y value is < -32768 or >= 32767
      * @see #setX
      * @see #setY
