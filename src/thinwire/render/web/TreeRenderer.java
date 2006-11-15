@@ -110,7 +110,9 @@ final class TreeRenderer extends ComponentRenderer implements ItemChangeListener
         }
         
         if (type == ItemChangeEvent.Type.ADD || type == ItemChangeEvent.Type.SET) {
-            postClientEvent(ITEM_ADD, fullIndex, getEscapedText(newValue.getText()), getQualifiedURL(newValue.getImage()));
+            Object newTextValue = RICH_TEXT_PARSER.parseRichText(newValue.getText(), this);
+            if (newTextValue instanceof String) newTextValue = getEscapedText((String) newTextValue);
+            postClientEvent(ITEM_ADD, fullIndex, newTextValue, getQualifiedURL(newValue.getImage()));
             if (newValue.hasChildren()) renderChildren(newValue);
             if (((Tree.Item)newValue.getParent()).isExpanded() && newValue.getIndex() == 0) {
                 postClientEvent(ITEM_EXPAND, fullIndex(((Tree.Item)newValue.getParent())), true);
@@ -123,8 +125,10 @@ final class TreeRenderer extends ComponentRenderer implements ItemChangeListener
         for (Tree.Item item : parent.getChildren()) {
             int index = item.getIndex();
             String fullIndex = String.valueOf(index);            
-            if (parent != tree.getRootItem()) fullIndex = fullIndex(parent) + "." + index;            
-            postClientEvent(ITEM_ADD, fullIndex, getEscapedText(item.getText()), getQualifiedURL(item.getImage()));            
+            if (parent != tree.getRootItem()) fullIndex = fullIndex(parent) + "." + index;  
+            Object newTextValue = RICH_TEXT_PARSER.parseRichText(item.getText(), this);
+            if (newTextValue instanceof String) newTextValue = getEscapedText((String) newTextValue);
+            postClientEvent(ITEM_ADD, fullIndex, newTextValue, getQualifiedURL(item.getImage()));            
             if (item.getChildren().size() > 0) renderChildren(item);
         }
     }

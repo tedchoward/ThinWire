@@ -466,7 +466,7 @@ var tw_Component = Class.extend({
                 
                 var comp = parent._children[index];
 
-                if (comp instanceof tw_BaseContainer && !(comp instanceof tw_TabFolder)) {
+                if (comp instanceof tw_BaseContainer && comp.isFocusCapable() && comp.isVisible() && !(comp instanceof tw_TabFolder)) {
                     parent = comp;
                     index = -1;
                     var notUsable = true;
@@ -510,7 +510,7 @@ var tw_Component = Class.extend({
                 
                 var comp = parent._children[index];
 
-                if (comp instanceof tw_BaseContainer) {
+                if (comp instanceof tw_BaseContainer && comp.isFocusCapable() && comp.isVisible()) {
                     parent = comp;
                     if (parent instanceof tw_TabFolder) parent = parent._children[parent._currentIndex];                    
                     index = parent._children.length;
