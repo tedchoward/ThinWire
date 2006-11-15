@@ -36,14 +36,15 @@ public class TableUnitModel implements UnitModel {
         if (this.container != null) throw new IllegalStateException("this.container != null");
         this.container = container;
         modelValid = false;
-        if (this.container instanceof Window) {
-            this.container.addPropertyChangeListener(new String[] {Window.PROPERTY_WIDTH, Window.PROPERTY_HEIGHT}, new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent ev) {
-                    // Empty Listener makes sure size change properties are fired back up to the server
-                    modelValid = false;
-                }
-            });
-        }
+        String[] properties = this.container instanceof Window ? new String[] {Window.PROPERTY_WIDTH, Window.PROPERTY_HEIGHT, Window.PROPERTY_MENU} : new String[] {Container.PROPERTY_WIDTH, Container.PROPERTY_HEIGHT};
+        
+        this.container.addPropertyChangeListener(properties, new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent ev) {
+                // Empty Listener makes sure size change properties are fired back up to the server
+                modelValid = false;
+            }
+        });
+        
         this.container.addItemChangeListener(new ItemChangeListener() {
             public void itemChange(ItemChangeEvent ev) {
                 modelValid = false;
