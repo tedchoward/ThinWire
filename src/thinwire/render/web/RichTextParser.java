@@ -244,10 +244,10 @@ class RichTextParser {
                 document = db.parse(new ByteArrayInputStream(("<richText>" + tmpText + "</richText>").getBytes()));
                 sb.append("[");
                 processNode(document.getFirstChild(), cr);
-                sb.deleteCharAt(sb.length() - 1).append("]");
+                sb.setCharAt(sb.length() - 1, ']');
                 return sb;
             } catch (Exception e) {
-                log.log(Level.WARNING, "Exception Caught While Parsing Rich Text", e);
+                if (log.isLoggable(Level.WARNING)) log.log(Level.WARNING, "Exception Caught While Parsing Rich Text", e);
                 return richText;
             }
         } else {
@@ -322,6 +322,8 @@ class RichTextParser {
                 processAttributes(curNode, "s", backgroundAtts, null, cr);
                 processChildren(curNode, cr);
                 closeObject();
+            } else {
+                throw new RuntimeException("Invalid tag: " + name);
             }
         }
         

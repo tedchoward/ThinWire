@@ -133,7 +133,7 @@ public class DropDown<T extends Component> extends AbstractMaskEditorComponent {
     	}
     	
     	protected void addCloseComponent(final ActionEventComponent comp) {
-            if (dd == null) throw new RuntimeException();
+            if (dd == null) throw new IllegalStateException("dd == null");
             final WebApplication app = (WebApplication) Application.current();
             app.invokeAfterRendered(comp, new RenderStateListener() {
                 public void renderStateChange(RenderStateEvent ev) {
@@ -211,7 +211,7 @@ public class DropDown<T extends Component> extends AbstractMaskEditorComponent {
         this.comp = comp;
         ((AbstractComponent)comp).setParent(this);
         copyDropDownStyle(this, comp, true);
-        getView().setComponent(comp);
+        if (getView().getDropDown() != null) getView().setComponent(comp);
         firePropertyChange(this, PROPERTY_COMPONENT, oldComp, comp);
     }
     
