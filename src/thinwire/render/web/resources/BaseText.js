@@ -27,7 +27,8 @@ var tw_BaseText = tw_Component.extend({
     _supportEditMask: false,
     _timerId: 0,
     _editor: null,
-    _subtractEditorWidth: 1,
+    _subtractEditorWidth: 0,
+    _paddingSize: tw_isFirefox ? 0 : 2, //FireFox places the padding outside the scrollbars,
     _lastValue: "",
     _useToolTip: true,
     _editMask: "",
@@ -43,11 +44,11 @@ var tw_BaseText = tw_Component.extend({
         var editor = document.createElement(tagNames[1]);    
         var s = editor.style;
         s.position = "absolute";
-        s.left = tw_isKHTML || tw_isSafari ? "-1px" : "1px";
+        s.left = tw_isKHTML || tw_isSafari ? "-1px" : "0px";
         s.top = tw_isKHTML || tw_isSafari ? "-2px" : "0px";
         s.margin = "0px";
         s.border = "0px";
-        s.padding = "0px";
+        s.padding = this._paddingSize + "px";
         
         s.backgroundColor = tw_COLOR_TRANSPARENT;
 
@@ -79,16 +80,24 @@ var tw_BaseText = tw_Component.extend({
     
     setWidth: function(width) {     
         arguments.callee.$.call(this, width);
-        width -= this._borderSizeSub + this._subtractEditorWidth;
+        width -= this._borderSizeSub + this._subtractEditorWidth + this._paddingSize * 2;
         if (width < 0) width = 0;
-        this._editor.style.width = width - ((parseInt(this._editor.style.left) - 1) * 2) + "px";        
+        if (tw_isKHTML || tw_isSafari) {
+            this._editor.style.width = width - ((parseInt(this._editor.style.left) - 1) * 2) + "px";
+        } else {
+            this._editor.style.width = width + "px";
+        }
     },
     
     setHeight: function(height) {
         arguments.callee.$.call(this, height);
-        height -= this._borderSizeSub;
+        height -= this._borderSizeSub + this._paddingSize * 2;
         if (height < 0) height = 0;
-        this._editor.style.height = height - (parseInt(this._editor.style.top) * 2) + "px";        
+        if (tw_isKHTML || tw_isSafari) {
+            this._editor.style.height = height - (parseInt(this._editor.style.top) * 2) + "px";
+        } else {
+            this._editor.style.height = height + "px";
+        }
     },
         
     setText: function(text) {
