@@ -25,7 +25,7 @@
  */
 tw_SplitLayout = Class.extend({
     _comp: null,
-    _vertical: true,
+    _vertical: false,
     _drag: null,
     
     construct: function(id) {
@@ -59,9 +59,18 @@ tw_SplitLayout = Class.extend({
     
     destroy: function() {
         this._drag.destroy();
+        this._comp = null;
     }
 });
 
+tw_SplitLayout.instances = {};
+
 tw_SplitLayout.newInstance = function(id) {
-    new tw_SplitLayout(id);
+    tw_SplitLayout.instances[id] = new tw_SplitLayout(id);
+};
+
+tw_SplitLayout.destroy = function(id) {
+    var splitLayout = tw_SplitLayout.instances[id];
+    if (splitLayout != undefined) splitLayout.destroy();
+    delete tw_SplitLayout.instances[id];
 };

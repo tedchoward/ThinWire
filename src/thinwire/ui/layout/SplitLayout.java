@@ -37,106 +37,103 @@ import thinwire.ui.style.Style;
 /**
  * @author Joshua J. Gertzen
  */
-public class SplitLayout implements Layout {
-    public enum SplitType {VERTICAL, HORIZONTAL};
-
-    private PropertyChangeListener pcl = new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent ev) {
-            if (autoLayout) apply();
-        }
-    };
+public class SplitLayout extends AbstractLayout {
+    private enum Maximize {NONE, FIRST, SECOND};
     
-    private ItemChangeListener icl = new ItemChangeListener() {
-        public void itemChange(ItemChangeEvent ev) {
-            if (autoLayout) apply();
-        }
-    };
-            
-    private boolean autoLayout;
-    private Container<Component> container;
-    private SplitType split;
-    private int dividerSize;
+    private double split;
+    private boolean splitVertical;
+    private Maximize maximize;
     private Label divider;
-    private double size;
-    private int maximized;
+    private int dividerSize;
     private boolean layoutInProgress;
         
-    public SplitLayout(Container<Component> container, SplitType split, double size) {
-        final WebApplication app = (WebApplication)Application.current();        
+    public SplitLayout(double split) {
+        this(split, false);
+    }
+    
+    public SplitLayout(double split, boolean splitVertical) {
         divider = new Label();
         divider.addPropertyChangeListener(new String[] {Component.PROPERTY_X, Component.PROPERTY_Y}, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent ev) {
                 if (!layoutInProgress && SplitLayout.this.container != null) {
                     double value = (Integer)ev.getNewValue() + dividerSize;
                     
-                    if (SplitLayout.this.size < 1) {
+                    if (SplitLayout.this.split < 1) {
                         int contValue = ev.getPropertyName().equals(Component.PROPERTY_X) ? SplitLayout.this.container.getInnerWidth() : SplitLayout.this.container.getInnerHeight();
                         value = Math.floor(value / contValue * 1000 + .5) / 1000; 
                     }
                     
-                    SplitLayout.this.setSize(value);
+                    SplitLayout.this.setSplit(value);
                 }
             }
         });
-                
+
         setSplit(split);
-        setSize(size);
-        setMaximized(false);
+        setSplitVertical(splitVertical);
         setDividerSize(4);
-        setContainer(container);
+        setMaximize(null);
         setAutoLayout(true);
-        
-        app.invokeAfterRendered(divider, new RenderStateListener() {
-            public void renderStateChange(RenderStateEvent ev) {
-                app.clientSideMethodCall("tw_SplitLayout", "newInstance", ev.getId());                
-            }
-        });                
-    }
-        
-    public Container<Component> getContainer() {
-        return container;
     }
     
     public void setContainer(Container<Component> container) {
+        final WebApplication app = (WebApplication)Application.current();
+
         if (this.container != null) {
-            this.container.removeItemChangeListener(icl);
-            this.container.removePropertyChangeListener(pcl);
-            this.container.getChildren().remove(divider);            
+            Integer id = app.getComponentId(divider);
+            if (id != null) app.clientSideMethodCall("tw_SplitLayout", "destroy", id);
+            this.container.getChildren().remove(divider);
         }
         
-        this.container = container;
-        divider.setSize(10, 2);
-        divider.setVisible(false);
-        this.container.getChildren().add(divider);
-        this.container.addItemChangeListener(icl);
-        String[] props;
-        
-        if (this.container instanceof Window) {
-            props = new String[]{Container.PROPERTY_WIDTH, Container.PROPERTY_HEIGHT, Window.PROPERTY_MENU};
-        } else {
-            props = new String[]{Container.PROPERTY_WIDTH, Container.PROPERTY_HEIGHT};
+        if (container != null) {
+            app.invokeAfterRendered(divider, new RenderStateListener() {
+                public void renderStateChange(RenderStateEvent ev) {
+                    app.clientSideMethodCall("tw_SplitLayout", "newInstance", ev.getId());                
+                }
+            });               
+
+            divider.setVisible(false);
+            container.getChildren().add(divider);
         }
         
-        this.container.addPropertyChangeListener(props, pcl);
-        if (autoLayout) apply();
+        super.setContainer(container);
     }
     
-    public boolean isAutoLayout() {
-        return autoLayout;
+    public double getSplit() {
+        return split;
     }
 
-    public void setAutoLayout(boolean autoLayout) {
-        this.autoLayout = autoLayout;
+    public void setSplit(double split) {
+        this.split = split;
         if (autoLayout) apply();
-    }    
-    
-    public SplitType getSplit() {
-        return this.split;
+    }
+
+    public boolean isSplitVertical() {
+        return splitVertical;
     }
     
-    public void setSplit(SplitType split) {
-        if (split == null) throw new IllegalArgumentException("split == null");
-        this.split = split;
+    public void setSplitVertical(boolean splitVertical) {
+        this.splitVertical = splitVertical;
+        
+        if (splitVertical) {
+            this.divider.setSize(4, 8);
+        } else {
+            this.divider.setSize(8, 4);
+        }
+        
+        if (autoLayout) apply();
+    }
+
+    public boolean isMaximized() {
+        return maximize != Maximize.NONE;
+    }
+    
+    public Maximize getMaximize() {
+        return maximize;
+    }
+        
+    public void setMaximize(Maximize maximize) {
+        if (maximize == null) maximize = Maximize.NONE;
+        this.maximize = maximize;
         if (autoLayout) apply();
     }
     
@@ -145,55 +142,12 @@ public class SplitLayout implements Layout {
     }
     
     public void setDividerSize(int dividerSize) {
-        if (dividerSize < 0 || dividerSize >= 32767) throw new IllegalArgumentException("dividerSize < 0 || dividerSize >= 32767");
-        this.dividerSize = dividerSize;        
-        this.divider.setVisible(dividerSize > 0);
+        this.dividerSize = dividerSize;
         if (autoLayout) apply();
     }
     
     public Style getDividerStyle() {
         return divider.getStyle();
-    }
-    
-    public double getSize() {
-        return size;
-    }
-
-    public void setSize(double size) {
-        this.size = size;
-        if (autoLayout) apply();
-    }
-        
-    public void setMaximized(boolean maximized) {
-        setMaximized(maximized, false);
-    }
-    
-    public void setMaximized(boolean maximized, boolean secondary) {        
-        if (maximized) {
-            if (container == null) throw new IllegalStateException("container == null");            
-            int total = split == SplitType.VERTICAL ? container.getInnerWidth() : container.getInnerHeight();
-            int fraction;
-            
-            if (size >= 1) {
-                fraction = (int)Math.floor(size);
-            } else {
-                fraction = (int)Math.floor(total * size);
-            }
-            
-            if (fraction >= total / 2) {
-                this.maximized = secondary ? 1 : 0;
-            } else {
-                this.maximized = secondary ? 0 : 1;
-            }
-        } else {
-            this.maximized = -1;
-        }
-        
-        if (autoLayout) apply();
-    }
-    
-    public boolean isMaximized() {
-        return maximized != -1;
     }
     
     public void apply() {
@@ -202,21 +156,21 @@ public class SplitLayout implements Layout {
        int innerWidth = container.getInnerWidth();
        if (innerHeight < 10 || innerWidth < 10) return;
        layoutInProgress = true;
-       int firstSize = (split == SplitType.VERTICAL ? innerWidth : innerHeight) - dividerSize;
+       int firstSize = (splitVertical ? innerWidth : innerHeight) - dividerSize;
        int secondSize;
        
-       if (maximized == -1) {
+       if (maximize == Maximize.NONE) {
            secondSize = firstSize;
            
-           if (size >= 1) {
-               firstSize = (int)Math.floor(size);
+           if (split >= 1) {
+               firstSize = (int)Math.floor(split);
            } else {
-               firstSize *= size;
+               firstSize *= split;
            }
        
            secondSize -= firstSize;
        } else {
-           if (maximized == 0) {
+           if (maximize == Maximize.FIRST) {
                secondSize = 0;
            } else {
                secondSize = firstSize;
@@ -230,31 +184,31 @@ public class SplitLayout implements Layout {
            Component c = children.get(i);
            
            if (i == 0) {
-               if (maximized != 1) {
-                   if (split == SplitType.VERTICAL) {
+               if (maximize == Maximize.SECOND) {
+                   c.setVisible(false);
+               } else {
+                   if (splitVertical) {
                        c.setBounds(0, 0, firstSize, innerHeight);
                    } else {
                        c.setBounds(0, 0, innerWidth, firstSize);
                    }
                    
                    c.setVisible(true);
-               } else {
-                   c.setVisible(false);
                }
            } else if (i == 1) {
-               if (maximized != 0) {
-                   if (split == SplitType.VERTICAL) {
+               if (maximize == Maximize.FIRST) {
+                   c.setVisible(false);
+               } else {
+                   if (splitVertical) {
                        c.setBounds(firstSize + dividerSize, 0, secondSize, innerHeight);
                    } else {
                        c.setBounds(0, firstSize + dividerSize, innerWidth, secondSize);
                    }
                
                    c.setVisible(true);
-               } else {
-                   c.setVisible(false);
                }
            } else if (c == divider) {               
-               if (split == SplitType.VERTICAL) {
+               if (splitVertical) {
                    c.setBounds(firstSize, 0, dividerSize, innerHeight);
                } else {                   
                    c.setBounds(0, firstSize, innerWidth, dividerSize);                   

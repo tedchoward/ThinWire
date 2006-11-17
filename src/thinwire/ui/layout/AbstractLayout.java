@@ -113,8 +113,6 @@ abstract class AbstractLayout implements Layout {
             
             this.autoLayoutProps = autoLayoutProps;
         }
-        
-        autoLayout = true;
     }
     
     protected void addComponent(Component comp) {

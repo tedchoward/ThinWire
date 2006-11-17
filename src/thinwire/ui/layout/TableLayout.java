@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import thinwire.ui.Component;
-import thinwire.ui.Container;
 
 /**
  * @author Joshua J. Gertzen
@@ -110,21 +109,13 @@ public final class TableLayout extends AbstractLayout {
     
     private double[] widths;
     private double[] heights;
-    private int spacing;
+    protected int spacing;
 
     public TableLayout(double widths[], double[] heights) {
-        this(null, widths, heights, 0);
+        this(widths, heights, 0);
     }
 
     public TableLayout(double widths[], double[] heights, int spacing) {
-        this(null, widths, heights, spacing);
-    }
-
-    public TableLayout(Container<Component> container, double widths[], double[] heights) {
-        this(container, widths, heights, 0);
-    }
-    
-    public TableLayout(Container<Component> container, double widths[], double[] heights, int spacing) {
         super(Component.PROPERTY_LIMIT);
         if (widths == null || widths.length == 0) throw new IllegalArgumentException("widths == null || widths.length == 0");
         if (heights == null || heights.length == 0) throw new IllegalArgumentException("heights == null || heights.length == 0");
@@ -132,7 +123,7 @@ public final class TableLayout extends AbstractLayout {
         this.widths = widths;
         this.heights = heights;
         this.spacing = spacing;
-        if (container != null) setContainer(container);
+        setAutoLayout(true);
     }
     
     protected Object getFormalLimit(Component comp) {
@@ -147,9 +138,8 @@ public final class TableLayout extends AbstractLayout {
         }
     }
     
-    private double[] getAbsoluteSizes(int availableSize, int spacing, double[] sizes) {
-        double[] absoluteSizes = new double[sizes.length];
-        System.arraycopy(sizes, 0, absoluteSizes, 0, sizes.length);
+    private int[] getAbsoluteSizes(int availableSize, double[] sizes) {
+        int[] absoluteSizes = new int[sizes.length];
         availableSize -= (sizes.length - 1) * spacing;
         int fillCnt = 0;
 
@@ -160,16 +150,19 @@ public final class TableLayout extends AbstractLayout {
         int pctSize = availableSize;
 
         for (int i = 0, cnt = sizes.length; i < cnt; i++) {
-            if (sizes[i] < 1 && sizes[i] > 0) {
-                absoluteSizes[i] = pctSize * sizes[i];
-                availableSize -= absoluteSizes[i];
-            } else if (sizes[i] == 0) {
+            double size = sizes[i];
+            
+            if (size == 0) {
                 fillCnt++;
+            } else if (size < 1) {
+                absoluteSizes[i] = (int)(pctSize * size);
+                availableSize -= absoluteSizes[i];
+            } else {
+                absoluteSizes[i] = (int)size;
             }
         }
         
         if (fillCnt > 0) {
-            log.info("Fill Count:" + fillCnt);       
             int fillSize = availableSize / fillCnt;
             int lastIndex = -1;
             
@@ -186,10 +179,21 @@ public final class TableLayout extends AbstractLayout {
         return absoluteSizes;
     }
     
+    public int getSpacing() {
+        return spacing;
+    }
+    
+    public void setSpacing(int spacing) {
+        if (spacing < 0 || spacing >= Short.MAX_VALUE) throw new IllegalArgumentException("spacing < 0 || spacing >= " + Short.MAX_VALUE);
+        this.spacing = spacing;
+        if (autoLayout) apply();
+    }
+    
     public void apply() {
-        double[] absoluteWidths = getAbsoluteSizes(container.getInnerWidth(), spacing, widths);
-        double[] absoluteHeights = getAbsoluteSizes(container.getInnerHeight(), spacing, heights);
-        
+        if (container == null) return;
+        int[] absoluteWidths = getAbsoluteSizes(container.getInnerWidth(), widths);
+        int[] absoluteHeights = getAbsoluteSizes(container.getInnerHeight(), heights);
+
         for (Component c : (List<Component>) container.getChildren()) {
             Limit limit = (Limit)c.getLimit();
             if (limit == null) limit = DEFAULT_LIMIT;
@@ -214,7 +218,7 @@ public final class TableLayout extends AbstractLayout {
             }
             
             height -= spacing;
-            c.setBounds(x, y, width, height);
+            if (width >= 0 && height >= 0) c.setBounds(x, y, width, height);
         }
     }
 }
