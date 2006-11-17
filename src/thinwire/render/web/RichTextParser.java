@@ -245,6 +245,7 @@ class RichTextParser {
                 sb.append("[");
                 processNode(document.getFirstChild(), cr);
                 sb.setCharAt(sb.length() - 1, ']');
+                log.fine("RICH TEXT: " + sb.toString());
                 return sb;
             } catch (Exception e) {
                 if (log.isLoggable(Level.WARNING)) log.log(Level.WARNING, "Exception Caught While Parsing Rich Text", e);
@@ -321,6 +322,9 @@ class RichTextParser {
                 sb.append("{t:\"span\",");
                 processAttributes(curNode, "s", backgroundAtts, null, cr);
                 processChildren(curNode, cr);
+                closeObject();
+            } else if (name.equals("br") && cr instanceof LabelRenderer) {
+                sb.append("{t:\"br\",");
                 closeObject();
             } else {
                 throw new RuntimeException("Invalid tag: " + name);
