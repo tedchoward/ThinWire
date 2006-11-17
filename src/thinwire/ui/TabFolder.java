@@ -30,6 +30,7 @@ import thinwire.ui.event.ItemChangeListener;
 import thinwire.ui.event.PropertyChangeEvent;
 import thinwire.ui.event.PropertyChangeListener;
 import thinwire.ui.event.ItemChangeEvent.Type;
+import thinwire.ui.layout.Layout;
 import thinwire.ui.style.Style;
 
 /**
@@ -158,11 +159,35 @@ public class TabFolder extends AbstractContainer<TabSheet> {
         return innerHeight < 0 ? 0 : innerHeight;
     }
 
+    /**
+     * This property is unsupported by the TabFolder component.
+     * @throws UnsupportedOperationException indicating this property is not supported by TabFolder.
+     */
+    public ScrollType getScroll() {
+        throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_SCROLL, true));        
+    }
+
+    /**
+     * This property is unsupported by the TabFolder component.
+     * @throws UnsupportedOperationException indicating this property is not supported by TabFolder.
+     */
     public void setScroll(ScrollType scrollType) {
         throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_SCROLL, false));        
     }
 
-    public ScrollType getScroll() {
-        throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_SCROLL, true));        
+    /**
+     * This property is unsupported by the TabFolder component.
+     * @throws UnsupportedOperationException indicating this property is not supported by TabFolder.
+     */
+    public Layout getLayout() {
+        throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_LAYOUT, true));        
+    }
+
+    /**
+     * This property is unsupported by the TabFolder component.
+     * @throws UnsupportedOperationException indicating this property is not supported by TabFolder.
+     */
+    public void setLayout(Layout layout) {
+        throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_LAYOUT, false));        
     }
 }

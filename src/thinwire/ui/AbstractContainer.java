@@ -31,8 +31,7 @@ import java.util.List;
 
 import thinwire.ui.event.ItemChangeListener;
 import thinwire.ui.event.ItemChangeEvent.Type;
-import thinwire.ui.layout.DefaultUnitModel;
-import thinwire.ui.layout.UnitModel;
+import thinwire.ui.layout.Layout;
 
 /**
  * @author Joshua J. Gertzen
@@ -108,12 +107,12 @@ abstract class AbstractContainer<T extends Component> extends AbstractComponent 
         }
     }
 
-    private ScrollType scroll = ScrollType.NONE;
     private EventListenerImpl<ItemChangeListener> icei = new EventListenerImpl<ItemChangeListener>(this);
     private List<T> children;
+    private ScrollType scroll = ScrollType.NONE;
+    private Layout layout;
     private T childWithFocus;
     private Button standardButton;
-    private UnitModel unitModel;
     
     AbstractContainer() {        
         this(true);
@@ -122,9 +121,7 @@ abstract class AbstractContainer<T extends Component> extends AbstractComponent 
     AbstractContainer(boolean visible) {
         super(visible);
         children = new ItemChangeList();
-        setUnitModel(new DefaultUnitModel());
     }
-    
 
     void updateStandardButton(Button button, boolean standard) {
         if (this.standardButton == button) {
@@ -150,6 +147,10 @@ abstract class AbstractContainer<T extends Component> extends AbstractComponent 
     Button getStandardButton() {
         return standardButton;
     }
+    
+    public ScrollType getScroll() {
+        return scroll;
+    }
         
     public void setScroll(ScrollType scrollType) {
         if (scrollType == null) throw new IllegalArgumentException("scrollType == null");
@@ -158,8 +159,15 @@ abstract class AbstractContainer<T extends Component> extends AbstractComponent 
         firePropertyChange(this, PROPERTY_SCROLL, oldScroll, scrollType);
     }
     
-    public ScrollType getScroll() {
-        return scroll;
+    public Layout getLayout() {
+        return layout;
+    }
+    
+    public void setLayout(Layout layout) {
+        Layout oldLayout = this.layout;
+        this.layout = layout;
+        if (layout != null && layout.getContainer() != this) layout.setContainer((Container<Component>)this);
+        firePropertyChange(this, PROPERTY_LAYOUT, oldLayout, layout);
     }
 
     public void addItemChangeListener(ItemChangeListener listener) {
@@ -203,33 +211,12 @@ abstract class AbstractContainer<T extends Component> extends AbstractComponent 
     }
     
     public int getInnerWidth() {
-        int innerWidth;
-        if (getParent() != null) {
-            innerWidth = ((Container) getParent()).getUnitModel().getWidth(this) - getStyle().getBorder().getSize() * 2;
-        } else {
-            innerWidth = getWidth() - getStyle().getBorder().getSize() * 2;
-        }
+        int innerWidth = getWidth() - getStyle().getBorder().getSize() * 2;
         return innerWidth < 0 ? 0 : innerWidth;
     }
     
     public int getInnerHeight() {
-        int innerHeight;
-        if (getParent() != null) {
-            innerHeight = ((Container) getParent()).getUnitModel().getHeight(this) - getStyle().getBorder().getSize() * 2;
-        } else {
-            innerHeight = getHeight() - getStyle().getBorder().getSize() * 2;
-        }
+        int innerHeight = getHeight() - getStyle().getBorder().getSize() * 2;
         return innerHeight < 0 ? 0 : innerHeight;
     }    
-    
-    public void setUnitModel(UnitModel unitModel) {
-        UnitModel oldModel = this.unitModel;
-        this.unitModel = unitModel;
-        this.unitModel.init(this);
-        firePropertyChange(this, PROPERTY_UNIT_MODEL, oldModel, this.unitModel);
-    }
-
-    public UnitModel getUnitModel() {
-        return unitModel;
-    }
 }

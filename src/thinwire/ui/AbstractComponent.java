@@ -53,10 +53,11 @@ abstract class AbstractComponent implements Component {
     private boolean focusCapable = true;
     private boolean focus;
     private boolean enabled = true;
-    private int height;
-    private int width;
     private int x;
     private int y;
+    private int width;
+    private int height;
+    private Object limit;
     private boolean visible;
     private boolean ignoreFirePropertyChange;
     
@@ -464,7 +465,18 @@ abstract class AbstractComponent implements Component {
             }
         }
         return this;
-    }    
+    }
+    
+    public Object getLimit() {
+        return limit;
+    }
+    
+    public Component setLimit(Object limit) {
+        Object oldLimit = this.limit;
+        this.limit = limit;
+        firePropertyChange(this, PROPERTY_LIMIT, oldLimit, limit);
+        return this;
+    }
     
     public boolean isVisible() {
         return visible;

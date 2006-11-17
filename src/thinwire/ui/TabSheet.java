@@ -283,5 +283,21 @@ public class TabSheet extends AbstractContainer<Component> implements TextCompon
                 tf.setCurrentIndex(index);
             }
         }
-    }   
+    }
+
+    /**
+     * This property is unsupported by the TabSheet component.
+     * @throws UnsupportedOperationException indicating this property is not supported by TabSheet.
+     */
+    public Object getLimit() {
+        throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_LIMIT, true));        
+    }
+
+    /**
+     * This property is unsupported by the TabSheet component.
+     * @throws UnsupportedOperationException indicating this property is not supported by TabSheet.
+     */
+    public Component setLimit(Object limit) {
+        throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_LIMIT, false));        
+    }
 }

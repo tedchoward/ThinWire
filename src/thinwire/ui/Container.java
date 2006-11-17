@@ -27,7 +27,7 @@ package thinwire.ui;
 
 import java.util.List;
 
-import thinwire.ui.layout.UnitModel;
+import thinwire.ui.layout.Layout;
 
 /**
  * A <code>Container</code> is a <code>Component</code> that maintains a collection of other <code>Component</code>s as a group.
@@ -47,14 +47,13 @@ public interface Container<T extends Component> extends ItemChangeEventComponent
      */
     public static final String PROPERTY_SCROLL = "scroll";
     
-    public static final String PROPERTY_UNIT_MODEL = "unitModel";
-
     /**
-     * Sets the scrollType for the X and Y axis of this Container.
-     * By default the scroll type is ScrollType.NONE.
-     * @param scrollType one of the enum ScrollType constants.
+     * Contains the formal property name for the layout manager of the container.
+     * @see #setLayout(Layout)
+     * @see #getLayout()
+     * @see thinwire.ui.layout.Layout
      */
-    void setScroll(ScrollType scrollType);
+    public static final String PROPERTY_LAYOUT = "layout";
 
     /**
      * Gets the current scrollType defined for the Container.
@@ -62,6 +61,40 @@ public interface Container<T extends Component> extends ItemChangeEventComponent
      */
     ScrollType getScroll();
 
+    /**
+     * Sets the scrollType for the X and Y axis of this Container.
+     * By default the scroll type is ScrollType.NONE.
+     * @param scrollType one of the enum ScrollType constants.
+     * @see #PROPERTY_SCROLL
+     * @see thinwire.ui.event.PropertyChangeEvent
+     */
+    void setScroll(ScrollType scrollType);
+
+    /**
+     * Gets the current layout manager that is responsible for sizing and
+     * positioning components of this <code>Container</code>.
+     * @return the </code>Layout</code> implementation used by this <code>Container</code>.
+     * @see #setLayout(Layout)
+     * @see Component#getLimit
+     * @see Component#setLimit(Object)
+     * @see thinwire.ui.layout.Layout
+     */
+    Layout getLayout();
+
+    /**
+     * Sets the layout manager that is used to size and position components of this <code>Container</code>.
+     * If a <code>Layout</code> is not specified for a container, then you must size and position of the components
+     * within a container manually.
+     * <b>Default:</b> null (i.e. fixed absolute coordinate positioning)
+     * @param layout any class implementing the <code>Layout</code> interface, or null.
+     * @see #PROPERTY_LAYOUT
+     * @see Component#getLimit
+     * @see Component#setLimit(Object)
+     * @see thinwire.ui.layout.Layout
+     * @see thinwire.ui.event.PropertyChangeEvent
+     */
+    void setLayout(Layout layout);
+    
     /**
      * Returns a list of components in the container.
      * @return this Container's children.
@@ -89,23 +122,14 @@ public interface Container<T extends Component> extends ItemChangeEventComponent
     T getComponentWithFocus();
 
     /**
-     * Returns the usable inner width of the Container. Always returns the value
-     * in pixels regardless of the UnitModel.
-     * 
-     * @return the usable inner width of the Container.
+     * Returns the usable inner width of the <code>Container</code>.
+     * @return the usable inner width of the <code>Container</code>.
      */
     int getInnerWidth();
 
     /**
-     * Returns the usable inner height of the Container. Always returns the
-     * value in pixels regardless of the UnitModel.
-     * 
-     * @return the usable inner height of the Container.
+     * Returns the usable inner height of the <code>Container</code>.
+     * @return the usable inner height of the <code>Container</code>.
      */
     int getInnerHeight();
-    
-    void setUnitModel(UnitModel unitModel);
-    
-    UnitModel getUnitModel();
-
 }

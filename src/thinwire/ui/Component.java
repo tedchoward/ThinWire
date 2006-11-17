@@ -51,63 +51,70 @@ import thinwire.ui.style.Style;
  */
 public interface Component {
     /**
-     * Contains the formal property name for the 'X' coordinate of the component.
+     * Contains the formal property name for the 'X' coordinate of a <code>Component</code>.
      * @see #setX(int)
      * @see #getX()
      */    
     public static final String PROPERTY_X = "x";
     
     /**
-     * Contains the formal property name for the 'Y' coordinate of the component.
+     * Contains the formal property name for the 'Y' coordinate of a <code>Component</code>.
      * @see #setY(int)
      * @see #getY()
      */
     public static final String PROPERTY_Y = "y";
     
     /**
-     * Contains the formal property name for the width of the component.
+     * Contains the formal property name for the width of a <code>Component</code>.
      * @see #setWidth(int)
      * @see #getWidth()
      */
     public static final String PROPERTY_WIDTH = "width";
     
     /**
-     * Contains the formal property name for the height of the component.
+     * Contains the formal property name for the height of a <code>Component</code>.
      * @see #setHeight(int)
      * @see #getHeight()
      */
     public static final String PROPERTY_HEIGHT = "height";
     
     /**
-     * Contains the formal property name for the visible state of the component.
+     * Contains the formal property name for the layout manager limit of a component.
+     * @see #setLimit(Object)
+     * @see #getLimit()
+     */
+    public static final String PROPERTY_LIMIT = "limit";
+
+    /**
+     * Contains the formal property name for the visible state of a <code>Component</code>.
      * @see #setVisible(boolean)
      * @see #isVisible()
      */
     public static final String PROPERTY_VISIBLE = "visible";
     
     /**
-     * Contains the formal property name for the enabled state of the component.
+     * Contains the formal property name for the enabled state of a <code>Component</code>.
      * @see #setEnabled(boolean)
      * @see #isEnabled()
      */
     public static final String PROPERTY_ENABLED = "enabled";
     
     /**
-     * Contains the formal property name for the focus capability of the component.
+     * Contains the formal property name for the focus capability of a <code>Component</code>.
      * @see #setFocusCapable(boolean)
      * @see #isFocusCapable()
      */
     public static final String PROPERTY_FOCUS_CAPABLE = "focusCapable";
     
     /**
-     * Contains the formal property name for the focus state of the component.
+     * Contains the formal property name for the focus state of a <code>Component</code>.
      * @see #setFocus(boolean)
      * @see #isFocus()
      */
     public static final String PROPERTY_FOCUS = "focus";
     
     /**
-     * Contains the formal property name for the user object of the component.
+     * Contains the formal property name for the user object of a <code>Component</code>.
      * @see #setUserObject(Object)
      * @see #getUserObject()
      */
@@ -711,6 +718,31 @@ public interface Component {
      */
     Component setBounds(int x, int y, int width, int height);
 
+    /**
+     * Gets the layout limit that controls the bounds of this component within the context of the parent <code>Container</code>'s layout.
+     * @return the layout limit that is in use by the <code>Container</code>'s layout, or null if no limit is specified.
+     * @see #setLimit(Object)
+     * @see Container#getLayout
+     * @see Container#setLayout(thinwire.ui.layout.Layout)
+     * @see thinwire.ui.layout.Layout
+     */
+    Object getLimit();
+    
+    /**
+     * Sets a layout limit that controls the bounds of this component within the context of the parent <code>Container</code>'s layout.
+     * The type of limit object that is acceptable depends on the <code>Layout</code> that is specified for the parent <code>Container</code>.
+     * <b>Default:</b> null
+     * @param limit a layout limit to use for the <code>Container</code>'s layout, or null to clear the limit.
+     * @return this <code>Component</code> so that you can perform operations like container.getChildren().add(new Button().setLimit(...))
+     * @see #PROPERTY_LIMIT
+     * @see #getLimit()
+     * @see Container#getLayout
+     * @see Container#setLayout(thinwire.ui.layout.Layout)
+     * @see thinwire.ui.layout.Layout
+     * @see thinwire.ui.event.PropertyChangeEvent
+     */
+    Component setLimit(Object limit);
+    
     /**
      * Returns a boolean value indicating whether this <code>Component</code> may be displayed in a window. See
      * the documentation of {@link #setVisible(boolean)} for further details about this property.<br>
