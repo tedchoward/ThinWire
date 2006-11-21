@@ -64,7 +64,8 @@ var tw_DropDown = tw_BaseText.extend({
             
         tw_addEventListener(button, "mousedown", this._buttonMouseDownListener.bind(this));
         tw_addEventListener(button, ["mouseup", "mouseout"], this._buttonMouseUpListener.bind(this));
-        tw_addEventListener(button, "click", this._buttonClickListener.bind(this)); 
+        this._buttonClickListener = this._buttonClickListener.bind(this);
+        tw_addEventListener(button, "click", this._buttonClickListener); 
 
         this.init(-1, props);
     },
@@ -208,6 +209,15 @@ var tw_DropDown = tw_BaseText.extend({
     setEditAllowed: function(editAllowed) {        
         this._editAllowed = editAllowed;
         if (this.isEnabled()) this.setEnabled(true); //This will trigger the proper editAllowed state.
+
+        //If edit is not allowed we want a click on the edit field to trigger the drop down.
+        if (editAllowed) {
+            tw_removeEventListener(this._editor, "click", this._buttonClickListener);
+            this._editor.style.cursor = "";
+        } else {
+            tw_addEventListener(this._editor, "click", this._buttonClickListener);
+            this._editor.style.cursor = "default";
+        }
     },
     
     _setFocusStyle: function(state) {
