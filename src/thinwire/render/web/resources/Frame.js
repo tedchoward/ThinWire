@@ -129,7 +129,7 @@ var tw_Frame = tw_BaseContainer.extend({
     _windowBoundsListener: function(event) {
         if (this._resizeInProgress) return;
         if (this._resizeTimerId != null) clearTimeout(this._resizeTimerId);
-        this._resizeTimerId = setTimeout(this._getFrameBounds, 100);
+        this._resizeTimerId = setTimeout(this._getFrameBounds, 0);
     },
     
     isModalLayerVisible: function() {

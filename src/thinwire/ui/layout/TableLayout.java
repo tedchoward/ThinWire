@@ -109,20 +109,26 @@ public final class TableLayout extends AbstractLayout {
     
     private double[] widths;
     private double[] heights;
-    protected int spacing;
+    private int margin;
+    private int spacing;
 
-    public TableLayout(double widths[], double[] heights) {
-        this(widths, heights, 0);
+    public TableLayout(double sizes[][]) {
+        this(sizes, 0, 0);
     }
 
-    public TableLayout(double widths[], double[] heights, int spacing) {
+    public TableLayout(double sizes[][], int margin) {
+        this(sizes, margin, 0);
+    }
+    
+    public TableLayout(double sizes[][], int margin, int spacing) {
         super(Component.PROPERTY_LIMIT);
-        if (widths == null || widths.length == 0) throw new IllegalArgumentException("widths == null || widths.length == 0");
-        if (heights == null || heights.length == 0) throw new IllegalArgumentException("heights == null || heights.length == 0");
-        if (spacing < 0 || spacing > Short.MAX_VALUE) throw new IllegalArgumentException("spacing < 0 || spacing > " + Short.MAX_VALUE);
-        this.widths = widths;
-        this.heights = heights;
-        this.spacing = spacing;
+        if (sizes == null || sizes.length != 2) throw new IllegalArgumentException("sizes == null || sizes.length != 2");
+        if (sizes[0] == null || sizes[0].length == 0) throw new IllegalArgumentException("sizes[0] == null || sizes[0].length == 0");
+        if (sizes[1] == null || sizes[1].length == 0) throw new IllegalArgumentException("sizes[1] == null || sizes[1].length == 0");
+        widths = sizes[0];
+        heights = sizes[1];
+        setSpacing(spacing);
+        setMargin(margin);
         setAutoLayout(true);
     }
     
@@ -140,7 +146,7 @@ public final class TableLayout extends AbstractLayout {
     
     private int[] getAbsoluteSizes(int availableSize, double[] sizes) {
         int[] absoluteSizes = new int[sizes.length];
-        availableSize -= (sizes.length - 1) * spacing;
+        availableSize -= (sizes.length - 1) * spacing + margin * 2;
         int fillCnt = 0;
 
         for (double f : sizes) { 
@@ -189,6 +195,16 @@ public final class TableLayout extends AbstractLayout {
         if (autoLayout) apply();
     }
     
+    public int getMargin() {
+        return margin;
+    }
+    
+    public void setMargin(int margin) {
+        if (margin < 0 || margin >= Short.MAX_VALUE) throw new IllegalArgumentException("margin < 0 || margin >= " + Short.MAX_VALUE);
+        this.margin = margin;
+        if (autoLayout) apply();
+    }
+    
     public void apply() {
         if (container == null) return;
         int[] absoluteWidths = getAbsoluteSizes(container.getInnerWidth(), widths);
@@ -197,13 +213,13 @@ public final class TableLayout extends AbstractLayout {
         for (Component c : (List<Component>) container.getChildren()) {
             Limit limit = (Limit)c.getLimit();
             if (limit == null) limit = DEFAULT_LIMIT;
-            int x = 0, y = 0, width = 0, height = 0;
+            int x = margin, y = margin, width = 0, height = 0;
             
-            for (int i = 0, cnt = limit.getColumn(); i < cnt; i++) {
+            for (int i = 0, cnt = limit.column; i < cnt; i++) {
                 x += absoluteWidths[i] + spacing;
             }
             
-            for (int i = 0, cnt = limit.getRow(); i < cnt; i++) {
+            for (int i = 0, cnt = limit.row; i < cnt; i++) {
                 y += absoluteHeights[i] + spacing;
             }
             

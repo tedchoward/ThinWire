@@ -47,10 +47,6 @@ abstract class AbstractContainer<T extends Component> extends AbstractComponent 
         }
 
         private void processAdd(T c) {
-            if (c == AbstractContainer.this) throw new IllegalArgumentException("cannot add component to itself");
-            if (c.getParent() != null)
-                throw new IllegalArgumentException("cannot add component to multiple containers or twice to the same container");
-                        
             ((AbstractComponent)c).setParent(AbstractContainer.this);
             
             if (c instanceof Button && ((Button)c).isStandard()) {                             
@@ -81,6 +77,9 @@ abstract class AbstractContainer<T extends Component> extends AbstractComponent 
         }
 
         public void add(int index, T o) {
+            if (o == null) throw new IllegalArgumentException("o == null");
+            if (o == AbstractContainer.this) throw new IllegalArgumentException("cannot add component to itself");
+            if (o.getParent() != null) throw new IllegalArgumentException("cannot add component to multiple containers or twice to the same container");
             l.add(index, o);
             processAdd(o);
             icei.fireItemChange(this, Type.ADD, new Integer(index), null, o);
@@ -95,6 +94,9 @@ abstract class AbstractContainer<T extends Component> extends AbstractComponent 
         }
 
         public T set(int index, T o) {
+            if (o == null) throw new IllegalArgumentException("o == null");
+            if (o == AbstractContainer.this) throw new IllegalArgumentException("cannot add component to itself");
+            if (o.getParent() != null) throw new IllegalArgumentException("cannot add component to multiple containers or twice to the same container");
             T ret = l.set(index, o);
             processRemove(ret);
             processAdd(o);
@@ -166,6 +168,7 @@ abstract class AbstractContainer<T extends Component> extends AbstractComponent 
     public void setLayout(Layout layout) {
         Layout oldLayout = this.layout;
         this.layout = layout;
+        if (oldLayout != null && oldLayout.getContainer() == this) oldLayout.setContainer(null);
         if (layout != null && layout.getContainer() != this) layout.setContainer((Container<Component>)this);
         firePropertyChange(this, PROPERTY_LAYOUT, oldLayout, layout);
     }

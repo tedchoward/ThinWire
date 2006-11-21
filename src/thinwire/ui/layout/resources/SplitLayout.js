@@ -27,12 +27,14 @@ tw_SplitLayout = Class.extend({
     _comp: null,
     _vertical: false,
     _drag: null,
+    _margin: 0,
     
     construct: function(id) {
         this._comp = tw_Component.instances[id];
         this._drag = new tw_DragHandler(this._comp._box, this._dragListener.bind(this));
         this._vertical = this._comp.getWidth() < this._comp.getHeight();
         this._comp._box.style.cursor = this._vertical ? "W-resize" : "N-resize";
+        this._comp._box.style.zIndex = "10";
     },
     
     _dragListener: function(ev) {        
@@ -43,18 +45,36 @@ tw_SplitLayout = Class.extend({
             if (this._vertical) {
                 this._comp._box.style.cursor = "W-resize";
                 var x = this._comp.getX() + ev.changeInX;
-                if (x < 0) x = 0;
+                
+                if (x < this._margin) {
+                    x = this._margin;
+                } else {    
+                    var width = this._comp.getParent().getWidth() - this._margin;
+                    if (x > width) x = width;
+                }
+                
                 this._comp.setX(x);
             } else {
                 this._comp._box.style.cursor = "N-resize";
                 var y = this._comp.getY() + ev.changeInY;
-                if (y < 0) y = 0;
+                
+                if (y < this._margin) {
+                    y = this._margin;
+                } else {
+                   var height = this._comp.getParent().getHeight() - this._margin;
+                   if (y > height) y = height;
+                }
+                
                 this._comp.setY(y);
             }
         } else if (ev.type == 2) {
             this._comp._box.style.backgroundColor = "transparent";
             tw_em.sendViewStateChanged(this._comp._id, "position", this._comp.getX() + "," + this._comp.getY());            
         }
+    },
+    
+    setMargin: function(margin) {
+        this._margin = margin;
     },
     
     destroy: function() {
@@ -65,12 +85,17 @@ tw_SplitLayout = Class.extend({
 
 tw_SplitLayout.instances = {};
 
-tw_SplitLayout.newInstance = function(id) {
-    tw_SplitLayout.instances[id] = new tw_SplitLayout(id);
+tw_SplitLayout.newInstance = function(id, margin) {
+    var sl = tw_SplitLayout.instances[id] = new tw_SplitLayout(id);
+    sl.setMargin(margin);
 };
 
 tw_SplitLayout.destroy = function(id) {
     var splitLayout = tw_SplitLayout.instances[id];
     if (splitLayout != undefined) splitLayout.destroy();
     delete tw_SplitLayout.instances[id];
+};
+
+tw_SplitLayout.setMargin = function(id, margin) {
+    tw_SplitLayout.instances[id].setMargin(margin);
 };
