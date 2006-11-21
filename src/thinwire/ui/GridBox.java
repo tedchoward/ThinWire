@@ -288,12 +288,6 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
         public static final String PROPERTY_COLUMN_SORT_COMPARATOR = "columnSortComparator";
         public static final String PROPERTY_COLUMN_SORT_ORDER = "columnSortOrder";
 
-        private static final Comparator<Object> DEFAULT_SORT = new Comparator<Object>() {
-            public int compare(Object o1, Object o2) {
-                return o1.toString().toLowerCase().compareTo(o2.toString().toLowerCase());
-            }
-        };        
-
         public static enum SortOrder {NONE, ASC, DESC};
         
         public interface Format {
@@ -305,7 +299,7 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
         private int width = -1;
         private AlignX alignX = AlignX.LEFT;
         private Format displayFormat = null;
-        private Comparator sortComparator = DEFAULT_SORT;
+        private Comparator sortComparator = String.CASE_INSENSITIVE_ORDER;
 
         /**
          * Construct a Column.
@@ -441,7 +435,7 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
          * @param sortComparator this Column's Comparator.
          */
         public void setSortComparator(Comparator sortComparator) {
-            if (sortComparator == null) sortComparator = DEFAULT_SORT;
+            if (sortComparator == null) sortComparator = String.CASE_INSENSITIVE_ORDER;
             Comparator oldSortComparator = this.sortComparator;
             GridBox gb = (GridBox) getParent();
             this.sortComparator = sortComparator;            
