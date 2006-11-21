@@ -44,9 +44,9 @@ public final class SplitLayout extends AbstractLayout {
     private double split;
     private boolean splitVertical;
     private Maximize maximize;
-    private Label divider;
+    private Label spacer;
     private int margin;
-    private int dividerSize;
+    private int spacing;
     private boolean layoutInProgress;
         
     public SplitLayout(double split) {
@@ -61,17 +61,17 @@ public final class SplitLayout extends AbstractLayout {
         this(split, splitVertical, margin, 4);
     }
     
-    public SplitLayout(double split, boolean splitVertical, int margin, int dividerSize) {
+    public SplitLayout(double split, boolean splitVertical, int margin, int spacing) {
         app = (WebApplication)Application.current();
-        divider = new Label();
-        divider.addPropertyChangeListener(new String[] {Component.PROPERTY_X, Component.PROPERTY_Y}, new PropertyChangeListener() {
+        spacer = new Label();
+        spacer.addPropertyChangeListener(new String[] {Component.PROPERTY_X, Component.PROPERTY_Y}, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent ev) {
                 if (!layoutInProgress && SplitLayout.this.container != null) {
                     double value = (Integer)ev.getNewValue() - SplitLayout.this.margin;
                     
                     if (SplitLayout.this.split < 1) {
                         int contValue = ev.getPropertyName().equals(Component.PROPERTY_X) ? SplitLayout.this.container.getInnerWidth() : SplitLayout.this.container.getInnerHeight();
-                        contValue -= SplitLayout.this.dividerSize + SplitLayout.this.margin * 2;
+                        contValue -= SplitLayout.this.spacing + SplitLayout.this.margin * 2;
                         value = Math.floor(value / contValue * 1000 + .5) / 1000; 
                     }
                     
@@ -83,27 +83,27 @@ public final class SplitLayout extends AbstractLayout {
         setSplit(split);
         setSplitVertical(splitVertical);
         setMargin(margin);
-        setDividerSize(dividerSize);
+        setSpacing(spacing);
         setMaximize(null);
         setAutoLayout(true);
     }
     
     public void setContainer(Container<Component> container) {
         if (this.container != null) {
-            Integer id = app.getComponentId(divider);
+            Integer id = app.getComponentId(spacer);
             if (id != null) app.clientSideMethodCall("tw_SplitLayout", "destroy", id);
-            this.container.getChildren().remove(divider);
+            this.container.getChildren().remove(spacer);
         }
         
         if (container != null) {
-            app.invokeAfterRendered(divider, new RenderStateListener() {
+            app.invokeAfterRendered(spacer, new RenderStateListener() {
                 public void renderStateChange(RenderStateEvent ev) {
                     app.clientSideMethodCall("tw_SplitLayout", "newInstance", ev.getId(), margin);                
                 }
             });               
 
-            divider.setVisible(false);
-            container.getChildren().add(divider);
+            spacer.setVisible(false);
+            container.getChildren().add(spacer);
         }
         
         super.setContainer(container);
@@ -126,9 +126,9 @@ public final class SplitLayout extends AbstractLayout {
         this.splitVertical = splitVertical;
         
         if (splitVertical) {
-            this.divider.setSize(4, 8);
+            this.spacer.setSize(4, 8);
         } else {
-            this.divider.setSize(8, 4);
+            this.spacer.setSize(8, 4);
         }
         
         if (autoLayout) apply();
@@ -141,22 +141,22 @@ public final class SplitLayout extends AbstractLayout {
     public void setMargin(int margin) {
         if (margin < 0 || margin >= Short.MAX_VALUE) throw new IllegalArgumentException("margin < 0 || margin >= " + Short.MAX_VALUE);
         this.margin = margin;
-        Integer id = app.getComponentId(divider);
+        Integer id = app.getComponentId(spacer);
         if (id != null) app.clientSideMethodCall("tw_SplitLayout", "setMargin", id, margin);
         if (autoLayout) apply();
     }
     
-    public int getDividerSize() {
-        return dividerSize;
+    public int getSpacing() {
+        return spacing;
     }
     
-    public void setDividerSize(int dividerSize) {
-        this.dividerSize = dividerSize;
+    public void setSpacing(int spacing) {
+        this.spacing = spacing;
         if (autoLayout) apply();
     }
     
-    public Style getDividerStyle() {
-        return divider.getStyle();
+    public Style getSpacerStyle() {
+        return spacer.getStyle();
     }
 
     public boolean isMaximized() {
@@ -180,11 +180,11 @@ public final class SplitLayout extends AbstractLayout {
        if (innerHeight < 10 || innerWidth < 10) return;
        layoutInProgress = true;
        int firstSize = (splitVertical ? innerWidth : innerHeight) - margin * 2;
-       int dividerSize = this.dividerSize;
+       int spacing = this.spacing;
        int secondSize;
        
        if (maximize == Maximize.NONE) {
-           firstSize -= dividerSize;
+           firstSize -= spacing;
            secondSize = firstSize;
            
            if (split >= 1) {
@@ -195,7 +195,7 @@ public final class SplitLayout extends AbstractLayout {
        
            secondSize -= firstSize;
        } else {
-           dividerSize = 0;
+           spacing = 0;
            
            if (maximize == Maximize.FIRST) {
                secondSize = 0;
@@ -210,12 +210,12 @@ public final class SplitLayout extends AbstractLayout {
        for (int i = children.size(), cnt = 0; --i >= 0;) {
            Component c = children.get(i);
            
-           if (c == divider) {
+           if (c == spacer) {
                if (maximize == Maximize.NONE) {
                    if (splitVertical) {
-                       c.setBounds(firstSize + margin, margin, dividerSize, innerHeight - (margin * 2));
+                       c.setBounds(firstSize + margin, margin, spacing, innerHeight - (margin * 2));
                    } else {                   
-                       c.setBounds(margin, firstSize + margin, innerWidth - (margin * 2), dividerSize);                   
+                       c.setBounds(margin, firstSize + margin, innerWidth - (margin * 2), spacing);                   
                    }
                    
                    c.setVisible(true);
@@ -227,9 +227,9 @@ public final class SplitLayout extends AbstractLayout {
                    c.setVisible(false);
                } else {
                    if (splitVertical) {
-                       c.setBounds(firstSize + dividerSize + margin, margin, secondSize, innerHeight - (margin * 2));
+                       c.setBounds(firstSize + spacing + margin, margin, secondSize, innerHeight - (margin * 2));
                    } else {
-                       c.setBounds(margin, firstSize + dividerSize + margin, innerWidth - (margin * 2), secondSize);
+                       c.setBounds(margin, firstSize + spacing + margin, innerWidth - (margin * 2), secondSize);
                    }
                
                    c.setVisible(true);
