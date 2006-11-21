@@ -27,24 +27,41 @@ package thinwire.ui.event;
 
 import java.util.EventObject;
 
+import thinwire.ui.GridBox;
+import thinwire.ui.ItemChangeEventComponent;
+
 /**
  * Sends a trigger to a listener when something changes in an item.
  * @author Joshua J. Gertzen
  */
 public final class ItemChangeEvent extends EventObject {
+    private ItemChangeEventComponent sourceComponent;
     private Type type;
 	private Object position;
 	private Object oldValue;
 	private Object newValue;
     
     public static enum Type { ADD, REMOVE, SET; }	
-	
-    public ItemChangeEvent(Object source, Type type, Object position, Object oldValue, Object newValue) {
-        super(source);
+	    
+    public ItemChangeEvent(ItemChangeEventComponent sourceComponent, Type type, Object position, Object oldValue, Object newValue) {
+        this(sourceComponent, null, type, position, oldValue, newValue);
+    }
+    
+    public ItemChangeEvent(ItemChangeEventComponent sourceComponent, Object source, Type type, Object position, Object oldValue, Object newValue) {
+        super(source == null ? sourceComponent : source);
+        if (sourceComponent == null) throw new IllegalArgumentException("sourceComponent == null");
+        if (type == null) throw new IllegalArgumentException("type == null");
+        if (position == null) throw new IllegalArgumentException("position == null");
+        if (!(position instanceof Integer || position instanceof GridBox.Range)) throw new IllegalArgumentException("!(position instanceof Integer || position instanceof GridBox.Range)");
+        this.sourceComponent = sourceComponent;
 	    this.type = type;
 	    this.position = position;
 		this.oldValue = oldValue;
 		this.newValue = newValue;
+    }
+    
+    public ItemChangeEventComponent getSourceComponent() {
+        return sourceComponent;
     }
     
     public Type getType() {

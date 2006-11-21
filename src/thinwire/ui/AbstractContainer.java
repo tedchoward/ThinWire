@@ -37,7 +37,7 @@ import thinwire.ui.layout.Layout;
  * @author Joshua J. Gertzen
  */
 abstract class AbstractContainer<T extends Component> extends AbstractComponent implements Container<T> {
-    private class ItemChangeList extends AbstractList<T> {
+    private class ChildList extends AbstractList<T> {
         private ArrayList<T> l = new ArrayList<T>();
 
         private void processRemove(T c) {
@@ -82,14 +82,14 @@ abstract class AbstractContainer<T extends Component> extends AbstractComponent 
             if (o.getParent() != null) throw new IllegalArgumentException("cannot add component to multiple containers or twice to the same container");
             l.add(index, o);
             processAdd(o);
-            icei.fireItemChange(this, Type.ADD, new Integer(index), null, o);
+            icei.fireItemChange(null, Type.ADD, new Integer(index), null, o);
         }
 
         public T remove(int index) {
             T ret = l.get(index);
             l.remove(index);
             processRemove(ret);
-            icei.fireItemChange(this, Type.REMOVE, new Integer(index), ret, null);
+            icei.fireItemChange(null, Type.REMOVE, new Integer(index), ret, null);
             return ret;
         }
 
@@ -100,7 +100,7 @@ abstract class AbstractContainer<T extends Component> extends AbstractComponent 
             T ret = l.set(index, o);
             processRemove(ret);
             processAdd(o);
-            icei.fireItemChange(this, Type.SET, new Integer(index), ret, o);
+            icei.fireItemChange(null, Type.SET, new Integer(index), ret, o);
             return ret;
         }
 
@@ -122,7 +122,7 @@ abstract class AbstractContainer<T extends Component> extends AbstractComponent 
     
     AbstractContainer(boolean visible) {
         super(visible);
-        children = new ItemChangeList();
+        children = new ChildList();
     }
 
     void updateStandardButton(Button button, boolean standard) {

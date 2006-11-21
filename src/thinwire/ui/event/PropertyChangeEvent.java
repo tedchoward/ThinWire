@@ -27,21 +27,30 @@ package thinwire.ui.event;
 
 import java.util.EventObject;
 
+import thinwire.ui.Component;
+
 /**
  * @author Joshua J. Gertzen
  */
 public final class PropertyChangeEvent extends EventObject {
+    private Component sourceComponent;
     private String propertyName;
     private Object newValue;
     private Object oldValue;
     
-    public PropertyChangeEvent(Object source, String propertyName, Object oldValue, Object newValue) {
-        super(source);
+    public PropertyChangeEvent(Component sourceComponent, Object source, String propertyName, Object oldValue, Object newValue) {
+        super(source == null ? sourceComponent : source);
+        if (sourceComponent == null) throw new IllegalArgumentException("sourceComponent == null");
+        if (propertyName == null || propertyName.length() == 0) throw new IllegalArgumentException("propertyName == null || propertyName.length() == 0"); 
         this.propertyName = propertyName;
         this.newValue = newValue;
         this.oldValue = oldValue;
     }
 
+    public Component getSourceComponent() {
+        return sourceComponent;
+    }
+    
     public String getPropertyName() {
         return propertyName;
     }

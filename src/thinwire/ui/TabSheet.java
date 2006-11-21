@@ -122,7 +122,7 @@ public class TabSheet extends AbstractContainer<Component> implements TextCompon
     }    
 
     public void fireAction(ActionEvent ev) {
-        aei.fireAction(ev, null);
+        aei.fireAction(ev);
     }
 
     public void addDropListener(DropEventComponent dragComponent, DropListener listener) {
@@ -146,7 +146,7 @@ public class TabSheet extends AbstractContainer<Component> implements TextCompon
      * @param action the action name
      */
     public void fireAction(String action) {
-        aei.fireAction(new ActionEvent(this, action), null);
+        aei.fireAction(new ActionEvent(this, action));
     }
     
 	public String getImage() {

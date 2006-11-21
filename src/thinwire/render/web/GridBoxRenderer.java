@@ -36,7 +36,7 @@ import thinwire.ui.Application;
 import thinwire.ui.GridBox;
 import thinwire.ui.Component;
 import thinwire.ui.DropDownGridBox.DefaultView;
-import thinwire.ui.GridBox.CellPosition;
+import thinwire.ui.GridBox.Range;
 import thinwire.ui.GridBox.Column;
 import thinwire.ui.GridBox.Row;
 import thinwire.ui.event.ItemChangeEvent;
@@ -289,13 +289,13 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
 
     public void itemChange(ItemChangeEvent ice) {
         ItemChangeEvent.Type type = ice.getType();
-        CellPosition cp = (CellPosition) ice.getPosition();
-        Integer rowIndex = new Integer(cp.getRowIndex());
+        Range cp = (Range) ice.getPosition();
+        int rowIndex = cp.getRowIndex();
         int columnIndex = cp.getColumnIndex();
         Object oldValue = ice.getOldValue();
         Object newValue = ice.getNewValue();
 
-        if (rowIndex.intValue() == -1) { // Column Change
+        if (rowIndex == -1) { // Column Change
             GridBox.Column nco = (GridBox.Column) newValue;
             GridBox.Column oco = (GridBox.Column) oldValue;
 

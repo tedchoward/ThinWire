@@ -124,7 +124,7 @@ public class DateBox extends AbstractComponent implements ActionEventComponent, 
         if (ev == null) throw new IllegalArgumentException("ev == null");
         if (!(ev.getSource() instanceof Date)) throw new IllegalArgumentException("!(ev.getSource() instanceof Date)");
         setSelectedDate((Date)ev.getSource());        
-        aei.fireAction(ev, Date.class);
+        aei.fireAction(ev);
     }
     
     /**

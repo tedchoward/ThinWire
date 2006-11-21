@@ -117,5 +117,10 @@ public interface HierarchyComponent<HI extends HierarchyComponent.Item> extends 
      */
     public HI getRootItem();
         
+    /**
+     * A convienence method that is equivalent to <code>fireAction(new ActionEvent(this, action, item))</code>.
+     * @param action the action that occured.
+     * @param item the hierarchy Item in on which the action occured.
+     */
     public void fireAction(String action, HI item);    
 }

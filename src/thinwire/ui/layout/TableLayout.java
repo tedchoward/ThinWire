@@ -69,7 +69,7 @@ public final class TableLayout extends AbstractLayout {
             this.row = row;
             this.width = width;
             this.height = height;
-            this.value = column + ", " + row + ", " + width + ", " + height;
+            this.value = getClass().getName() + "(" + column + ", " + row + ", " + width + ", " + height + ")";
         }
         
         private void rangeCheck(String name, int value) {
@@ -185,16 +185,6 @@ public final class TableLayout extends AbstractLayout {
         return absoluteSizes;
     }
     
-    public int getSpacing() {
-        return spacing;
-    }
-    
-    public void setSpacing(int spacing) {
-        if (spacing < 0 || spacing >= Short.MAX_VALUE) throw new IllegalArgumentException("spacing < 0 || spacing >= " + Short.MAX_VALUE);
-        this.spacing = spacing;
-        if (autoLayout) apply();
-    }
-    
     public int getMargin() {
         return margin;
     }
@@ -202,6 +192,16 @@ public final class TableLayout extends AbstractLayout {
     public void setMargin(int margin) {
         if (margin < 0 || margin >= Short.MAX_VALUE) throw new IllegalArgumentException("margin < 0 || margin >= " + Short.MAX_VALUE);
         this.margin = margin;
+        if (autoLayout) apply();
+    }
+    
+    public int getSpacing() {
+        return spacing;
+    }
+    
+    public void setSpacing(int spacing) {
+        if (spacing < 0 || spacing >= Short.MAX_VALUE) throw new IllegalArgumentException("spacing < 0 || spacing >= " + Short.MAX_VALUE);
+        this.spacing = spacing;
         if (autoLayout) apply();
     }
     

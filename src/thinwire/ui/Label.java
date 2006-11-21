@@ -120,7 +120,7 @@ public class Label extends AbstractTextComponent implements AlignTextComponent, 
     }    
 
     public void fireAction(ActionEvent ev) {
-        aei.fireAction(ev, null);
+        aei.fireAction(ev);
     }
     
     /**
@@ -128,7 +128,7 @@ public class Label extends AbstractTextComponent implements AlignTextComponent, 
      * @param action the action name
      */
     public void fireAction(String action) {
-        aei.fireAction(new ActionEvent(this, action), null);
+        aei.fireAction(new ActionEvent(this, action));
     }
     
     public AlignX getAlignX() {

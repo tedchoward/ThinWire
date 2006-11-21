@@ -75,7 +75,8 @@ abstract class AbstractHierarchyComponent<HI extends AbstractHierarchyComponent.
             modCount++;
             I item = l.remove(index);
             item.setParent(null);
-            if (parent.getHierarchy() != null) parent.getHierarchy().icei.fireItemChange(parent, Type.REMOVE, index, item, null);
+            AbstractHierarchyComponent hier = parent.getHierarchy();
+            if (hier != null) hier.icei.fireItemChange(parent, Type.REMOVE, index, item, null);
             return item;
         }
 
@@ -236,11 +237,6 @@ abstract class AbstractHierarchyComponent<HI extends AbstractHierarchyComponent.
         aei.removeListener(listener);
     }
     
-    /**
-     * A convienence method that is equivalent to <code>fireAction(new ActionEvent(this, action, row))</code>.
-     * @param action the action that occured.
-     * @param date the Row in the GridBox on which the action occured.
-     */
     public void fireAction(String action, HI item) {
         fireAction(new ActionEvent(this, action, item));
     }

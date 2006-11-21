@@ -116,7 +116,7 @@ public class ProgressBar extends AbstractRangeComponent implements ActionEventCo
     }    
 
     public void fireAction(ActionEvent ev) {
-        aei.fireAction(ev, null);
+        aei.fireAction(ev);
     }
 
     /**
@@ -124,7 +124,7 @@ public class ProgressBar extends AbstractRangeComponent implements ActionEventCo
      * @param action the action name
      */
     public void fireAction(String action) {
-        aei.fireAction(new ActionEvent(this, action), null);
+        aei.fireAction(new ActionEvent(this, action));
     }
     
     public void addDropListener(DropEventComponent dragComponent, DropListener listener) {

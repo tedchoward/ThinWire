@@ -268,30 +268,28 @@ var tw_GridBox = tw_Component.extend({
         if (!this.isEnabled()) return;
         this.setFocus(true);
         var cell = tw_getEventTarget(event);
-        var column = cell.parentNode;    
-        var index = 1;
-        
-        while ((cell = cell.nextSibling) != null)
-            index++;
-        
-        index = column.childNodes.length - index;                
-        this.setRowIndexSelected(index, true);
+        var column = cell.parentNode;
+        var position = this._getCellPosition(cell);
+
+        this.setRowIndexSelected(position[1], true);
         
         if (this._visibleCheckBoxes) {
             if (this._fullRowCheckBox || (tw_getEventOffsetX(event) < 16 && this._content.childNodes.item(0) == column)) {
-                this.setRowIndexCheckState(index, -1, true);
+                this.setRowIndexCheckState(position[1], -1, true);
             }
-    
-            var action = this._getClickAction(event.type, index);
-            if (action == null) return;
-            this.fireAction(action, index);
-        } else {
-            var action = this._getClickAction(event.type, index);
-            if (action == null) return;
-            this.fireAction(action, index);
             
-            if (this._lastColumn().childNodes.item(index).tw_child != undefined) {
-                this._setChildVisible(index, true);
+            var msg = position.join("@");
+            var action = this._getClickAction(event.type, msg);
+            if (action == null) return;
+            this.fireAction(action, msg);
+        } else {
+            var msg = position.join("@");
+            var action = this._getClickAction(event.type, msg);
+            if (action == null) return;
+            this.fireAction(action, msg);
+            
+            if (this._lastColumn().childNodes.item(position[1]).tw_child != undefined) {
+                this._setChildVisible(position[1], true);
             } else {
                 this._root.closeChildren();
                 
@@ -299,7 +297,6 @@ var tw_GridBox = tw_Component.extend({
                 if (this._root.getParent() instanceof tw_DropDown) {
                     this._root.setVisible(false);
                 }
-                
             }
         }
         
@@ -307,6 +304,23 @@ var tw_GridBox = tw_Component.extend({
     },
     
     _getClickAction: tw_Component.getClickAction,
+    
+    _getCellPosition: function(cell) {
+        var column = cell.parentNode;
+        var columnIndex = 0;
+        var walk = column;
+        
+        while ((walk = walk.previousSibling) != null)
+            columnIndex++;
+        
+        var rowIndex = 0;
+        var walk = cell;
+        
+        while ((walk = walk.previousSibling) != null)
+            rowIndex++;
+        
+        return [columnIndex, rowIndex];
+    },
     
     _newCell: function(value, columnIndex, state) {
         var cell = document.createElement("div");
@@ -552,11 +566,11 @@ var tw_GridBox = tw_Component.extend({
                     //You cannot have children and visibleCheckBoxes, otherwise if dropdown close.
                     if (this._childGridBoxes != null && this._lastColumn().childNodes.item(this._currentIndex).tw_child != undefined) {
                         this.setRowIndexSelected(this._currentIndex, true);
-                        this.fireAction("click", this._currentIndex);
+                        this.fireAction("click", "0@" + this._currentIndex);
                         this._setChildVisible(this._currentIndex, true);
                     } else if (keyPressCombo == "Enter") {
                         this.setRowIndexSelected(this._currentIndex, true);
-                        this.fireAction("click", this._currentIndex);
+                        this.fireAction("click", "0@" + this._currentIndex);
                     }
                     
                     break;
@@ -924,13 +938,7 @@ var tw_GridBox = tw_Component.extend({
         s.color = tw_COLOR_HIGHLIGHTTEXT;
         
         var cell = tw_getEventTarget(event);
-        
-        var column = cell.parentNode;    
-        var index = 1;
-        
-        while ((cell = cell.nextSibling) != null) index++;
-        
-        index = column.childNodes.length - index;
+        var position = this._getCellPosition(cell);
         
         var content = this._content;
         var childNodes = content.childNodes;
@@ -938,7 +946,7 @@ var tw_GridBox = tw_Component.extend({
         var x = 0;
         
         for (var i = 0, cnt = this._getColumnCount(); i < cnt; i++) {
-            var tmpCell = childNodes.item(i).childNodes.item(index).cloneNode(true);
+            var tmpCell = childNodes.item(i).childNodes.item(position[1]).cloneNode(true);
             var s = tmpCell.style;
             s.position = "absolute";
             s.width = childNodes.item(i).style.width;
@@ -950,7 +958,7 @@ var tw_GridBox = tw_Component.extend({
             dragBox.appendChild(tmpCell);
         }
         
-        dragBox._dragObject = index;
+        dragBox._dragObject = position.join("@");
         return dragBox;
     },
     
@@ -963,15 +971,7 @@ var tw_GridBox = tw_Component.extend({
     },
     
     getDropTarget: function(event) {
-        var cell = tw_getEventTarget(event);
-        
-        var column = cell.parentNode;    
-        var index = 1;
-        
-        while ((cell = cell.nextSibling) != null) index++;
-        
-        index = column.childNodes.length - index;
-        return index;
+        return this._getCellPosition(tw_getEventTarget(event)).join("@");
     },
     
     destroy: function(keepChildColumn) {

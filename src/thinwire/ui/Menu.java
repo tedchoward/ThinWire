@@ -179,7 +179,7 @@ public class Menu extends AbstractHierarchyComponent<Menu.Item> {
     public void fireAction(ActionEvent ev) {
         if (ev == null) throw new IllegalArgumentException("ev == null");
         if (!ev.getAction().equals(ACTION_CLICK)) throw new IllegalArgumentException("!ev.getAction().equals(ACTION_CLICK)");
-        aei.fireAction(ev, Menu.Item.class);
+        aei.fireAction(ev);
     }
     
     public int getHeight() {

@@ -155,6 +155,10 @@ public class KeyPressEvent extends EventObject {
         key = keyPressCombo.substring(keyPressCombo.lastIndexOf('-') + 1);
     }
     
+    public Component getSourceComponent() {
+        return (Component)getSource();
+    }
+    
     public boolean isCtrl() {
         return ctrl;
     }

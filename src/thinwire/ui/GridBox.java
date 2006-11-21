@@ -38,7 +38,6 @@ import thinwire.render.Renderer;
 import thinwire.ui.AlignX;
 import thinwire.ui.DropDownGridBox;
 import thinwire.ui.DropDownGridBox.DefaultView;
-import thinwire.ui.Tree.Item;
 import thinwire.ui.event.ActionEvent;
 import thinwire.ui.event.ActionListener;
 import thinwire.ui.event.DropEvent;
@@ -132,21 +131,65 @@ import thinwire.util.Grid;
  */
 public class GridBox extends AbstractComponent implements Grid<GridBox.Row, GridBox.Column>, ActionEventComponent, ItemChangeEventComponent, DropEventComponent {
     private static Logger log = Logger.getLogger(GridBox.class.getName());
-    public static final class CellPosition {
+    
+    public static final class Range {
+        private GridBox gridBox;
         private int rowIndex;
         private int columnIndex;
         
-        CellPosition(int rowIndex, int columnIndex) {
+        public Range(GridBox gridBox, int columnIndex, int rowIndex) {
+            if (gridBox == null) throw new IllegalArgumentException("gridBox == null");
+            if (columnIndex < -1) throw new IllegalArgumentException("columnIndex{" + columnIndex + "} < -1");
+            if (rowIndex < -1) throw new IllegalArgumentException("rowIndex{" + rowIndex + "} < -1");
+            this.gridBox = gridBox;
             this.rowIndex = rowIndex;
             this.columnIndex = columnIndex;
+        }
+        
+        public GridBox getGridBox() {
+            return gridBox;
+        }
+    
+        public Column getColumn() {
+            if (columnIndex < 0 || columnIndex >= gridBox.getColumns().size()) return null;
+            return gridBox.getColumns().get(columnIndex);
         }
         
         public int getColumnIndex() {
             return columnIndex;
         }
         
+        public Row getRow() {
+            if (rowIndex < 0 || rowIndex >= gridBox.getRows().size()) return null;
+            return gridBox.getRows().get(rowIndex);
+        }
+        
         public int getRowIndex() {
             return rowIndex;
+        }
+        
+        public Object getCell() {
+            Column col = getColumn();
+            if (col == null || rowIndex < 0 || rowIndex >= gridBox.getRows().size()) throw new IllegalStateException("columnIndex < 0 || columnIndex >= getColumns().size() || rowIndex < 0 || rowIndex >= getRows().size()");
+            return col.get(rowIndex);
+        }
+        
+        public void setCell(Object value) {
+            Column col = getColumn();
+            if (col == null || rowIndex < 0 || rowIndex >= gridBox.getRows().size()) throw new IllegalStateException("columnIndex < 0 || columnIndex >= getColumns().size() || rowIndex < 0 || rowIndex >= getRows().size()");
+            col.set(rowIndex, value);
+        }
+        
+        public boolean equals(Object o) {
+            return o instanceof Range && toString().equals(o.toString());
+        }
+        
+        public int hashCode() {
+            return toString().hashCode();
+        }
+        
+        public String toString() {
+            return getClass().getName() + "(" + gridBox + ", " + columnIndex + ", " + rowIndex + ")";
         }
     }
     	
@@ -541,7 +584,7 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
                     }
                 }
                 
-                icei.fireItemChange(this, type, rowIndex, columnIndex, oldValue, newValue);
+                icei.fireItemChange(type, columnIndex, rowIndex, oldValue, newValue);
 			}
 		};
 		
@@ -642,18 +685,19 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
     
     public void fireAction(ActionEvent ev) {
         if (ev == null) throw new IllegalArgumentException("ev == null");
-        if (!(ev.getSource() instanceof Row)) throw new IllegalArgumentException("!(ev.getSource() instanceof GridBox.Row)");
-        ((Row)ev.getSource()).setSelected(true);        
-        aei.fireAction(ev, Row.class);
+        if (!(ev.getSource() instanceof Range)) throw new IllegalArgumentException("!(ev.getSource() instanceof GridBox.Range)");
+        Row row = ((Range)ev.getSource()).getRow();
+        if (row != null) row.setSelected(true);        
+        aei.fireAction(ev);
     }
     
     /**
-     * A convienence method that is equivalent to <code>fireAction(new ActionEvent(this, action, row))</code>.
+     * A convienence method that is equivalent to <code>fireAction(new ActionEvent(this, action, range))</code>.
      * @param action the action that occured.
-     * @param date the Row in the GridBox on which the action occured.
+     * @param range a GridBox.Range object that represents the part of the GridBox on which the action occured.
      */
-    public void fireAction(String action, Row row) {
-        fireAction(new ActionEvent(this, action, row));
+    public void fireAction(String action, Range range) {
+        fireAction(new ActionEvent(this, action, range));
     }
     
     public void addDropListener(DropEventComponent dragComponent, DropListener listener) {

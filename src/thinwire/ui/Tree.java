@@ -247,7 +247,7 @@ public class Tree extends AbstractHierarchyComponent<Tree.Item> implements DropE
         if (ev == null) throw new IllegalArgumentException("ev == null");
         if (!(ev.getSource() instanceof Item)) throw new IllegalArgumentException("!(ev.getSource() instanceof Tree.Item)");
         ((Item)ev.getSource()).setSelected(true);       
-        aei.fireAction(ev, Tree.Item.class);
+        aei.fireAction(ev);
     }
     
     public void addDropListener(DropEventComponent dragComponent, DropListener listener) {

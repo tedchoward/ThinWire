@@ -190,7 +190,7 @@ public class Button extends AbstractTextComponent implements ImageComponent, Act
 	}
 
     public void fireAction(ActionEvent ev) {
-        aei.fireAction(ev, null);
+        aei.fireAction(ev);
     }
 
 	/**
@@ -198,6 +198,6 @@ public class Button extends AbstractTextComponent implements ImageComponent, Act
 	 * @param action the action name
 	 */
 	public void fireAction(String action) {
-        aei.fireAction(new ActionEvent(this, action), null);
+        aei.fireAction(new ActionEvent(this, action));
 	}
 }

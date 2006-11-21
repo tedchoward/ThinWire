@@ -69,15 +69,17 @@ class EventListenerImpl<E extends EventListener> {
         }
     };
     
-    static Class getDragDropType(DropEventComponent comp) {
+    static Class getSourceType(Component comp) {
         Class clazz;
         
         if (comp instanceof GridBox) {
-            clazz = GridBox.Row.class;
+            clazz = GridBox.Range.class;
         } else if (comp instanceof DateBox) {
             clazz = Date.class;
         } else if (comp instanceof Tree) {
             clazz = Tree.Item.class;
+        } else if (comp instanceof Menu) {
+            clazz = Menu.Item.class;
         } else {
             clazz = comp.getClass();
         }
@@ -222,14 +224,15 @@ class EventListenerImpl<E extends EventListener> {
     
     void firePropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
         if(!hasListeners() && renderer == null) return;
-        PropertyChangeEvent pce = new PropertyChangeEvent(source, propertyName, oldValue, newValue);
+        PropertyChangeEvent pce = new PropertyChangeEvent(comp, source, propertyName, oldValue, newValue);
         if (renderer != null) renderer.propertyChange(pce);
         if (hasListeners()) fireEvent(pce, propertyName);        
     }
 
-    void fireAction(ActionEvent ev, Class sourceType) {
+    void fireAction(ActionEvent ev) {
         if (ev == null) throw new IllegalArgumentException("ev == null");
         if (comp != ev.getSourceComponent()) throw new IllegalArgumentException("this != ev.getSourceComponent()");
+        Class sourceType = getSourceType(ev.getSourceComponent());
         
         if (sourceType == null) {
             if (ev.getSource() != ev.getSourceComponent()) throw new IllegalArgumentException("ev.getSource() != ev.getSourceComponent()");
@@ -244,7 +247,7 @@ class EventListenerImpl<E extends EventListener> {
     void fireDrop(DropEvent ev) {
         if (ev == null) throw new IllegalArgumentException("ev == null");
         if (comp != ev.getSourceComponent()) throw new IllegalArgumentException("this != ev.getSourceComponent()");
-        Class sourceType = getDragDropType(ev.getSourceComponent());
+        Class sourceType = getSourceType(ev.getSourceComponent());
         
         if (sourceType == null) {
             if (ev.getSource() != ev.getSourceComponent()) throw new IllegalArgumentException("ev.getSource() != ev.getSourceComponent()");
@@ -252,7 +255,7 @@ class EventListenerImpl<E extends EventListener> {
             if (!(sourceType.isInstance(ev.getSource()))) throw new IllegalArgumentException("!(ev.getSource() instanceof " + sourceType.getName() + ")");
         }
 
-        Class dragType = getDragDropType(ev.getDragComponent());
+        Class dragType = getSourceType(ev.getDragComponent());
         
         if (dragType == null) {
             if (ev.getDragObject() != ev.getDragComponent()) throw new IllegalArgumentException("ev.getDragObject() != ev.getDragComponent()");
@@ -269,16 +272,16 @@ class EventListenerImpl<E extends EventListener> {
         if (!hasListeners()) return;
         fireEvent(kpe, kpe.getKeyPressCombo());        
     }
-        
-    void fireItemChange(Object source, ItemChangeEvent.Type type, int rowIndex, int columnIndex, Object oldValue, Object newValue) {
+    
+    void fireItemChange(ItemChangeEvent.Type type, int columnIndex, int rowIndex, Object oldValue, Object newValue) {
         if (!hasListeners()) return;
-        ItemChangeEvent ice = new ItemChangeEvent(source, type, new GridBox.CellPosition(rowIndex, columnIndex), oldValue, newValue);
+        ItemChangeEvent ice = new ItemChangeEvent((GridBox)comp, type, new GridBox.Range((GridBox)comp, columnIndex, rowIndex), oldValue, newValue);
         fireEvent(ice, null);
     }
 
-    void fireItemChange(Object source, ItemChangeEvent.Type type, int index, Object oldValue, Object newValue) {
+    void fireItemChange(HierarchyComponent.Item source, ItemChangeEvent.Type type, int index, Object oldValue, Object newValue) {
         if (!hasListeners()) return;
-        ItemChangeEvent ice = new ItemChangeEvent(source, type, index, oldValue, newValue);            
+        ItemChangeEvent ice = new ItemChangeEvent((ItemChangeEventComponent)comp, source, type, index, oldValue, newValue);            
         fireEvent(ice, null);
     }
                 

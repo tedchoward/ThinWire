@@ -138,7 +138,7 @@ public class DropDownGridBox extends DropDown<GridBox> {
         
         private ActionListener clickListener = new ActionListener() {
             public void actionPerformed(ActionEvent ev) {
-                if (((GridBox.Row) ev.getSource()).getChild() == null) dd.setText(getValue().toString());
+                if (((GridBox.Range)ev.getSource()).getRow().getChild() == null) dd.setText(getValue().toString());
             }
         };
         

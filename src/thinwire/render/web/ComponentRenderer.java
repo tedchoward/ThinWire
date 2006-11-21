@@ -583,7 +583,8 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         Object o;
         
         if (comp instanceof GridBox) {
-            o = ((GridBox)comp).getRows().get(Integer.parseInt(data));
+            String[] values = data.split("@");
+            o = new GridBox.Range((GridBox)comp, Integer.parseInt(values[0]), Integer.parseInt(values[1]));
         } else if (comp instanceof Tree || comp instanceof Menu) {
             o = TreeRenderer.fullIndexItem((HierarchyComponent)comp, data);
         } else if (comp instanceof DateBox) {
