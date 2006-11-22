@@ -833,7 +833,7 @@ var tw_GridBox = tw_Component.extend({
         }
     },
     
-    addRow: function(index, values, checked) {
+    addRow: function(index, values, checked, selected) {
         var content = this._content;
         eval("values = " + values);
         var state = this._visibleCheckBoxes ? 0 : -1;
@@ -852,7 +852,9 @@ var tw_GridBox = tw_Component.extend({
         if (checked == 1) this.setRowIndexCheckState(index, true, false);        
         var size = this._getRowCount();
         
-        if (size == 1) {
+        if (selected) {
+            this.setRowIndexSelected(index);
+        } else if (size == 1) {
             if (this._getColumnCount() > 0) {
                 this.setRowIndexSelected(0);
             } else {
@@ -888,7 +890,7 @@ var tw_GridBox = tw_Component.extend({
         }
     },
     
-    setRow: function(index, values, checked) {
+    setRow: function(index, values, checked, selected) {
         var content = this._content;    
         if (!(values instanceof Array)) eval("values = " + values);
         
@@ -898,6 +900,7 @@ var tw_GridBox = tw_Component.extend({
         }
         
         this.setRowIndexCheckState(index, checked == 1, false);
+        if (selected) this.setRowIndexSelected(index);
     },
 
     //TODO: extra messages are being sent from the server.  This is caused by gb.rows.add(new Row()) which then

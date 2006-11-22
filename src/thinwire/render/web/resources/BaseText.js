@@ -305,10 +305,11 @@ var tw_BaseText = tw_Component.extend({
                 ary.push("x");
             }
             
-            editMask = ary.join("");        
+            editMask = ary.join("");
         }
             
         this._editMask = editMask;
+        if (editMask.length > 0) this._editor.maxLength = editMask.length;
         this._validatedValue = "";
         this._validateInput(0);
         this._textStateChange(false, true);

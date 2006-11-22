@@ -29,7 +29,16 @@ var tw_TextArea = tw_BaseText.extend({
     construct: function(id, containerId, props) {
         arguments.callee.$.call(this, ["div", "textarea"], "textArea", id, containerId);
         this._useToolTip = false;
+        tw_addEventListener(this._editor, "keypress", this._keyDownListener.bind(this));
         this.init(-1, props);
+    },
+    
+    _keyDownListener: function(ev) {
+        if (this._maxLength > 0 && this._editor.value.length >= this._maxLength) {
+            tw_cancelEvent(ev);
+        } else {
+            return true;
+        }
     },
         
     setMaxLength: function(len) {    
@@ -43,9 +52,7 @@ var tw_TextArea = tw_BaseText.extend({
         return arguments.callee.$.call(this, keyPressCombo);
     },
     
-    setEditMask: function(editMask) {
-        alert("'editMask' property not supported by this component");
-    },
+    setEditMask: function(editMask) { },
         
     _validateInput: function(te) {
         if (this._maxLength <= 0) return; //don't validate if maxLength not defined    

@@ -231,7 +231,9 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
             if (isPropertyChangeIgnored(name) || !rowState.contains(new Integer(System.identityHashCode(source)))) return;
             
             if (name.equals(GridBox.Row.PROPERTY_ROW_SELECTED)) {
-                postClientEvent(SET_ROW_INDEX_SELECTED, ((Row)source).getIndex(), Boolean.FALSE);
+                if (newValue == Boolean.TRUE) {
+                    postClientEvent(SET_ROW_INDEX_SELECTED, ((Row)source).getIndex());
+                }
             } else if (name.equals(GridBox.Row.PROPERTY_ROW_CHECKED)) {
                 postClientEvent(SET_ROW_INDEX_CHECK_STATE, new Integer(((Row)source).getIndex()), newValue);
             } else if (name.equals(GridBox.Row.PROPERTY_ROW_CHILD)) {
@@ -318,7 +320,7 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
                 rowState.add(new Integer(System.identityHashCode(nro)));
                 
                 if (nro.size() > 0) {
-                    postClientEvent(ADD_ROW, rowIndex, getValues(nro, gb.getColumns(), null).toString(), nro.isChecked() ? 1 : 0);
+                    postClientEvent(ADD_ROW, rowIndex, getValues(nro, gb.getColumns(), null).toString(), nro.isChecked() ? 1 : 0, nro.isSelected() ? 1 : 0);
                     GridBox gbc = nro.getChild();
                     if (gbc != null) renderChild(rowIndex, gbc);
                 }
@@ -332,7 +334,7 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
                 GridBox gbc = oro.getChild();               
                 if (gbc != null) ((GridBoxRenderer)childToRenderer.remove(gbc)).destroy();
                 rowState.add(new Integer(System.identityHashCode(nro)));
-                postClientEvent(SET_ROW, rowIndex, getValues(nro, gb.getColumns(), null).toString(), nro.isChecked() ? 1 : 0);
+                postClientEvent(SET_ROW, rowIndex, getValues(nro, gb.getColumns(), null).toString(), nro.isChecked() ? 1 : 0, nro.isSelected() ? 1 : 0);
                 gbc = nro.getChild();
                 if (gbc != null) renderChild(rowIndex, gbc);
             }
