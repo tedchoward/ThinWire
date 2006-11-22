@@ -443,7 +443,7 @@ var tw_Component = Class.extend({
         var parent = this._parent;
         var comp = null;
         
-        if (parent != null) {
+        if (parent != null) { 
             var index = this._parentIndex;
             
             if (this instanceof tw_TabFolder && this._currentIndex >= 0) {
@@ -528,9 +528,11 @@ var tw_Component = Class.extend({
         
     //return true if the key should propagate up to other listeners
     keyPressNotify: function(keyPressCombo) {
-        if ((keyPressCombo == "Tab" || keyPressCombo == "Shift-Tab") && this._parent instanceof tw_BaseContainer) {
+        if ((keyPressCombo == "Tab" || keyPressCombo == "Shift-Tab") && (this._parent instanceof tw_BaseContainer || this._parent instanceof tw_DropDown)) {
             if (tw_useSmartTab) {
-                var comp = keyPressCombo == "Tab" ? this.getNextComponent(true) : this.getPriorComponent(true);
+                if (this._parent instanceof tw_DropDown) this.setVisible(false);
+                var tabComp = this._parent instanceof tw_BaseContainer ? this : this._parent;
+                var comp = keyPressCombo == "Tab" ? tabComp.getNextComponent(true) : tabComp.getPriorComponent(true);
                 if (comp == null) comp = this;
                 comp.setFocus(true);
                 return false;
