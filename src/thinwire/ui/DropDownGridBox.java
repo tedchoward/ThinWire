@@ -125,8 +125,17 @@ public class DropDownGridBox extends DropDown<GridBox> {
         
         private PropertyChangeListener childChangePcl = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent ev) {
-                if (ev.getOldValue() != null) ((GridBox) ev.getOldValue()).removeActionListener(clickListener);
-                if (ev.getNewValue() != null) ((GridBox) ev.getNewValue()).addActionListener(GridBox.ACTION_CLICK, clickListener);
+                if (ev.getOldValue() != null) {
+                    GridBox gb = (GridBox) ev.getOldValue();
+                    gb.removePropertyChangeListener(childChangePcl);
+                    gb.removeActionListener(clickListener);
+                }
+                if (ev.getNewValue() != null) {
+                    GridBox gb = (GridBox) ev.getNewValue();
+                    gb.addPropertyChangeListener(GridBox.Row.PROPERTY_ROW_CHILD, childChangePcl);
+                    gb.addActionListener(GridBox.ACTION_CLICK, clickListener);
+                    iterateRows(gb.getRows());
+                }
             }
         };
         
@@ -138,7 +147,9 @@ public class DropDownGridBox extends DropDown<GridBox> {
         
         private ActionListener clickListener = new ActionListener() {
             public void actionPerformed(ActionEvent ev) {
-                if (((GridBox.Range)ev.getSource()).getRow().getChild() == null) dd.setText(getValue().toString());
+                if (((GridBox.Range)ev.getSource()).getRow().getChild() == null) {
+                    dd.setText(getValue().toString());
+                }
             }
         };
         
@@ -163,7 +174,7 @@ public class DropDownGridBox extends DropDown<GridBox> {
                 GridBox child = r.getChild();
                 if (child != null) {
                     child.addPropertyChangeListener(GridBox.Row.PROPERTY_ROW_CHILD, childChangePcl);
-                    ddc.addActionListener(GridBox.ACTION_CLICK, clickListener);
+                    child.addActionListener(GridBox.ACTION_CLICK, clickListener);
                     iterateRows(child.getRows());
                 }
             }
@@ -218,7 +229,6 @@ public class DropDownGridBox extends DropDown<GridBox> {
             } else {
                 s = gb.getSelectedRow().get(columnIndex).toString();
             }
-            
             return s;
         }
         
