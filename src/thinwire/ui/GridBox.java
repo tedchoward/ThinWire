@@ -553,20 +553,25 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
                     //If the selected row is removed or if the first row is added, then
                     //we need to guarantee the selected row is correct.
                     if (type == ItemChangeEvent.Type.REMOVE) {
-                        GridBox.Row oldRow = (GridBox.Row)oldValue; 
-                        if (oldRow.getChild() != null) GridBox.this.rowsWithChildren.remove(oldRow);
-                        if (oldRow.isChecked()) GridBox.this.checkedRows.remove(oldRow);
-
-                        if (oldRow == GridBox.this.selectedRow) {
-                            if (rowIndex < size) {
-                                rows.get(rowIndex).setSelected(true);
-                            } else if (size > 0) {
-                                rows.get(size - 1).setSelected(true);
-                            } else {
-                                GridBox.this.selectedRow = null;
+                        if (getRows().size() == 0) { //Clear was called
+                            GridBox.this.rowsWithChildren.clear();
+                            GridBox.this.checkedRows.clear();
+                        } else { 
+                            GridBox.Row oldRow = (GridBox.Row)oldValue; 
+                            if (oldRow.getChild() != null) GridBox.this.rowsWithChildren.remove(oldRow);
+                            if (oldRow.isChecked()) GridBox.this.checkedRows.remove(oldRow);
+    
+                            if (oldRow == GridBox.this.selectedRow) {
+                                if (rowIndex < size) {
+                                    rows.get(rowIndex).setSelected(true);
+                                } else if (size > 0) {
+                                    rows.get(size - 1).setSelected(true);
+                                } else {
+                                    GridBox.this.selectedRow = null;
+                                }
+                            } else if (rowIndex <= GridBox.this.selectedRow.getIndex()) {
+                                if (GridBox.this.selectedRow.getIndex() - 1 >= 0) rows.get(GridBox.this.selectedRow.getIndex() - 1).setSelected(true);
                             }
-                        } else if (rowIndex <= GridBox.this.selectedRow.getIndex()) {
-                            if (GridBox.this.selectedRow.getIndex() - 1 >= 0) rows.get(GridBox.this.selectedRow.getIndex() - 1).setSelected(true);
                         }
                     } else if (type == ItemChangeEvent.Type.ADD) {
                         GridBox.Row newRow = (GridBox.Row)newValue;

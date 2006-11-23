@@ -61,6 +61,7 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
     private static final String ADD_ROW = "addRow";
     private static final String REMOVE_ROW = "removeRow";
     private static final String SET_ROW = "setRow";
+    private static final String CLEAR_ROWS = "clearRows";
     private static final String SET_CELL = "setCell";
     private static final String ADD_COLUMN = "addColumn";
     private static final String SET_COLUMN = "setColumn";
@@ -325,10 +326,24 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
                     if (gbc != null) renderChild(rowIndex, gbc);
                 }
             } else if (type == ItemChangeEvent.Type.REMOVE) {
-                rowState.remove(new Integer(System.identityHashCode(oro)));                
-                postClientEvent(REMOVE_ROW, rowIndex);
-                GridBox gbc = oro.getChild();
-                if (gbc != null) ((GridBoxRenderer)childToRenderer.remove(gbc)).destroy();
+                if (gb.getRows().size() == 0 && rowState.size() > 1) { //Clear was called
+                    rowState.clear();
+                    postClientEvent(CLEAR_ROWS);
+
+                    if (childToRenderer != null && childToRenderer.size() > 0) {
+                        GridBoxRenderer[] children = childToRenderer.values().toArray(new GridBoxRenderer[childToRenderer.size()]);
+                        childToRenderer.clear();
+                        
+                        for (GridBoxRenderer gbr : children) {
+                            gbr.destroy();
+                        }
+                    }
+                } else if (rowState.size() > 0) { //Don't process residual clear() row removals. 
+                    rowState.remove(new Integer(System.identityHashCode(oro)));                
+                    postClientEvent(REMOVE_ROW, rowIndex);
+                    GridBox gbc = oro.getChild();
+                    if (gbc != null) ((GridBoxRenderer)childToRenderer.remove(gbc)).destroy();
+                }
             } else {
                 rowState.remove(new Integer(System.identityHashCode(oro)));
                 GridBox gbc = oro.getChild();               

@@ -357,6 +357,10 @@ var tw_GridBox = tw_Component.extend({
             for (var i = this._childGridBoxes.length; --i >=0;) {
                 this._childGridBoxes[i].destroy();
             }
+
+            this._childGridBoxes = null;
+            this._childColumnWidth = 0;
+            this.setColumnWidth();                            
         }
     },
     
@@ -807,9 +811,6 @@ var tw_GridBox = tw_Component.extend({
             if (this._getColumnCount() == 1) {
                 this._content.removeChild(this._content.firstChild);            
                 this._destroyChildren();            
-                this._childGridBoxes = null;
-                this._childColumnWidth = 0;
-                this.setColumnWidth();                            
             }
         }
     },
@@ -901,6 +902,17 @@ var tw_GridBox = tw_Component.extend({
         
         this.setRowIndexCheckState(index, checked == 1, false);
         if (selected) this.setRowIndexSelected(index);
+    },
+    
+    clearRows: function() {
+        var content = this._content;    
+        //var child = this._lastColumn().childNodes.item(index).tw_child;
+        //if (child != undefined) child.destroy();
+    
+        for (var i = 0, cnt = content.childNodes.length; i < cnt; i++) {
+            var column = content.childNodes.item(i);
+            content.replaceChild(column.cloneNode(false), column);
+        }
     },
 
     //TODO: extra messages are being sent from the server.  This is caused by gb.rows.add(new Row()) which then
@@ -994,10 +1006,7 @@ var tw_GridBox = tw_Component.extend({
                 if (ary.length == 0 && !keepChildColumn) {
                     this._parent._header.removeChild(this._parent._header.lastChild);            
                     this._parent._content.removeChild(this._parent._lastColumn());            
-                    //this._destroyChildren(); ???
-                    this._parent._childGridBoxes = null;                 
-                    this._parent._childColumnWidth = 0;
-                    this._parent.setColumnWidth();                
+                    this._parent._destroyChildren();
                 }
                 
                 this._parentCell.tw_child = undefined;
@@ -1007,7 +1016,7 @@ var tw_GridBox = tw_Component.extend({
         }
         
         
-        this._box.tw_root = this._root = this._header = this._content = this._childGridBoxes = this._hresize.column = this._parentCell = null;
+        this._box.tw_root = this._root = this._header = this._content = this._hresize.column = this._parentCell = null;
         arguments.callee.$.call(this);
     }    
 });

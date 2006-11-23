@@ -622,6 +622,16 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
             fireItemChange(Type.REMOVE, index, -1, r, null);            
             return r;
         }
+        
+        public void clear() {
+            List<R> ol = l;
+            l = new ArrayList<R>();
+            modCount++;
+
+            for (int i = 0, cnt = ol.size(); i < cnt; i++) {
+                fireItemChange(Type.REMOVE, i, -1, ol.get(i), null);            
+            }
+        }
 
         /*
          * @see java.util.Collection#size()
