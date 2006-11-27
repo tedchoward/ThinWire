@@ -426,7 +426,6 @@ public class DropDownGridBox extends DropDown<GridBox> {
     public void setGridBox(GridBox gridBox) {
         if (!isCompatModeOn()) throw new IllegalStateException("this method is deprecated as of v1.2 and cannot be called unless compat mode is on, use setComponent() instead.");
         setComponent(gridBox);
-        if (gridBox.view != null) setView(gridBox.view);
     }
 
     /**

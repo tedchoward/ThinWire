@@ -148,7 +148,7 @@ public class FileChooser extends Panel {
          * @param fileName
          */
         public void saveToFile(String fileName) {
-            Application.current().getRelativeFile(fileName);
+            saveToFile(Application.current().getRelativeFile(fileName));
         }
         
         /**
@@ -235,6 +235,7 @@ public class FileChooser extends Panel {
         return fi;
     }   
     
+    @Override
     public List<Component> getChildren() {
         return Collections.unmodifiableList(super.getChildren());
     }
