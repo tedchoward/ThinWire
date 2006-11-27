@@ -101,15 +101,12 @@ var tw_EventManager = Class.extend({
             }
             
             if (this._inboundEvents.length > 0) {
-                var calls = this._inboundEvents;
-                this._inboundEvents = [];
-                
-                for (var i = 0, cnt = calls.length; i < cnt; i++) {
-                    var call = calls[i];            
+                while (!this._postOutboundEvents && this._inboundEvents.length > 0) {
+                    var call = this._inboundEvents.shift();            
                     var obj = call.i == undefined ? (call.n == undefined ? window : call.n) : tw_Component.instances[call.i];                    
                     
                     if (obj != null) {
-                        if (call.s) this._autoSyncResponse = true; 
+                        if (call.s) this._autoSyncResponse = true;
                         var ret = obj[call.m].apply(obj, call.a);            
                         
                         if (call.s && this._autoSyncResponse) {

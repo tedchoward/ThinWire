@@ -809,7 +809,7 @@ public final class WebApplication extends Application {
                     if (processClientEvents) {
                         synchronized (eventQueue) {
                             if (!threadWaiting) {
-                                clientSideMethodCall("tw_em", "sendGetEvents");
+                                sbClientEvents.insert(1, "{m:\"sendGetEvents\",n:tw_em,a:[]},");
                             }
                         }
 
