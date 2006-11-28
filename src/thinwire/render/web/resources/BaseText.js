@@ -45,7 +45,7 @@ var tw_BaseText = tw_Component.extend({
         var s = editor.style;
         s.position = "absolute";
         s.left = tw_isKHTML || tw_isSafari ? "-1px" : "0px";
-        s.top = tw_isKHTML || tw_isSafari ? "-2px" : "0px";
+        s.top = tw_isKHTML || tw_isSafari ? "-1px" : "0px";
         s.margin = "0px";
         s.border = "0px";
         s.padding = this._paddingSize + "px";
@@ -83,7 +83,7 @@ var tw_BaseText = tw_Component.extend({
         width -= this._borderSizeSub + this._subtractEditorWidth + this._paddingSize * 2;
         if (width < 0) width = 0;
         if (tw_isKHTML || tw_isSafari) {
-            this._editor.style.width = width - ((parseInt(this._editor.style.left) - 1) * 2) + "px";
+            this._editor.style.width = width - ((parseInt(this._editor.style.left) - 1) * 3) + "px";
         } else {
             this._editor.style.width = width + "px";
         }
@@ -94,7 +94,7 @@ var tw_BaseText = tw_Component.extend({
         height -= this._borderSizeSub + this._paddingSize * 2;
         if (height < 0) height = 0;
         if (tw_isKHTML || tw_isSafari) {
-            this._editor.style.height = height - (parseInt(this._editor.style.top) * 2) + "px";
+            this._editor.style.height = height - ((parseInt(this._editor.style.top) - 1) * 3) + "px";
         } else {
             this._editor.style.height = height + "px";
         }
