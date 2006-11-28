@@ -55,7 +55,7 @@ var tw_Slider = tw_BaseRange.extend({
         var s = this._line.style;
         
         if (name == "borderColor") {
-            s[name] = tw_Component.getIEBorder(value, this.getStyle("borderType"));
+            s[name] = tw_Component.getIEBorder(value, this._borderType);
         } else if (name == "borderSize") {
             value = Math.floor(parseInt(value) / 2);
             if (value < 1) value = 1;
@@ -64,7 +64,7 @@ var tw_Slider = tw_BaseRange.extend({
     },
     
     _cursorDragListener: function(ev) {
-        if (!this.isEnabled()) return;
+        if (!this._enabled) return;
         var s = this._selection.style;
         if (ev.type == 1) {
             var pos_prop = this._vertical ? "top" : "left";
@@ -86,36 +86,37 @@ var tw_Slider = tw_BaseRange.extend({
     },
     
     _recalc: function() {
-        if (this.getWidth() != -1 && this.getHeight() != -1) {
+        if (this._width != -1 && this._height != -1) {
             
-            if (this.getWidth() > this.getHeight()) {
+            if (this._width > this._height) {
                 var l = this._line.style;
                 l.left = "0px";
-                l.top = Math.floor(this.getHeight() / 2) + "px";
-                l.width = this.getWidth() + "px";
+                l.top = Math.floor(this._height / 2) + "px";
+                l.width = this._width + "px";
                 l.height = "0px";
                 
                 var c = this._selection.style;
                 c.top = "0px";
                 c.width = "5px";
-                c.height = this.getHeight() > this.getStyle("borderSize") ? this.getHeight() - (this.getStyle("borderSize") * 2) + "px" : "0px";
+                c.height = this._height > this._borderSize ? this._height - this._borderSizeSub + "px" : "0px";
                 
-                this._max = this.getWidth() - (parseInt(c.width) + (this.getStyle("borderSize") * 2));
+                this._max = this._width - (parseInt(c.width) + this._borderSizeSub);
             } else {
                 
                 var l = this._line.style;
-                l.left = Math.floor(this.getWidth() / 2) + "px";
+                l.left = Math.floor(this._width / 2) + "px";
                 l.top = "0px";
                 l.width = "0px";
-                l.height = this.getHeight() + "px";
+                l.height = this._height + "px";
                 
                 var c = this._selection.style;
                 c.left = "0px";
-                c.width = this.getWidth() > this.getStyle("borderSize") ? this.getWidth() - (this.getStyle("borderSize") * 2) + "px" : "0px";
+                c.width = this._width > this._borderSize ? this._width - this._borderSizeSub + "px" : "0px";
                 c.height = "5px";
                 
-                this._max = this.getHeight() - (parseInt(c.height) + this.getStyle("borderSize") * 2);
+                this._max = this._height - (parseInt(c.height) + this._borderSizeSub);
             }
+            
             arguments.callee.$.call(this);
         }
     },
@@ -125,7 +126,7 @@ var tw_Slider = tw_BaseRange.extend({
     },
     
     _clickListener: function() {
-        if (!this.isEnabled()) return;
+        if (!this._enabled) return;
        this.setFocus(true);
     },
     
@@ -135,7 +136,7 @@ var tw_Slider = tw_BaseRange.extend({
     
     setEnabled: function(enabled) {
        tw_setFocusCapable(this._box, enabled);
-       if (enabled == this.isEnabled()) return;
+       if (enabled == this._enabled) return;
        arguments.callee.$.call(this, enabled);
     },
     

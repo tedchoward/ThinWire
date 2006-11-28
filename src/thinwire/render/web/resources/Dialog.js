@@ -103,27 +103,27 @@ var tw_Dialog = tw_BaseContainer.extend({
         
     _moveDragListener: function(ev) {
         if (ev.type == 1) {
-            var x = this.getX() + ev.changeInX;
-            var y = this.getY() + ev.changeInY;
+            var x = this._x + ev.changeInX;
+            var y = this._y + ev.changeInY;
             if (x < 0) x = 0;
             if (y < 0) y = 0;                        
             this.setX(x);
             this.setY(y);
         } else if (ev.type == 2) {            
-            this.firePropertyChange("position", this.getX() + "," + this.getY());
+            this.firePropertyChange("position", this._x + "," + this._y);
         }
     },
     
     _resizeDragListener: function(ev) {
         if (ev.type == 1) {
-            var width = this.getWidth() + ev.changeInX;
-            var height = this.getHeight() + ev.changeInY;
+            var width = this._width + ev.changeInX;
+            var height = this._height + ev.changeInY;
             if (width < 50) width = 50;
             if (height < 50) height = 50;                        
             this.setWidth(width);
             this.setHeight(height);
         } else if (ev.type == 2) {            
-            this.firePropertyChange("size", this.getWidth() + "," + this.getHeight());
+            this.firePropertyChange("size", this._width + "," + this._height);
         }
     },
     
@@ -171,7 +171,7 @@ var tw_Dialog = tw_BaseContainer.extend({
             this._resizeDrag = new tw_DragHandler(sizer, this._resizeDragListener.bind(this));            
         } else {
             if (this._resizeDrag == null) return;
-            this._box.removeChild(this._resizeDrag.getBox());
+            this._box.removeChild(this._resizeDrag._box);
             this._resizeDrag.destroy();
             this._resizeDrag = null;
         }
@@ -181,7 +181,7 @@ var tw_Dialog = tw_BaseContainer.extend({
         arguments.callee.$.call(this, name, value);
 
         if (name == "fontColor") {
-            this._fontColor = this.getStyle("fontColor");
+            this._fontColor = this._fontBox.style.color;
         } else if (name == "borderSize" && this._closeButton != null) {
             this._closeButton.style.borderWidth = value + "px";
             this._calcCloseButtonSize(parseInt(value));        
@@ -205,14 +205,12 @@ var tw_Dialog = tw_BaseContainer.extend({
     
     setWidth: function(width) {
         arguments.callee.$.call(this, width);
-        width = width - this.getStyle("borderSize") * 2;
-        if (width < 0) width = 0;
-        this._container.style.width = width + "px";
+        this._container.style.width = width < 0 ? "0px" : width + "px";
     },
     
     setHeight: function(height) {
         arguments.callee.$.call(this, height);        
-        height -= tw_Dialog.titleBarHeight + (this._menu == null ? 0 : tw_Dialog.menuBarHeight) + this.getStyle("borderSize") * 2;
+        height -= tw_Dialog.titleBarHeight + (this._menu == null ? 0 : tw_Dialog.menuBarHeight) + this._borderSizeSub;
         if (height < 0) height = 0;
         this._container.style.height = height + "px";
     },

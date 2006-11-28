@@ -59,7 +59,7 @@ var tw_Label = tw_Component.extend({
             s.lineHeight = "";
         } else {
             s.whiteSpace = "nowrap";
-            this.setHeight(this.getHeight());
+            this.setHeight(this._height);
         }
     }
 });

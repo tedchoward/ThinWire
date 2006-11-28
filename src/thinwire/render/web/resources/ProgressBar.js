@@ -34,13 +34,13 @@ var tw_ProgressBar = tw_BaseRange.extend({
     },
     
     _recalc: function() {
-        if (this.getWidth() != -1 && this.getHeight() != -1) {
+        if (this._width != -1 && this._height != -1) {
             var s = this._selection.style;
-            if (this.getWidth() > this.getHeight()) {
+            if (this._width > this._height) {
                 s.top = "0px";
-                this._selection.style.height = this.getHeight() + "px";
+                this._selection.style.height = this._height + "px";
             } else {
-                this._selection.style.width = this.getWidth() + "px";
+                this._selection.style.width = this._width + "px";
             }
         }
         arguments.callee.$.call(this);
@@ -52,7 +52,7 @@ var tw_ProgressBar = tw_BaseRange.extend({
         arguments.callee.$.call(this, "width");
         if (this._vertical) {
             var s = this._selection.style;
-            s.height = this.getHeight() - parseInt(s.top) + "px";
+            s.height = this._height - parseInt(s.top) + "px";
         }
     },
     

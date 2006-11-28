@@ -42,11 +42,11 @@ var tw_BaseContainer = tw_Component.extend({
     },
 
     getOffsetX: function() {
-        return (this._box == this._borderBox ? this.getStyle("borderSize") : 0) + this._offsetX - this._box.scrollLeft;
+        return (this._box == this._borderBox ? this._borderSize : 0) + this._offsetX - this._box.scrollLeft;
     },
 
     getOffsetY: function() {
-        return (this._box == this._borderBox ? this.getStyle("borderSize") : 0) + this._offsetY - this._box.scrollTop;
+        return (this._box == this._borderBox ? this._borderSize : 0) + this._offsetY - this._box.scrollTop;
     },
     
     setScroll: function(scrollCode) {
@@ -108,7 +108,7 @@ var tw_BaseContainer = tw_Component.extend({
 tw_BaseContainer.keyPressNotifyCtrlEnterButton = function(keyPressCombo) {
     if (keyPressCombo == "Ctrl-Enter" || (keyPressCombo == "Enter" && !(tw_Component.currentFocus instanceof tw_TextArea))) {
         var button = this.getStandardButton();
-        if (button != null && button.isEnabled()) button.fireClick();
+        if (button != null && button._enabled) button.fireClick();
         return false;
     } else {
         return arguments.callee.$.call(this, keyPressCombo);

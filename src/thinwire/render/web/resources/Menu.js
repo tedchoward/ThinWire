@@ -69,7 +69,7 @@ var tw_Menu = tw_Component.extend({
         var nodes = this._box.childNodes;
         
         for (var i = nodes.length; --i >= 0;) {
-            nodes.item(i).firstChild.style.lineHeight = this.getHeight() - this._mainItemSub + "px";
+            nodes.item(i).firstChild.style.lineHeight = this._height - this._mainItemSub + "px";
         }
     },
     
@@ -82,7 +82,7 @@ var tw_Menu = tw_Component.extend({
                 s.borderWidth = "0px";
                 s.borderTopWidth = "1px";
                 s.borderTopStyle = "solid";
-                s.borderTopColor = this.getStyle("backgroundColor");
+                s.borderTopColor = this._backgroundColor;
                 s.paddingBottom = "2px";
                 s.borderBottomWidth = "2px";
                 s.borderBottomStyle = "groove";
@@ -90,7 +90,7 @@ var tw_Menu = tw_Component.extend({
 
             var nodes = this._box.childNodes;
             if (name == "borderSize") value += "px";
-            else if (name == "borderColor") value = tw_Component.getIEBorder(value, this.getStyle("borderType"));
+            else if (name == "borderColor") value = tw_Component.getIEBorder(value, this._borderType);
             name = tw_Component.styleNameMap[name];
             
             for (var i = nodes.length; --i >= 0;) {
@@ -317,10 +317,10 @@ var tw_Menu = tw_Component.extend({
 
             if (highlight) {
                 button.style.borderStyle = this._menusAreVisible ? "inset" : "outset"; 
-                button.style.borderColor = tw_Component.getIEBorder(this.getStyle("borderColor"), "outset");
+                button.style.borderColor = tw_Component.getIEBorder(this._borderColor, "outset");
             } else {
                 button.style.borderStyle = "solid";
-                button.style.borderColor = this.getStyle("backgroundColor");
+                button.style.borderColor = this._backgroundColor;
             }
         }        
     },
@@ -423,10 +423,10 @@ var tw_Menu = tw_Component.extend({
             s.paddingBottom = "2px";
             s.borderWidth = "1px";
             s.borderStyle = "solid";
-            s.borderColor = this.getStyle("backgroundColor");
+            s.borderColor = this._backgroundColor;
             s.paddingLeft = "5px";
             s.paddingRight = "5px";
-            var lineHeight = this.getHeight() - this._mainItemSub;
+            var lineHeight = this._height - this._mainItemSub;
             if (lineHeight < 0) lineHeight = 0;
             s.lineHeight = lineHeight + "px";
         }
@@ -439,11 +439,11 @@ var tw_Menu = tw_Component.extend({
         s.position = "absolute";
         s.visibility = "hidden";
         
-        s.backgroundColor = this.getStyle("backgroundColor");
-        s.borderWidth = this.getStyle("borderSize") + "px";
-        var borderType = this.getStyle("borderType");
+        s.backgroundColor = this._backgroundColor;
+        s.borderWidth = this._borderSize + "px";
+        var borderType = this._borderType;
         s.borderStyle = borderType;
-        s.borderColor = tw_Component.getIEBorder(this.getStyle("borderColor"), borderType);
+        s.borderColor = tw_Component.getIEBorder(this._borderColor, borderType);
 
         if (prefix == "m") s.top = "-2px";        
         content.tw_maxTextWidth = 0;
@@ -517,13 +517,13 @@ var tw_Menu = tw_Component.extend({
         s.marginLeft = "2px";
         s.marginRight = "1px";
         
-        var borderSize = parseInt(this.getStyle("borderSize")) / 2;        
+        var borderSize = this._borderSize / 2;        
         s.borderTopWidth = Math.floor(borderSize) + "px";
         s.borderRightWidth = s.borderLeftWidth = "0px";
         s.borderBottomWidth = (borderSize < 1 ? 1 : Math.floor(borderSize)) + "px";
-        var borderStyle = this._getReverseBorderStyle(this.getStyle("borderType"));
+        var borderStyle = this._getReverseBorderStyle(this._borderType);
         s.borderStyle = borderStyle;
-        s.borderColor = tw_Component.getIEBorder(this.getStyle("borderColor"), borderStyle);
+        s.borderColor = tw_Component.getIEBorder(this._borderColor, borderStyle);
         
         var parent = menu.lastChild;
         

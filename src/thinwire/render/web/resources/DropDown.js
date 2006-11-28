@@ -100,7 +100,7 @@ var tw_DropDown = tw_BaseText.extend({
     },
     
     _buttonMouseDownListener: function(event) {
-        if (!this.isEnabled() || tw_getEventButton(event) != 1) return; 
+        if (!this._enabled || tw_getEventButton(event) != 1) return; 
         var s = this._button.style;
         s.borderStyle = "solid";
         var pad = parseInt(s.borderWidth);
@@ -112,17 +112,17 @@ var tw_DropDown = tw_BaseText.extend({
     },
         
     _buttonMouseUpListener: function(event) {
-        if (!this.isEnabled() || tw_getEventButton(event) != 1) return; 
+        if (!this._enabled || tw_getEventButton(event) != 1) return; 
         var s = this._button.style;
         var bs = tw_Component.defaultStyles["Button"];
         s.borderStyle = bs.borderType;
-        s.borderWidth = this._box.style.borderWidth;
+        s.borderWidth = this._borderSize + "px";
         s.borderColor = tw_Component.getIEBorder(bs.borderColor, bs.borderType);
         s.padding = "0px";    
     },
     
     _buttonClickListener: function(event) {
-        if (!this.isEnabled()) return;
+        if (!this._enabled) return;
         
         if (!this._ddComp.isVisible()) {
             this.setDropDownVisible(true);
@@ -165,7 +165,7 @@ var tw_DropDown = tw_BaseText.extend({
     },
             
     setFocus: function(focus) {          
-        if (!this.isEnabled() || !this.isVisible()) return false;
+        if (!this._enabled || !this.isVisible()) return false;
         
         if (!focus) {
             var active = tw_getActiveElement();
@@ -208,7 +208,7 @@ var tw_DropDown = tw_BaseText.extend({
     
     setEditAllowed: function(editAllowed) {        
         this._editAllowed = editAllowed;
-        if (this.isEnabled()) this.setEnabled(true); //This will trigger the proper editAllowed state.
+        if (this._enabled) this.setEnabled(true); //This will trigger the proper editAllowed state.
 
         //If edit is not allowed we want a click on the edit field to trigger the drop down.
         if (editAllowed) {
@@ -224,25 +224,25 @@ var tw_DropDown = tw_BaseText.extend({
         if (this._buttonBorderWidth == state) return;
         this._buttonBorderWidth = state ? 1 : 0;
         this._buttonBorder.style.borderWidth = this._buttonBorderWidth + "px";
-        this.setWidth(this.getWidth());
-        this.setHeight(this.getHeight());
+        this.setWidth(this._width);
+        this.setHeight(this._height);
     },
 
     setDropDownVisible: function(state) {
         if (this._ddComp == null) return;
         
         if (state) {
-            var parent = this.getParent(); 
-            var offsetX = this.getX();
-            var offsetY = this.getY();
+            var parent = this._parent; 
+            var offsetX = this._x;
+            var offsetY = this._y;
 
             while (!(parent instanceof tw_Frame || parent instanceof tw_Dialog)) {
-                offsetX += parent.getX() + parent.getOffsetX();
-                offsetY += parent.getY() + parent.getOffsetY();
-                parent = parent.getParent();
+                offsetX += parent._x + parent.getOffsetX();
+                offsetY += parent._y + parent.getOffsetY();
+                parent = parent._parent;
             }
             
-            var borderSize = parent instanceof tw_Dialog ? parent.getStyle("borderSize") : 0;
+            var borderSize = parent instanceof tw_Dialog ? parent._borderSize : 0;
             offsetX += parent.getOffsetX() - borderSize;
             offsetY += parent.getOffsetY() - borderSize;
             

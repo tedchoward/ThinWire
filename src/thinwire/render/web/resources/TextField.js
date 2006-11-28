@@ -32,9 +32,9 @@ var tw_TextField = tw_BaseText.extend({
     },
 
     setInputHidden: function(inputHidden) {
-        new tw_TextField(this._id, this._parent._id, {"x": this.getX(), "y": this.getY(), 
-            "width": this.getWidth(), "height": this.getHeight(), "visible": this.isVisible(),
-            "enabled": this.isEnabled(), "text": this._box.value, "editMask": this._editMask,
+        new tw_TextField(this._id, this._parent._id, {"x": this._x, "y": this._y, 
+            "width": this._width, "height": this._height, "visible": this.isVisible(),
+            "enabled": this._enabled, "text": this._box.value, "editMask": this._editMask,
             "alignX": this._editor.style.textAlign, "inputHidden": inputHidden});
         _parent.removeComponent(this);
     }

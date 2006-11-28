@@ -43,12 +43,12 @@ var tw_BaseRange = tw_Component.extend({
     },
     
     _recalc: function() {
-        this._vertical = this.getWidth() <= this.getHeight();
+        this._vertical = this._width <= this._height;
         this._updateMultiplier();
     },
     
     getMax: function() {
-        return this._vertical ? this.getHeight() : this.getWidth();
+        return this._vertical ? this._height : this._width;
     },
     
     setLength: function(length) {

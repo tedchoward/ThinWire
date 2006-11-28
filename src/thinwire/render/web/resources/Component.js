@@ -36,6 +36,7 @@ function tw_newComponent(className, id, containerId, props) {
 //TODO: Opera, it's still possible to drag-highlight text.
 var tw_Component = Class.extend({
     _box: null,
+    _eventNotifiers: null,
     _inited: false,
     _opacity: 100,
     _focusBox: null,
@@ -46,7 +47,6 @@ var tw_Component = Class.extend({
     _y: 0,
     _width: 0,
     _height: 0,
-    _eventNotifiers: null,
     _enabled: true,
     _focusCapable: true,
     _backgroundBox: null,
@@ -78,36 +78,16 @@ var tw_Component = Class.extend({
         tw_Component.instances[id] = this;
         this._parent = containerId instanceof Class ? containerId : tw_Component.instances[containerId];
     },
-    
-    getParent: function() {
-        return this._parent;
-    },
-    
-    getBox: function() {
-        return this._box;
-    },
-    
-    getId: function() {
-        return this._id;
-    },
             
     setX: function(x) {
         this._x = x;
         this._box.style.left = x + "px";
     },
     
-    getX: function() {
-        return this._x;
-    },
-    
     setY: function(y) {
         this._y = y;
         this._box.style.top = y + "px";
     },
-
-    getY: function() {
-        return this._y;
-    },    
 
     setWidth: function(width) {
         this._width = width;
@@ -117,10 +97,6 @@ var tw_Component = Class.extend({
         this._box.style.width = width + "px";
         if (this._borderImage != null) this._borderImage.setWidth(this._width);
     },
-    
-    getWidth: function() {
-        return this._width;
-    },
 
     setHeight: function(height) {
         this._height = height;
@@ -129,10 +105,6 @@ var tw_Component = Class.extend({
         if (height < 0) this._height = height = 0;
         this._box.style.height = height + "px";
         if (this._borderImage != null) this._borderImage.setHeight(this._height);
-    },
-    
-    getHeight: function() {
-        return this._height;
     },
     
     isVisible: function() {
@@ -150,12 +122,8 @@ var tw_Component = Class.extend({
         this._opacity = opacity;
     },
     
-    getOpacity: function() {
-        return this._opacity;
-    },
-    
-    isEnabled: function() {
-        return this._enabled;
+    setFocusCapable: function(focusCapable) {
+        this._focusCapable = focusCapable;
     },
     
     setEnabled: function(enabled) {
@@ -165,22 +133,14 @@ var tw_Component = Class.extend({
         }
         
         this._enabled = enabled;
-        this._backgroundBox.style.backgroundColor = enabled ? this._backgroundColor : (this._disabledBackgroundColor == null ? this.getParent().getStyle("backgroundColor") : this._disabledBackgroundColor);
-    },
-        
-    setFocusCapable: function(focusCapable) {
-        this._focusCapable = focusCapable;
-    },
-    
-    isFocusCapable: function() {
-        return this._focusCapable;
+        this._backgroundBox.style.backgroundColor = enabled ? this._backgroundColor : (this._disabledBackgroundColor == null ? this._parent._backgroundColor : this._disabledBackgroundColor);
     },
     
     setPropertyWithEffect: function(prop, value, unitSize, time) {
+        var get = "_" + prop;
         prop = prop.charAt(0).toUpperCase() + prop.substring(1);
-        var get = "get" + prop;
         var set = "set" + prop;
-        new tw_Animation(this, get, set, value - this[get](), unitSize, time).start();
+        new tw_Animation(this, get, set, value - this[get], unitSize, time).start();
     },
     
     _focusListener: function() {
@@ -192,8 +152,8 @@ var tw_Component = Class.extend({
     },
         
     setFocus: function(focus) {
-        if (!this.isEnabled() || !this.isVisible()) return;
-        if (!(this.getParent() instanceof tw_BaseContainer)) return;
+        if (!this._enabled || !this.isVisible()) return;
+        if (!(this._parent instanceof tw_BaseContainer)) return;
         
         if (focus) {
             if (tw_Component.currentFocus !== this) {
@@ -215,7 +175,7 @@ var tw_Component = Class.extend({
                 
                 if (!isButton && isPriorButton) {
                     var sButton = this.getBaseWindow().getStandardButton();
-                    if (sButton != null && sButton.isEnabled()) sButton._setStandardStyle(true);
+                    if (sButton != null && sButton._enabled) sButton._setStandardStyle(true);
                 } else if (!isPriorButton && isButton) {
                     var sButton = this.getBaseWindow().getStandardButton();
                     if (sButton != null && this !== sButton) sButton._setStandardStyle(false);
@@ -231,7 +191,7 @@ var tw_Component = Class.extend({
         if (this._backgroundBox != null && name.indexOf("background") == 0) {
             if (name == "backgroundColor") {
                 this._backgroundColor = value;
-                if (this.isEnabled()) this._backgroundBox.style.backgroundColor = value;
+                if (this._enabled) this._backgroundBox.style.backgroundColor = value;
             } else if (name == "backgroundImage") {
                 this._backgroundBox.style.backgroundImage = tw_Component.expandUrl(value, true);
             } else if (name == "backgroundRepeat" || name == "backgroundPosition") {
@@ -256,41 +216,43 @@ var tw_Component = Class.extend({
         } else if (this._borderBox != null && name.indexOf("border") == 0) {
             if (name == "borderSize") {
                 this._borderSize = parseInt(value);
-                this._borderSizeSub = tw_sizeIncludesBorders ? 0 : this._borderSize * 2;
+                this._borderSizeSub = this._borderSize * 2;
                 
                 if (this._borderImage == null) {
                     this._borderBox.style[realName] = value + "px";
                 } else {
-                    this._borderBox.style[realName] = "0px";
                     this._borderImage.setBorderSize(this._borderSize);
                 }
                 
                 if (this._inited) {
-                    this.setWidth(this.getWidth());
-                    this.setHeight(this.getHeight());
+                    this.setWidth(this._width);
+                    this.setHeight(this._height);
                 }
             } else if (name == "borderColor") {
                 this._borderColor = value;
                 this._borderBox.style[realName] = tw_Component.getIEBorder(value, this._borderType);
             } else if (name == "borderImage") {
-                if (value.length == 0 && this._borderImage != null) {
-                    this._borderImage.destroy();
+                var bi = this._borderImage;
+
+                if (value.length == 0 && bi != null) {
                     this._borderImage = null;
-                    this.setStyle("borderSize", this._borderSize + "");
+                    if (this._borderBox === this._box) this._box = bi._box;
+                    this._borderBox = bi._box;
+                    bi.destroy();
                 } else if (value.length > 0) {
-                    if (this._borderImage == null) this._borderImage = new tw_BorderImage(this);
-                    this.setStyle("borderSize", this._borderSize + "");
-                    this._borderImage.setComponent(this);
+                    if (bi == null) {
+                        bi = this._borderImage = new tw_BorderImage();
+                        //this.setStyle("borderSize", this._borderSize + "");
+                        var bb = bi.setBox(this._borderBox);
+                        if (this._borderBox === this._box) this._box = bb;
+                        this._borderBox = bb;
+                    }
+                    
                     var ary = value.split(',');
-                    this._borderImage.setImage(ary[0], ary[1], ary[2]);
-                    this._borderImage.setBorderSize(this._borderSize);
-                    this.setStyle("borderSize", this._borderSize + "");
+                    bi.setImage(ary[0], ary[1], ary[2]);
                 }
                 
-                if (this._inited) {
-                    this.setX(this.getX());
-                    this.setY(this.getY());
-                }
+                this.setStyle("borderSize", this._borderSize + "");
             } else {
                 this._borderType = value;
                 this._borderBox.style[realName] = value;
@@ -304,51 +266,11 @@ var tw_Component = Class.extend({
         }
     },
     
-    getStyle: function(name) {
-        var realName = tw_Component.styleNameMap[name];
-        if (realName == undefined) throw "attempt to get unknown property '" + name + "'";
-        var value;
-        
-        if (this._backgroundBox != null && name.indexOf("background") == 0) {
-            if (name == "backgroundColor") {
-                value = this._backgroundColor;
-            } else if (name == "backgroundImage" || name == "backgroundRepeat" || name == "backgroundPosition") {
-                value = this._backgroundBox.style[realName];
-            }
-        } else if (this._fontBox != null && name.indexOf("font") == 0) {
-            value = this._fontBox.style[realName];
-            
-            if (name == "fontSize") {
-                value = parseInt(value);
-            } else if (name == "fontBold") {
-                value = value == "bold" ? true : false;
-            } else if (name == "fontItalic") {
-                value = value == "italic" ? true : false;
-            } else if (name == "fontUnderline") {
-                value = value == "underline" ? true : false;
-            }
-        } else if (this._borderBox != null && name.indexOf("border") == 0) {
-            if (name == "borderSize") {
-                return this._borderSize;
-            } else if (name == "borderColor") {
-                return this._borderColor;
-            } else if (name == "borderImage") {
-                return "";
-            } else {
-                return this._borderType;
-            }
-        } else {
-            throw "attempt to get unsupported property '" + name + "'";
-        }
-        
-        return value;
-    },
-        
     getBaseWindow: function() {
         var parent = this;
         
         do {        
-            var parent = parent.getParent();
+            var parent = parent._parent;
         } while (parent != null && !(parent instanceof tw_Dialog) && !(parent instanceof tw_Frame));
         
         return parent;
@@ -466,12 +388,12 @@ var tw_Component = Class.extend({
                 
                 var comp = parent._children[index];
 
-                if (comp instanceof tw_BaseContainer && comp.isFocusCapable() && comp.isVisible() && !(comp instanceof tw_TabFolder)) {
+                if (comp instanceof tw_BaseContainer && comp._focusCapable && comp.isVisible() && !(comp instanceof tw_TabFolder)) {
                     parent = comp;
                     index = -1;
                     var notUsable = true;
                 } else if (usable) {
-                    var notUsable = !(comp.isVisible() && comp.isEnabled() && comp.isFocusCapable());
+                    var notUsable = !(comp.isVisible() && comp._enabled && comp._focusCapable);
                 } else {
                     var notUsable = false;
                 }
@@ -510,13 +432,13 @@ var tw_Component = Class.extend({
                 
                 var comp = parent._children[index];
 
-                if (comp instanceof tw_BaseContainer && comp.isFocusCapable() && comp.isVisible()) {
+                if (comp instanceof tw_BaseContainer && comp._focusCapable && comp.isVisible()) {
                     parent = comp;
                     if (parent instanceof tw_TabFolder) parent = parent._children[parent._currentIndex];                    
                     index = parent._children.length;
                     var notUsable = true;
                 } else if (usable) {
-                    var notUsable = !(comp.isVisible() && comp.isEnabled() && comp.isFocusCapable());
+                    var notUsable = !(comp.isVisible() && comp._enabled && comp._focusCapable);
                 } else {
                     var notUsable = false;
                 }
@@ -609,7 +531,7 @@ var tw_Component = Class.extend({
             } else if (this._parent instanceof tw_DropDown || this._parent instanceof tw_GridBox) {
                 this._parent.getBaseWindow()._box.appendChild(this._box);
             } else {
-                alert("No known way to attach this component:" + this._box.className + " to the DOM");
+                alert("init:append failed");
             }
         } else {
             document.body.appendChild(this._box);
@@ -692,8 +614,8 @@ tw_Component.keyPressNotifySpaceFireAction = function(keyPressCombo) {
 
 tw_Component.clickListener = function(ev, comp) {
     if (comp == null) comp = this;
-    if (!comp.isEnabled()) return;
-    if (comp.isFocusCapable()) comp.setFocus(true);
+    if (!comp._enabled) return;
+    if (comp._focusCapable) comp.setFocus(true);
     var action = tw_Component.getClickAction(ev.type);
     if (action == null) return;
     comp.fireAction(action);

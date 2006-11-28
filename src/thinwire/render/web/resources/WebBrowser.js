@@ -75,7 +75,7 @@ var tw_WebBrowser = tw_BaseBrowserLink.extend({
         s.textAlign = "center";
         s.height = "20px";
         s.backgroundColor = tw_COLOR_WINDOW;
-        s.fontColor = "blue";
+        s.color = "blue";
         s.textDecoration = "underline";
         dragBox.appendChild(document.createTextNode(this._browser.src));
         return dragBox;

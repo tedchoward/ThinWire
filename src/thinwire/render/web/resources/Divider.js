@@ -47,13 +47,13 @@ var tw_Divider = tw_Component.extend({
             
             if (this._width >= this._height) {
                 s.left = "0px";
-                s.top = Math.floor((this._height - this.getStyle("borderSize") * 2) / 2) + "px";
+                s.top = Math.floor((this._height - this._borderSizeSub) / 2) + "px";
                 var width = this._width - this._borderSizeSub;
                 if (width < 0) width = 0;
                 s.width = width + "px";
                 s.height = "0px";
             } else if (this._width < this._height) {
-                s.left = Math.floor((this._width - this.getStyle("borderSize") * 2) / 2) + "px"
+                s.left = Math.floor((this._width - this._borderSizeSub) / 2) + "px"
                 s.top = "0px";
                 s.width = "0px";
                 var height = this._height - this._borderSizeSub;

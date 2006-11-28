@@ -53,7 +53,7 @@ var tw_DateBox = tw_Component.extend({
         s = this._header.style;
         s.overflow = "hidden";
         s.whiteSpace = "nowrap";        
-        s.height = tw_GridBox.rowHeight + this.getStyle("borderSize") * 2 - this._borderSizeSub + "px";
+        s.height = tw_GridBox.rowHeight + "px";
         
         var bs = tw_Component.defaultStyles["Button"];        
         s.backgroundColor = bs.backgroundColor;
@@ -326,8 +326,8 @@ var tw_DateBox = tw_Component.extend({
         s.textAlign = "center";
         s.width = "75px";
         s.height = "20px";
-        s.fontFamily = this.getStyle("fontFamily");
-        s.fontSize = this.getStyle("fontSize") + "pt";
+        s.fontFamily = this._fontBox.style.fontFamily;
+        s.fontSize = this._fontBox.style.fontSize;
         s.backgroundColor = tw_COLOR_WINDOW;
         dragBox._dragObject = this._getFormattedDate(this._getDate(cell));
         dragBox.appendChild(document.createTextNode(dragBox._dragObject));

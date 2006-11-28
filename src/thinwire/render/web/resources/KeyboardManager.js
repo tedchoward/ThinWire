@@ -102,8 +102,8 @@ var tw_KeyboardManager = Class.extend({
             var bubbleEvent = true;
             
             do {
-                if (comp.isEnabled()) bubbleEvent = comp.keyPressNotify(keyPressCombo);
-                comp = comp.getParent();  
+                if (comp._enabled) bubbleEvent = comp.keyPressNotify(keyPressCombo);
+                comp = comp._parent;  
             } while (comp != null && bubbleEvent);
             
             if (!bubbleEvent) tw_cancelEvent(event);

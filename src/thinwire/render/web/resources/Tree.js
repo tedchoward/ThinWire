@@ -61,7 +61,7 @@ var tw_Tree = tw_Component.extend({
     },
     
     _textClickListener: function(event, item) {
-        if (!this.isEnabled()) return false;
+        if (!this._enabled) return false;
         var item = tw_getEventTarget(event, "treeRow");
         this.setFocus(true);
         this._select(item, true);
@@ -73,7 +73,7 @@ var tw_Tree = tw_Component.extend({
     _getClickAction: tw_Component.getClickAction,
     
     _buttonClickListener: function(event) {
-        if (!this.isEnabled()) return false;
+        if (!this._enabled) return false;
         var item = tw_getEventTarget(event, "treeRow");
         this.setFocus(true);
         this._setExpanded(item, !item.tw_expanded, true);
@@ -369,7 +369,7 @@ var tw_Tree = tw_Component.extend({
         if (this._currentItem != undefined) {
             var s = this._currentItem.textNode.style;
             s.backgroundColor = tw_COLOR_TRANSPARENT;
-            s.color = this.getStyle("fontColor");
+            s.color = this._fontBox.style.color;
             s.zIndex = 0;
         }
         
@@ -399,7 +399,7 @@ var tw_Tree = tw_Component.extend({
             pnode = node.subNodes;
         }
         
-        if (node == null || node == undefined) alert("unable to find fullIndexItem for:" + findex);        
+        if (node == null || node == undefined) alert("_fullIndexItem:not found:" + findex);        
         return node;
     },
     
@@ -561,7 +561,7 @@ var tw_Tree = tw_Component.extend({
     },
     
     getDragBox: function(event) {
-        if (!this.isEnabled()) return null;
+        if (!this._enabled) return null;
         
         var item = tw_getEventTarget(event, "treeRow");
         if (item == null) return null;

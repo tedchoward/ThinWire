@@ -41,42 +41,25 @@ var tw_BaseCheckRadio = tw_Component.extend({
         s.backgroundPosition = "center left";        
         s.backgroundColor = tw_COLOR_TRANSPARENT;        
         s.textDecoration = "none";
-        s.border = "0px";
-        s.padding = "0px";
-        s.margin = "0px";
+        s.padding = s.margin = s.border = "0px";
         s.whiteSpace = "nowrap";
-        s.paddingLeft = "18px";
-
-        this._backgroundBox = document.createElement("div");
-        var s = this._backgroundBox.style; 
-        s.position = "absolute";
-        s.width = "9px";
-        s.height = "9px";
-        s.overflow = "hidden"; 
-        s.fontSize = "0px";
-        s.zIndex = 0;
-        this._box.appendChild(this._backgroundBox);     
         
-        this._borderBox = document.createElement("div");
-        var s = this._borderBox.style; 
-        s.backgroundColor = tw_COLOR_TRANSPARENT;
+        this._backgroundBox = this._borderBox = document.createElement("div");
+        var s = this._borderBox.style;
         s.position = "absolute";
-        s.width = "9px";
-        s.height = "9px";
-        s.left = "1px";
+        s.overflow = "hidden";
         s.fontSize = "0px";
-        s.zIndex = 1;
-        this._box.appendChild(this._borderBox);
+        s.left = "3px";
         
         this._image = document.createElement("div");
         var s = this._image.style; 
+        s.position = "absolute";
+        s.lineHeight = "0px";
         s.backgroundPosition = "center";
         s.backgroundRepeat = "no-repeat";
-        s.position = "absolute";
-        s.left = "1px";
-        s.lineHeight = "0px";
-        s.zIndex = 1;
-        this._box.appendChild(this._image);
+        s.width = s.height = tw_BaseCheckRadio.boxSize + "px"
+        this._borderBox.appendChild(this._image);        
+        this._box.appendChild(this._borderBox);
         
         var prefix = (this instanceof tw_CheckBox) ? "cb" : "rb";
         this._imageChecked = "url(?_twr_=" + prefix + "Checked.png)";
@@ -87,7 +70,7 @@ var tw_BaseCheckRadio = tw_Component.extend({
     },
     
     _clickListener: function() {
-        if (!this.isEnabled()) return;
+        if (!this._enabled) return;
         this.setFocus(true)
         //#IFNDEF V1_1_COMPAT
         if (this instanceof tw_CheckBox || !this.isChecked()) {
@@ -101,45 +84,45 @@ var tw_BaseCheckRadio = tw_Component.extend({
 
     setWidth: function(width) {
         this._width = width;
-        
+
         if (!tw_sizeIncludesBorders) {
             var sub = parseInt(this._box.style.paddingLeft);
             width = width <= sub ? 0 : width - sub;
         }
-        
+
         this._box.style.width = width + "px";
     },
     
     setHeight: function(height) {
         arguments.callee.$.call(this, height);
         this._box.style.lineHeight = this._box.style.height;
-        var top = height / 2 - 8;        
+        var top = Math.floor(height / 2 - (tw_BaseCheckRadio.boxSize + this._borderSize * 2) / 2);        
         if (top < 0) top = 0;
-        this._image.style.top = top + "px";
         this._borderBox.style.top = top + "px";
-        this._backgroundBox.style.top = top + this.getStyle("borderSize") + "px";
     },
     
     setEnabled: function(enabled) {
         tw_setFocusCapable(this._box, enabled);
-        if (enabled == this.isEnabled()) return;
+        if (enabled == this._enabled) return;
         arguments.callee.$.call(this, enabled);
-        if (this.isChecked()) {
-            this._image.style.backgroundImage = enabled ? this._imageChecked : this._imageDisabledChecked;
-        }
+        if (this.isChecked()) this._image.style.backgroundImage = enabled ? this._imageChecked : this._imageDisabledChecked;
     },
     
     setStyle: function(name, value) {
         arguments.callee.$.call(this, name, value);
+        
         if (name == "borderSize") {
-            var imageSize = (value * 2) + 9;
-            this._image.style.width = imageSize + "px";
-            this._image.style.height = imageSize + "px";
-            this._box.style.paddingLeft = imageSize + 5 + "px";
-            this._backgroundBox.style.left = value + 1 + "px";
-            var top = this.getHeight() / 2 - 8;
-            if (top < 0) top = 0;
-            this._backgroundBox.style.top = top + value + "px";
+            var size = tw_BaseCheckRadio.boxSize + this._borderSize * 2;
+            this._box.style.paddingLeft = size + tw_BaseCheckRadio.pad * 2 + "px";
+
+            if (this._borderImage != null) {
+                this._borderImage.setWidth(size);
+                this._borderImage.setHeight(size);
+            } else {
+                size = tw_BaseCheckRadio.boxSize;
+            }
+            
+            this._borderBox.style.height = this._borderBox.style.width = size + "px"; 
         }
     },
     
@@ -153,7 +136,7 @@ var tw_BaseCheckRadio = tw_Component.extend({
     
     setChecked: function(checked, sendEvent) {
         if (checked) {
-            this._image.style.backgroundImage = this.isEnabled() ? this._imageChecked : this._imageDisabledChecked;
+            this._image.style.backgroundImage = this._enabled ? this._imageChecked : this._imageDisabledChecked;
         } else {
             this._image.style.backgroundImage = "";
         }
@@ -167,3 +150,5 @@ var tw_BaseCheckRadio = tw_Component.extend({
     }
 });
 
+tw_BaseCheckRadio.pad = 3;
+tw_BaseCheckRadio.boxSize = 9;

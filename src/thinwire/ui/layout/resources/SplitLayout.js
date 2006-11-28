@@ -32,7 +32,7 @@ tw_SplitLayout = Class.extend({
     construct: function(id) {
         this._comp = tw_Component.instances[id];
         this._drag = new tw_DragHandler(this._comp._box, this._dragListener.bind(this));
-        this._vertical = this._comp.getWidth() < this._comp.getHeight();
+        this._vertical = this._comp._width < this._comp._height;
         this._comp._box.style.cursor = this._vertical ? "W-resize" : "N-resize";
         this._comp._box.style.zIndex = "10";
     },
@@ -40,28 +40,28 @@ tw_SplitLayout = Class.extend({
     _dragListener: function(ev) {        
         if (ev.type == 0) {
             this._comp._box.style.backgroundColor = "black";
-            this._vertical = this._comp.getWidth() < this._comp.getHeight();
+            this._vertical = this._comp._width < this._comp._height;
         } else if (ev.type == 1) {
             if (this._vertical) {
                 this._comp._box.style.cursor = "W-resize";
-                var x = this._comp.getX() + ev.changeInX;
+                var x = this._comp._x + ev.changeInX;
                 
                 if (x < this._margin) {
                     x = this._margin;
                 } else {    
-                    var width = this._comp.getParent().getWidth() - this._margin;
+                    var width = this._comp._parent._width - this._margin;
                     if (x > width) x = width;
                 }
                 
                 this._comp.setX(x);
             } else {
                 this._comp._box.style.cursor = "N-resize";
-                var y = this._comp.getY() + ev.changeInY;
+                var y = this._comp._y + ev.changeInY;
                 
                 if (y < this._margin) {
                     y = this._margin;
                 } else {
-                   var height = this._comp.getParent().getHeight() - this._margin;
+                   var height = this._comp._parent._height - this._margin;
                    if (y > height) y = height;
                 }
                 
@@ -69,7 +69,7 @@ tw_SplitLayout = Class.extend({
             }
         } else if (ev.type == 2) {
             this._comp._box.style.backgroundColor = "transparent";
-            tw_em.sendViewStateChanged(this._comp._id, "position", this._comp.getX() + "," + this._comp.getY());            
+            tw_em.sendViewStateChanged(this._comp._id, "position", this._comp._x + "," + this._comp._y);            
         }
     },
     

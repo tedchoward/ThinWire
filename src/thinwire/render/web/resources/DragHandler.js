@@ -45,10 +45,6 @@ var tw_DragHandler = Class.extend({
         this._box = box;
         if (this._box != null) tw_addEventListener(this._box, "mousedown", this._mouseDown);    
     },
-    
-    getBox: function() {
-        return this._box;
-    },
         
     setListener: function(listener) {
         this._listener = listener;

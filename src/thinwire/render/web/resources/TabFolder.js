@@ -42,12 +42,14 @@ var tw_TabFolder = tw_BaseContainer.extend({
         var s = this._tabs.style;
         s.position = "absolute";
         s.zIndex = "1";
+        s.height = tw_TabFolder._tabsHeight + "px";
         this._box.appendChild(this._tabs);
         
         this._borderBox = this._backgroundBox = this._container = document.createElement("div");
         var s = this._container.style;
         s.position = "absolute";
         s.zIndex = "0";
+        s.top = tw_TabFolder._tabsHeight + "px";
 
         this._box.appendChild(this._container);    
         this.init(-1, props);
@@ -58,6 +60,7 @@ var tw_TabFolder = tw_BaseContainer.extend({
         if (name == "borderSize") this._offsetX = this._offsetY = parseInt(value);
         
         if (name.indexOf("border") == 0) {
+            if (name == "borderImage") return;
             for (var i in this._children) {
                 this._children[i].setStyle(name, value);
             }
@@ -69,50 +72,66 @@ var tw_TabFolder = tw_BaseContainer.extend({
     },
         
     setWidth: function(width) {
-        arguments.callee.$.call(this, width);
+        this._width = width;
         this._tabs.style.width = width + "px";
-        var cWidth = width - this._borderSizeSub;
-        if (cWidth < 0) cWidth = 0;
-        this._container.style.width = cWidth + "px";
-        cWidth = width - this.getStyle("borderSize") * 2;
-        if (cWidth < 0) cWidth = 0;
+        this._box.style.width = width + "px";
 
+        if (this._borderImage != null) {
+            this._borderImage.setWidth(width);
+            this._borderBox.style.width = width + "px";
+            width -= this._borderSizeSub;
+            if (width < 0) width = 0;
+        } else {
+            width -= this._borderSizeSub;
+            if (width < 0) width = 0;
+            this._borderBox.style.width = width + "px";
+        }
+        
         for (var i = this._children.length; --i >= 0;) {
-            this._children[i].setWidth(cWidth);
+            this._children[i].setWidth(width);
         }
     },
     
     setHeight: function(height) {
-        arguments.callee.$.call(this, height);
-        this._container.style.top = this._tabs.style.height = tw_TabFolder._tabsHeight + "px";        
-        var cHeight = height - this._borderSizeSub - tw_TabFolder._tabsHeight;
-        if (cHeight < 0) cHeight = 0;
-        this._container.style.height = cHeight + "px";
-        cHeight = height - (this.getStyle("borderSize") * 2 + tw_TabFolder._tabsHeight);
-        if (cHeight < 0) cHeight = 0;
+        this._height = height;
+        this._box.style.height = height + "px";
+        height -= tw_TabFolder._tabsHeight;
+        if (height < 0) height = 0;
+        
+        if (this._borderImage != null) {
+            this._borderImage.setHeight(height);
+            this._borderBox.style.height = height + "px"; 
+            height -= this._borderSizeSub;
+            if (height < 0) height = 0;
+        } else {
+            height -= this._borderSizeSub;
+            if (height < 0) height = 0;
+            this._borderBox.style.height = height + "px"; 
+        }
         
         for (var i = this._children.length; --i >= 0;) {            
-            this._children[i].setHeight(cHeight);
+            this._children[i].setHeight(height);
         }
     },
     
     addComponent: function(insertAtIndex, sheet) {
-        var size = this.getWidth() - this.getStyle("borderSize") * 2;
+        var size = this._width - this._borderSizeSub;
         if (size < 0) size = 0;
         sheet.setWidth(size);
-        var size = this.getHeight() - (this.getStyle("borderSize") * 2 + tw_TabFolder._tabsHeight);
+        var size = this._height - (this._borderSizeSub + tw_TabFolder._tabsHeight);
         if (size < 0) size = 0;        
         sheet.setHeight(size);
 
         this._setTabActive(this._currentIndex, false);
 
         var tab = sheet._tab;
-        sheet.setStyle("borderColor", this.getStyle("borderColor"));
-        sheet.setStyle("borderType", this.getStyle("borderType"));
-        sheet.setStyle("borderSize", this.getStyle("borderSize"));        
+        sheet.setStyle("borderColor", this._borderColor);
+        sheet.setStyle("borderType", this._borderType);
+        sheet.setStyle("borderSize", this._borderSize);        
         
         if (insertAtIndex == -1 || insertAtIndex >= this._children.length) {
             this._tabs.appendChild(tab);
+            insertAtIndex = this._children.length;
         } else {
             this._tabs.insertBefore(tab, this._tabs.childNodes.item(insertAtIndex));
         }
@@ -144,7 +163,7 @@ var tw_TabFolder = tw_BaseContainer.extend({
             this._currentIndex = index;
         }
 
-        var commonSize = active ? "0px" : this.getStyle("borderSize") + "px";
+        var commonSize = active ? "0px" : this._borderSize + "px";
         if (index == 0) this._tabs.style.paddingLeft = commonSize;        
         if (index > 0) cl[index - 1]._tab.style.borderRightWidth = commonSize;        
         if (index + 1 < cl.length) cl[index + 1]._tab.style.borderLeftWidth = commonSize;
@@ -175,10 +194,7 @@ var tw_TabFolder = tw_BaseContainer.extend({
         this._currentIndex = index;
         this._setTabActive(this._currentIndex, true);
         this.setFocus(true);
-        
-        if (sendEvent) {
-            this.firePropertyChange("currentIndex", index);
-        }
+        if (sendEvent) this.firePropertyChange("currentIndex", index);
     },
     
     destroy: function() {

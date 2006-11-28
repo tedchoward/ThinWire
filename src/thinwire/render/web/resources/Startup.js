@@ -178,8 +178,8 @@ function tw_makeFileChooserBtn(buttonId, tfId) {
     
     s = iframe.style;
     s.top = "0px";
-    s.width = btn.getWidth() + "px";
-    s.height = btn.getHeight() + "px";
+    s.width = btn._width + "px";
+    s.height = btn._height + "px";
     s.position = "absolute";
     s.overflow = "hidden";
     s.zIndex = "1";

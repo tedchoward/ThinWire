@@ -56,7 +56,7 @@ function parseBrowserType(ua) {
     else if (tw_isSafari = parseBrowser("safari", 412)) {}
     else if (tw_isKHTML = parseBrowser("khtml", 3.5)) {}
     else if (tw_isFirefox = tw_isGecko = parseBrowser("firefox", 1)) {}
-    else if (tw_isIE = parseBrowser("msie", 5.5)) {}
+    else if (tw_isIE = parseBrowser("msie", 6)) {}
     else if (tw_isGecko = parseBrowser("gecko", 20050512)) {};
     if (msg != null) alert(msg + ":\n" + ua);
 }

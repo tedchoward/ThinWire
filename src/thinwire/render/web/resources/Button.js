@@ -33,21 +33,24 @@ var tw_Button = tw_Component.extend({
         arguments.callee.$.call(this, "div", "button", id, containerId);
         var s = this._box.style;
         s.borderStyle = "solid";
-        s.borderColor = tw_COLOR_WINDOWFRAME;                        
+        s.borderColor = tw_COLOR_WINDOWFRAME;
         s.borderWidth = "0px";
+        s.backgroundColor = tw_COLOR_TRANSPARENT;
         
-        var border = this._borderBox = this._focusBox = document.createElement("div");
+        var border = this._borderBox = this._backgroundBox = this._focusBox = document.createElement("div");
         var s = border.style;
         s.overflow = "hidden";
-        s.backgroundColor = tw_COLOR_TRANSPARENT;
-        s.zIndex = "0";
+        s.position = "absolute";
+        //s.backgroundColor = tw_COLOR_TRANSPARENT;
+        //s.zIndex = "0";
         this._box.appendChild(border);
 
         var surface = this._fontBox = this._focusBox = document.createElement("a");
         var s = surface.style;
-        s.display = "block";        
+        s.display = "block"; 
         s.overflow = "hidden";
         s.cursor = "default";
+        s.position = "absolute";
         s.whiteSpace = "nowrap";
         s.textAlign = "center";
         s.paddingLeft = tw_Button.textPadding + "px";
@@ -57,7 +60,6 @@ var tw_Button = tw_Component.extend({
         s.backgroundPosition = "5% 50%";
         surface.appendChild(document.createTextNode(""));
         border.appendChild(surface);
-        this._fontBox = surface;
         
         tw_addEventListener(this._box, "mousedown", this._mouseDownListener.bind(this));    
         tw_addEventListener(this._box, ["mouseup", "mouseout"], this._mouseUpListener.bind(this));    
@@ -72,17 +74,17 @@ var tw_Button = tw_Component.extend({
         if (parseInt(this._box.style.borderWidth) == state) return;
         this._boxSizeSub = state ? 2 : 0;
         this._box.style.borderWidth = state ? "1px" : "0px";
-        this.setWidth(this.getWidth());
-        this.setHeight(this.getHeight());
+        this.setWidth(this._width);
+        this.setHeight(this._height);
     },
     
     _mouseDownListener: function(ev) {
-        if (!this.isEnabled() || tw_getEventButton(ev) != 1) return;
+        if (!this._enabled || tw_getEventButton(ev) != 1) return;
         this._borderBox.style.borderStyle = "inset";
     },
     
     _mouseUpListener: function(ev) {
-        if (!this.isEnabled() || tw_getEventButton(ev) != 1) return;
+        if (!this._enabled || tw_getEventButton(ev) != 1) return;
         this._borderBox.style.borderStyle = this._borderType;
     },
 
@@ -103,20 +105,23 @@ var tw_Button = tw_Component.extend({
     
     setWidth: function(width) {
         arguments.callee.$.call(this, width);
-        var s = this._fontBox.style;
         width -= this._boxSizeSub;
-        if (!tw_sizeIncludesBorders) width -= parseInt(s.paddingLeft) + parseInt(s.paddingRight) + this._borderSizeSub;
+        if (!tw_sizeIncludesBorders) width -= this._borderSizeSub;
         if (width < 0) width = 0;
-        s.width = width + "px";
+        this._borderBox.style.width = width + (this._borderImage != null ? this._borderSizeSub : 0) + "px";
+        var s = this._fontBox.style;
+        if (!tw_sizeIncludesBorders) width -= parseInt(s.paddingLeft) + parseInt(s.paddingRight);
+        s.width = width < 0 ? "0px" : width + "px";
     },
     
     setHeight: function(height) {
         arguments.callee.$.call(this, height);
-        var s = this._fontBox.style;
         height -= this._boxSizeSub;
         if (!tw_sizeIncludesBorders) height -= this._borderSizeSub;
         if (height < 0) height = 0;
+        var s = this._fontBox.style;
         s.height = s.lineHeight = height + "px";
+        this._borderBox.style.height = height + (this._borderImage != null ? this._borderSizeSub : 0) + "px";
     },
     
     setEnabled: function(enabled) {
@@ -127,7 +132,7 @@ var tw_Button = tw_Component.extend({
     },
     
     setFocus: function(focus) {
-        if (!this.isEnabled() || !this.isVisible()) return false;
+        if (!this._enabled || !this.isVisible()) return false;
         this._setStandardStyle(focus);
         return arguments.callee.$.call(this, focus);
     },
@@ -150,8 +155,8 @@ var tw_Button = tw_Component.extend({
         var s = this._fontBox.style;
         s.backgroundImage = tw_Component.expandUrl(image, true);
         s.paddingLeft = (image.length > 0 ? tw_Button.imagePadding : tw_Button.textPadding) + "px";
-        this.setWidth(this.getWidth());
-        this.setHeight(this.getHeight());
+        this.setWidth(this._width);
+        this.setHeight(this._height);
     },
 
     setStandard: function(state) {
@@ -164,7 +169,7 @@ var tw_Button = tw_Component.extend({
             }
             
             w.setStandardButton(this);
-        } else if (sButton != null && sButton.getId() == this._id) {
+        } else if (sButton != null && sButton._id == this._id) {
             if (tw_Component.currentFocus == null || !(tw_Component.currentFocus instanceof tw_Button)) {
                 sButton._setStandardStyle(false);
             }

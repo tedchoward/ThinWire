@@ -41,7 +41,7 @@ var tw_DragAndDropHandler = Class.extend({
     },
     
     addTarget: function(target) {
-        this._targets[target.getId()] = target;
+        this._targets[target._id] = target;
     },
     
     removeTarget: function(id) {

@@ -115,8 +115,8 @@ var tw_GridBox = tw_Component.extend({
                         
             props.x = 0;
             props.y = 0;
-            if (props.width == 0) props.width = container.getWidth();
-            if (props.height == 0) props.height = container.getHeight();
+            if (props.width == 0) props.width = container._width;
+            if (props.height == 0) props.height = container._height;
             
             var parentContent = container._content; 
             
@@ -166,11 +166,7 @@ var tw_GridBox = tw_Component.extend({
                 container._toggleHighlight(parentIndex, false);
             }
             
-            container._childGridBoxes.push(this);
-
-            //If this gridbox is a member of a dropdown, then an actual click event must
-            //be reported to the server so the dropdown text value gets populated.
-            //if (this._root.getParent() instanceof tw_DropDown) this.registerEventNotifier("action", "click");                
+            container._childGridBoxes.push(this);                
         }
         
         this.init(-1, props);
@@ -187,7 +183,7 @@ var tw_GridBox = tw_Component.extend({
     },
     
     _headerMouseMoveListener: function(event) {
-        if (!this.isEnabled() || this._hresize.startX != -1) return;
+        if (!this._enabled || this._hresize.startX != -1) return;
         var columnHeader = tw_getEventTarget(event);                
         if (columnHeader.className != "gridBoxColumnHeader" && columnHeader.className != "gridBoxHeader") return;
         if (columnHeader.className == this._header.className) this._header.style.cursor = "";    
@@ -210,12 +206,12 @@ var tw_GridBox = tw_Component.extend({
     },
         
     _headerMouseDownListener: function(event) {
-        if (!this.isEnabled() || this._hresize.column == null || tw_getEventTarget(event).className != "gridBoxColumnHeader") return;    
+        if (!this._enabled || this._hresize.column == null || tw_getEventTarget(event).className != "gridBoxColumnHeader") return;    
         this._hresize.startX = event.clientX;
     },
         
     _headerMouseUpListener: function(event) {
-        if (!this.isEnabled() || this._hresize.startX == -1) return;
+        if (!this._enabled || this._hresize.startX == -1) return;
         var resizeColumn = this._hresize.column;
         var resizeStartX = this._hresize.startX;
         
@@ -250,7 +246,7 @@ var tw_GridBox = tw_Component.extend({
     },
 
     _columnClickListener: function(event) {
-        if (!this.isEnabled() || this._hresize.column != null) return;
+        if (!this._enabled || this._hresize.column != null) return;
         var columnHeader = tw_getEventTarget(event, "gridBoxColumnHeader");
         var cn = this._header.childNodes;        
         for (var index = cn.length; --index >= 0;) if (cn.item(index) === columnHeader) break;
@@ -258,14 +254,14 @@ var tw_GridBox = tw_Component.extend({
     },
 
     _scrollListener: function(event) {
-        if (!this.isEnabled()) return;
+        if (!this._enabled) return;
         var body = this._content.parentNode;        
         this._header.style.left = "-" + body.scrollLeft + "px";
         if (this._childOpen) this.closeChildren();
     },
     
     _cellClickListener: function(event) {
-        if (!this.isEnabled()) return;
+        if (!this._enabled) return;
         this.setFocus(true);
         var cell = tw_getEventTarget(event);
         var column = cell.parentNode;
@@ -294,7 +290,7 @@ var tw_GridBox = tw_Component.extend({
                 this._root.closeChildren();
                 
                 //TODO DROPDOWN: GridBox won't play nice
-                if (this._root.getParent() instanceof tw_DropDown) {
+                if (this._root._parent instanceof tw_DropDown) {
                     this._root.setVisible(false);
                 }
             }
@@ -371,7 +367,7 @@ var tw_GridBox = tw_Component.extend({
             
             if (gbc != undefined) {
                 var y = cell.offsetTop - this._content.parentNode.scrollTop;
-                if (this._visibleHeader) y += tw_GridBox.rowHeight + this.getStyle("borderSize") * 2;
+                if (this._visibleHeader) y += tw_GridBox.rowHeight + this._borderSizeSub;
                 var available = tw_getVisibleHeight() - this._box.parentNode.offsetTop - parseInt(this._box.style.top) - y - 5;
                 if (available < gbc._height) y -= gbc._height - tw_GridBox.rowHeight;
                 if (y < 0) y = 0;
@@ -431,7 +427,7 @@ var tw_GridBox = tw_Component.extend({
                 cell.scrollIntoView(false);            
             }
         } else {
-            var color = this.getStyle("fontColor");
+            var color = this._fontBox.style.color;
             var backgroundColor = tw_COLOR_TRANSPARENT;
             var arrowImage = tw_GridBox.imageChildArrow;
         }   
@@ -466,7 +462,7 @@ var tw_GridBox = tw_Component.extend({
     
     setX: function(x) {
         if (this._parent instanceof tw_GridBox) {
-            var ox = x + this.getParent().getX();
+            var ox = x + this._parent._x;
             arguments.callee.$.call(this, ox);
             this._x = x;
         } else {
@@ -476,9 +472,9 @@ var tw_GridBox = tw_Component.extend({
         
     setY: function(y) {
         if (this._parent instanceof tw_GridBox) {
-            var oy = y + this.getParent().getY();
+            var oy = y + this._parent._y;
             
-            if (this._root.getParent() instanceof tw_BaseContainer && this._root === this._parent) {
+            if (this._root._parent instanceof tw_BaseContainer && this._root === this._parent) {
                 var win = this.getBaseWindow();
                 if (win instanceof tw_Dialog) oy += win.getOffsetY();
             }
@@ -511,7 +507,7 @@ var tw_GridBox = tw_Component.extend({
     },
         
     keyPressNotify: function(keyPressCombo) {
-        if (!this.isEnabled()) return;
+        if (!this._enabled) return;
         
         //Get highest open GridBox
         var top = this;       
@@ -637,14 +633,14 @@ var tw_GridBox = tw_Component.extend({
         var gbHeight = this._height - this._borderSizeSub;
         
         if (visibleHeader) {
-            var gbWidth = this.getWidth() - this._borderSizeSub;
+            var gbWidth = this._width - this._borderSizeSub;
             if (gbWidth < 0) gbWidth = 0;
             header.style.width = gbWidth + "px";
-            header.style.height = tw_GridBox.rowHeight + this.getStyle("borderSize") * 2 + "px";            
+            header.style.height = tw_GridBox.rowHeight + this._borderSizeSub + "px";            
             header.style.top = this._box.scrollTop + "px";
             if (this._visibleHeader) tw_addEventListener(this._box.childNodes.item(1), "scroll", this._scrollListener);                    
             header.style.display = "block";
-            var headerHeight = tw_GridBox.rowHeight + this.getStyle("borderSize") * 2;
+            var headerHeight = tw_GridBox.rowHeight + this._borderSizeSub;
             body.style.top = headerHeight + "px";
             body.style.height = gbHeight < headerHeight ? "0px" : (gbHeight - headerHeight) + "px";
         } else {
@@ -707,7 +703,7 @@ var tw_GridBox = tw_Component.extend({
     
         totalFixedWidth += this._childColumnWidth;
         content.style.width = totalFixedWidth + "px";
-        var gbWidth = this.getWidth() - this._borderSizeSub;        
+        var gbWidth = this._width - this._borderSizeSub;        
         if (totalFixedWidth < gbWidth) totalFixedWidth = gbWidth;      
         header.style.width = totalFixedWidth + "px";        
         if (width > 0 && sendEvent) this.firePropertyChange("columnWidth", index + "," + width, "columnWidth" + index);
@@ -763,14 +759,14 @@ var tw_GridBox = tw_Component.extend({
         s.styleFloat = "left";
         s.overflow = "hidden";
         s.whiteSpace = "nowrap";        
-        s.height = tw_GridBox.rowHeight + this.getStyle("borderSize") * 2 - this._borderSizeSub + "px";
+        s.height = tw_GridBox.rowHeight + "px";
         s.textAlign = alignX;
         s.backgroundRepeat = "no-repeat";
         s.backgroundPosition = "center right";
         if (sortOrder != 0) s.backgroundImage = sortOrder == 1 ? tw_GridBox.imageSortOrderAsc : tw_GridBox.imageSortOrderDesc; 
 
         var bs = tw_Component.defaultStyles["Button"];
-        s.borderWidth = this.getStyle("borderSize") + "px";        
+        s.borderWidth = this._borderSize + "px";        
         s.backgroundColor = bs.backgroundColor;
         s.borderStyle = bs.borderType; 
         s.borderColor = tw_Component.getIEBorder(bs.borderColor, bs.borderType);

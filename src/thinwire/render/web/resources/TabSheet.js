@@ -90,22 +90,19 @@ var tw_TabSheet = tw_BaseContainer.extend({
     setActiveStyle: function(active) {  
         var bs = this._box.style;
         var s = this._tab.style;
-        var borderSize = this.getStyle("borderSize");
         
         if (active) {
             var margin = 0;
             bs.zIndex = 1;
             bs.display = "block";
-            s.height = tw_TabFolder._tabsHeight + (tw_sizeIncludesBorders ? borderSize : margin) + "px";
-            s.paddingLeft = "4px";
-            s.paddingRight = "4px";
+            s.height = tw_TabFolder._tabsHeight + (tw_sizeIncludesBorders ? this._borderSize : margin) + "px";
+            s.paddingLeft = s.paddingRight = "4px";
         } else {
             var margin = 2;
             bs.zIndex = 0;
             bs.display = "none";
-            s.height = tw_TabFolder._tabsHeight - (tw_sizeIncludesBorders ? borderSize : borderSize + margin) + "px";
-            s.paddingLeft = "2px";
-            s.paddingRight = "2px";
+            s.height = tw_TabFolder._tabsHeight - (tw_sizeIncludesBorders ? this._borderSize : this._borderSize + margin) + "px";
+            s.paddingLeft = s.paddingRight = "2px";
         }
 
         s.marginTop = margin + "px";
@@ -118,18 +115,17 @@ var tw_TabSheet = tw_BaseContainer.extend({
         if (name == "backgroundColor") {
             this._tab.style.backgroundColor = value;
         } else if (name == "borderSize") {
-            var borderSize = this.getStyle("borderSize");
-            this._tab.style.lineHeight = tw_TabFolder._tabsHeight - (tw_sizeIncludesBorders ? borderSize : borderSize * 2) + "px";
+            this._tab.style.lineHeight = tw_TabFolder._tabsHeight - (tw_sizeIncludesBorders ? this._borderSize : this._borderSizeSub) + "px";
             this._borderBox.style.borderBottomWidth = "0px";
             this.setActiveStyle(this._box.style.display == "block");
         }
     },
     
     setOpacity: function(opacity) {
-        arguments.callee.$.call(this, opacity);
         this._tab.style.display = opacity > 0 ? "block" : "none";        
         this._tab.style.opacity = opacity / 100;
         if (tw_isIE) this._tab.style.filter = opacity >= 100 ? "" : "alpha(opacity=" + opacity + ")";
+        this._opacity = opacity;
     },
     
     getDragArea: function() {
@@ -142,9 +138,9 @@ var tw_TabSheet = tw_BaseContainer.extend({
         s.position = "absolute";
         s.textAlign = "center";
         s.height = "16px";
-        s.fontFamily = this.getStyle("fontFamily");
-        s.fontSize = this.getStyle("fontSize") + "pt";
-        s.backgroundColor = this.getStyle("backgroundColor");
+        s.fontFamily = this._fontBox.style.fontFamily;
+        s.fontSize = this._fontBox.style.fontSize;
+        s.backgroundColor = this._backgroundColor;
         s.border = this._tab.style.border;
         return dragBox;
     },

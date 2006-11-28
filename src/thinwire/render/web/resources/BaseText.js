@@ -28,7 +28,7 @@ var tw_BaseText = tw_Component.extend({
     _timerId: 0,
     _editor: null,
     _subtractEditorWidth: 0,
-    _paddingSize: tw_isFirefox ? 0 : 2, //FireFox places the padding outside the scrollbars,
+    _paddingSize: tw_isFirefox || (tw_isOpera && tw_bVer < 9) ? 0 : 2, //FireFox places the padding outside the scrollbars,
     _lastValue: "",
     _useToolTip: true,
     _editMask: "",
@@ -67,14 +67,14 @@ var tw_BaseText = tw_Component.extend({
     },
         
     _keyUpListener: function(event) {
-        if (!this.isEnabled()) return;
+        if (!this._enabled) return;
         var keyCode = tw_getEventKeyCode(event);
         this._validateInput(keyCode);
         this._textStateChange(true);
     },
         
     _mouseUpListener: function(event) {
-        if (!this.isEnabled()) return;
+        if (!this._enabled) return;
         this._textStateChange(true);
     },
     
@@ -240,7 +240,7 @@ var tw_BaseText = tw_Component.extend({
     },      
     
     _textStateChange: function(useTimer, noSelectChange) {
-        if (useTimer && noSelectChange) alert("textStateChange does not support 'useTimer == true && noSelectChange == true'");
+        if (useTimer && noSelectChange) alert("_textStateChange:unsupported");
         var te = this._editor;
         
         if (this._timerId != 0) {
@@ -269,7 +269,7 @@ var tw_BaseText = tw_Component.extend({
     },
     
     _handleSelectionChange: function(noSelectChange) {
-        if (noSelectChange || !this.isVisible() || !this.isEnabled()) return;
+        if (noSelectChange || !this.isVisible() || !this._enabled) return;
         this._timerId = 0;
         if (this._selectionOld == undefined) this._selectionOld = this._editor.value.length + "," + this._editor.value.length;            
         var selectionNew = this.getSelectionRange().join();
@@ -620,12 +620,12 @@ var tw_BaseText = tw_Component.extend({
         var dragBox = document.createElement("div");
         var s = dragBox.style;
         s.position = "absolute";
-        s.width = this.getWidth() + "px";
-        s.height = this.getHeight() + "px";
+        s.width = this._width + "px";
+        s.height = this._height + "px";
         s.backgroundColor = tw_COLOR_WINDOW;
         s.border = "1px solid black";
-        s.fontFamily = this.getStyle("fontFamily");
-        s.fontSize = this.getStyle("fontSize") + "pt";
+        s.fontFamily = this._fontBox.style.fontFamily;
+        s.fontSize = this._fontBox.style.fontSize;
         dragBox.appendChild(document.createTextNode(this._editor.value));
         return dragBox;
     },
