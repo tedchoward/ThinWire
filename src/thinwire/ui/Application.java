@@ -45,6 +45,7 @@ import thinwire.ui.event.ExceptionListener;
 import thinwire.ui.event.PropertyChangeEvent;
 import thinwire.ui.event.PropertyChangeListener;
 import thinwire.ui.style.*;
+import thinwire.util.XOD;
 
 /**
  * The Application class represents an instance of a ThinWire application.  Methods in this class are
@@ -420,73 +421,39 @@ public abstract class Application {
         return priorFocus.get();
     }
     
-    protected void loadStyleSheet(Properties props) {
-        try {
-            ClassReflector<Background> backgroundReflect = new ClassReflector<Background>(Background.class, "PROPERTY_", "background");
-            ClassReflector<Font> fontReflect = new ClassReflector<Font>(Font.class, "PROPERTY_", "font");
-            ClassReflector<Border> borderReflect = new ClassReflector<Border>(Border.class, "PROPERTY_", "border");
-            ClassReflector<FX> fxReflect = new ClassReflector<FX>(FX.class, "PROPERTY_", "fx");
+    protected void loadStyleSheet(XOD props) {
+        compTypeToStyle = new HashMap<Class<? extends Component>, Style>();
+        systemColors = new HashMap<String, Color>();
+
+        for (Map.Entry<String, Object> e : props.getObjectMap().entrySet()) {
+            String name = e.getKey();
+            Object value = e.getValue();
             
-            compTypeToStyle = new HashMap<Class<? extends Component>, Style>();
-            systemColors = new HashMap<String, Color>();
-
-            Style defaultStyle = new Style();
-            compTypeToStyle.put(null, defaultStyle);
-            
-            for (String key : backgroundReflect.getPropertyNames()) {
-                backgroundReflect.setProperty(defaultStyle.getBackground(), key, props.getProperty("default." + key));
-            }
-
-            for (String key : fontReflect.getPropertyNames()) {
-                fontReflect.setProperty(defaultStyle.getFont(), key, props.getProperty("default." + key));
-            }
-
-            for (String key : borderReflect.getPropertyNames()) {
-                borderReflect.setProperty(defaultStyle.getBorder(), key, props.getProperty("default." + key));
-            }
-
-            for (String key : fxReflect.getPropertyNames()) {
-                fxReflect.setProperty(defaultStyle.getFX(), key, props.getProperty("default." + key));
-            }
-            
-            for (Map.Entry<Object, Object> e : props.entrySet()) {
-                String key = (String)e.getKey();
-                if (key.startsWith("default.")) continue;
-                String value = (String)e.getValue();
-                int lastIndex = key.lastIndexOf('.');
-                String prefix = key.substring(0, lastIndex); 
-                key = key.substring(lastIndex + 1);
-
-                if (prefix.equals("systemColor")) {
-                    Color color = Color.valueOf(key); //Just verify that the specified systemColor is valid;
-                    if (!color.isSystemColor()) throw new UnsupportedOperationException("You can only override system colors in the style sheet: " + key);
-                    systemColors.put(color.toString(), Color.valueOf(value));
-                } else {
-                    Class<? extends Component> clazz = (Class<? extends Component>)Class.forName(prefix);
-                    Style style = compTypeToStyle.get(clazz);
-                    if (style == null) compTypeToStyle.put(clazz, style = new Style(defaultStyle));
+            if (value instanceof Color) {
+                Color color = Color.valueOf(name); //Just verify that the specified systemColor is valid;
+                if (!color.isSystemColor()) throw new UnsupportedOperationException("You can only override system colors in the style sheet: " + name);
+                systemColors.put(color.toString(), (Color)value);
+            } else if (value instanceof Style) {
+                if (name.startsWith("default")) {
+                    if (name.equals("default")) compTypeToStyle.put(null, (Style)value);
+                } else if (name.matches(".*?[A-Z].*?")){
+                    if (Character.isUpperCase(name.charAt(0)) && name.indexOf('.') == -1) name = "thinwire.ui." + name;
                     
-                    if (key.startsWith("background")) {
-                        backgroundReflect.setProperty(style.getBackground(), key, value);
-                    } else if (key.startsWith("font")) {
-                        fontReflect.setProperty(style.getFont(), key, value);            
-                    } else if (key.startsWith("border")) {
-                        borderReflect.setProperty(style.getBorder(), key, value);            
-                    } else if (key.startsWith("fx")) {
-                        fxReflect.setProperty(style.getFX(), key, value);
-                    }
+                    try {
+                        Class clazz = Class.forName(name);
+                        compTypeToStyle.put((Class<? extends Component>)clazz, (Style)value);
+                    } catch (Exception ex) { /*purposely fall through*/ }
                 }
+            } else {
+                throw new UnsupportedOperationException("Unsupported object type in style sheet:" + value.getClass());
             }
-            
-            for (Color c : Color.values()) {
-                if (c.isSystemColor()) {
-                    String name = c.toString();
-                    if (systemColors.get(name) == null) systemColors.put(name, c);
-                }
+        }
+
+        for (Color c : Color.values()) {
+            if (c.isSystemColor()) {
+                String name = c.toString();
+                if (systemColors.get(name) == null) systemColors.put(name, c);
             }
-        } catch (Exception e) {
-            if (e instanceof RuntimeException) throw (RuntimeException)e;
-            throw new RuntimeException(e);
         }
     }
     

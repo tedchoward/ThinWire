@@ -55,6 +55,7 @@ import thinwire.ui.layout.SplitLayout;
 import thinwire.ui.style.*;
 import thinwire.util.Grid;
 import thinwire.util.ImageInfo;
+import thinwire.util.XOD;
 
 /**
  * @author Joshua J. Gertzen
@@ -308,7 +309,7 @@ public final class WebApplication extends Application {
         private boolean repeat;
     }
 
-    private static final String DEFAULT_STYLE_SHEET = "class:///" + Application.class.getName() + "/resources/DefaultStyle.properties";
+    private static final String DEFAULT_STYLE_SHEET = "class:///" + Application.class.getName() + "/resources/DefaultStyle.xml";
     
     WebApplication(final WebServlet servlet, final HttpSession httpSession, final String mainClass, String styleSheet, final String[] args) {
         nameToRenderer = new HashMap<String, Class<ComponentRenderer>>();
@@ -442,11 +443,10 @@ public final class WebApplication extends Application {
         }
 
         try {
-            Properties props = new Properties();
+            XOD styleDef = new XOD();
             if (styleSheet == null) styleSheet = DEFAULT_STYLE_SHEET;
-            if (!styleSheet.startsWith("class:///")) styleSheet = this.getRelativeFile(styleSheet).getAbsolutePath();
-            props.load(new ByteArrayInputStream(RemoteFileMap.INSTANCE.getLocalData(styleSheet)));
-            loadStyleSheet(props);
+            styleDef.execute(styleSheet);
+            loadStyleSheet(styleDef);
             systemColors = getSystemColors();
             
             StringBuilder sb = new StringBuilder();
