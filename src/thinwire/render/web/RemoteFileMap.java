@@ -59,51 +59,6 @@ final class RemoteFileMap {
         remoteToFileInfo = new HashMap<String, RemoteFileInfo>(initialMapSize);
         localToFileInfo = new HashMap<String, RemoteFileInfo>(initialMapSize);
     }
-    
-    final void loadLocalData(String localName, OutputStream os) {
-        try {
-            InputStream is;
-            
-            //"class:///thinwire.ui.layout.SplitLayout/resources/Image.png"                
-            if (localName.startsWith("class:///")) {                    
-                int endIndex = localName.indexOf('/', 9);
-                String className = localName.substring(9, endIndex);
-                String resource = localName.substring(endIndex + 1);
-                Class clazz = Class.forName(className);
-                is = clazz.getResourceAsStream(resource);
-                if (is == null) throw new FileNotFoundException(localName);            
-            } else {                   
-                is = new BufferedInputStream(new FileInputStream(localName));
-            }
-            
-            //if (os == null) os = new ByteArrayOutputStream();
-            byte[] bytes = new byte[128];
-            int size;
-            
-            while ((size = is.read(bytes)) != -1)
-                os.write(bytes, 0, size);
-            
-            is.close();
-        } catch (Exception e) {
-            if (!(e instanceof RuntimeException)) e = new RuntimeException(e);
-            throw (RuntimeException)e;
-        }        
-    }
-    
-    final byte[] getLocalData(String localName) {
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        loadLocalData(localName, os);
-        byte[] data = os.toByteArray();        
-
-        try {
-            os.close();
-        } catch (Exception e) {
-            if (!(e instanceof RuntimeException)) e = new RuntimeException(e);
-            throw (RuntimeException)e;
-        }
-        
-        return data;
-    }
 
     final String getLocalName(String remoteName) {
         RemoteFileInfo fileInfo = remoteToFileInfo.get(remoteName);
@@ -114,7 +69,7 @@ final class RemoteFileMap {
         RemoteFileInfo fileInfo = remoteToFileInfo.get(remoteName);
         
         if (fileInfo != null) {
-            byte[] data = getLocalData(fileInfo.localName);
+            byte[] data = WebApplication.getResourceBytes(fileInfo.localName);
             if (log.isLoggable(LEVEL)) log.log(LEVEL, "Loaded file data for local file: localName='" + 
                     fileInfo.localName + "', remoteName='" + fileInfo.remoteName + "', refCount='" + 
                     fileInfo.refCount + "', data.length='" + data.length + "'");                        

@@ -1,10 +1,32 @@
+/*
+                         ThinWire(TM) RIA Ajax Framework
+               Copyright (C) 2003-2006 Custom Credit Systems
+  
+  This program is free software; you can redistribute it and/or modify it under
+  the terms of the GNU General Public License as published by the Free Software
+  Foundation; either version 2 of the License, or (at your option) any later
+  version.
+  
+  This program is distributed in the hope that it will be useful, but WITHOUT
+  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+  FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+  
+  You should have received a copy of the GNU General Public License along with
+  this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+  Place, Suite 330, Boston, MA 02111-1307 USA
+ 
+  Users wishing to use this library in proprietary products which are not 
+  themselves to be released under the GNU Public License should contact Custom
+  Credit Systems for a license to do so.
+  
+                Custom Credit Systems, Richardson, TX 75081, USA.
+                           http://www.thinwire.com
+ #VERSION_HEADER#
+ */
 package thinwire.util;
 
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -17,6 +39,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -28,215 +52,72 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import thinwire.ui.Application;
-import thinwire.ui.style.Style;
 
 /**
  * Xml Object Document (XOD) generates objects from the XML file, and associates them with a Map.
- * XODs can be used to generate screens from screen layouts.<p>
+ * XODs can be used to create instances of plain old java objects (POJO). For example, a Dialog can be
+ * created as follows:<p>
  * <h3>Sample Screen</h3>
  * <img src="doc-files/XOD-1.png"> <p>
  * <h3>Sample Screen Layout XML</h3>
  * <pre>
  * &lt;?xml version="1.0"?&gt;
  * &lt;xod&gt;
- *     &lt;include file="TestScripts/aliasuiclass.xml"/&gt;
- *     &lt;Dialog id="APPID"&gt;
- *         &lt;title&gt;Deal Search Screen&lt;/title&gt;
- *         &lt;width&gt;574&lt;/width&gt;
- *         &lt;height&gt;333&lt;/height&gt;
+ *     &lt;include name="classes.xml"&gt;
+ *     &lt;Dialog id="dialog"&gt;
+ *         &lt;title&gt;XOD Demo Screen&lt;/title&gt;
+ *         &lt;width&gt;300&lt;/width&gt;
+ *         &lt;height&gt;200&lt;/height&gt;
  *         &lt;children&gt;
- *             &lt;Label&gt;
- *                 &lt;text&gt;Search Results...&lt;/text&gt;
- *                 &lt;alignX&gt;RIGHT&lt;/alignX&gt;
- *                 &lt;x&gt;14&lt;/x&gt;
- *                 &lt;y&gt;122&lt;/y&gt;
- *                 &lt;width&gt;119&lt;/width&gt;
- *                 &lt;height&gt;20&lt;/height&gt;
- *             &lt;/Label&gt;
- *             &lt;Label&gt;
- *                 &lt;text&gt;Search...&lt;/text&gt;
- *                 &lt;alignX&gt;RIGHT&lt;/alignX&gt;
- *                 &lt;x&gt;14&lt;/x&gt;
- *                 &lt;y&gt;53&lt;/y&gt;
- *                 &lt;width&gt;63&lt;/width&gt;
- *                 &lt;height&gt;20&lt;/height&gt;
- *             &lt;/Label&gt;
- *             &lt;Label&gt;
- *                 &lt;text&gt;Go Directly To...&lt;/text&gt;
- *                 &lt;alignX&gt;RIGHT&lt;/alignX&gt;
- *                 &lt;x&gt;14&lt;/x&gt;
- *                 &lt;y&gt;4&lt;/y&gt;
- *                 &lt;width&gt;119&lt;/width&gt;
- *                 &lt;height&gt;20&lt;/height&gt;
- *             &lt;/Label&gt;
- *             &lt;Divider&gt;
- *                 &lt;x&gt;7&lt;/x&gt;
- *                 &lt;y&gt;46&lt;/y&gt;
- *                 &lt;width&gt;574&lt;/width&gt;
- *                 &lt;height&gt;5&lt;/height&gt;
- *             &lt;/Divider&gt;
- *             &lt;Divider&gt;
- *                 &lt;x&gt;7&lt;/x&gt;
- *                 &lt;y&gt;115&lt;/y&gt;
- *                 &lt;width&gt;574&lt;/width&gt;
- *                 &lt;height&gt;5&lt;/height&gt;
- *             &lt;/Divider&gt;
- *             &lt;TextField id="WRK_GOTO_DEAL"&gt;
- *                 &lt;editMask&gt;999999999&lt;/editMask&gt;
- *                 &lt;x&gt;112&lt;/x&gt;
- *                 &lt;y&gt;24&lt;/y&gt;
- *                 &lt;width&gt;63&lt;/width&gt;
- *                 &lt;height&gt;20&lt;/height&gt;
+ *             &lt;TextField id="name"&gt;
+ *                 &lt;x&gt;90&lt;/x&gt;
+ *                 &lt;y&gt;5&lt;/y&gt;
+ *                 &lt;width&gt;80&lt;/width&gt;
+ *                 &lt;height&gt;25&lt;/height&gt;
  *             &lt;/TextField&gt;
  *             &lt;Label&gt;
- *                 &lt;text&gt;Deal Number:&lt;/text&gt;
- *                 &lt;labelFor&gt;WRK_GOTO_DEAL&lt;/labelFor&gt;
+ *                 &lt;text&gt;Name:&lt;/text&gt;
+ *                 &lt;labelFor&gt;name&lt;/labelFor&gt;
  *                 &lt;alignX&gt;RIGHT&lt;/alignX&gt;
- *                 &lt;x&gt;21&lt;/x&gt;
- *                 &lt;y&gt;24&lt;/y&gt;
- *                 &lt;width&gt;84&lt;/width&gt;
- *                 &lt;height&gt;20&lt;/height&gt;
+ *                 &lt;x&gt;5&lt;/x&gt;
+ *                 &lt;y&gt;5&lt;/y&gt;
+ *                 &lt;width&gt;80&lt;/width&gt;
+ *                 &lt;height&gt;25&lt;/height&gt;
  *             &lt;/Label&gt;
- *             &lt;Label&gt;
- *                 &lt;text&gt;Primary:&lt;/text&gt;
- *                 &lt;alignX&gt;RIGHT&lt;/alignX&gt;
- *                 &lt;x&gt;300&lt;/x&gt;
- *                 &lt;y&gt;24&lt;/y&gt;
- *                 &lt;width&gt;56&lt;/width&gt;
- *                 &lt;height&gt;20&lt;/height&gt;
- *             &lt;/Label&gt;
- *             &lt;RadioButton id="rb_Y"&gt;
- *                 &lt;value&gt;Y&lt;/value&gt;
- *                 &lt;text&gt;Yes&lt;/text&gt;
- *                 &lt;x&gt;375&lt;/x&gt;
- *                 &lt;y&gt;24&lt;/y&gt;
- *                 &lt;width&gt;35&lt;/width&gt;
- *                 &lt;height&gt;20&lt;/height&gt;
- *             &lt;/RadioButton&gt;
- *             &lt;RadioButton id="rb_N"&gt;
- *                 &lt;value&gt;N&lt;/value&gt;
- *                 &lt;text&gt;No&lt;/text&gt;
- *                 &lt;x&gt;437&lt;/x&gt;
- *                 &lt;y&gt;24&lt;/y&gt;
- *                 &lt;width&gt;35&lt;/width&gt;
- *                 &lt;height&gt;20&lt;/height&gt;
- *             &lt;/RadioButton&gt;                        
- *             &lt;DropDownGridBox id="WRK_SEARCH_TYPE"&gt;
- *                 &lt;editAllowed&gt;false&lt;/editAllowed&gt;
- *                 &lt;x&gt;112&lt;/x&gt;
- *                 &lt;y&gt;73&lt;/y&gt;
- *                 &lt;width&gt;378&lt;/width&gt;
- *                 &lt;height&gt;20&lt;/height&gt;
- *             &lt;/DropDownGridBox&gt;
- *             &lt;Label&gt;
- *                 &lt;text&gt;Type:&lt;/text&gt;
- *                 &lt;labelFor&gt;WRK_SEARCH_TYPE&lt;/labelFor&gt;
- *                 &lt;alignX&gt;RIGHT&lt;/alignX&gt;
- *                 &lt;x&gt;70&lt;/x&gt;
- *                 &lt;y&gt;73&lt;/y&gt;
- *                 &lt;width&gt;35&lt;/width&gt;
- *                 &lt;height&gt;20&lt;/height&gt;
- *             &lt;/Label&gt;
- *             &lt;TextField id="WRK_SEARCH_VALUE"&gt;
- *                 &lt;editMask&gt;xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&lt;/editMask&gt;
- *                 &lt;x&gt;112&lt;/x&gt;
- *                 &lt;y&gt;93&lt;/y&gt;
- *                 &lt;width&gt;350&lt;/width&gt;
- *                 &lt;height&gt;20&lt;/height&gt;
- *             &lt;/TextField&gt;
- *             &lt;Label&gt;
- *                 &lt;text&gt;Value:&lt;/text&gt;
- *                 &lt;labelFor&gt;WRK_SEARCH_VALUE&lt;/labelFor&gt;
- *                 &lt;alignX&gt;RIGHT&lt;/alignX&gt;
- *                 &lt;x&gt;63&lt;/x&gt;
- *                 &lt;y&gt;93&lt;/y&gt;
- *                 &lt;width&gt;42&lt;/width&gt;
- *                 &lt;height&gt;20&lt;/height&gt;
- *             &lt;/Label&gt;
- *             &lt;GridBox id="WRK_RESULTS"&gt;
- *                 &lt;x&gt;7&lt;/x&gt;
- *                 &lt;y&gt;142&lt;/y&gt;
- *                 &lt;width&gt;553&lt;/width&gt;
- *                 &lt;height&gt;154&lt;/height&gt;
- *             &lt;/GridBox&gt;
- *             &lt;Button id="OK_btn"&gt;
- *                 &lt;image&gt;OK&lt;/image&gt;
- *                 &lt;text&gt;OK&lt;/text&gt;
- *                 &lt;x&gt;14&lt;/x&gt;
- *                 &lt;y&gt;301&lt;/y&gt;
- *                 &lt;width&gt;56&lt;/width&gt;
- *                 &lt;height&gt;30&lt;/height&gt;
- *             &lt;/Button&gt;
- *             &lt;Button id="Search_btn"&gt;
- *                 &lt;image&gt;DETAIL&lt;/image&gt;
- *                 &lt;text&gt;Search&lt;/text&gt;
- *                 &lt;x&gt;73&lt;/x&gt;
- *                 &lt;y&gt;301&lt;/y&gt;
- *                 &lt;width&gt;84&lt;/width&gt;
- *                 &lt;height&gt;30&lt;/height&gt;
- *             &lt;/Button&gt;
- *             &lt;Button id="Cancel_btn"&gt;
- *                 &lt;image&gt;CANCEL&lt;/image&gt;
- *                 &lt;text&gt;Cancel&lt;/text&gt;
- *                 &lt;x&gt;160&lt;/x&gt;
- *                 &lt;y&gt;301&lt;/y&gt;
- *                 &lt;width&gt;84&lt;/width&gt;
- *                 &lt;height&gt;30&lt;/height&gt;
- *             &lt;/Button&gt;
  *         &lt;/children&gt;
  *     &lt;/Dialog&gt;
- *     &lt;RadioButton.Group id="rb_group"&gt;
- *         &lt;ref id="rb_Y" /&gt;
- *         &lt;ref id="rb_N" /&gt;
- *     &lt;/RadioButton.Group&gt;
  * &lt;/xod&gt;
  * </pre>
- * <h3>Sample NextGen Script</h3>
+ * <h3>Sample Java Code Using XOD</h3>
  * <pre>
- * importPackage(Packages.com.customcreditsystems.ng.tools);
- * importPackage(Packages.com.customcreditsystems.ng.ui);
- * importPackage(Packages.java.util);
- * 
- * 
- * var app = Application.current();
- * var map = new HashMap();
- * app.setProperty("Resource.map", map);
- * with (map) {
- *     put("OK", "resources/ngLF/ok.png");
- *     put("CANCEL", "resources/ngLF/cancel.png");
- *     put("DETAIL", "resources/ngLF/detail.png");
- * }
- * 
- * var xod =  new XOD();
- * xod.execute('TestScripts/screentest.xml');  
- * var screen = new Object();
- * JS.fromMap(xod.getObjectMap(), screen);
- * 
- * screen.APPID.visible = true;
+ * XOD xod = new XOD();
+ * xod.execute("dialog.xml");  
+ * Dialog dialog = (Dialog)xod.getObjectMap().get("dialog");
+ * dialog.setVisible(true);
  * </pre>
  *  <h3>Sample Alias XML File</h3>
- * The &lt;alias&gt; tag associates an alias with a class name.  This content doesn't
- * have to be separate.  Instead of using the &lt;include&gt; tag in the Screen Layout XML file displayed
- * above, the Screen Layout file could have included it directly.<p>
+ * The &lt;alias&gt; tag associates a short name with a class name.  This content doesn't
+ * have to be separate.  Instead of using the &lt;include&gt; tag in the demo file displayed
+ * above, the demo file could have included it directly.<p>
  * <pre>
  * &lt;xod&gt;
- *     &lt;alias name="Button" class="com.customcreditsystems.ng.ui.Button"/&gt;
- *     &lt;alias name="CheckBox" class="com.customcreditsystems.ng.ui.CheckBox"/&gt;
- *     &lt;alias name="Dialog" class="com.customcreditsystems.ng.ui.Dialog"/&gt;
- *     &lt;alias name="Divider" class="com.customcreditsystems.ng.ui.Divider"/&gt;
- *     &lt;alias name="DropDownGridBox" class="com.customcreditsystems.ng.ui.DropDownGridBox"/&gt;
- *     &lt;alias name="Frame" class="com.customcreditsystems.ng.ui.Frame"/&gt;
- *     &lt;alias name="GridBox" class="com.customcreditsystems.ng.ui.GridBox"/&gt;
- *     &lt;alias name="Image" class="com.customcreditsystems.ng.ui.Image"/&gt;
- *     &lt;alias name="Label" class="com.customcreditsystems.ng.ui.Label"/&gt;
- *     &lt;alias name="Menu" class="com.customcreditsystems.ng.ui.Menu"/&gt;
- *     &lt;alias name="Panel" class="com.customcreditsystems.ng.ui.Panel"/&gt;
- *     &lt;alias name="RadioButton" class="com.customcreditsystems.ng.ui.RadioButton"/&gt;
- *     &lt;alias name="RadioButton.Group" class="com.customcreditsystems.ng.ui.RadioButton$Group"/&gt;
- *     &lt;alias name="TabFolder" class="com.customcreditsystems.ng.ui.TabFolder"/&gt;
- *     &lt;alias name="TabSheet" class="com.customcreditsystems.ng.ui.TabSheet"/&gt;
- *     &lt;alias name="TextArea" class="com.customcreditsystems.ng.ui.TextArea"/&gt;
- *     &lt;alias name="TextField" class="com.customcreditsystems.ng.ui.TextField"/&gt;
+ *     &lt;alias name="Button" class="thinwire.ui.Button"/&gt;
+ *     &lt;alias name="CheckBox" class="thinwire.ui.CheckBox"/&gt;
+ *     &lt;alias name="Dialog" class="thinwire.ui.Dialog"/&gt;
+ *     &lt;alias name="Divider" class="thinwire.ui.Divider"/&gt;
+ *     &lt;alias name="DropDownGridBox" class="thinwire.ui.DropDownGridBox"/&gt;
+ *     &lt;alias name="Frame" class="thinwire.ui.Frame"/&gt;
+ *     &lt;alias name="GridBox" class="thinwire.ui.GridBox"/&gt;
+ *     &lt;alias name="Image" class="thinwire.ui.Image"/&gt;
+ *     &lt;alias name="Label" class="thinwire.ui.Label"/&gt;
+ *     &lt;alias name="Menu" class="thinwire.ui.Menu"/&gt;
+ *     &lt;alias name="Panel" class="thinwire.ui.Panel"/&gt;
+ *     &lt;alias name="RadioButton" class="thinwire.ui.RadioButton"/&gt;
+ *     &lt;alias name="RadioButton.Group" class="thinwire.ui.RadioButton$Group"/&gt;
+ *     &lt;alias name="TabFolder" class="thinwire.ui.TabFolder"/&gt;
+ *     &lt;alias name="TabSheet" class="thinwire.ui.TabSheet"/&gt;
+ *     &lt;alias name="TextArea" class="thinwire.ui.TextArea"/&gt;
+ *     &lt;alias name="TextField" class="thinwire.ui.TextField"/&gt;
  * &lt;/xod&gt;
  *</pre>
  *<h3>Notes on the XOD Tags</h3>
@@ -248,26 +129,25 @@ import thinwire.ui.style.Style;
  *Use it to reduce duplication. E.g. You can use it to include an alias file like the
  *one shown above.
  *<h4>&lt;alias&gt;</h4>
- *Many of the tags in the Screen Layout XML listed above can be thought of as
- *instruction to build UI components.  E.g. The &lt;Button&gt; tag can be thought of as
- *instruction to build a Button component.
+ *Many of the tags in the demo listed above can be thought of as
+ *instruction to construct plain old java objects.  E.g. The &lt;Button&gt; tag can be thought of as
+ *instruction to build a Button class instance.
  *<p>
  *In general, an XOD file can contain tags of the form
  *<pre>
- *  &lt;com.customcreditsystems.ng.ui.XXXX&gt;
+ *  &lt;com.mypackage.XXXX&gt;
  *</pre>
- *where XXXX is a UI Component class, and such a tag can be thought of as an 
+ *where XXXX is a class, and such a tag can be thought of as an 
  *instruction to create an instance of the XXXX class.<p>
- *But the full class names are long.  To allow for shorter tags in your Screen Layout XML, you can define an alias: <br>
+ *But the full class names are long.  To allow for shorter tags in your xod files, you can define an alias: <br>
  *<pre>
- *  &lt;alias name="Button" class="com.customcreditsystems.ng.ui.Button"/&gt;   
+ *  &lt;alias name="Button" class="thinwire.ui.Button"/&gt;   
  *</pre>
- *Once you've included this alias in your Screen Layout XML, you can construct
- *a button using it:<br>
+ *Once you've included this alias in your file, you can construct
+ *an object using it:<br>
  *<pre>
- *   &lt;Button id="Search_btn"&gt;
- *        &lt;image&gt;DETAIL&lt;/image&gt;
- *        &lt;text&gt;Search&lt;/text&gt;
+ *   &lt;Button id="button_ok"&gt;
+ *        &lt;text&gt;OK&lt;/text&gt;
  *        &lt;x&gt;73&lt;/x&gt;
  *        &lt;y&gt;301&lt;/y&gt;
  *        &lt;width&gt;84&lt;/width&gt;
@@ -275,39 +155,39 @@ import thinwire.ui.style.Style;
  *   &lt;/Button&gt;
  * </pre>
  *<h4>&lt;ref&gt;</h4>
- *Some UI Components need to be associated with other UI Components.
- *E.g. We need a means to indicate that the RadioButtons described in the
- *Screen Layout XML are members of the RadioButton Group named "rb_group".
+ *Some objects need to be associated with other objects.
+ *E.g. We need a means to indicate that the RadioButtons described in a
+ *container are members of the RadioButton.Group.
  *We use the &lt;ref&gt; tag to accomplish this.
  *<p>
- *<h4>UI Class Tags - e.g. &lt;Button&gt;, &lt;Label&gt;, &lt;Divider&gt;</h4>
- *If there's a UI Component class with the name "com.customcreditsystems.ng.ui.XXXX", you can include an
- *&lt;com.customcreditsystems.ng.ui.XXXX&gt; element in your Screen Layout XML.  You can also
+ *<h4>Object Class Tags</h4>
+ *If there's a class with the name "com.mypackage.XXXX", you can include an
+ *&lt;com.mypackage.XXXX&gt; element in your XOD definition.  You can also
  *create an alias for that class and use it in place of the class name. 
  *<p>
  *<h4>Component Property Tags - e.g. &lt;width&gt;, &lt;text&gt;, &lt;x&gt;</h4>
  *To specify properties - e.g. location, size, and text - for the components you wish
  *to build, add property tag elements. In general, if a UI component class has a "setXxxx" method,
- *your Screen Layout XML can include an &lt;xxxx&gt; property tag.<p>
- *E.g. Since the com.customcreditsystems.ng.ui.Button class has a setText method,
+ *you can include an &lt;xxxx&gt; property tag.<p>
+ *E.g. Since the thinwire.ui.Button class has a setText method,
  *you can specify the text for your button with a &lt;text&gt; element.
  *
  *<pre>
- *   &lt;Button id="Search_btn"&gt;
+ *   &lt;Button id="button_ok"&gt;
  *        ....
- *        &lt;text&gt;Search&lt;/text&gt;
+ *        &lt;text&gt;OK&lt;/text&gt;
  *        ....
  *   &lt;/Button&gt;
  * </pre>
  * 
  * <h4>Property Tag Values</h4>
- * The properties of UI component classes have types. E.g.  The text property of the
+ * The properties of objects have types. E.g.  The text property of the
  * Button class is of type String, and the x property of the Button class is of type
  * int. Other standard types are Integer, double, Double, char, Character, long, Long,
  * boolean, Boolean, float, Float, byte, and Byte.
  * <p>
  * In the case of these standard types, the XOD class will make the appropriate conversion
- * while processing a screen layout. E.g. When it comes across
+ * while processing a xod file. E.g. When it comes across
  * <pre>
  *   &lt;Button id="Search_btn"&gt;
  *        .....
@@ -315,26 +195,15 @@ import thinwire.ui.style.Style;
  *        .....
  *   &lt;/Button&gt;
  * </pre>
- * the XOD class will convert "73" to an int and assign the x property of the
+ * the XOD engine will convert "73" to an int and assign the x property of the
  * new Button that int value.
  * <p>
- * In the case of NextGen custom types, however, XOD has two special strategies.
- * First, it looks for an object defined elsewhere in the screen layout, an object
- * whose id in the screen layout matches the property value. If it finds one, it assigns
- * the object as a value for the property. E.g. When it comes across
- * <pre>
- *  &lt;Label&gt;
- *      .....
- *      &lt;labelFor&gt;WRK_GOTO_DEAL&lt;/labelFor&gt;
- *      .....
- *  &lt;/Label&gt;
- * </pre>
- * then XOD discovers that there is a WRK_GOTO_DEAL object defined elsewhere, and it assigns
- * this object to the Label's labelFor property.<p> 
- * Second, if XOD doesn't find the value defined elsewhere in the screen layout, it 
- * will look for a constant on the custom type class. 
- * E.g. The Label class has an alignX property of type com.customcreditsystems.ng.ui.AlignX.
- * This class has a constant named RIGHT.  When XOD processes the above screen layout and comes across
+ * In the case of non-literal types, XOD has three special strategies.
+ * First, it will check to see if the class type of the property you are assigning
+ * to has a 'valueOf' method that returns the appropriate type.  If it does, it
+ * will call that method and assign the returned value to the property. 
+ * E.g. The Label class has an alignX property of type thinwire.ui.AlignX.
+ * This class has a 'valueOf' method.  When XOD processes the above demo file and comes across
  * <pre>
  * &lt;Label&gt;
  *     .....
@@ -342,8 +211,22 @@ import thinwire.ui.style.Style;
  *     .....
  * &lt;/Label&gt;
  * </pre>
- * it finds a constant named RIGHT on the AlignX class, and this is what it
- * assigns to the alignX property of the new Label. 
+ * it calls the static 'valueOf' on AlignX, which returns the appropriate constant AlignX.RIGHT.
+ * Second, it will check to see if the class type has a static final field (i.e. constant) that
+ * is named the same as the value specified in the property tag.  If it finds a constant, it will
+ * be assed to the property. 
+ * Third, it looks for an object defined elsewhere in the XOD, an object
+ * whose id in the XOD matches the property value. If it finds one, it assigns
+ * the object as a value for the property. E.g. When it comes across
+ * <pre>
+ *  &lt;Label&gt;
+ *      .....
+ *      &lt;labelFor&gt;name&lt;/labelFor&gt;
+ *      .....
+ *  &lt;/Label&gt;
+ * </pre>
+ * then XOD engine discovers that there is a 'name' object defined previously, and it assigns
+ * this object to the Label's labelFor property.<p> 
  * <p>
  * <h4>Collection Properties</h4>
  * A component may have a property with a Collection type.  E.g. Dialogs have
@@ -369,7 +252,7 @@ import thinwire.ui.style.Style;
  *      &lt;Divider&gt;
  *          ....
  *      &lt;/Divider&gt;
- *      &lt;TextField id="WRK_GOTO_DEAL"&gt;
+ *      &lt;TextField id="name"&gt;
  *          .... 
  *      &lt;/TextField&gt;
  *      ....
@@ -378,23 +261,19 @@ import thinwire.ui.style.Style;
  * it constructs Label, Divider, and TextField components and makes these
  * components children of the Dialog.
  *
- * @author jjg
+ * @author Joshua J. Gertzen
  */
 public final class XOD {
     private static final Logger log = Logger.getLogger(XOD.class.getName());   
 
-    public static void main(String args[]) {
+    /*public static void main(String args[]) {
         java.util.logging.ConsoleHandler handler = new java.util.logging.ConsoleHandler();
         handler.setLevel(Level.FINEST);
         log.addHandler(handler);
         log.setLevel(Level.FINEST);
         XOD xod = new XOD();
         xod.execute("class:///thinwire.ui.Application/resources/DefaultStyle.xml");
-        Style s = (Style)xod.getObjectMap().get("thinwire.ui.Button");
-        System.out.println("fx.positionChange=" + s.getFX().getPositionChange());
-        System.out.println("aliasMap.size=" + xod.getAliasMap().size());
-        System.out.println("objectMap.size=" + xod.getObjectMap().size());
-    }
+    }*/
     
     private static File getRelativeFile(String uri) {
         Application app = Application.current();
@@ -411,8 +290,8 @@ public final class XOD {
     private List<Object> objects;
     private Map<String, Class> aliases;
     private Map<Class, Map<String, Object[]>> propertyAliases;
+    private List<String> uriStack;
     private boolean processingInclude;
-    private String topFileUri;
        
     /**
      * Create a new XOD.
@@ -421,15 +300,7 @@ public final class XOD {
         objectMap = new HashMap<String, Object>();
         objects = new ArrayList<Object>();
         aliases = new HashMap<String, Class>();
-    }
-    
-	/**
-	 * The alias Map is typically used to map abbreviated class names to full class names.
-     * E.g. the alias Map may map "Button" to "com.customcreditsystems.ng.ui.Button".
-	 * @return the alias Map
-	 */
-    public Map<String, Class> getAliasMap() {
-        return aliases;
+        uriStack = new ArrayList<String>();
     }
     
     /**
@@ -465,51 +336,29 @@ public final class XOD {
     }
     
     /**
-     * Executes the XML file to build the object tree.
-     * Typically used to construct a screen from a screen layout XML file.
-     * @param uri the name of the xml file.
+     * Executes a XOD file, adding the created objects to the map and list.
+     * @param uri the name of the XML Object Document file.
      */
     public void execute(String uri) {
-        this.topFileUri = uri;
         processFile(null, uri, 0);
-    }
-
-    private InputStream getResourceAsStream(String uri) {
-        try {
-            InputStream is;
-            
-            //"class:///thinwire.ui.layout.SplitLayout/resources/Image.png"                
-            if (uri.startsWith("class:///")) {                    
-                int endIndex = uri.indexOf('/', 9);
-                String className = uri.substring(9, endIndex);
-                String resource = uri.substring(endIndex + 1);
-                Class clazz = Class.forName(className);
-                is = clazz.getResourceAsStream(resource);
-                if (is == null) throw new FileNotFoundException(uri);            
-            } else {
-                Application app = Application.current();
-                is = new FileInputStream(app == null ? new File(uri) : app.getRelativeFile(uri));
-            }
-    
-            return is;
-        } catch (Exception e) {
-            if (!(e instanceof RuntimeException)) e = new RuntimeException(e);
-            throw (RuntimeException)e;
-        }
     }
     
     private Object processFile(Object parent, String uri, int level) {
         Object ret = null;
         
         try {
+            uriStack.add(uri);
             DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            BufferedInputStream is = new BufferedInputStream(getResourceAsStream(uri));                   
+            BufferedInputStream is = new BufferedInputStream(Application.getResourceAsStream(uri));                   
             Document doc = builder.parse(is);
-            is.close();            
+            is.close();
             ret = processBranch(parent, doc.getChildNodes(), level);
         } catch (Exception e) {
+            e.printStackTrace();
             if (!(e instanceof RuntimeException)) e = new RuntimeException(e);
             throw (RuntimeException)e;
+        } finally {
+            uriStack.remove(uriStack.size() - 1);
         }
         
         return ret;
@@ -582,7 +431,7 @@ public final class XOD {
             String fileUri = (String)n.getAttributes().getNamedItem("file").getNodeValue();
                         
             if (!getRelativeFile(fileUri).exists()) {
-                String curFileUri = topFileUri;
+                String curFileUri = uriStack.get(0);
                 String newUri = fileUri;
                 
                 do {
@@ -800,9 +649,37 @@ public final class XOD {
         
         return ret;
     }
+
+    private static final Pattern REGEX_PROPERTY = Pattern.compile(".*?[$][{]([\\w.]+)[}].*?");
+    
+    private String replaceProperties(String value) {
+        if (value != null && value.indexOf("${") >= 0) {
+            StringBuffer sb = new StringBuffer();
+            Matcher m = REGEX_PROPERTY.matcher(value);
+            
+            while (m.find()) {
+                String prop = m.group(1);
+                
+                if (prop.equals("xod.file")) {
+                    prop = uriStack.get(0);
+                    int index = prop.lastIndexOf('/');
+                    if (index == -1) index = prop.lastIndexOf('\\');
+                    prop = prop.substring(0, index + 1);
+                }
+                
+                m.appendReplacement(sb, prop);
+            }
+            
+            m.appendTail(sb);
+            value = sb.toString();
+        }
+        
+        return value;
+    }
     
     private Object getObjectForTypeFromString(Class type, String str, boolean performObjectFieldLookup) {
         Object value;
+        str = replaceProperties(str);
         
         if (type == String.class) {
             value = str;

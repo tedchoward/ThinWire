@@ -171,7 +171,7 @@ public final class WebApplication extends Application {
             File f = File.createTempFile(twLib.substring(0, twLib.lastIndexOf('.')), ".html");
             f.deleteOnExit();
             FileOutputStream fos = new FileOutputStream(f);
-            fos.write(new String(RemoteFileMap.INSTANCE.getLocalData(classURL + MAIN_PAGE))
+            fos.write(new String(WebApplication.getResourceBytes(classURL + MAIN_PAGE))
                 .replaceAll("[$][{]ThinWire[.]js[}]", twLib).getBytes());
             fos.close();
             RemoteFileMap.INSTANCE.add(f.getCanonicalPath(), MAIN_PAGE);
@@ -191,7 +191,7 @@ public final class WebApplication extends Application {
             for (String res : BUILT_IN_RESOURCES) {
                 if (res.endsWith(".js")) {
                     if (!res.startsWith("class:///")) res = resURL + res;
-                    RemoteFileMap.INSTANCE.loadLocalData(res, os);
+                    WebApplication.writeResourceToStream(res, os);
                 }
             }
 

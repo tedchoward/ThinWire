@@ -99,7 +99,9 @@
     <font color="highlight"/>
   </Style>
   
-  <Style id="RadioButton" copy="CheckBox"/>
+  <Style id="RadioButton" copy="CheckBox">
+    <border image="${xod.file}rbBorder.png"/>
+  </Style>
   
   <Style id="Slider" copy="Button"/>
   

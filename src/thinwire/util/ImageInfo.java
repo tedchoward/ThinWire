@@ -70,32 +70,10 @@ public class ImageInfo {
     
     private void setName(String name) {        
         try {                       
-            InputStream is = null;
-
-            if (name != null && name.trim().length() > 0) {
-                //"class:///thinwire.ui.layout.SplitLayout/resources/Image.png"
-                if (name.startsWith("class:///")) {
-                    int endIndex = name.indexOf('/', 9);
-                    String className = name.substring(9, endIndex);
-                    String resource = name.substring(endIndex + 1);
-                    Class clazz = Class.forName(className);
-                    is = clazz.getResourceAsStream(resource);
-                } else if (name.startsWith("http://")) {
-                    URL remoteImageURL = new URL(name);
-                    URLConnection remoteImageConnection = remoteImageURL.openConnection();
-                    is = remoteImageConnection.getInputStream();
-                } else {
-                    Application app = Application.current();
-                    File file = app == null ? new File(name) : app.getRelativeFile(name);
-                    if (file.exists()) is = new FileInputStream(file);
-                }
-                
-                this.name = name;
-            } else {
-                this.name = "";
-            }
+            InputStream is = Application.getResourceAsStream(name);
                 
             if (is != null) {
+                this.name = name;
                 ImageParser ii = new ImageParser();                        
                 ii.setInput(is);
                 
@@ -125,6 +103,7 @@ public class ImageInfo {
                 this.width = -1;
                 this.height = -1;
                 this.format = null;
+                this.name = "";
             }
         } catch (Exception e) {
             if (!(e instanceof RuntimeException)) e = new RuntimeException(e);

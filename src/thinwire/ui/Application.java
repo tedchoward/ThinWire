@@ -27,6 +27,8 @@ package thinwire.ui;
 
 import java.io.*;
 import java.lang.ref.WeakReference;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,6 +38,8 @@ import java.util.Properties;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import thinwire.render.Renderer;
 import thinwire.ui.event.ActionEvent;
@@ -178,6 +182,101 @@ public abstract class Application {
         }
 	}
     
+    /**
+     * Returns an InputStream representing the specified resource.
+     * The following URL's are supported:
+     * <ul>
+     *  <li>Any valid resource filename. If Application.current() returns non-null,
+     *   which is the typical scenario, then relative paths are interpreted as 
+     *   relative to the application folder. {@link #getRelativeFile}</li>
+     *  <li>class:///com.mypackage.MyClass/resource.ext</li>
+     *  <li>http://www.mycompany.com/resource.ext</li>
+     * </ul>
+     * 
+     * @return an InputStream representing the specified resource or null if the resource was not found.
+     */
+    public static InputStream getResourceAsStream(String uri) {
+        InputStream is = null;
+
+        if (uri != null && uri.trim().length() > 0) {
+            try {
+                String innerFile = null;
+                int index = uri.indexOf(".zip");
+                
+                if (index > 0 && index + 5 < uri.length()) {
+                    innerFile = uri.substring(index + 5);
+                    uri = uri.substring(0, index + 4);
+                }
+                
+                //"class:///thinwire.ui.layout.SplitLayout/resources/Image.png"
+                if (uri.startsWith("class:///")) {
+                    int endIndex = uri.indexOf('/', 9);
+                    String className = uri.substring(9, endIndex);
+                    String resource = uri.substring(endIndex + 1);
+                    Class clazz = Class.forName(className);
+                    is = clazz.getResourceAsStream(resource);
+                } else if (uri.startsWith("http://")) {
+                    URL remoteImageURL = new URL(uri);
+                    URLConnection remoteImageConnection = remoteImageURL.openConnection();
+                    is = remoteImageConnection.getInputStream();
+                } else {
+                    Application app = Application.current();
+                    File file = app == null ? new File(uri) : app.getRelativeFile(uri);
+                    if (file.exists()) is = new FileInputStream(file);
+                }
+                
+                if (is != null) {
+                    //is = new BufferedInputStream(is);
+                    
+                    if (innerFile != null) {
+                        ZipInputStream zip = new ZipInputStream(is);
+                        ZipEntry entry;
+                        
+                        while ((entry = zip.getNextEntry()) != null) {
+                            if (entry.getName().equals(innerFile)) {
+                                byte[] bytes = new byte[(int)entry.getSize()];
+                                zip.read(bytes);
+                                is = new ByteArrayInputStream(bytes);
+                                break;
+                            }
+                            
+                            zip.closeEntry();
+                        }
+                        
+                        zip.close();
+                    }
+                }
+            } catch (Exception e) {
+                if (e instanceof RuntimeException) throw (RuntimeException)e;
+            }
+       }
+       
+       return is;
+    }
+    
+    public static byte[] getResourceBytes(String uri) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        writeResourceToStream(uri, baos);
+        return baos.toByteArray();
+    }
+
+    public static void writeResourceToStream(String uri, OutputStream os) {
+        if (os == null) throw new IllegalArgumentException("os == null");
+        InputStream is = getResourceAsStream(uri);
+        if (is == null) throw new IllegalArgumentException("Content for URI was not found:" + uri);
+        byte[] bytes = new byte[128];
+        int size;
+        
+        try {
+            while ((size = is.read(bytes)) != -1)
+                os.write(bytes, 0, size);
+            
+            is.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private String baseFolder;
     private List<ExceptionListener> exceptionListeners;
     private EventListenerImpl<PropertyChangeListener> gpcei;
