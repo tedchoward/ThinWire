@@ -321,7 +321,7 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
                 
                 if (child != null) {
                     gb.rowsWithChildren.add(this);
-                    DropDown.copyDropDownStyle(gb, child, gb.getParent() instanceof DropDown);
+                    DropDown.copyDropDownStyle(gb, child, true);
                 }
                 
                 gb.firePropertyChange(this, PROPERTY_ROW_CHILD, oldChild, child);                

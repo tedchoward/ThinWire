@@ -30,6 +30,7 @@ var tw_GridBox = tw_Component.extend({
     _hresize: null,    
     _content: null,
     _root: null,
+    _headerBorderSizeSub: 0,
     _visibleCheckBoxes: false,
     _visibleHeader: false,
     _fullRowCheckBox: false,
@@ -61,7 +62,7 @@ var tw_GridBox = tw_Component.extend({
         header.className = "gridBoxHeader";
         var s = header.style;
         s.position = "absolute";
-        s.backgroundColor = tw_Component.defaultStyles["Button"].backgroundColor;
+        s.backgroundColor = tw_COLOR_THREEDFACE;
         s.display = "none";
         this._hresize = {column: null, startX: -1};        
         this._header = header;
@@ -444,15 +445,19 @@ var tw_GridBox = tw_Component.extend({
     },
     
     setStyle: function(name, value) {
-        var oldCalcBorderSize = this._borderSizeSub;
         arguments.callee.$.call(this, name, value);
         
         if (name == "borderWidth") {
+            var oldCalcBorderSize = this._headerBorderSizeSub;
+            value = parseInt(value) >= 2 ? 2 : 1;
+            this._headerBorderSizeSub = value * 2;
+            value += "px";
+                
             for (var i = 0, cnt = this._getColumnCount(); i < cnt; i++) {
                 var h = this._header.childNodes.item(i);
                 h.style.borderWidth = value;
                 var width = parseInt(h.style.width) + oldCalcBorderSize;
-                h.style.width = width <= this._borderSizeSub ? "0px" : width - this._borderSizeSub + "px";                      
+                h.style.width = width <= this._headerBorderSizeSub ? "0px" : width - this._headerBorderSizeSub + "px";                      
             }
 
             this.setVisibleHeader(this._visibleHeader);    
@@ -632,14 +637,14 @@ var tw_GridBox = tw_Component.extend({
         var gbHeight = this._height - this._borderSizeSub;
         
         if (visibleHeader) {
-            var gbWidth = this._width - this._borderSizeSub;
-            if (gbWidth < 0) gbWidth = 0;
-            header.style.width = gbWidth + "px";
-            header.style.height = tw_GridBox.rowHeight + this._borderSizeSub + "px";            
+            var headerWidth = this._width - this._headerBorderSizeSub;
+            if (headerWidth < 0) headerWidth = 0;
+            header.style.width = headerWidth + "px";
+            var headerHeight = tw_GridBox.rowHeight + this._headerBorderSizeSub;
+            header.style.height = headerHeight + "px";            
             header.style.top = this._box.scrollTop + "px";
             if (this._visibleHeader) tw_addEventListener(this._box.childNodes.item(1), "scroll", this._scrollListener);                    
             header.style.display = "block";
-            var headerHeight = tw_GridBox.rowHeight + this._borderSizeSub;
             body.style.top = headerHeight + "px";
             body.style.height = gbHeight < headerHeight ? "0px" : (gbHeight - headerHeight) + "px";
         } else {
@@ -764,11 +769,10 @@ var tw_GridBox = tw_Component.extend({
         s.backgroundPosition = "center right";
         if (sortOrder != 0) s.backgroundImage = sortOrder == 1 ? tw_GridBox.imageSortOrderAsc : tw_GridBox.imageSortOrderDesc; 
 
-        var bs = tw_Component.defaultStyles["Button"];
-        s.borderWidth = this._borderSize + "px";        
-        s.backgroundColor = bs.backgroundColor;
-        s.borderStyle = bs.borderStyle; 
-        s.borderColor = tw_Component.getIEBorder(bs.borderColor, bs.borderStyle);
+        s.borderWidth = (this._borderSize > 2 ? 2 : this._borderSize) + "px";        
+        s.backgroundColor = tw_COLOR_BUTTONFACE;
+        s.borderStyle = "outset";
+        s.borderColor = tw_Component.getIEBorder(tw_COLOR_BUTTONFACE, "outset");
         
         columnHeader.appendChild(tw_Component.setRichText(name));
                 

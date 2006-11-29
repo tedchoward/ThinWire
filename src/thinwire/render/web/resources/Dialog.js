@@ -66,12 +66,10 @@ var tw_Dialog = tw_BaseContainer.extend({
         s.top = "3px";
         s.right = "3px";
         s.lineHeight = 8 + "px";        
-
-        var bs = tw_Component.defaultStyles["Button"];
-        s.backgroundColor = bs.backgroundColor;
-        s.color = bs.fontColor;
-        s.borderStyle = bs.borderStyle;
-        s.borderColor = tw_Component.getIEBorder(bs.borderColor, bs.borderStyle);
+        s.backgroundColor = tw_COLOR_BUTTONFACE;
+        s.color = tw_COLOR_BUTTONTEXT;
+        s.borderStyle = "outset";
+        s.borderColor = tw_Component.getIEBorder(tw_COLOR_BUTTONFACE, "outset");
         closeButton.appendChild(document.createTextNode("X"));
         
         title.appendChild(closeButton);    

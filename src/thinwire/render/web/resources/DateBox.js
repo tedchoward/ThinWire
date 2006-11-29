@@ -32,8 +32,8 @@ var tw_DateBox = tw_Component.extend({
     _prev: null,
     _header: null,
     _footer: null,
+    _headerBorderSizeSub: null,
     _columnHeaders: null,
-    _oldColor: null,
     _footerClickListener: null,
     
     construct: function(id, containerId, props) {
@@ -53,12 +53,11 @@ var tw_DateBox = tw_Component.extend({
         s = this._header.style;
         s.overflow = "hidden";
         s.whiteSpace = "nowrap";        
-        s.height = tw_GridBox.rowHeight + "px";
+        s.height = tw_DateBox.rowHeight + "px";
         
-        var bs = tw_Component.defaultStyles["Button"];        
-        s.backgroundColor = bs.backgroundColor;
-        s.borderStyle = bs.borderStyle; 
-        s.borderColor = tw_Component.getIEBorder(bs.borderColor, bs.borderStyle);
+        s.backgroundColor = tw_COLOR_BUTTONFACE;
+        s.borderStyle = "outset"; 
+        s.borderColor = tw_Component.getIEBorder(tw_COLOR_BUTTONFACE, "outset");
         
         this._header.appendChild(document.createTextNode(tw_DateBox.MONTHS[this._today.getMonth()] + " " + this._today.getFullYear()));
         
@@ -76,7 +75,7 @@ var tw_DateBox = tw_Component.extend({
         
         var footer = document.createElement("div");
         s = footer.style;
-        s.height = "20px";
+        s.height = "18px";
         s.textAlign = "center";
         footer.appendChild(document.createTextNode("Today: " + this._getFormattedDate(this._today)));
         this._box.appendChild(footer);
@@ -92,7 +91,7 @@ var tw_DateBox = tw_Component.extend({
             cell = this._getCellFromDate(this._selectedDate);
             if (cell != undefined) {
                 this._toggleSelection(cell, false);
-                cell.style.color = this._oldColor;
+                cell.style.color = "";
             }
         }
         this._selectedDate = new Date(selectedDate);
@@ -101,26 +100,33 @@ var tw_DateBox = tw_Component.extend({
             this._setMonth(this._selectedDate);
             cell = this._getCellFromDate(this._selectedDate);
         }
-        this._oldColor = cell.style.color;
         this._toggleSelection(cell, true);
     },
     
     setWidth: function(width) {
         arguments.callee.$.call(this, width);
-        this._table.style.width = (width - 20) + "px";
-        this._columnHeaders.style.width = (width - 20) + "px";
+        this._table.style.width = (width - 14) + "px";
+        this._columnHeaders.style.width = (width - 14) + "px";
     },
     
     setHeight: function(height) {
         arguments.callee.$.call(this, height);
-        var tblHeight = height - (parseInt(this._footer.style.height) + parseInt(this._header.style.height) + parseInt(this._columnHeaders.style.height) + 5);
+        var tblHeight = height - (parseInt(this._footer.style.height) + parseInt(this._header.style.height) +
+            this._borderSizeSub +this._headerBorderSizeSub + parseInt(this._columnHeaders.style.height) + 1);
         if (tblHeight < 0) tblHeight = 0;
         this._table.style.height = tblHeight + "px";
     },
     
     setStyle: function(name, value) {
         arguments.callee.$.call(this, name, value);
-        if (name == "borderWidth") this._header.style.borderWidth = value;
+        
+        if (name == "borderWidth") {
+            value = parseInt(value) >= 2 ? 2 : 1;
+            this._headerBorderSizeSub = value * 2;
+            value += "px";
+            this._header.style.borderWidth = value;
+            if (this._inited) this.setHeight(this._height);
+        }
     },
     
     _buildColumnHeaders: function() {
@@ -129,7 +135,7 @@ var tw_DateBox = tw_Component.extend({
         var days = ["S", "M", "T", "W", "T", "F", "S"];
         var row = document.createElement("tr");
         var s = table.style;
-        s.height = "20px";
+        s.height = "17px";
         s.borderBottom = "1px solid " + tw_COLOR_WINDOWFRAME;
         s.marginLeft = "auto";
         s.marginRight = "auto";
@@ -184,7 +190,6 @@ var tw_DateBox = tw_Component.extend({
                 var newValue;
                 if (dayIdx > 0 && dayIdx <= last) {
                     newValue = dayIdx;
-                    cells[j].style.color = tw_COLOR_WINDOWTEXT;
                 } else {
                     newValue = new Date(this._curDate.getFullYear(), this._curDate.getMonth(), dayIdx).getDate();
                     cells[j].style.color = tw_COLOR_GRAYTEXT;
@@ -325,7 +330,7 @@ var tw_DateBox = tw_Component.extend({
         s.position = "absolute";
         s.textAlign = "center";
         s.width = "75px";
-        s.height = "20px";
+        s.height = "15px";
         s.fontFamily = this._fontBox.style.fontFamily;
         s.fontSize = this._fontBox.style.fontSize;
         s.backgroundColor = tw_COLOR_WINDOW;
@@ -346,6 +351,7 @@ var tw_DateBox = tw_Component.extend({
     }
 });
 
+tw_DateBox.rowHeight = 14;
 tw_DateBox.MILLISECONDS_IN_DAY = 24 * 60 * 60 * 1000;
 tw_DateBox.MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October",
     "November", "December"];

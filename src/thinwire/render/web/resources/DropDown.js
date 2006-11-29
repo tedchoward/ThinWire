@@ -29,7 +29,8 @@ var tw_DropDown = tw_BaseText.extend({
     _buttonBorder: null,
     _editAllowed: true,
     _buttonWidth: 16,
-    _buttonBorderWidth: 0,
+    _focusBorderSize: 0,
+    _buttonBorderSize: 0,
     
     construct: function(id, containerId, props) {
         var button = this._button = document.createElement("div");
@@ -41,11 +42,9 @@ var tw_DropDown = tw_BaseText.extend({
         var s = button.style;
         s.backgroundRepeat = "no-repeat";
         s.backgroundPosition = "center center";                
-
-        var bs = tw_Component.defaultStyles["Button"];        
-        s.backgroundColor = bs.backgroundColor;
-        s.borderStyle = bs.borderStyle;
-        s.borderColor = tw_Component.getIEBorder(bs.borderColor, bs.borderStyle);        
+        s.backgroundColor = tw_COLOR_BUTTONFACE;
+        s.borderStyle = "outset";
+        s.borderColor = tw_Component.getIEBorder(tw_COLOR_BUTTONFACE, "outset");
         
         var s = buttonBorder.style;
         s.position = "absolute";
@@ -103,7 +102,7 @@ var tw_DropDown = tw_BaseText.extend({
         if (!this._enabled || tw_getEventButton(event) != 1) return; 
         var s = this._button.style;
         s.borderStyle = "solid";
-        var pad = parseInt(s.borderWidth);
+        var pad = this._buttonBorderSize;
         var width = Math.floor(pad / 2);
         pad -= width;
         s.borderWidth = width + "px"; 
@@ -114,10 +113,9 @@ var tw_DropDown = tw_BaseText.extend({
     _buttonMouseUpListener: function(event) {
         if (!this._enabled || tw_getEventButton(event) != 1) return; 
         var s = this._button.style;
-        var bs = tw_Component.defaultStyles["Button"];
-        s.borderStyle = bs.borderStyle;
-        s.borderWidth = this._borderSize + "px";
-        s.borderColor = tw_Component.getIEBorder(bs.borderColor, bs.borderStyle);
+        s.borderStyle = "outset";
+        s.borderColor = tw_Component.getIEBorder(tw_COLOR_BUTTONFACE, "outset");
+        s.borderWidth = this._buttonBorderSize + "px";
         s.padding = "0px";    
     },
     
@@ -125,6 +123,7 @@ var tw_DropDown = tw_BaseText.extend({
         if (!this._enabled || this._ddComp == null) return;
         
         if (!this._ddComp.isVisible()) {
+            this.setFocus(true);
             this.setDropDownVisible(true);
         } else {
             this.setDropDownVisible(false);
@@ -134,10 +133,10 @@ var tw_DropDown = tw_BaseText.extend({
     setWidth: function(width) {
         arguments.callee.$.call(this, width);
         width = this._buttonWidth;
-        if (!tw_sizeIncludesBorders) width -= this._buttonBorderWidth * 2;        
+        width -= this._focusBorderSize * 2;        
         if (width < 0) width = 0;
         this._buttonBorder.style.width = width + "px";
-        width -= this._borderSizeSub;
+        width -= this._buttonBorderSize * 2;
         if (width < 0) width = 0;        
         this._button.style.width = width + "px"; 
     },
@@ -145,10 +144,10 @@ var tw_DropDown = tw_BaseText.extend({
     setHeight: function(height) {
         arguments.callee.$.call(this, height);
         height -= this._borderSizeSub;
-        if (!tw_sizeIncludesBorders) height -= this._buttonBorderWidth * 2;
+        height -= this._focusBorderSize * 2;
         if (height < 0) height = 0;        
         this._buttonBorder.style.height = height + "px";
-        height -= this._borderSizeSub;
+        height -= this._buttonBorderSize * 2;
         if (height < 0) height = 0;        
         this._button.style.height = height + "px"; 
     },
@@ -182,8 +181,12 @@ var tw_DropDown = tw_BaseText.extend({
     },
 
     setStyle: function(name, value) {
+        if (name == "borderWidth") {
+            this._buttonBorderSize = parseInt(value) >= 2 ? 2 : 1;
+            this._button.style.borderWidth = this._buttonBorderSize + "px";
+        }
+        
         arguments.callee.$.call(this, name, value);
-        if (name == "borderWidth") this._button.style.borderWidth = value;
     },
     
     keyPressNotify: function(keyPressCombo) {
@@ -222,9 +225,9 @@ var tw_DropDown = tw_BaseText.extend({
     },
     
     _setFocusStyle: function(state) {
-        if (this._buttonBorderWidth == state) return;
-        this._buttonBorderWidth = state ? 1 : 0;
-        this._buttonBorder.style.borderWidth = this._buttonBorderWidth + "px";
+        if (this._focusBorderSize == state) return;
+        this._focusBorderSize = state ? 1 : 0;
+        this._buttonBorder.style.borderWidth = this._focusBorderSize + "px";
         this.setWidth(this._width);
         this.setHeight(this._height);
     },
