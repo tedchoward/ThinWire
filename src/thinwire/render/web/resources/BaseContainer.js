@@ -33,7 +33,7 @@ var tw_BaseContainer = tw_Component.extend({
     construct: function(className, id, containerId) {
         arguments.callee.$.call(this, "div", className, id, containerId);
         this._fontBox = null;
-        this._container = this._box;
+        this._container = this._scrollBox = this._box;
         this._children = [];
     },
     

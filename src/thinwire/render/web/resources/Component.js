@@ -53,6 +53,7 @@ var tw_Component = Class.extend({
     _backgroundColor: "",
     _disabledBackgroundColor: null,
     _borderBox: null,
+    _scrollBox: null,
     _borderColor: null,
     _borderType: null,
     _borderImage: null,
@@ -470,6 +471,7 @@ var tw_Component = Class.extend({
     },
             
     init: function(insertAtIndex, props) {
+        if (this._scrollBox != null) tw_Component.styleScrollBars(this._scrollBox);
         var styleClass = props.styleClass;
         var style = tw_Component.defaultStyles[styleClass];
         delete props.styleClass;
@@ -559,6 +561,11 @@ tw_Component.currentFocus = null;
 tw_Component.defaultStyles = null;
 tw_Component.setDefaultStyles = function(defaultStyles) {
     tw_Component.defaultStyles = defaultStyles;
+};
+
+tw_Component.styleScrollBars = function(box) {
+    var s = box.style;
+    if (s.scrollbarBaseColor != undefined && tw_COLOR_SCROLLBAR != "scrollbar") s.scrollbarBaseColor = tw_COLOR_SCROLLBAR;
 };
 
 tw_Component.getIEBorder = function(color, type) {

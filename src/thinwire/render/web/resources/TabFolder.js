@@ -45,7 +45,7 @@ var tw_TabFolder = tw_BaseContainer.extend({
         s.height = tw_TabFolder._tabsHeight + "px";
         this._box.appendChild(this._tabs);
         
-        this._borderBox = this._backgroundBox = this._container = document.createElement("div");
+        this._borderBox = this._backgroundBox = this._container = this._scrollBox = document.createElement("div");
         var s = this._container.style;
         s.position = "absolute";
         s.zIndex = "0";

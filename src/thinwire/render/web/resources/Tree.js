@@ -36,6 +36,7 @@ var tw_Tree = tw_Component.extend({
     
     construct: function(id, containerId, props) {
         arguments.callee.$.call(this, "div", "tree", id, containerId);
+        this._scrollBox = this._box;
         this._box.tw_isLeaf = false;
         var s = this._box.style;
         s.overflow = "auto";

@@ -67,7 +67,7 @@ var tw_GridBox = tw_Component.extend({
         this._header = header;
         this._box.appendChild(header);
         
-        var body = document.createElement("div");
+        var body = this._scrollBox = document.createElement("div");
         body.className = "gridBoxBody";
         var s = body.style;
         s.position = "absolute";
@@ -76,9 +76,8 @@ var tw_GridBox = tw_Component.extend({
         s.top = "0px";
         this._box.appendChild(body);
     
-        var content = document.createElement("div");
+        var content = this._content = document.createElement("div");
         content.className = "gridBoxContent";
-        this._content = content;        
         body.appendChild(content);
     
         var empty = document.createElement("span");

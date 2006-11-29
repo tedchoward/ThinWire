@@ -49,7 +49,7 @@ var tw_Frame = tw_BaseContainer.extend({
         tw_Frame.active = this;
         this._modalDialogIds = [];
                 
-        this._backgroundBox = this._container = document.createElement("div");
+        this._backgroundBox = this._container = this._scrollBox = document.createElement("div");
         this._container.className = "container";
         var s = this._container.style;
         s.position = "absolute";        

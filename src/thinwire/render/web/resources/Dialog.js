@@ -77,7 +77,7 @@ var tw_Dialog = tw_BaseContainer.extend({
         title.appendChild(closeButton);    
         dialog.appendChild(title);
              
-        this._container = document.createElement("div");
+        this._container = this._scrollBox = document.createElement("div");
         this._container.className = "container";
         var s = this._container.style;
         s.position = "absolute";

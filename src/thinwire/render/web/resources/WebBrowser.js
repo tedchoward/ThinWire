@@ -30,8 +30,8 @@ var tw_WebBrowser = tw_BaseBrowserLink.extend({
     construct: function(id, containerId, props) {
         arguments.callee.$.call(this, "div", "webBrowser", id, containerId);
         this._fontBox = null;
-        
-        var browser = this._browser = document.createElement("iframe"); 
+        if (tw_isIE) this._IELoadListener = tw_WebBrowser._IELoadListener.bind(this);
+        var browser = this._browser = document.createElement("iframe");
         browser.frameBorder = "0";
         var s = browser.style;
         s.overflow = "auto";
@@ -60,8 +60,9 @@ var tw_WebBrowser = tw_BaseBrowserLink.extend({
     setLocation: function(location) {
         //NOTE: this line throws an error in firefox, but it still works.
         if (location != "") location = tw_Component.expandUrl(location);
+        if (this._IELoadListener != null) this._browser.onreadystatechange = location.indexOf(tw_APP_URL) == 0 ? this._IELoadListener : null;
         this._browser.src = location;
-        this._browser.style.display = location != "" ? "block" : "none"; 
+        this._browser.style.display = location != "" ? "block" : "none";
     },
     
     setDragLayerVisible: function(state) {
@@ -87,6 +88,11 @@ var tw_WebBrowser = tw_BaseBrowserLink.extend({
         arguments.callee.$.call(this);
     }
 });
+
+tw_WebBrowser._IELoadListener = function() {
+    if (this._browser.readyState != "complete") return;
+    tw_Component.styleScrollBars(this._browser.contentWindow.document.body);
+};
 
 tw_WebBrowser.instances = {};
 

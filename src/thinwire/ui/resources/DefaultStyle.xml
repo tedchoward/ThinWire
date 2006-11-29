@@ -3,7 +3,7 @@
   <alias name="Color" class="thinwire.ui.style.Color"/>
   <alias name="Style" class="thinwire.ui.style.Style"/>
   
-  <!-- system color override -->
+  <!-- system color override, comment out any of these to use system defaults -->
   <Color id="activeborder" valueOf="rgb(212, 208, 200)"/>  
   <Color id="activecaption" valueOf="rgb(0, 84, 227)"/>
   <Color id="appworkspace" valueOf="rgb(128, 128, 128)"/>
@@ -23,7 +23,7 @@
   <Color id="infotext" valueOf="rgb(0, 0, 0)"/>
   <Color id="menu" valueOf="rgb(255, 255, 255)"/>
   <Color id="menutext" valueOf="rgb(0, 0, 0)"/>
-  <Color id="scrollbar" valueOf="rgb(212, 208, 200)"/>
+  <Color id="scrollbar" valueOf="rgb(236, 233, 216)"/>
   <Color id="threeddarkshadow" valueOf="rgb(113, 111, 100)"/>
   <Color id="threedface" valueOf="rgb(236, 233, 216)"/>
   <Color id="threedhighlight" valueOf="rgb(255, 255, 255)"/>
