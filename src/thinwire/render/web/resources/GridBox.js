@@ -448,15 +448,15 @@ var tw_GridBox = tw_Component.extend({
         var oldCalcBorderSize = this._borderSizeSub;
         arguments.callee.$.call(this, name, value);
         
-        if (name == "borderSize") {
+        if (name == "borderWidth") {
             for (var i = 0, cnt = this._getColumnCount(); i < cnt; i++) {
                 var h = this._header.childNodes.item(i);
-                h.style.borderWidth = value + "px";
+                h.style.borderWidth = value;
                 var width = parseInt(h.style.width) + oldCalcBorderSize;
                 h.style.width = width <= this._borderSizeSub ? "0px" : width - this._borderSizeSub + "px";                      
             }
 
-            this.setVisibleHeader(this._visibleHeader);            
+            this.setVisibleHeader(this._visibleHeader);    
         }
     },
     
@@ -768,8 +768,8 @@ var tw_GridBox = tw_Component.extend({
         var bs = tw_Component.defaultStyles["Button"];
         s.borderWidth = this._borderSize + "px";        
         s.backgroundColor = bs.backgroundColor;
-        s.borderStyle = bs.borderType; 
-        s.borderColor = tw_Component.getIEBorder(bs.borderColor, bs.borderType);
+        s.borderStyle = bs.borderStyle; 
+        s.borderColor = tw_Component.getIEBorder(bs.borderColor, bs.borderStyle);
         
         columnHeader.appendChild(tw_Component.setRichText(name));
                 

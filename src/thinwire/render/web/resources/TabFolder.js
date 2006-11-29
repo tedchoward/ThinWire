@@ -57,7 +57,7 @@ var tw_TabFolder = tw_BaseContainer.extend({
     
     setStyle: function(name, value) {
         arguments.callee.$.call(this, name, value);
-        if (name == "borderSize") this._offsetX = this._offsetY = parseInt(value);
+        if (name == "borderWidth") this._offsetX = this._offsetY = parseInt(value);
         
         if (name.indexOf("border") == 0) {
             if (name == "borderImage") return;
@@ -126,8 +126,8 @@ var tw_TabFolder = tw_BaseContainer.extend({
 
         var tab = sheet._tab;
         sheet.setStyle("borderColor", this._borderColor);
-        sheet.setStyle("borderType", this._borderType);
-        sheet.setStyle("borderSize", this._borderSize);        
+        sheet.setStyle("borderStyle", this._borderType);
+        sheet.setStyle("borderWidth", this._borderSize);        
         
         if (insertAtIndex == -1 || insertAtIndex >= this._children.length) {
             this._tabs.appendChild(tab);

@@ -57,15 +57,15 @@ import thinwire.ui.Application;
  * Xml Object Document (XOD) generates objects from the XML file, and associates them with a Map.
  * XODs can be used to create instances of plain old java objects (POJO). For example, a Dialog can be
  * created as follows:<p>
- * <h3>Sample Screen</h3>
+ * <h3>Sample File</h3>
  * <img src="doc-files/XOD-1.png"> <p>
- * <h3>Sample Screen Layout XML</h3>
+ * <h3>Sample File XML</h3>
  * <pre>
  * &lt;?xml version="1.0"?&gt;
  * &lt;xod&gt;
  *     &lt;include name="classes.xml"&gt;
  *     &lt;Dialog id="dialog"&gt;
- *         &lt;title&gt;XOD Demo Screen&lt;/title&gt;
+ *         &lt;title&gt;XOD Demo File&lt;/title&gt;
  *         &lt;width&gt;300&lt;/width&gt;
  *         &lt;height&gt;200&lt;/height&gt;
  *         &lt;children&gt;
@@ -292,21 +292,30 @@ public final class XOD {
     private Map<Class, Map<String, Object[]>> propertyAliases;
     private List<String> uriStack;
     private boolean processingInclude;
-       
+    
     /**
      * Create a new XOD.
-     */
+     */       
     public XOD() {
+        this(null);
+    }
+    
+    /**
+     * Create a new XOD.
+     * @param uri the name of the XML Object Document file to execute.
+     */
+    public XOD(String uri) {
         objectMap = new HashMap<String, Object>();
         objects = new ArrayList<Object>();
         aliases = new HashMap<String, Class>();
         uriStack = new ArrayList<String>();
+        if (uri != null) execute(uri);
     }
     
     /**
      * The object map contains references to previously defined objects
      * identified by id.  Typically, it will map an ID found in the 
-     * Screen Layout XML to a UI Component.
+     * XOD to an object.
      * @return the object Map
      */
     public Map<String, Object> getObjectMap() {

@@ -25,11 +25,6 @@
  */
 package thinwire.ui.style;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
 import thinwire.util.ImageInfo;
 
 /**
@@ -105,7 +100,7 @@ public class Border {
     
     public void setSize(int size) {
         if (size < 0 && parent.defaultStyle != null) size = parent.defaultStyle.getBorder().getSize();
-        if (size < 0 || size > 32) throw new IllegalArgumentException("size < 0 || size > 32");
+        if (size < 0 || size > 128) throw new IllegalArgumentException("size < 0 || size > 128");
         int oldSize = this.size;
         this.size = size;
         if (parent != null) parent.firePropertyChange(this, PROPERTY_BORDER_SIZE, oldSize, size);

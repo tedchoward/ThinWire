@@ -40,7 +40,7 @@ var tw_Slider = tw_BaseRange.extend({
         s.position = "absolute";
         s.lineHeight = "0px";
         var ds = tw_Component.defaultStyles["Divider"];
-        s.borderStyle = ds.borderType;
+        s.borderStyle = ds.borderStyle;
         this._box.insertBefore(line, this._selection);
         
         this._borderBox = this._selection;
@@ -56,10 +56,10 @@ var tw_Slider = tw_BaseRange.extend({
         
         if (name == "borderColor") {
             s[name] = tw_Component.getIEBorder(value, this._borderType);
-        } else if (name == "borderSize") {
+        } else if (name == "borderWidth") {
             value = Math.floor(parseInt(value) / 2);
             if (value < 1) value = 1;
-            s[tw_Component.styleNameMap[name]] = value + "px";
+            s[name] = value + "px";
         }
     },
     

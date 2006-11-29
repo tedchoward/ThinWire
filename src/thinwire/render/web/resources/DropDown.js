@@ -44,8 +44,8 @@ var tw_DropDown = tw_BaseText.extend({
 
         var bs = tw_Component.defaultStyles["Button"];        
         s.backgroundColor = bs.backgroundColor;
-        s.borderStyle = bs.borderType;
-        s.borderColor = tw_Component.getIEBorder(bs.borderColor, bs.borderType);        
+        s.borderStyle = bs.borderStyle;
+        s.borderColor = tw_Component.getIEBorder(bs.borderColor, bs.borderStyle);        
         
         var s = buttonBorder.style;
         s.position = "absolute";
@@ -115,14 +115,14 @@ var tw_DropDown = tw_BaseText.extend({
         if (!this._enabled || tw_getEventButton(event) != 1) return; 
         var s = this._button.style;
         var bs = tw_Component.defaultStyles["Button"];
-        s.borderStyle = bs.borderType;
+        s.borderStyle = bs.borderStyle;
         s.borderWidth = this._borderSize + "px";
-        s.borderColor = tw_Component.getIEBorder(bs.borderColor, bs.borderType);
+        s.borderColor = tw_Component.getIEBorder(bs.borderColor, bs.borderStyle);
         s.padding = "0px";    
     },
     
     _buttonClickListener: function(event) {
-        if (!this._enabled) return;
+        if (!this._enabled || this._ddComp == null) return;
         
         if (!this._ddComp.isVisible()) {
             this.setDropDownVisible(true);
@@ -167,7 +167,7 @@ var tw_DropDown = tw_BaseText.extend({
     setFocus: function(focus) {          
         if (!this._enabled || !this.isVisible()) return false;
         
-        if (!focus) {
+        if (!focus && this._ddComp != null) {
             var active = tw_getActiveElement();
             
             if (active != null) {
@@ -183,10 +183,11 @@ var tw_DropDown = tw_BaseText.extend({
 
     setStyle: function(name, value) {
         arguments.callee.$.call(this, name, value);
-        if (name == "borderSize") this._button.style.borderWidth = value + "px";
+        if (name == "borderWidth") this._button.style.borderWidth = value;
     },
     
-    keyPressNotify: function(keyPressCombo) {        
+    keyPressNotify: function(keyPressCombo) {
+        if (this._ddComp == null) return;        
         if (!this._ddComp.isVisible()) {
             if (keyPressCombo == "ArrowDown") {
                 this.setDropDownVisible(true);

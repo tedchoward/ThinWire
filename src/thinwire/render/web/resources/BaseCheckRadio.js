@@ -39,7 +39,6 @@ var tw_BaseCheckRadio = tw_Component.extend({
         s.cursor = "default";        
         s.backgroundRepeat = "no-repeat";
         s.backgroundPosition = "center left";        
-        s.backgroundColor = tw_COLOR_TRANSPARENT;        
         s.textDecoration = "none";
         s.padding = s.margin = s.border = "0px";
         s.whiteSpace = "nowrap";
@@ -55,6 +54,7 @@ var tw_BaseCheckRadio = tw_Component.extend({
         var s = this._image.style; 
         s.position = "absolute";
         s.lineHeight = "0px";
+        s.backgroundColor = tw_COLOR_TRANSPARENT;
         s.backgroundPosition = "center";
         s.backgroundRepeat = "no-repeat";
         s.width = s.height = tw_BaseCheckRadio.boxSize + "px"
@@ -89,12 +89,13 @@ var tw_BaseCheckRadio = tw_Component.extend({
             var sub = parseInt(this._box.style.paddingLeft);
             width = width <= sub ? 0 : width - sub;
         }
-
+        
         this._box.style.width = width + "px";
     },
     
     setHeight: function(height) {
-        arguments.callee.$.call(this, height);
+        this._height = height;
+        this._box.style.height = height + "px";
         this._box.style.lineHeight = this._box.style.height;
         var top = Math.floor(height / 2 - (tw_BaseCheckRadio.boxSize + this._borderSize * 2) / 2);        
         if (top < 0) top = 0;
@@ -111,7 +112,7 @@ var tw_BaseCheckRadio = tw_Component.extend({
     setStyle: function(name, value) {
         arguments.callee.$.call(this, name, value);
         
-        if (name == "borderSize") {
+        if (name == "borderWidth") {
             var size = tw_BaseCheckRadio.boxSize + this._borderSize * 2;
             this._box.style.paddingLeft = size + tw_BaseCheckRadio.pad * 2 + "px";
 
@@ -123,6 +124,19 @@ var tw_BaseCheckRadio = tw_Component.extend({
             }
             
             this._borderBox.style.height = this._borderBox.style.width = size + "px"; 
+        } else if (name == "borderImage") {
+            if (this._borderImage == null) {
+                if (this._oldBackgroundBox != undefined) {
+                    this._backgroundBox = this._oldBackgroundBox;
+                    delete this._oldBackgroundBox;
+                }
+            } else {
+                this._backgroundBox.style.backgroundColor = tw_COLOR_TRANSPARENT;
+                this._oldBackgroundBox = this._backgroundBox;
+                this._backgroundBox = this._borderImage._c;
+            }
+            
+            this._backgroundBox.style.backgroundColor = this._enabled ? this._backgroundColor : this._disabledBackgroundColor;
         }
     },
     

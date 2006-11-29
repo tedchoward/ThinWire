@@ -70,8 +70,8 @@ var tw_Dialog = tw_BaseContainer.extend({
         var bs = tw_Component.defaultStyles["Button"];
         s.backgroundColor = bs.backgroundColor;
         s.color = bs.fontColor;
-        s.borderStyle = bs.borderType;
-        s.borderColor = tw_Component.getIEBorder(bs.borderColor, bs.borderType);
+        s.borderStyle = bs.borderStyle;
+        s.borderColor = tw_Component.getIEBorder(bs.borderColor, bs.borderStyle);
         closeButton.appendChild(document.createTextNode("X"));
         
         title.appendChild(closeButton);    
@@ -180,11 +180,11 @@ var tw_Dialog = tw_BaseContainer.extend({
     setStyle: function(name, value) {
         arguments.callee.$.call(this, name, value);
 
-        if (name == "fontColor") {
+        if (name == "color") {
             this._fontColor = this._fontBox.style.color;
-        } else if (name == "borderSize" && this._closeButton != null) {
-            this._closeButton.style.borderWidth = value + "px";
-            this._calcCloseButtonSize(parseInt(value));        
+        } else if (name == "borderWidth" && this._closeButton != null) {
+            this._closeButton.style.borderWidth = value;
+            this._calcCloseButtonSize(this._borderSize);        
         }
     },
     

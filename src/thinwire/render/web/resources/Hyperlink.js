@@ -54,7 +54,7 @@ var tw_Hyperlink = tw_BaseBrowserLink.extend({
     
     setStyle: function(name, value) {
         arguments.callee.$.call(this, name, value);
-        if (name == "fontColor") this._fontColor = value;
+        if (name == "color") this._fontColor = value;
     },
     
     setLocation: function(location) {

@@ -100,7 +100,7 @@ var tw_Button = tw_Component.extend({
     setStyle: function(name, value) {
         arguments.callee.$.call(this, name, value);
         if (name == "backgroundColor") this._disabledBackgroundColor = value;
-        if (name == "fontColor") this._fontColor = value;
+        if (name == "color") this._fontColor = value;
     },
     
     setWidth: function(width) {

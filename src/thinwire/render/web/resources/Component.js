@@ -184,53 +184,52 @@ var tw_Component = Class.extend({
         }
     },
     
+    setStyles: function(styles) {
+        for (var name in styles) {
+            this.setStyle(name, styles[name]); 
+        }
+    },
+    
     setStyle: function(name, value) {
-        var realName = tw_Component.styleNameMap[name];
-        if (realName == undefined) throw "attempt to set unknown property '" + name + "' to value '" + value + "'";
-        
-        if (this._backgroundBox != null && name.indexOf("background") == 0) {
+        if (name.indexOf("ba") == 0) {
+            var s = this._backgroundBox == null ? null : this._backgroundBox.style;
+            
             if (name == "backgroundColor") {
                 this._backgroundColor = value;
-                if (this._enabled) this._backgroundBox.style.backgroundColor = value;
+                if (!this._enabled) s = null;
             } else if (name == "backgroundImage") {
-                this._backgroundBox.style.backgroundImage = tw_Component.expandUrl(value, true);
-            } else if (name == "backgroundRepeat" || name == "backgroundPosition") {
-                this._backgroundBox.style[realName] = value;
+                value = tw_Component.expandUrl(value, true);
             }
-        } else if (this._fontBox != null && name.indexOf("font") == 0) {
-            if (name == "fontSize") {
-                value += "pt";
-            } else if (name != "fontFamily" && name != "fontColor") {
-                value = typeof(value) == "string" || value instanceof String ? value.toLowerCase() == "true" : value;
+        } else if (name.indexOf("bo") == 0) {
+            var s = this._borderBox == null ? null : this._borderBox.style;
             
-                if (name == "fontBold") {                
-                    value = value ? "bold" : "normal";
-                } else if (name == "fontItalic") {
-                    value = value ? "italic" : "normal";
-                } else if (name == "fontUnderline") {
-                    value = value ? "underline" : "none";
-                }
-            }
-            
-            this._fontBox.style[realName] = value;
-        } else if (this._borderBox != null && name.indexOf("border") == 0) {
-            if (name == "borderSize") {
+            if (name == "borderWidth") {
                 this._borderSize = parseInt(value);
                 this._borderSizeSub = this._borderSize * 2;
                 
                 if (this._borderImage == null) {
-                    this._borderBox.style[realName] = value + "px";
+                    s[name] = value;
                 } else {
                     this._borderImage.setBorderSize(this._borderSize);
                 }
+
+                s = null;
                 
                 if (this._inited) {
                     this.setWidth(this._width);
                     this.setHeight(this._height);
                 }
+            } else if (name == "borderStyle") {
+                this._borderType = value;
+                s[name] = value;
+                
+                if (tw_isIE && this._borderColor != null) {
+                    name = "borderColor";
+                    value = tw_Component.getIEBorder(this._borderColor, this._borderType);
+                }
             } else if (name == "borderColor") {
                 this._borderColor = value;
-                this._borderBox.style[realName] = tw_Component.getIEBorder(value, this._borderType);
+                value = tw_Component.getIEBorder(value, this._borderType);
             } else if (name == "borderImage") {
                 var bi = this._borderImage;
 
@@ -242,7 +241,6 @@ var tw_Component = Class.extend({
                 } else if (value.length > 0) {
                     if (bi == null) {
                         bi = this._borderImage = new tw_BorderImage();
-                        //this.setStyle("borderSize", this._borderSize + "");
                         var bb = bi.setBox(this._borderBox);
                         if (this._borderBox === this._box) this._box = bb;
                         this._borderBox = bb;
@@ -252,18 +250,14 @@ var tw_Component = Class.extend({
                     bi.setImage(ary[0], ary[1], ary[2]);
                 }
                 
-                this.setStyle("borderSize", this._borderSize + "");
-            } else {
-                this._borderType = value;
-                this._borderBox.style[realName] = value;
-                
-                if (tw_isIE && this._borderColor != null) {
-                    var keep = this._borderColor;
-                    this.setStyle("borderColor", tw_Component.getIEBorder(keep, this._borderType));
-                    this._borderColor = keep;
-                }
+                this.setStyle("borderWidth", this._borderSize + "");
+                s = null;                
             }
+        } else {
+            var s = this._fontBox == null ? null : this._fontBox.style;
         }
+        
+        if (s != null) s[name] = value;
     },
     
     getBaseWindow: function() {
@@ -479,8 +473,8 @@ var tw_Component = Class.extend({
         var styleClass = props.styleClass;
         var style = tw_Component.defaultStyles[styleClass];
         delete props.styleClass;
-        
         var styleProps = props.styleProps;
+        
         if (styleProps != undefined) {
             delete props.styleProps;
             
@@ -497,19 +491,20 @@ var tw_Component = Class.extend({
         this.setStyle("backgroundPosition", style["backgroundPosition"]);
         
         if (this._borderBox != null) {
-            this.setStyle("borderType", style["borderType"]);
-            this.setStyle("borderSize", style["borderSize"]);
+            this.setStyle("borderStyle", style["borderStyle"]);
+            this.setStyle("borderWidth", style["borderWidth"]);
             this.setStyle("borderColor", style["borderColor"]);
             this.setStyle("borderImage", style["borderImage"]);
         }
         
         if (this._fontBox != null) {
             this.setStyle("fontFamily", style["fontFamily"]);
-            this.setStyle("fontColor", style["fontColor"]);
+            this.setStyle("color", style["color"]);
             this.setStyle("fontSize", style["fontSize"]);
-            this.setStyle("fontItalic", style["fontItalic"]);
-            this.setStyle("fontBold", style["fontBold"]);
-            this.setStyle("fontUnderline", style["fontUnderline"]);
+            this.setStyle("fontStyle", style["fontStyle"]);
+            this.setStyle("fontWeight", style["fontWeight"]);
+            this.setStyle("textDecoration", style["textDecoration"]);
+            //this.setStyle("fontStrike", style["fontStrike"]);
         }
         
         if (props.insertAtIndex != undefined) {
@@ -561,26 +556,9 @@ tw_Component.zIndex = 0;
 tw_Component.instances = {};
 tw_Component.priorFocus = null;
 tw_Component.currentFocus = null;
-tw_Component.styleNameMap = {
-    backgroundColor: "backgroundColor",
-    backgroundImage: "backgroundImage",
-    backgroundRepeat: "backgroundRepeat",
-    backgroundPosition: "backgroundPosition",
-    fontSize: "fontSize",
-    fontBold: "fontWeight",
-    fontItalic: "fontStyle",
-    fontUnderline: "textDecoration",
-    fontColor: "color",
-    fontFamily: "fontFamily",
-    borderType: "borderStyle",
-    borderSize: "borderWidth",
-    borderColor: "borderColor",
-    borderImage: "borderImage"
-};
-
-tw_Component.defaultStyles = { };
-tw_Component.setDefaultStyle = function(styleName, style) {
-    tw_Component.defaultStyles[styleName] = style;
+tw_Component.defaultStyles = null;
+tw_Component.setDefaultStyles = function(defaultStyles) {
+    tw_Component.defaultStyles = defaultStyles;
 };
 
 tw_Component.getIEBorder = function(color, type) {

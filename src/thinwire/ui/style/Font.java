@@ -39,12 +39,13 @@ import thinwire.ui.Application;
  * @author Joshua J. Gertzen
  */
 public class Font {
-    public static final String PROPERTY_FONT_UNDERLINE = "fontUnderline";
-    public static final String PROPERTY_FONT_ITALIC = "fontItalic";
-    public static final String PROPERTY_FONT_BOLD = "fontBold";
-    public static final String PROPERTY_FONT_SIZE = "fontSize";
-    public static final String PROPERTY_FONT_COLOR = "fontColor";
     public static final String PROPERTY_FONT_FAMILY = "fontFamily";
+    public static final String PROPERTY_FONT_COLOR = "fontColor";
+    public static final String PROPERTY_FONT_SIZE = "fontSize";
+    public static final String PROPERTY_FONT_BOLD = "fontBold";
+    public static final String PROPERTY_FONT_ITALIC = "fontItalic";
+    public static final String PROPERTY_FONT_UNDERLINE = "fontUnderline";
+    public static final String PROPERTY_FONT_STRIKE = "fontStrike";
     
     public static class Family {
         private static List<Family> VALUES = new ArrayList<Family>();
@@ -174,10 +175,11 @@ public class Font {
     private Style parent;
     private Family family;
     private Color color;
-    private int size;
+    private double size;
     private int bold = -1;
     private int italic = -1;
     private int underline = -1;
+    private int strike = -1;
     private String computedState;
     
     Font(Style parent) {
@@ -253,7 +255,8 @@ public class Font {
             if (getSize() == df.getSize()) setSize(font.getSize());
             if (isBold() == df.isBold()) setBold(font.isBold());
             if (isItalic() == df.isItalic()) setItalic(font.isItalic());
-            if (isUnderline() == df.isUnderline()) setUnderline(font.isUnderline());            
+            if (isUnderline() == df.isUnderline()) setUnderline(font.isUnderline());
+            if (isStrike() == df.isStrike()) setStrike(font.isStrike());
         } else {
             setFamily(font.getFamily());
             setColor(font.getColor());
@@ -261,6 +264,7 @@ public class Font {
             setBold(font.isBold());
             setItalic(font.isItalic());
             setUnderline(font.isUnderline());
+            setStrike(font.isStrike());
         }
     }
     
@@ -294,15 +298,16 @@ public class Font {
         if (parent != null) parent.firePropertyChange(this, PROPERTY_FONT_COLOR, oldColor, this.color);
     }    
     
-    public int getSize() {
+    public double getSize() {
         if (size <= 0) throw new IllegalStateException("size <= 0");
         return size;
     }
     
-    public void setSize(int size) {
+    public void setSize(double size) {
         if (size <= 0 && parent.defaultStyle != null) size = parent.defaultStyle.getFont().getSize();
         if (size <= 0 || size > 128) throw new IllegalArgumentException("size <= 0 || size > 128");
-        int oldSize = this.size;
+        size = Math.floor(size * 10) / 10;
+        double oldSize = this.size;
         this.computedState = null;        
         this.size = size;
         if (parent != null) parent.firePropertyChange(this, PROPERTY_FONT_SIZE, oldSize, size);
@@ -342,5 +347,17 @@ public class Font {
         this.computedState = null;        
         this.underline = underline == true ? 1 : 0;
         if (parent != null) parent.firePropertyChange(this, PROPERTY_FONT_UNDERLINE, oldUnderline, underline);        
+    }
+    
+    public boolean isStrike() {
+        if (strike == -1) throw new IllegalStateException("strike not initialized");
+        return strike == 1;
+    }
+    
+    public void setStrike(boolean strike) {
+        boolean oldStrike = this.strike == 1;
+        this.computedState = null;        
+        this.strike = strike == true ? 1 : 0;
+        if (parent != null) parent.firePropertyChange(this, PROPERTY_FONT_STRIKE, oldStrike, strike);        
     }
 }

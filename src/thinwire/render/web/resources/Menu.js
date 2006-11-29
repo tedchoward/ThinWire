@@ -89,9 +89,7 @@ var tw_Menu = tw_Component.extend({
             }       
 
             var nodes = this._box.childNodes;
-            if (name == "borderSize") value += "px";
-            else if (name == "borderColor") value = tw_Component.getIEBorder(value, this._borderType);
-            name = tw_Component.styleNameMap[name];
+            if (name == "borderColor") value = tw_Component.getIEBorder(value, this._borderType);
             
             for (var i = nodes.length; --i >= 0;) {
                 var item = nodes.item(i);

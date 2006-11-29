@@ -38,6 +38,7 @@ public class Style {
         f.setItalic(false);
         f.setBold(false);
         f.setUnderline(false);
+        f.setStrike(false);
         f.setSize(8);
         
         s.getBackground().setColor(Color.WHITE);

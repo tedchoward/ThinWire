@@ -35,7 +35,7 @@
   
   <Style id="default">
     <background color="transparent"/>
-    <font family="Tahoma, sans-serif" color="windowtext" size="8" italic="false" bold="false" underline="false"/>
+    <font family="Tahoma, sans-serif" color="windowtext" size="8" italic="false" bold="false" underline="false" strike="false"/>
     <border size="0" type="none" color="transparent"/>
     <fX positionChange="none" sizeChange="none" visibleChange="none"/>
   </Style>

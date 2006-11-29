@@ -25,8 +25,6 @@
  */
 package thinwire.render.web;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.text.DecimalFormat;
@@ -36,7 +34,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
@@ -269,8 +266,9 @@ public final class WebApplication extends Application {
     private Map<String, Class<ComponentRenderer>> nameToRenderer;
     private Map<Window, WindowRenderer> windowToRenderer;
     private Map<Integer, WebComponentListener> webComponentListeners;
-    private Set<String> clientSideIncludes;    
+    private Set<String> clientSideIncludes;
     private Map<Component, Object> renderCallbacks;
+    Map<Style, String> styleToStyleClass;
     private String[] syncCallResponse = new String[1];
     private boolean threadCaptured;
     private boolean threadWaiting;
@@ -465,77 +463,144 @@ public final class WebApplication extends Application {
         
         appThread.start();
     }
-
-    String getStyleColorValue(Color color, boolean border) {
-        if (color.isSystemColor()) color = systemColors.get(color.toString());
-        return color.toRGBString();
-    }
-    
-    String getStyleRepeatValue(Background.Repeat repeat) {
-        switch (repeat) {
-            case BOTH: return "repeat";
-            case X: return "repeat-x";
-            case Y: return "repeat-y";
-            default: return "no-repeat";
-        }
-    }
-    
-    String getStyleImageValue(WindowRenderer wr, ImageInfo ii, boolean includeSize) {
-        String value = ii.getName();
-        
-        if (value.length() > 0) {
-            value = wr.getQualifiedURL(value);
-            
-            if (includeSize) {
-                StringBuffer sb = new StringBuffer(value);
-                sb.append(',').append(ii.getWidth()).append(',').append(ii.getHeight());
-                value = sb.toString();
-            }
-        }
-        
-        return value;
-    }
     
     Integer getNextComponentId() {
         nextCompId = nextCompId == Integer.MAX_VALUE ? 1 : nextCompId + 1;
         return new Integer(nextCompId);
     }
     
-    private void sendStyleClass(String styleName, Style s) {
-        WindowRenderer frameRenderer = windowToRenderer.get(getFrame());
-        StringBuilder sb = new StringBuilder();
-        sb.append('{');
-        Background bg = s.getBackground();
-        sb.append("backgroundColor:\"").append(getStyleColorValue(bg.getColor(), false)).append("\",");
-        sb.append("backgroundImage:\"").append(getStyleImageValue(frameRenderer, bg.getImageInfo(), false)).append("\",");
-        sb.append("backgroundRepeat:\"").append(getStyleRepeatValue(bg.getRepeat())).append("\",");
-        sb.append("backgroundPosition:\"").append(bg.getPosition()).append("\",");
-        
-        Font f = s.getFont();
-        sb.append("fontFamily:\"").append(f.getFamily()).append("\",");
-        sb.append("fontColor:\"").append(getStyleColorValue(f.getColor(), false)).append("\",");
-        sb.append("fontSize:").append(f.getSize()).append(",");
-        sb.append("fontItalic:").append(f.isItalic()).append(",");
-        sb.append("fontBold:").append(f.isBold()).append(",");
-        sb.append("fontUnderline:").append(f.isUnderline()).append(",");
-        
-        Border b = s.getBorder();
-        sb.append("borderSize:").append(b.getSize()).append(",");
-        Border.Type borderType = b.getType();
-        Color borderColor = b.getColor();
+    StringBuilder getStyleValue(ComponentRenderer cr, StringBuilder sb, String propertyName, Object value) {
+        if (propertyName.equals(Border.PROPERTY_BORDER_SIZE)) {
+            sb.append("borderWidth").append(":\"").append(value).append("px");
+        } else if (propertyName.equals(Border.PROPERTY_BORDER_TYPE)) {
+            sb.append("borderStyle").append(":\"").append(value);
+        } else if (propertyName.equals(Font.PROPERTY_FONT_COLOR)) {
+            sb.append("color").append(":\"").append(value);
+        } else if (propertyName.equals(Font.PROPERTY_FONT_UNDERLINE)) {
+            sb.append("textDecoration").append(":\"").append(value == Boolean.TRUE ? "underline" : "none");
+        } else if (propertyName.equals(Font.PROPERTY_FONT_ITALIC)) {
+            sb.append("fontStyle").append(":\"").append(value == Boolean.TRUE ? "italic" : "normal");
+        } else if (propertyName.equals(Font.PROPERTY_FONT_BOLD)) {
+            sb.append("fontWeight").append(":\"").append(value == Boolean.TRUE ? "bold" : "normal");
+        } else if (propertyName.equals(Font.PROPERTY_FONT_SIZE)) {
+            sb.append(propertyName).append(":\"").append(value).append("pt");
+        } else if (propertyName.equals(Background.PROPERTY_BACKGROUND_IMAGE)) {
+            sb.append(propertyName).append(":\"").append(cr.getQualifiedURL((String)value));
+        } else {
+            sb.append(propertyName).append(":\"");
             
-        if (borderType == Border.Type.NONE) {
-            borderType = Border.Type.SOLID;
-            borderColor = s.getBackground().getColor();
+            if (value instanceof Color) {
+                Color color = (Color)value;
+                if (color.isSystemColor()) color = systemColors.get(color.toString());
+                sb.append(color.toRGBString());
+            } else if (value instanceof Background.Repeat) {
+                switch ((Background.Repeat)value) {
+                    case BOTH: sb.append("repeat"); break;
+                    case X: sb.append("repeat-x"); break;
+                    case Y: sb.append("repeat-y"); break;
+                    default: sb.append("no-repeat"); break;
+                }
+            } else if (value instanceof ImageInfo) {
+                ImageInfo ii = (ImageInfo)value;
+                String name = ii.getName();
+                
+                if (name.length() > 0) {
+                    sb.append(cr.getQualifiedURL(name));
+    
+                    if (propertyName.equals(Border.PROPERTY_BORDER_IMAGE)) {
+                        sb.append(',').append(ii.getWidth()).append(',').append(ii.getHeight());
+                    }
+                }
+            } else {
+                sb.append(value);
+            }
         }
-
-        sb.append("borderType:\"").append(borderType).append("\",");
-        sb.append("borderColor:\"").append(getStyleColorValue(borderColor, true)).append("\",");
-        sb.append("borderImage:\"").append(getStyleImageValue(frameRenderer, b.getImageInfo(), true)).append("\"");
-        sb.append('}');
-        clientSideMethodCall("tw_Component", "setDefaultStyle", styleName, sb);
+        
+        sb.append("\",");
+        return sb;
     }
+    
+    StringBuilder getStyleValues(ComponentRenderer cr, StringBuilder sb, Style s, Style ds) {
+        Background background = s.getBackground();
+        Color backgroundColor = background.getColor();
+        String backgroundImage = background.getImage();
+        Background.Repeat backgroundRepeat = background.getRepeat();
+        Background.Position backgroundPosition = background.getPosition();
+        
+        Border border = s.getBorder();
+        Border.Type borderType = border.getType();
+        Color borderColor = border.getColor();
+        Integer borderSize = border.getSize();
+        String borderImage = border.getImage();
+        
+        Font font = s.getFont();
+        Font.Family fontFamily = font.getFamily();
+        Double fontSize = font.getSize();
+        Color fontColor = font.getColor();
+        Boolean fontBold = font.isBold();
+        Boolean fontItalic = font.isItalic();
+        Boolean fontUnderline = font.isUnderline();
+        Boolean fontStrike = font.isStrike();
+        
+        if (ds != null) {
+            background = ds.getBackground();
+            if (backgroundColor.equals(background.getColor())) backgroundColor = null;
+            if (backgroundImage.equals(background.getImage())) backgroundImage = null;
+            if (backgroundRepeat.equals(background.getRepeat())) backgroundRepeat = null;
+            if (backgroundPosition.equals(background.getPosition())) backgroundPosition = null;
+            
+            border = ds.getBorder();
+            if (borderType.equals(border.getType())) borderType = null;
+            if (borderColor.equals(border.getColor())) borderColor = null;
+            if (borderSize.equals(border.getSize())) borderSize = null;
+            if (borderImage.equals(border.getImage())) borderImage = null;
+            
+            font = ds.getFont();
+            if (fontFamily.equals(font.getFamily()))
+            if (fontSize.equals(font.getSize())) fontSize = null;
+            if (fontColor.equals(font.getColor())) fontColor = null;
+            if (fontBold.equals(font.isBold())) fontBold = null;
+            if (fontItalic.equals(font.isItalic())) fontItalic = null;
+            if (fontStrike.equals(font.isStrike())) fontStrike = null;
+        }
+        
+        sb.append("{");
+        
+        if (backgroundColor != null) getStyleValue(cr, sb, Background.PROPERTY_BACKGROUND_COLOR, backgroundColor);
+        if (backgroundImage != null) getStyleValue(cr, sb, Background.PROPERTY_BACKGROUND_IMAGE, backgroundImage);
+        if (backgroundRepeat != null) getStyleValue(cr, sb, Background.PROPERTY_BACKGROUND_REPEAT, backgroundRepeat);
+        if (backgroundPosition != null) getStyleValue(cr, sb, Background.PROPERTY_BACKGROUND_POSITION, backgroundPosition);
+        
+        if (borderType != null) {
+            if (borderType == Border.Type.NONE) {
+                borderType = Border.Type.SOLID;
+                borderColor = backgroundColor;
+            }
 
+            getStyleValue(cr, sb, "borderType", borderType);
+        }
+        
+        if (borderImage != null) getStyleValue(cr, sb, Border.PROPERTY_BORDER_IMAGE, s.getBorder().getImageInfo());
+        if (borderColor != null) getStyleValue(cr, sb, Border.PROPERTY_BORDER_COLOR, borderColor);
+        if (borderSize != null) getStyleValue(cr, sb, Border.PROPERTY_BORDER_SIZE, borderSize);
+
+        if (fontFamily != null) getStyleValue(cr, sb, Font.PROPERTY_FONT_FAMILY, fontFamily);
+        if (fontSize != null) getStyleValue(cr, sb, Font.PROPERTY_FONT_SIZE, fontSize);
+        if (fontColor != null) getStyleValue(cr, sb, Font.PROPERTY_FONT_COLOR, fontColor);
+        if (fontBold != null) getStyleValue(cr, sb, Font.PROPERTY_FONT_BOLD, fontBold); 
+        if (fontItalic != null) getStyleValue(cr, sb, Font.PROPERTY_FONT_ITALIC, fontItalic); 
+        if (fontUnderline != null) getStyleValue(cr, sb, Font.PROPERTY_FONT_UNDERLINE, fontUnderline); 
+        if (fontStrike != null) getStyleValue(cr, sb, Font.PROPERTY_FONT_STRIKE, fontStrike); 
+        
+        if (sb.length() > 1) {
+            sb.setCharAt(sb.length() - 1, '}');
+        } else {
+            sb.setLength(0);
+        }
+        
+        return sb;
+    }
+    
     ComponentRenderer getRenderer(Component comp) {
         Class compClass = comp.getClass();        
         String className = compClass.getName();
@@ -555,11 +620,6 @@ public final class WebApplication extends Application {
                 try {
                     renderClazz = (Class)Class.forName(qualClassName);
                     nameToRenderer.put(compClassName, renderClazz);
-                    //TODO: A quick hack to guarantee that the Button style is sent before GridBox and DropDown
-                    //Technically this causes the button style class to be sent multiple times
-                    if (comp instanceof GridBox || comp instanceof DropDown || comp instanceof Dialog) sendStyleClass("Button", getDefaultStyle(Button.class));
-                    else if (comp instanceof Slider) sendStyleClass("Divider", getDefaultStyle(Divider.class));
-                    sendStyleClass(compClassName.substring(compClassName.lastIndexOf('.') + 1), defaultStyle);
                     break;
                 } catch (ClassNotFoundException e) {
                     //We'll continue trying until no classes in the hierarchy are left.
@@ -914,6 +974,29 @@ public final class WebApplication extends Application {
         WindowRenderer wr = (WindowRenderer) windowToRenderer.get(w);
         if (wr != null) throw new IllegalStateException("A window cannot be set to visible while it is already visible");
         windowToRenderer.put(w, wr = (WindowRenderer) getRenderer(w));
+        
+        if (wr instanceof FrameRenderer) {
+            styleToStyleClass = new HashMap<Style, String>();
+            StringBuilder sb = new StringBuilder();
+            sb.append("{");
+            
+            for (Map.Entry<Class<? extends Component>, Style> e : getDefaultStyles().entrySet()) {
+                Class<? extends Component> clazz = e.getKey();
+                
+                if (clazz != null) {
+                    String styleClass = ComponentRenderer.getSimpleClassName(clazz);
+                    Style style = e.getValue();
+                    styleToStyleClass.put(style, styleClass);
+                    sb.append(styleClass).append(":");
+                    getStyleValues(wr, sb, style, null);
+                    sb.append(',');
+                }
+            }
+            
+            sb.setCharAt(sb.length() - 1, '}');
+            clientSideMethodCall("tw_Component", "setDefaultStyles", sb);
+        }
+        
         wr.ai = this;
         wr.render(wr, w, w instanceof Dialog ? windowToRenderer.get(getFrame()) : null);
         log.fine("Showing window with id:" + wr.id);

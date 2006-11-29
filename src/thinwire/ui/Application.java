@@ -540,7 +540,7 @@ public abstract class Application {
                     
                     try {
                         Class clazz = Class.forName(name);
-                        compTypeToStyle.put((Class<? extends Component>)clazz, (Style)value);
+                        if (clazz.getMethod("getStyle") != null) compTypeToStyle.put((Class<? extends Component>)clazz, (Style)value);
                     } catch (Exception ex) { /*purposely fall through*/ }
                 }
             } else {
@@ -556,6 +556,10 @@ public abstract class Application {
         }
     }
     
+    protected Map<Class<? extends Component>, Style> getDefaultStyles() {
+        return compTypeToStyle;
+    }
+    
     protected Map<String, Color> getSystemColors() {
         return systemColors;
     }
@@ -563,10 +567,10 @@ public abstract class Application {
     public Style getDefaultStyle(Class<? extends Component> clazz) {
         if (clazz == null) throw new IllegalArgumentException("clazz == null");
         Style style = compTypeToStyle.get(clazz);
+        Class<? extends Component> findClazz = clazz; 
         
         if (style == null) {
-            List<Class> lst = new ArrayList<Class>();
-            Class findClazz = clazz; 
+            List<Class<? extends Component>> lst = new ArrayList<Class<? extends Component>>();
             
             do {                                        
                 Class sc = findClazz.getSuperclass();
@@ -577,18 +581,17 @@ public abstract class Application {
                 }
                 
                 findClazz = lst.remove(0);
-                Style parentStyle = compTypeToStyle.get(findClazz);
+                style = compTypeToStyle.get(findClazz);
                 
-                if (parentStyle != null) {
-                    compTypeToStyle.put(clazz, style = new Style(compTypeToStyle.get(null)));
-                    style.copy(parentStyle);
+                if (style != null) {
+                    compTypeToStyle.put(clazz, style);                    
                     break;
                 }
             } while (lst.size() > 0);
         }
 
-        if (style == null) compTypeToStyle.put(clazz, style = new Style(compTypeToStyle.get(null)));
-        return style;   
+        if (style == null) compTypeToStyle.put(clazz, compTypeToStyle.get(null));
+        return style;
     }
     
     void setPriorFocus(Component comp) {

@@ -57,8 +57,8 @@ var tw_DateBox = tw_Component.extend({
         
         var bs = tw_Component.defaultStyles["Button"];        
         s.backgroundColor = bs.backgroundColor;
-        s.borderStyle = bs.borderType; 
-        s.borderColor = tw_Component.getIEBorder(bs.borderColor, bs.borderType);
+        s.borderStyle = bs.borderStyle; 
+        s.borderColor = tw_Component.getIEBorder(bs.borderColor, bs.borderStyle);
         
         this._header.appendChild(document.createTextNode(tw_DateBox.MONTHS[this._today.getMonth()] + " " + this._today.getFullYear()));
         
@@ -120,7 +120,7 @@ var tw_DateBox = tw_Component.extend({
     
     setStyle: function(name, value) {
         arguments.callee.$.call(this, name, value);
-        if (name == "borderSize") this._header.style.borderWidth = value + "px";
+        if (name == "borderWidth") this._header.style.borderWidth = value;
     },
     
     _buildColumnHeaders: function() {

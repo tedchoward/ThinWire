@@ -114,7 +114,7 @@ var tw_TabSheet = tw_BaseContainer.extend({
         
         if (name == "backgroundColor") {
             this._tab.style.backgroundColor = value;
-        } else if (name == "borderSize") {
+        } else if (name == "borderWidth") {
             this._tab.style.lineHeight = tw_TabFolder._tabsHeight - (tw_sizeIncludesBorders ? this._borderSize : this._borderSizeSub) + "px";
             this._borderBox.style.borderBottomWidth = "0px";
             this.setActiveStyle(this._box.style.display == "block");

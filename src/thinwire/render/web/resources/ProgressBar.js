@@ -57,7 +57,7 @@ var tw_ProgressBar = tw_BaseRange.extend({
     },
     
     setStyle: function(name, value) {
-        if (name == "fontColor") {
+        if (name == "color") {
             this._selection.style.backgroundColor = value;
         } else {
             arguments.callee.$.call(this, name, value);

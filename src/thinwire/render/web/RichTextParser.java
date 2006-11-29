@@ -248,7 +248,7 @@ class RichTextParser {
                 log.fine("RICH TEXT: " + sb.toString());
                 return sb;
             } catch (Exception e) {
-                if (log.isLoggable(Level.WARNING)) log.log(Level.WARNING, "Exception Caught While Parsing Rich Text", e);
+                if (log.isLoggable(Level.FINE)) log.log(Level.FINE, "Exception Caught While Parsing Rich Text", e);
                 return richText;
             }
         } else {

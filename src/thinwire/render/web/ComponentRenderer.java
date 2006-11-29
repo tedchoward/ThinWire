@@ -59,6 +59,7 @@ import thinwire.ui.style.*;
  */
 abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     static final String SET_STYLE = "setStyle";
+    static final String SET_STYLES = "setStyles";
     static final String REGISTER_EVENT_NOTIFIER = "registerEventNotifier";
     static final String UNREGISTER_EVENT_NOTIFIER = "unregisterEventNotifier";
     static final String SET_ENABLED = "setEnabled";
@@ -125,9 +126,9 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         if (!isPropertyChangeIgnored(Component.PROPERTY_ENABLED)) addInitProperty(Component.PROPERTY_ENABLED, comp.isEnabled());
         if (!comp.isFocusCapable()) addInitProperty(Component.PROPERTY_FOCUS_CAPABLE, false);         
         
-        
-        addInitProperty("styleClass", getSimpleClassName(comp.getClass()));
-        StringBuilder styleProps = getInitialStyleInfo();
+        Style defaultStyle = wr.ai.getDefaultStyle(comp.getClass());
+        addInitProperty("styleClass", wr.ai.styleToStyleClass.get(defaultStyle));
+        StringBuilder styleProps = wr.ai.getStyleValues(this, new StringBuilder(), comp.getStyle(), defaultStyle);
         if (styleProps.length() > 0) addInitProperty("styleProps", styleProps);
         
         if (comp.isFocus()) addInitProperty(Component.PROPERTY_FOCUS, true);
@@ -154,93 +155,6 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         wr.ai.flushRenderCallbacks(comp, id);        
 	}
     
-    private StringBuilder getInitialStyleInfo() {
-        Style s = comp.getStyle();
-        Style ds = wr.ai.getDefaultStyle(comp.getClass());
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("{");
-        Object value;
-        Object defaultValue;
-        
-        value = s.getBackground().getColor();
-        defaultValue = ds.getBackground().getColor();
-        if (!value.equals(defaultValue)) sb.append("backgroundColor:\"").append(wr.ai.getStyleColorValue((Color)value, false)).append("\",");
-
-        value = s.getBackground().getImage();
-        defaultValue = ds.getBackground().getImage();
-        if (!value.equals(defaultValue)) sb.append("backgroundImage:\"").append(getQualifiedURL((String)value)).append("\",");
-        
-        value = s.getBackground().getRepeat();
-        defaultValue = ds.getBackground().getRepeat();
-        if (!value.equals(defaultValue)) sb.append("backgroundRepeat:\"").append(wr.ai.getStyleRepeatValue((Background.Repeat)value)).append("\",");
-
-        value = s.getBackground().getPosition();
-        defaultValue = ds.getBackground().getPosition();
-        if (!value.equals(defaultValue)) sb.append("backgroundPosition:\"").append(value).append("\",");
-        
-        value = s.getBorder().getType();
-        defaultValue = ds.getBorder().getType();            
-        
-        if (!value.equals(defaultValue)) {
-            Color borderColor = s.getBorder().getColor();
-            
-            if (value == Border.Type.NONE) {
-                value = Border.Type.SOLID;
-                borderColor = s.getBackground().getColor();
-            } else if (borderColor.equals(ds.getBorder().getColor())) {
-                borderColor = null;
-            }
-
-            sb.append("borderType:\"").append(value).append("\",");
-            if (borderColor != null) sb.append("borderColor:\"").append(wr.ai.getStyleColorValue((Color)borderColor, true)).append("\",");
-        } else {
-            value = s.getBorder().getColor();
-            defaultValue = ds.getBorder().getColor();
-            if (!value.equals(defaultValue)) sb.append("borderColor:\"").append(wr.ai.getStyleColorValue((Color)value, true)).append("\",");
-        }
-        
-        value = s.getBorder().getSize();
-        defaultValue = ds.getBorder().getSize(); 
-        if (!value.equals(defaultValue)) sb.append("borderSize:").append(value).append(",");
-
-        value = s.getBorder().getImage();
-        defaultValue = ds.getBorder().getImage();
-        if (!value.equals(defaultValue)) sb.append("borderImage:\"").append(wr.ai.getStyleImageValue(wr, s.getBorder().getImageInfo(), true)).append("\",");
-        
-        value = s.getFont().getFamily();
-        defaultValue = ds.getFont().getFamily(); 
-        if (!value.equals(defaultValue)) sb.append("fontFamily:\"").append(value).append("\",");
-            
-        value = s.getFont().getSize();
-        defaultValue = ds.getFont().getSize(); 
-        if (!value.equals(defaultValue)) sb.append("fontSize:").append(value).append(",");
-            
-        value = s.getFont().getColor();
-        defaultValue = ds.getFont().getColor(); 
-        if (!value.equals(defaultValue)) sb.append("fontColor:\"").append(wr.ai.getStyleColorValue((Color)value, false)).append("\",");
-            
-        value = s.getFont().isBold();
-        defaultValue = ds.getFont().isBold(); 
-        if (!value.equals(defaultValue)) sb.append("fontBold:").append(value).append(","); 
-            
-        value = s.getFont().isItalic();
-        defaultValue = ds.getFont().isItalic(); 
-        if (!value.equals(defaultValue)) sb.append("fontItalic:").append(value).append(","); 
-            
-        value = s.getFont().isUnderline();
-        defaultValue = ds.getFont().isUnderline(); 
-        if (!value.equals(defaultValue)) sb.append("fontUnderline:").append(value).append(",");
-        
-        if (sb.length() > 1) {
-            sb.setCharAt(sb.length() - 1, '}');
-        } else {
-            sb.setLength(0);
-        }
-        
-        return sb;
-    }
-    
     private void setStyle(String propertyName, Object oldValue) {
         if (propertyName.startsWith("fx") || isPropertyChangeIgnored(propertyName)) return;
         Style s = comp.getStyle();
@@ -249,9 +163,9 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         if (propertyName.equals(Background.PROPERTY_BACKGROUND_COLOR)) {
             value = s.getBackground().getColor();
         } else if (propertyName.equals(Background.PROPERTY_BACKGROUND_IMAGE)) {
-            value = getQualifiedURL(s.getBackground().getImage());
+            value = s.getBackground().getImage();
         } else if (propertyName.equals(Background.PROPERTY_BACKGROUND_REPEAT)) {
-            value = wr.ai.getStyleRepeatValue(s.getBackground().getRepeat());
+            value = s.getBackground().getRepeat();
         } else if (propertyName.equals(Background.PROPERTY_BACKGROUND_POSITION)) {
             value = s.getBackground().getPosition();
         } else if (propertyName.equals(Border.PROPERTY_BORDER_COLOR)) {
@@ -262,7 +176,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         } else if (propertyName.equals(Border.PROPERTY_BORDER_TYPE)) {            
             value = s.getBorder().getType();
         } else if (propertyName.equals(Border.PROPERTY_BORDER_IMAGE)) {
-            value = wr.ai.getStyleImageValue(wr, s.getBorder().getImageInfo(), true);
+            value = s.getBorder().getImageInfo();
         } else if (propertyName.equals(Font.PROPERTY_FONT_FAMILY)) {
             value = s.getFont().getFamily();
         } else if (propertyName.equals(Font.PROPERTY_FONT_SIZE)) {
@@ -275,24 +189,27 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
             value = s.getFont().isItalic();
         } else if (propertyName.equals(Font.PROPERTY_FONT_UNDERLINE)) {
             value = s.getFont().isUnderline();
+        } else if (propertyName.equals(Font.PROPERTY_FONT_STRIKE)) {
+            value = s.getFont().isUnderline();
         } else {
             throw new IllegalArgumentException("unknown property '" + propertyName + "'");
         }
         
-        if (value instanceof Color) {
-            value = wr.ai.getStyleColorValue((Color)value, propertyName.equals(Border.PROPERTY_BORDER_COLOR));
-        } else if (value instanceof Border.Type) {
+        StringBuilder sb = new StringBuilder();
+        sb.append('{');
+        
+        if (value instanceof Border.Type) {
             if (value == Border.Type.NONE) {
                 value = Border.Type.SOLID;
-                postClientEvent(SET_STYLE, Border.PROPERTY_BORDER_COLOR, wr.ai.getStyleColorValue(s.getBackground().getColor(), true));
+                wr.ai.getStyleValue(this, sb, Border.PROPERTY_BORDER_COLOR, s.getBackground().getColor());
             } else if (oldValue == Border.Type.NONE) {
-                postClientEvent(SET_STYLE, Border.PROPERTY_BORDER_COLOR, wr.ai.getStyleColorValue(s.getBorder().getColor(), true));
+                wr.ai.getStyleValue(this, sb, Border.PROPERTY_BORDER_COLOR, s.getBorder().getColor());
             }
-        } else {
-            value = value.toString();
         }
-
-        postClientEvent(SET_STYLE, propertyName, value);
+        
+        wr.ai.getStyleValue(this, sb, propertyName, value);
+        sb.setCharAt(sb.length() - 1, '}');
+        postClientEvent(SET_STYLES, sb);
     }
         
     void destroy() {
