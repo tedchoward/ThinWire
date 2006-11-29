@@ -31,6 +31,8 @@ tw_SplitLayout = Class.extend({
     
     construct: function(id) {
         this._comp = tw_Component.instances[id];
+        this._compDestroy = this._comp.destroy;
+        this._comp.destroy = this.destroy.bind(this);
         this._drag = new tw_DragHandler(this._comp._box, this._dragListener.bind(this));
         this._vertical = this._comp._width < this._comp._height;
         this._comp._box.style.cursor = this._vertical ? "W-resize" : "N-resize";
@@ -79,6 +81,9 @@ tw_SplitLayout = Class.extend({
     
     destroy: function() {
         this._drag.destroy();
+        this._comp.destroy = this._compDestroy;
+        this._compDestroy = null;
+        this._comp.destroy();
         this._comp = null;
     }
 });

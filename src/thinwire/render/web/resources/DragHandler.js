@@ -109,7 +109,9 @@ var tw_DragHandler = Class.extend({
     },
     
     destroy: function() {
-        this._box = this._dragBox = this._listener = null;
+        this.setBox(null);
+        this.setListener(null);
+        this._dragBox = null;
     }
 });
 
