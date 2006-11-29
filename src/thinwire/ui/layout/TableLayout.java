@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import thinwire.ui.Component;
+import thinwire.ui.layout.TableLayout.Limit.Justify;
 
 /**
  * @author Joshua J. Gertzen
@@ -38,29 +39,80 @@ public final class TableLayout extends AbstractLayout {
     private static final Logger log = Logger.getLogger(TableLayout.class.getName());
     
     public static class Limit {
+        
+        public enum Justify {
+            CENTER,
+            CENTER_BOTTOM,
+            CENTER_FULL,
+            CENTER_TOP,
+            FULL,
+            FULL_CENTER,
+            LEFT_BOTTOM,
+            LEFT_CENTER,
+            LEFT_FULL,
+            LEFT_TOP,
+            RIGHT_BOTTOM,
+            RIGHT_CENTER,
+            RIGHT_FULL,
+            RIGHT_TOP
+        };
+        
         private int column;
         private int row;
         private int width;
         private int height;
         private String value;
+        private Justify justification;
         
         public Limit() {
-            this(0, 0, 1, 1);
+            this(0, 0, 1, 1, Justify.FULL);
         }
         
         public Limit(String range) {
             String[] values = ((String)range).split("\\s*,\\s*");
+            Justify just = Justify.FULL;
+            int width = 1;
+            int height = 1;
+            if (values.length >= 3) {
+                if (values[2].equals("l")) {
+                    values[2] = "left";
+                } else if (values[2].equals("r")) {
+                    values[2] = "right";
+                } else if (values[2].equals("c")) {
+                    values[2] = "center";
+                } else if (values[2].equals("f")) {
+                    values[2] = "full";
+                } 
+                
+                if (values[3].equals("t")) {
+                    values[3] = "top";
+                } else if (values[3].equals("b")) {
+                    values[3] = "bottom";
+                } else if (values[3].equals("c")) {
+                    values[3] = "center";
+                } else if (values[3].equals("f")) {
+                    values[3] = "full";
+                }
+                
+                try {
+                    String justStr = values[2].equals(values[3]) ? values[2] : values[2] + "_" + values[3];
+                    just = Justify.valueOf(justStr.toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    width = Integer.parseInt(values[2]);
+                    height = Integer.parseInt(values[3]);
+                }
+                
+            }
             init(values.length >= 1 ? Integer.parseInt(values[0]) : 0,
                  values.length >= 2 ? Integer.parseInt(values[1]) : 0,
-                 values.length >= 3 ? Integer.parseInt(values[2]) : 1,
-                 values.length >= 4 ? Integer.parseInt(values[3]) : 1);
+                 width, height, just);
         }
         
-        public Limit(int column, int row, int width, int height) {
-            init(column, row, width, height);
+        public Limit(int column, int row, int width, int height, Justify justification) {
+            init(column, row, width, height, justification);
         }
 
-        private void init(int column, int row, int width, int height) {
+        private void init(int column, int row, int width, int height, Justify justification) {
             rangeCheck("column", column);            
             rangeCheck("row", row);
             rangeCheck("width", width);
@@ -70,6 +122,7 @@ public final class TableLayout extends AbstractLayout {
             this.width = width;
             this.height = height;
             this.value = getClass().getName() + "(" + column + ", " + row + ", " + width + ", " + height + ")";
+            this.justification = justification;
         }
         
         private void rangeCheck(String name, int value) {
@@ -92,6 +145,11 @@ public final class TableLayout extends AbstractLayout {
             return height;
         }
         
+        public Justify getJustification() {
+            return justification;
+        }
+
+
         public boolean equals(Object o) {
             return o instanceof Limit && toString().equals(o.toString());
         }
@@ -213,15 +271,8 @@ public final class TableLayout extends AbstractLayout {
         for (Component c : (List<Component>) container.getChildren()) {
             Limit limit = (Limit)c.getLimit();
             if (limit == null) limit = DEFAULT_LIMIT;
+            Justify just = limit.getJustification();
             int x = margin, y = margin, width = 0, height = 0;
-            
-            for (int i = 0, cnt = limit.column; i < cnt; i++) {
-                x += absoluteWidths[i] + spacing;
-            }
-            
-            for (int i = 0, cnt = limit.row; i < cnt; i++) {
-                y += absoluteHeights[i] + spacing;
-            }
             
             for (int i = 0, cnt = limit.width, column = limit.column; i < cnt; i++) {
                 width += absoluteWidths[i + column] + spacing;
@@ -229,11 +280,42 @@ public final class TableLayout extends AbstractLayout {
             
             width -= spacing;
             
+            if (just != Justify.FULL && c.getWidth() < width) width = c.getWidth();
+            
             for (int i = 0, cnt = limit.height, row = limit.row; i < cnt; i++) {
                 height += absoluteHeights[i + row] + spacing;
             }
             
             height -= spacing;
+            
+            if (just != Justify.FULL && c.getHeight() < height) height = c.getHeight();
+            
+            for (int i = 0, cnt = limit.column; i < cnt; i++) {
+                x += absoluteWidths[i] + spacing;
+            }
+            
+            if (width == c.getWidth()) {
+                if (just.name().indexOf("RIGHT") > -1) {
+                    x += absoluteWidths[limit.column] - width;
+                } else if (just == Justify.CENTER || just == Justify.CENTER_BOTTOM || just == Justify.CENTER_FULL 
+                    || just == Justify.CENTER_TOP) {
+                    x += (absoluteWidths[limit.column] / 2) - (width / 2);
+                }
+            }
+            
+            for (int i = 0, cnt = limit.row; i < cnt; i++) {
+                y += absoluteHeights[i] + spacing;
+            }
+            
+            if (height == c.getHeight()) {
+                if (just.name().indexOf("BOTTOM") > -1) {
+                    y += absoluteHeights[limit.row] - height;
+                } else if (just == Justify.CENTER || just == Justify.FULL_CENTER || just == Justify.LEFT_CENTER 
+                    || just == Justify.RIGHT_CENTER) {
+                    y += (absoluteHeights[limit.row] / 2) - (height / 2);
+                }
+            }
+            
             if (width >= 0 && height >= 0) c.setBounds(x, y, width, height);
         }
     }
