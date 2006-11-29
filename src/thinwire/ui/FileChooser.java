@@ -41,6 +41,7 @@ import thinwire.ui.event.ActionEvent;
 import thinwire.ui.event.ActionListener;
 import thinwire.ui.event.PropertyChangeEvent;
 import thinwire.ui.event.PropertyChangeListener;
+import thinwire.ui.style.Color;
 
 /**
  * A <code>FileChooser</code> is a Component that enables a user to upload a
@@ -202,6 +203,7 @@ public class FileChooser extends Panel {
     public FileChooser() {
         app = (WebApplication) Application.current();
         List<Component> kids = super.getChildren();
+        getStyle().getBackground().setColor(Color.TRANSPARENT);
         
         fileName = new TextField();
         fileName.setPosition(0, 0);

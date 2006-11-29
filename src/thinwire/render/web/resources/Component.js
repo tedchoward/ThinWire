@@ -134,7 +134,7 @@ var tw_Component = Class.extend({
         }
         
         this._enabled = enabled;
-        this._backgroundBox.style.backgroundColor = enabled ? this._backgroundColor : (this._disabledBackgroundColor == null ? this._parent._backgroundColor : this._disabledBackgroundColor);
+        this._backgroundBox.style.backgroundColor = enabled ? this._backgroundColor : (this._disabledBackgroundColor == null ? tw_COLOR_THREEDFACE : this._disabledBackgroundColor);
     },
     
     setPropertyWithEffect: function(prop, value, unitSize, time) {
