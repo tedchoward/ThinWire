@@ -111,7 +111,7 @@ public class DropDownDateBox extends DropDown<DateBox> {
         public int getOptimalWidth() {
             int ddWidth = dd.getWidth();
             int dbWidth = ddc.getWidth();
-            return dbWidth >= ddWidth ? dbWidth : ddWidth >= MIN_WIDTH ? ddWidth : MIN_WIDTH;
+            return dbWidth >= ddWidth ? dbWidth >= MIN_WIDTH ? dbWidth : MIN_WIDTH : ddWidth >= MIN_WIDTH ? ddWidth : MIN_WIDTH;
         }
 
         public Object getValue() {
