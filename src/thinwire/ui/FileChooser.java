@@ -209,6 +209,11 @@ public class FileChooser extends Panel {
         fileName.setPosition(0, 0);
         fileName.setHeight(BROWSE_BUTTON_HEIGHT);
         fileName.setEnabled(false);
+        fileName.addPropertyChangeListener(TextField.PROPERTY_TEXT, new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent ev) {
+                // Empty listener makes sure text validation is accurate
+            }
+        });
         kids.add(fileName);
         
         browseButton = new Button("Browse");
@@ -232,6 +237,7 @@ public class FileChooser extends Panel {
      * @return a <code>FileInfo</code> object for the file uploaded
      */
     public FileInfo getFileInfo() {
+        if (fileName.getText().length() == 0) return null;
         app.clientSideFunctionCall(FILE_CHOOSER_SUBMIT, browseButtonId);
         FileInfo fi = ((Application) app).getFileInfo();
         return fi;

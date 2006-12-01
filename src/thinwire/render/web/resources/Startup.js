@@ -227,6 +227,7 @@ function tw_makeFileChooserBtn(buttonId, tfId) {
             input.name = "file";
             input.onchange = function() {
                 tf.setText(this.value);
+                tf.firePropertyChange("text", this.value);
             };
         }
     };
