@@ -72,12 +72,17 @@ var tw_WebBrowser = tw_BaseBrowserLink.extend({
     getDragBox: function() {
         var dragBox = document.createElement("div");
         var s = dragBox.style;
-        s.position = "absolute";
-        s.textAlign = "center";
-        s.height = "20px";
-        s.backgroundColor = tw_COLOR_WINDOW;
-        s.color = "blue";
-        s.textDecoration = "underline";
+        //s.position = "absolute";
+        //s.textAlign = "center";
+        s.height = "16px";
+        //s.backgroundColor = tw_COLOR_WINDOW;
+        var hls = defaultStyles["hyperlink"];
+        s.fontFamily = hls.fontFamily;
+        s.fontSize = hls.fontSize;
+        s.fontWeight = hls.fontWeight;
+        s.fontStyle = hls.fontStyle;
+        s.textDecoration = hls.textDecoration;
+        s.color = hls.color;
         dragBox.appendChild(document.createTextNode(this._browser.src));
         return dragBox;
     },

@@ -25,6 +25,10 @@
  */
 package thinwire.ui;
 
+import thinwire.ui.event.ActionEvent;
+import thinwire.ui.event.ActionListener;
+import thinwire.ui.event.DropEvent;
+import thinwire.ui.event.DropListener;
 import thinwire.ui.event.KeyPressListener;
 import thinwire.ui.event.PropertyChangeListener;
 import thinwire.ui.style.Style;
@@ -119,6 +123,25 @@ public interface Component {
      * @see #getUserObject()
      */
     public static final String PROPERTY_USER_OBJECT = "userObject";
+    
+    /**
+     * Contains the formal action name for a click performed on a <code>Component</code>.
+     * @see #addActionListener(String, ActionListener)
+     * @see #addActionListener(String[], ActionListener)
+     * @see #removeActionListener(ActionListener)
+     * @see #fireAction(ActionEvent)
+     */
+    public static final String ACTION_CLICK = "click";
+
+    /**
+     * Contains the formal action name for a double click performed on a <code>Component</code>.
+     * @see #addActionListener(String, ActionListener)
+     * @see #addActionListener(String[], ActionListener)
+     * @see #removeActionListener(ActionListener)
+     * @see #fireAction(ActionEvent)
+     */
+    public static final String ACTION_DOUBLE_CLICK = "doubleClick";
+    
     //#IFDEF V1_1_COMPAT
 
     /**
@@ -215,6 +238,41 @@ public interface Component {
      */
     void removePropertyChangeListener(PropertyChangeListener listener);
 
+    /**
+     * Add an actionListener which associates an action (ex: "click") with some method call.
+     * @param action the action to specficially be notified of
+     * @param listener the listener to add
+     */
+    void addActionListener(String action, ActionListener listener);
+
+    /**
+     * Add an actionListener which associates an action (ex: "click") with some method call.
+     * @param actions the actions to specficially be notified of
+     * @param listener the listener to add
+     */
+    void addActionListener(String[] actions, ActionListener listener);
+    
+    /**
+     * Unregister an ActionListener from action occurred notifications.
+     * @param listener the listener that should no longer receive action occurred notifications.
+     */
+    void removeActionListener(ActionListener listener);
+    
+    /**
+     * Programmatically signals an action which triggers the appropriate listener which calls
+     * the desired method.
+     * @param ev the event to signal
+     */
+    void fireAction(ActionEvent ev);
+    
+    void addDropListener(Component dragSource, DropListener listener);
+    
+    void addDropListener(Component[] dragSources, DropListener listener);
+    
+    void removeDropListener(DropListener listener);
+
+    void fireDrop(DropEvent ev);    
+    
     /**
      * Adds a <code>KeyPressListener</code> that will be notified when the specified key press combination occurs.
      * <p>

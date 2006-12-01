@@ -38,7 +38,7 @@ abstract class AbstractWindow extends AbstractContainer<Component> implements Wi
     boolean waitForWindow = true;
 
     AbstractWindow() {
-        super(false);
+        super.setVisible(false);
     }   
 
     public String getTitle() {

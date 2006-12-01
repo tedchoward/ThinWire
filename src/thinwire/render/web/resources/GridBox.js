@@ -301,21 +301,43 @@ var tw_GridBox = tw_Component.extend({
     
     _getClickAction: tw_Component.getClickAction,
     
-    _getCellPosition: function(cell) {
-        var column = cell.parentNode;
-        var columnIndex = 0;
-        var walk = column;
-        
-        while ((walk = walk.previousSibling) != null)
-            columnIndex++;
-        
-        var rowIndex = 0;
-        var walk = cell;
-        
-        while ((walk = walk.previousSibling) != null)
-            rowIndex++;
-        
-        return [columnIndex, rowIndex];
+    _getCellPosition: function(cell, x) {
+        if (cell.className == "gridBoxCell") {
+            var column = cell.parentNode;
+            var columnIndex = 0;
+            var walk = column;
+            
+            while ((walk = walk.previousSibling) != null)
+                columnIndex++;
+            
+            var rowIndex = 0;
+            var walk = cell;
+            
+            while ((walk = walk.previousSibling) != null)
+                rowIndex++;
+            
+            return [columnIndex, rowIndex];
+        } else if (cell.className == "gridBoxColumnHeader") {
+            var column = cell;
+            var columnIndex = 0;
+            var walk = column;
+            
+            while ((walk = walk.previousSibling) != null)
+                columnIndex++;
+            
+            return [columnIndex, -1];
+        } else if (cell.className == "gridBoxBody" && x > 0 && this._getColumnCount() > 0) {
+            var columnIndex = -1;
+            
+            for (var i = 0, cnt = this._getColumnCount(), pos = 0; i < cnt; i++) {
+                pos += this._header.childNodes.item(i).clientWidth;
+                if (x < pos) columnIndex = i;
+            }
+            
+            return [columnIndex, -1];
+        } else {
+            return [-1, -1];
+        }
     },
     
     _newCell: function(value, columnIndex, state) {
@@ -942,50 +964,51 @@ var tw_GridBox = tw_Component.extend({
         this._childOpen = false;
     },
     
-    getDragBox: function(event) {
-        var dragBox = document.createElement("div");
-        var s = dragBox.style;
-        s.position = "absolute";
-        s.fontFamily = this._box.style.fontFamily;
-        s.fontSize = this._box.style.fontSize;
-        
-        s.color = tw_COLOR_HIGHLIGHTTEXT;
-        
-        var cell = tw_getEventTarget(event);
-        var position = this._getCellPosition(cell);
-        
-        var content = this._content;
-        var childNodes = content.childNodes;
-        
-        var x = 0;
-        
-        for (var i = 0, cnt = this._getColumnCount(); i < cnt; i++) {
-            var tmpCell = childNodes.item(i).childNodes.item(position[1]).cloneNode(true);
-            var s = tmpCell.style;
-            s.position = "absolute";
-            s.width = childNodes.item(i).style.width;
-            s.height = tw_GridBox.rowHeight + "px";
-            s.left = x + "px";
-            s.top = "0px";
-            s.backgroundColor = tw_COLOR_HIGHLIGHT;
-            x += parseInt(s.width);
-            dragBox.appendChild(tmpCell);
-        }
-        
-        dragBox._dragObject = position.join("@");
-        return dragBox;
-    },
-    
     getDragArea: function() {
         return this._content;
     },
     
+    getDragBox: function(event) {
+        var position = this._getCellPosition(tw_getEventTarget(event), tw_getEventOffsetX(event));
+        if (position[0] < 0) return null;
+        
+        var dragBox = document.createElement("div");
+        var s = dragBox.style;
+        s.height = tw_GridBox.rowHeight + "px";
+        var width = this._width - this._borderSizeSub;
+        
+        if (position[1] >= 0) {
+            var content = this._content;
+            var childNodes = content.childNodes;
+            var x = 0;
+            
+            for (var i = 0, cnt = this._getColumnCount(); i < cnt; i++) {
+                var cell = childNodes.item(i).childNodes.item(position[1]).cloneNode(true);
+                var cs = cell.style;
+                cs.position = "absolute";
+                cs.width = childNodes.item(i).style.width;
+                cs.height = s.height;
+                cs.left = x + "px";
+                cs.backgroundColor = tw_COLOR_TRANSPARENT;
+                cs.color = "";
+                x += parseInt(cs.width);
+                dragBox.appendChild(cell);
+                if (x > width) break;
+            }
+        }
+        
+        if (x < width) width = x; 
+        s.width = width + "px";
+        dragBox._dragObject = position.join("@");
+        return dragBox;
+    },
+    
     getDropArea: function() {
-        return this._content;
+        return this._box;
     },
     
     getDropTarget: function(event) {
-        return this._getCellPosition(tw_getEventTarget(event)).join("@");
+        return this._getCellPosition(tw_getEventTarget(event), tw_getEventOffsetX(event)).join("@");
     },
     
     destroy: function(keepChildColumn) {

@@ -29,7 +29,6 @@ import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;
 
-import thinwire.render.Renderer;
 import thinwire.ui.event.ActionEvent;
 import thinwire.ui.event.ActionListener;
 import thinwire.ui.event.ItemChangeListener;
@@ -85,7 +84,7 @@ abstract class AbstractHierarchyComponent<HI extends AbstractHierarchyComponent.
         }
     }    
     
-    static class Item<H extends AbstractHierarchyComponent, I extends AbstractHierarchyComponent.Item> implements HierarchyComponent.Item<H, I> {        
+    static abstract class Item<H extends AbstractHierarchyComponent, I extends AbstractHierarchyComponent.Item> implements HierarchyComponent.Item<H, I> {
         private String text = "";
         private ImageInfo imageInfo = new ImageInfo(null);
         private Object userObject;        
@@ -183,21 +182,20 @@ abstract class AbstractHierarchyComponent<HI extends AbstractHierarchyComponent.
             if (children == null) children = new ChildList<I>(this);
             return children;
         }
+        
+        public String toString() {
+            return "text:" + text + ",image:" + imageInfo.getName() + ",children.size():" + (children == null ? 0 : children.size()) +
+                ",parent:" + (parent == null ? null : parent.getClass().getName() + "@" + System.identityHashCode(parent));
+        }
     }
 
     private HI rootItem;    
     private EventListenerImpl<ItemChangeListener> icei = new EventListenerImpl<ItemChangeListener>(this);
-    EventListenerImpl<ActionListener> aei;
     
     AbstractHierarchyComponent(HI rootItem, EventListenerImpl.SubTypeValidator actionValidator) {
-        aei = new EventListenerImpl<ActionListener>(this, actionValidator);
+        super(actionValidator);
         this.rootItem = rootItem;
         rootItem.setParent(this);
-    }
-    
-    void setRenderer(Renderer r) {
-        super.setRenderer(r);
-        aei.setRenderer(r);
     }
     
     public HI getRootItem() {
@@ -221,23 +219,7 @@ abstract class AbstractHierarchyComponent<HI extends AbstractHierarchyComponent.
      */
     public void addActionListener(ActionListener listener) {
         if (!isCompatModeOn()) throw new IllegalStateException("this method is deprecated as of v1.2 and cannot be called unless compat mode is on, use addActionListener(action, listener) instead.");        
-        aei.addListener(ACTION_CLICK, listener);
+        addActionListener(ACTION_CLICK, listener);
     }
     //#ENDIF
-
-    public void addActionListener(String action, ActionListener listener) {
-        aei.addListener(action, listener);
-    }
-    
-    public void addActionListener(String[] actions, ActionListener listener) {
-        aei.addListener(actions, listener);
-    }    
-
-    public void removeActionListener(ActionListener listener) {
-        aei.removeListener(listener);
-    }
-    
-    public void fireAction(String action, HI item) {
-        fireAction(new ActionEvent(this, action, item));
-    }
 }

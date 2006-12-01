@@ -34,14 +34,11 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 
-import thinwire.render.Renderer;
 import thinwire.ui.AlignX;
 import thinwire.ui.DropDownGridBox;
 import thinwire.ui.DropDownGridBox.DefaultView;
 import thinwire.ui.event.ActionEvent;
 import thinwire.ui.event.ActionListener;
-import thinwire.ui.event.DropEvent;
-import thinwire.ui.event.DropListener;
 import thinwire.ui.event.ItemChangeEvent;
 import thinwire.ui.event.ItemChangeListener;
 import thinwire.ui.event.PropertyChangeEvent;
@@ -129,10 +126,11 @@ import thinwire.util.Grid;
  * 
  * @author Joshua J. Gertzen
  */
-public class GridBox extends AbstractComponent implements Grid<GridBox.Row, GridBox.Column>, ActionEventComponent, ItemChangeEventComponent, DropEventComponent {
+public class GridBox extends AbstractComponent implements Grid<GridBox.Row, GridBox.Column>, ItemChangeEventComponent {
     private static Logger log = Logger.getLogger(GridBox.class.getName());
     
     public static final class Range {
+        private String stringValue;
         private GridBox gridBox;
         private int rowIndex;
         private int columnIndex;
@@ -145,11 +143,11 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
             this.rowIndex = rowIndex;
             this.columnIndex = columnIndex;
         }
-        
-        public GridBox getGridBox() {
+
+        public GridBox getParent() {
             return gridBox;
         }
-    
+        
         public Column getColumn() {
             if (columnIndex < 0 || columnIndex >= gridBox.getColumns().size()) return null;
             return gridBox.getColumns().get(columnIndex);
@@ -189,7 +187,8 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
         }
         
         public String toString() {
-            return getClass().getName() + "(" + gridBox + ", " + columnIndex + ", " + rowIndex + ")";
+            if (stringValue == null) stringValue = "GridBox.Range{columnIndex:" + columnIndex + ",rowIndex:" + rowIndex + "}";
+            return stringValue;
         }
     }
     	
@@ -243,6 +242,7 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
          * @param checked true to check the row, false to uncheck it.
          */
         public void setChecked(boolean checked) {
+            if (this.checked == checked) return;
             GridBox gb = (GridBox)getParent();
             
             if (gb == null) {
@@ -327,6 +327,12 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
                 gb.firePropertyChange(this, PROPERTY_ROW_CHILD, oldChild, child);                
             }
         }
+        
+        public String toString() {
+            GridBox gb = (GridBox)getParent();
+            return "GridBox.Row@" + System.identityHashCode(this) + "{index:" + getIndex() + ",selected:" + isSelected() + ",checked:" + isChecked() + ",size():" + size() +
+                ",parent:" + (gb == null ? null : "GridBox@" + System.identityHashCode(gb)) + ",child:" + (child == null ? null : "GridBox@" + System.identityHashCode(child)) + "}";
+        }
     }
     
     public static final class Column extends ArrayGrid.Column {
@@ -334,7 +340,6 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
         public static final String PROPERTY_COLUMN_ALIGN_X = "columnAlignX";
         public static final String PROPERTY_COLUMN_WIDTH = "columnWidth";
         public static final String PROPERTY_COLUMN_VISIBLE = "columnVisible";
-        public static final String PROPERTY_COLUMN_DISPLAY_NAME = "columnDisplayName";
         public static final String PROPERTY_COLUMN_DISPLAY_FORMAT = "columnDisplayFormat";
         public static final String PROPERTY_COLUMN_SORT_COMPARATOR = "columnSortComparator";
         public static final String PROPERTY_COLUMN_SORT_ORDER = "columnSortOrder";
@@ -356,10 +361,11 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
         };
         
         //Visible used to default to false, which creates confusion when using this component.
+        private Header header = new Header(this);
         private boolean visible = true;
         private int width = -1;
         private AlignX alignX = AlignX.LEFT;
-        private Format displayFormat = null;
+        private Format displayFormat;
         private Comparator sortComparator = DEFAULT_COMPARATOR;
 
         /**
@@ -393,6 +399,14 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
         }
 
         /**
+         * Gets the Header object instance for this Column.
+         * @return the Header object representing this Column.
+         */
+        public Header getHeader() {
+            return header;
+        }
+        
+        /**
          * Gets whether this column is visible.
          * @return true if the column is visible.
          */
@@ -420,17 +434,6 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
             GridBox gb = (GridBox) getParent();
             super.setName(name);
             if (gb != null) gb.firePropertyChange(this, PROPERTY_COLUMN_NAME, oldName, name);
-        }
-
-        /**
-         * Sets the display name of the column.
-         */
-        public void setDisplayName(String displayName) {
-            String oldDisplayName = getDisplayName();
-            displayName = displayName == null ? "" : displayName;
-            GridBox gb = (GridBox) getParent();
-            super.setDisplayName(displayName);
-            if (gb != null) gb.firePropertyChange(this, PROPERTY_COLUMN_DISPLAY_NAME, oldDisplayName, displayName);
         }
 
         public int getWidth() {
@@ -524,6 +527,56 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
             if (oldSortedColumn != null && oldSortedColumn != this) gb.firePropertyChange(oldSortedColumn, PROPERTY_COLUMN_SORT_ORDER, oldSortedColumnOrder, SortOrder.NONE);
             gb.firePropertyChange(this, PROPERTY_COLUMN_SORT_ORDER, oldSortedColumn == this ? oldSortedColumnOrder : SortOrder.NONE, sortOrder);
         }
+        
+        public String toString() {
+            GridBox gb = (GridBox)getParent();
+            return "GridBox.Column@" + System.identityHashCode(this) + "{index:" + getIndex() + ",name:" + getName() + ",header:" + getHeader() + ",visible:" + isVisible() + 
+                ",width:" + getWidth() + ",alignX:" + getAlignX() + ",sortOrder:" + getSortOrder() + ",sortComparator:" + getSortComparator() + ",size():" + size() +
+                ",parent:" + (gb == null ? null : "GridBox@" + System.identityHashCode(gb)) + "}";
+        }
+    }
+    
+    public static final class Header {
+        public static final String PROPERTY_HEADER_TEXT = "headerText";
+        private Column column;
+        private String text = "";
+        
+        private Header(Column column) {
+            this.column = column;
+        }
+        
+        /**
+         * Returns the text to display in column headers.
+         * If this property has been set, it is returned.
+         * Otherwise the column's name property is returned.
+         * @return Returns the displayName.
+         */
+        public String getText() {
+            String name = column.getName();
+            
+            if (this.text.length() > 0){
+                return this.text;
+            }else if (name != null && name.length() > 0){
+                return name;
+            }else{
+                return "";
+            }
+        }
+        
+        /**
+         * Sets the text to display in the header of the column.
+         */
+        public void setText(String text) {
+            String oldText = getText();
+            text = text == null ? "" : text;
+            GridBox gb = (GridBox)column.getParent();
+            this.text = text;
+            if (gb != null) gb.firePropertyChange(this, PROPERTY_HEADER_TEXT, oldText, text);
+        }
+        
+        public String toString() {
+            return "Header{text:" + getText() + "}";
+        }
     }
     
     public static final String PROPERTY_VISIBLE_HEADER = "visibleHeader";
@@ -536,14 +589,11 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
     //#IFDEF V1_1_COMPAT
     private boolean compatModeOn;
     //#ENDIF
-    //private int selectedRowIndex = -1;
     private Row selectedRow;
     private Column sortedColumn;
     private Column.SortOrder sortedColumnOrder = GridBox.Column.SortOrder.NONE; 
     
     private EventListenerImpl<ItemChangeListener> icei = new EventListenerImpl<ItemChangeListener>(this);
-    private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>(this, EventListenerImpl.ACTION_VALIDATOR);
-    private EventListenerImpl<DropListener> dei = new EventListenerImpl<DropListener>(this);
     private ArrayGrid<Row, Column> grid;
     private SortedSet<Row> checkedRows;
     private SortedSet<Row> roCheckedRows;
@@ -663,12 +713,6 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
         //#ENDIF
 	}
     
-    void setRenderer(Renderer r) {
-        super.setRenderer(r);
-        aei.setRenderer(r);
-        dei.setRenderer(r);
-    }
-    
     private void sort() {
         if (sortedColumnOrder == GridBox.Column.SortOrder.NONE || sortedColumn == null) return;
         final int index = sortedColumn.getIndex();
@@ -706,28 +750,16 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
      */
     public void addActionListener(ActionListener listener) {
         if (!isCompatModeOn()) throw new IllegalStateException("this method is deprecated as of v1.2 and cannot be called unless compat mode is on, use addActionListener(action, listener) instead.");        
-        aei.addListener(ACTION_CLICK, listener);
+        addActionListener(ACTION_CLICK, listener);
     }
     //#ENDIF
-
-    public void addActionListener(String action, ActionListener listener) {
-        aei.addListener(action, listener);
-    }
-    
-    public void addActionListener(String[] actions, ActionListener listener) {
-        aei.addListener(actions, listener);
-    }    
-    
-    public void removeActionListener(ActionListener listener) {
-        aei.removeListener(listener);
-    }
     
     public void fireAction(ActionEvent ev) {
         if (ev == null) throw new IllegalArgumentException("ev == null");
         if (!(ev.getSource() instanceof Range)) throw new IllegalArgumentException("!(ev.getSource() instanceof GridBox.Range)");
         Row row = ((Range)ev.getSource()).getRow();
         if (row != null) row.setSelected(true);        
-        aei.fireAction(ev);
+        super.fireAction(ev);
     }
     
     /**
@@ -737,22 +769,6 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
      */
     public void fireAction(String action, Range range) {
         fireAction(new ActionEvent(this, action, range));
-    }
-    
-    public void addDropListener(DropEventComponent dragComponent, DropListener listener) {
-        dei.addListener(dragComponent, listener);
-    }
-    
-    public void addDropListener(DropEventComponent[] dragComponents, DropListener listener) {
-        dei.addListener(dragComponents, listener);
-    }    
-    
-    public void removeDropListener(DropListener listener) {
-        dei.removeListener(listener);
-    }    
-
-    public void fireDrop(DropEvent ev) {
-        dei.fireDrop(ev);
     }
 	
 	public List<GridBox.Column> getColumns() {

@@ -25,10 +25,7 @@
  */
 package thinwire.ui;
 
-import thinwire.render.Renderer;
 import thinwire.render.web.WebApplication;
-import thinwire.ui.event.ActionEvent;
-import thinwire.ui.event.ActionListener;
 
 /**
  * A <code>Hyperlink</code> is a screen component that acts like a standard
@@ -63,7 +60,7 @@ import thinwire.ui.event.ActionListener;
  * 
  * @author Joshua J. Gertzen
  */
-public class Hyperlink extends AbstractTextComponent implements ActionEventComponent {    
+public class Hyperlink extends AbstractTextComponent {    
     private static ThreadLocal<Integer> targetId = new ThreadLocal<Integer>() {
         protected synchronized Integer initialValue() {
             return 0;
@@ -86,7 +83,6 @@ public class Hyperlink extends AbstractTextComponent implements ActionEventCompo
         ((WebApplication)WebApplication.current()).clientSideMethodCall("tw_Hyperlink", "openLocation", location, target);
     }
     
-    private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>(this, EventListenerImpl.ACTION_VALIDATOR);    
     private String location = "";
         
     public Hyperlink() {}
@@ -98,35 +94,6 @@ public class Hyperlink extends AbstractTextComponent implements ActionEventCompo
     public Hyperlink(String text, String location) {
         this.setText(text);
         this.setLocation(location);
-    }
-    
-    void setRenderer(Renderer r) {
-        super.setRenderer(r);
-        aei.setRenderer(r);
-    }
-    
-    public void addActionListener(String action, ActionListener listener) {
-        aei.addListener(action, listener);
-    }
-    
-    public void addActionListener(String[] actions, ActionListener listener) {
-        aei.addListener(actions, listener);
-    }    
-    
-    public void removeActionListener(ActionListener listener) {
-        aei.removeListener(listener);
-    }
-
-    public void fireAction(ActionEvent ev) {
-        aei.fireAction(ev);
-    }
-
-    /**
-     * A convienence method that is equivalent to <code>fireAction(new ActionEvent(this, action))</code>.
-     * @param action the action name
-     */
-    public void fireAction(String action) {
-        aei.fireAction(new ActionEvent(this, action));
     }
     
     public void setLocation(String location) {

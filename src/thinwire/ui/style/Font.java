@@ -47,7 +47,7 @@ public class Font {
     public static final String PROPERTY_FONT_UNDERLINE = "fontUnderline";
     public static final String PROPERTY_FONT_STRIKE = "fontStrike";
     
-    public static class Family {
+    public static final class Family {
         private static List<Family> VALUES = new ArrayList<Family>();
         
         public static final Family SERIF = new Family("serif", null);

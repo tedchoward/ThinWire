@@ -27,22 +27,22 @@ package thinwire.ui.event;
 
 import java.util.EventObject;
 
-import thinwire.ui.DropEventComponent;
+import thinwire.ui.Component;
 
 /**
  * @author Joshua J. Gertzen
  * @author Ted C. Howard
  */
 public final class DropEvent extends EventObject {
-    private DropEventComponent sourceComponent;
+    private Component sourceComponent;
     private Object dragObject;
-    private DropEventComponent dragComponent;
+    private Component dragComponent;
     
-    public DropEvent(DropEventComponent sourceComponent, DropEventComponent dragComponent) {
+    public DropEvent(Component sourceComponent, Component dragComponent) {
         this(sourceComponent, null, dragComponent, null);
     }
     
-    public DropEvent(DropEventComponent sourceComponent, Object source, DropEventComponent dragComponent, Object dragObject) {        
+    public DropEvent(Component sourceComponent, Object source, Component dragComponent, Object dragObject) {        
         super(source == null ? sourceComponent : source);
         if (sourceComponent == null || dragComponent == null) throw new IllegalArgumentException("sourceComponent == null || dragComponent == null");
         this.sourceComponent = sourceComponent;
@@ -50,7 +50,7 @@ public final class DropEvent extends EventObject {
         this.dragComponent = dragComponent;
     }
     
-    public DropEventComponent getSourceComponent() {
+    public Component getSourceComponent() {
         return sourceComponent;
     }
     
@@ -58,7 +58,7 @@ public final class DropEvent extends EventObject {
         return dragObject;
     }
     
-    public DropEventComponent getDragComponent() {
+    public Component getDragComponent() {
         return dragComponent;
     }
 }

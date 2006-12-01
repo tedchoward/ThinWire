@@ -117,9 +117,8 @@ var tw_Component = Class.extend({
     },
     
     setOpacity: function(opacity) {
-        this._box.style.display = opacity > 0 ? "block" : "none";        
-        this._box.style.opacity = opacity / 100;
-        if (tw_isIE) this._box.style.filter = opacity >= 100 ? "" : "alpha(opacity=" + opacity + ")";
+        this._box.style.display = opacity > 0 ? "block" : "none";
+        tw_setOpacity(this._box, opacity);        
         this._opacity = opacity;
     },
     
@@ -292,13 +291,15 @@ var tw_Component = Class.extend({
     addDragTarget: function(compId) {
         if (this._dragAndDropHandler == null) this._dragAndDropHandler = new tw_DragAndDropHandler(this);
         var target = tw_Component.instances[compId];
+        alert("adding DND: dropTarget=" + target._box.className + "(" + compId + ") <- dragSource=" + this._box.className + "(" + this._id + ")");
         this._dragAndDropHandler.addTarget(target);
     },
     
     removeDragTarget: function(compId) {
-        if (this._dragAndDropHandler.removeTarget(compId)) return;
-        this._dragAndDropHandler.destroy();
-        this._dragAndDropHandler = null;
+        if (this._dragAndDropHandler.removeTarget(compId)) {
+            this._dragAndDropHandler.destroy();
+            this._dragAndDropHandler = null;
+        }
     },
     
     registerEventNotifier: function(type, subType) {

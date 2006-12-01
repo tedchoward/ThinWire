@@ -25,8 +25,6 @@
  */
 package thinwire.ui;
 
-import thinwire.render.Renderer;
-import thinwire.ui.event.ActionEvent;
 import thinwire.ui.event.ActionListener;
 import thinwire.util.ImageInfo;
 
@@ -80,12 +78,11 @@ import thinwire.util.ImageInfo;
  * </p>
  * @author Joshua J. Gertzen
  */
-public class Button extends AbstractTextComponent implements ImageComponent, ActionEventComponent {
+public class Button extends AbstractTextComponent implements ImageComponent {
     public static final String PROPERTY_STANDARD = "standard";
 
     private boolean standard;
 	private ImageInfo imageInfo = new ImageInfo(null);
-    private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>(this, EventListenerImpl.ACTION_VALIDATOR);
 	
 	/**
 	 * Constructs a new Button with no text or image.
@@ -111,11 +108,6 @@ public class Button extends AbstractTextComponent implements ImageComponent, Act
 	    setText(text);
 	    setImage(image);
 	}	
-	    
-    void setRenderer(Renderer r) {
-        super.setRenderer(r);
-        aei.setRenderer(r);
-    }
         
 	public String getImage() {
 	    return imageInfo.getName();
@@ -173,31 +165,7 @@ public class Button extends AbstractTextComponent implements ImageComponent, Act
 	 */
 	public void addActionListener(ActionListener listener) {
         if (!isCompatModeOn()) throw new IllegalStateException("this method is deprecated as of v1.2 and cannot be called unless compat mode is on, use addActionListener(action, listener) instead.");        
-        aei.addListener(ACTION_CLICK, listener);
+        addActionListener(ACTION_CLICK, listener);
 	}
     //#ENDIF
-
-    public void addActionListener(String action, ActionListener listener) {
-        aei.addListener(action, listener);
-    }
-    
-    public void addActionListener(String[] actions, ActionListener listener) {
-        aei.addListener(actions, listener);
-    }    
-	
-	public void removeActionListener(ActionListener listener) {
-        aei.removeListener(listener);
-	}
-
-    public void fireAction(ActionEvent ev) {
-        aei.fireAction(ev);
-    }
-
-	/**
-	 * A convienence method that is equivalent to <code>fireAction(new ActionEvent(this, action))</code>.
-	 * @param action the action name
-	 */
-	public void fireAction(String action) {
-        aei.fireAction(new ActionEvent(this, action));
-	}
 }

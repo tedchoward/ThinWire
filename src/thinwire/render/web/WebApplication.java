@@ -120,6 +120,8 @@ public final class WebApplication extends Application {
         "ddButton.png",
         "ddDisabledButton.png",
         "dResize.png",
+        "dragValid.png",
+        "dragInvalid.png",
         "gbChecked.png",
         "gbUnchecked.png",
         "gbChildArrow.png",

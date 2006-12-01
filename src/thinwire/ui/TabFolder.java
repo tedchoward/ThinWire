@@ -90,8 +90,6 @@ public class TabFolder extends AbstractContainer<TabSheet> {
 	private int currentIndex = -1;
 	
 	public TabFolder() {
-		super(true);
-        
         addItemChangeListener(new ItemChangeListener() {
             public void itemChange(ItemChangeEvent ev) {
                 Type type = ev.getType();

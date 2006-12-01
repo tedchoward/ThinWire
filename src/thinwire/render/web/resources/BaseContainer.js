@@ -60,6 +60,12 @@ var tw_BaseContainer = tw_Component.extend({
 
         this._container.style.overflow = overflow;
     },
+    
+    getDragBox: function() {
+        var dragBox = this._container.cloneNode(false);
+        dragBox.style.backgroundColor = tw_COLOR_TRANSPARENT;
+        return dragBox;
+    },
         
     addComponent: function(insertAtIndex, comp) {
         if (insertAtIndex == -1 || insertAtIndex >= this._children.length) {

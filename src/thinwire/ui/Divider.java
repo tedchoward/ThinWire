@@ -25,12 +25,6 @@
  */
 package thinwire.ui;
 
-import thinwire.render.Renderer;
-import thinwire.ui.event.ActionEvent;
-import thinwire.ui.event.ActionListener;
-import thinwire.ui.event.DropEvent;
-import thinwire.ui.event.DropListener;
-
 /**
  * A Divider provides a visual separation between two sections of a container.
  * <p>
@@ -56,60 +50,11 @@ import thinwire.ui.event.DropListener;
  * </p>
  * @author Joshua J. Gertzen
  */
-public class Divider extends AbstractComponent implements ActionEventComponent, DropEventComponent {    
-    private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>(this, EventListenerImpl.ACTION_VALIDATOR);    
-    private EventListenerImpl<DropListener> dei = new EventListenerImpl<DropListener>(this);
-    
+public class Divider extends AbstractComponent {    
     /**
      * Constructs a new Divider. 
      */
     public Divider() {
         setFocusCapable(false);
     }    
-       
-    void setRenderer(Renderer r) {
-        super.setRenderer(r);
-        aei.setRenderer(r);
-        dei.setRenderer(r);
-    }
-
-    public void addActionListener(String action, ActionListener listener) {
-        aei.addListener(action, listener);
-    }
-    
-    public void addActionListener(String[] actions, ActionListener listener) {
-        aei.addListener(actions, listener);
-    }    
-    
-    public void removeActionListener(ActionListener listener) {
-        aei.removeListener(listener);
-    }
-
-    public void fireAction(ActionEvent ev) {
-        aei.fireAction(ev);
-    }
-
-    /**
-     * A convienence method that is equivalent to <code>fireAction(new ActionEvent(this, action))</code>.
-     * @param action the action name
-     */
-    public void fireAction(String action) {
-        aei.fireAction(new ActionEvent(this, action));
-    }
-    
-    public void addDropListener(DropEventComponent dragComponent, DropListener listener) {
-        dei.addListener(dragComponent, listener);
-    }
-    
-    public void addDropListener(DropEventComponent[] dragComponents, DropListener listener) {
-        dei.addListener(dragComponents, listener);
-    }    
-    
-    public void removeDropListener(DropListener listener) {
-        dei.removeListener(listener);
-    }    
-
-    public void fireDrop(DropEvent ev) {
-        dei.fireDrop(ev);
-    }
 }

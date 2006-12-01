@@ -30,8 +30,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,6 +41,7 @@ import thinwire.ui.Application;
 public class ImageInfo {
     public enum Format {GIF,JPEG,PNG}
     
+    private String stringValue;
     private String name;
     private Format format;
     private int width;
@@ -110,6 +109,19 @@ public class ImageInfo {
             throw (RuntimeException)e;
         }
     }   
+    
+    public boolean equals(Object o) {
+        return o instanceof ImageInfo && toString().equals(o.toString());
+    }
+    
+    public int hashCode() {
+        return toString().hashCode();
+    }
+    
+    public String toString() {
+        if (stringValue == null) stringValue = "ImageInfo{name:" + name + ",format:" + format + ",width:" + width + ",height:" + height + "}"; 
+        return stringValue;
+    }
 }
 
 /* XXX CCS Note: This class is a public domain class that is used by the ui

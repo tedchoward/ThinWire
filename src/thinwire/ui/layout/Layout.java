@@ -34,7 +34,7 @@ import thinwire.ui.Component;
 public interface Layout {
     Container<Component> getContainer();
     void setContainer(Container<Component> container);
-    boolean isAutoLayout();
-    void setAutoLayout(boolean autoLayout);
+    boolean isAutoApply();
+    void setAutoApply(boolean autoApply);
     void apply();
 }

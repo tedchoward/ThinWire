@@ -107,5 +107,5 @@ public class CheckBox extends AbstractTextComponent implements CheckedComponent 
 	    boolean oldChecked = this.checked;
 		this.checked = checked;
 		firePropertyChange(this, PROPERTY_CHECKED, oldChecked, checked);		
-	}	
+	}
 }

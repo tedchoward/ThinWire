@@ -619,13 +619,8 @@ var tw_BaseText = tw_Component.extend({
     getDragBox: function() {
         var dragBox = document.createElement("div");
         var s = dragBox.style;
-        s.position = "absolute";
-        s.width = this._width + "px";
-        s.height = this._height + "px";
-        s.backgroundColor = tw_COLOR_WINDOW;
-        s.border = "1px solid black";
-        s.fontFamily = this._fontBox.style.fontFamily;
-        s.fontSize = this._fontBox.style.fontSize;
+        s.width = (this._width - this._borderSizeSub) + "px";
+        s.height = (this._height - this._borderSizeSub) + "px";
         dragBox.appendChild(document.createTextNode(this._editor.value));
         return dragBox;
     },

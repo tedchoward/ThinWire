@@ -114,9 +114,9 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
             if (col.isVisible()) {
                 colDefs.append("{v:");
                 getValues(col, col.getDisplayFormat(), colDefs);
-                Object headerValue = RICH_TEXT_PARSER.parseRichText(col.getDisplayName(), this);
+                Object headerValue = RICH_TEXT_PARSER.parseRichText(col.getHeader().getText(), this);
                 if (headerValue instanceof String) {
-                    colDefs.append(",n:\"").append(getValue(col.getDisplayName(), null)).append("\"");
+                    colDefs.append(",n:\"").append(getValue(col.getHeader().getText(), null)).append("\"");
                 } else {
                     colDefs.append(",n:").append(headerValue);
                 }
@@ -259,9 +259,9 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
                     removeColumn(index);
                 }
             } else if (column.isVisible()) {   
-                if (name.equals(GridBox.Column.PROPERTY_COLUMN_NAME) && ((String)newValue).equals(column.getDisplayName())) {
+                if (name.equals(GridBox.Column.PROPERTY_COLUMN_NAME) && ((String)newValue).equals(column.getHeader().getText())) {
                     postClientEvent(SET_COLUMN_NAME, getVisibleIndex(index), RICH_TEXT_PARSER.parseRichText((String) newValue, this));
-                } else if (name.equals(GridBox.Column.PROPERTY_COLUMN_DISPLAY_NAME)) {
+                } else if (name.equals(GridBox.Header.PROPERTY_HEADER_TEXT)) {
                     postClientEvent(SET_COLUMN_NAME, getVisibleIndex(index), RICH_TEXT_PARSER.parseRichText((String) newValue, this));                    
                 } else if (name.equals(GridBox.Column.PROPERTY_COLUMN_WIDTH)) {
                     if ((Integer) newValue == -1) {
@@ -408,7 +408,7 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
         int width = c.getWidth();
         if (width == -1) width = autoColumnWidth;
         
-        Object headerValue = RICH_TEXT_PARSER.parseRichText(c.getDisplayName(), this);
+        Object headerValue = RICH_TEXT_PARSER.parseRichText(c.getHeader().getText(), this);
         if (headerValue instanceof String) headerValue = getValue(headerValue, null);
 
         postClientEvent(method, new Object[] {

@@ -122,9 +122,8 @@ var tw_TabSheet = tw_BaseContainer.extend({
     },
     
     setOpacity: function(opacity) {
-        this._tab.style.display = opacity > 0 ? "block" : "none";        
-        this._tab.style.opacity = opacity / 100;
-        if (tw_isIE) this._tab.style.filter = opacity >= 100 ? "" : "alpha(opacity=" + opacity + ")";
+        this._tab.style.display = opacity > 0 ? "block" : "none";
+        tw_setOpacity(this._tab, opacity);        
         this._opacity = opacity;
     },
     
@@ -134,14 +133,7 @@ var tw_TabSheet = tw_BaseContainer.extend({
     
     getDragBox: function() {
         var dragBox = this._tab.cloneNode(true);
-        var s = dragBox.style;
-        s.position = "absolute";
-        s.textAlign = "center";
-        s.height = "16px";
-        s.fontFamily = this._fontBox.style.fontFamily;
-        s.fontSize = this._fontBox.style.fontSize;
-        s.backgroundColor = this._backgroundColor;
-        s.border = this._tab.style.border;
+        s.backgroundColor = tw_COLOR_TRANSPARENT;
         return dragBox;
     },
     

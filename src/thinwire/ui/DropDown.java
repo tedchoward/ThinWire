@@ -121,7 +121,7 @@ public class DropDown<T extends Component> extends AbstractMaskEditorComponent {
     		ddc = comp;
     	}
     	
-    	protected void addCloseComponent(final ActionEventComponent comp) {
+    	protected void addCloseComponent(final Component comp) {
             if (dd == null) throw new IllegalStateException("dd == null");
             final WebApplication app = (WebApplication) Application.current();
             app.invokeAfterRendered(comp, new RenderStateListener() {

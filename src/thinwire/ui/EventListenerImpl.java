@@ -59,7 +59,7 @@ class EventListenerImpl<E extends EventListener> {
     
     static final EventListenerImpl.SubTypeValidator ACTION_VALIDATOR = new EventListenerImpl.SubTypeValidator() {
         public Object validate(Object subType) {
-            return subType != null && (subType.equals(ActionEventComponent.ACTION_CLICK) || subType.equals(ActionEventComponent.ACTION_DOUBLE_CLICK)) ? subType : null;
+            return subType != null && (subType.equals(Component.ACTION_CLICK) || subType.equals(Component.ACTION_DOUBLE_CLICK)) ? subType : null;
         }
     };
     
@@ -252,7 +252,7 @@ class EventListenerImpl<E extends EventListener> {
         if (sourceType == null) {
             if (ev.getSource() != ev.getSourceComponent()) throw new IllegalArgumentException("ev.getSource() != ev.getSourceComponent()");
         } else {
-            if (!(sourceType.isInstance(ev.getSource()))) throw new IllegalArgumentException("!(ev.getSource() instanceof " + sourceType.getName() + ")");
+            if (!(sourceType.isInstance(ev.getSource())) && ev.getSource() != ev.getSourceComponent()) throw new IllegalArgumentException("!(ev.getSource() instanceof " + sourceType.getName() + ") && ev.getSource() != ev.getSourceComponent()");
         }
 
         Class dragType = getSourceType(ev.getDragComponent());
@@ -260,7 +260,7 @@ class EventListenerImpl<E extends EventListener> {
         if (dragType == null) {
             if (ev.getDragObject() != ev.getDragComponent()) throw new IllegalArgumentException("ev.getDragObject() != ev.getDragComponent()");
         } else {
-            if (!(dragType.isInstance(ev.getDragObject()))) throw new IllegalArgumentException("!(ev.getDragObject() instanceof " + dragType.getName() + ")");
+            if (!(dragType.isInstance(ev.getDragObject())) && ev.getSource() != ev.getSourceComponent()) throw new IllegalArgumentException("!(ev.getDragObject() instanceof " + dragType.getName() + ") && ev.getSource() != ev.getSourceComponent()");
         }
         
         if (!hasListeners()) return;

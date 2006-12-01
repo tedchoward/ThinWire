@@ -158,13 +158,19 @@ function tw_cancelEvent(event) {
     }
 }
 
+function tw_setOpacity(box, opacity) {
+    if (opacity > 100) opacity = 100;
+    box.style.opacity = opacity <= 0 ? 0 : opacity / 100;
+    if (tw_isIE) box.style.filter = opacity == 100 ? "" : "alpha(opacity=" + opacity + ")";
+}
+
 function tw_setLayerTransparent(box) {
     var s = box.style;
     
     if (tw_isIE) {
         //NOTE: IE allows clicks to propagate if the background-color is transparent.
         //However, if the background is white and the opacity is zero, it works like it should.
-        s.filter = "alpha(opacity=0)";
+        tw_setOpacity(box, 0);
         s.backgroundColor = "white";
     } else {
         s.backgroundColor = tw_COLOR_TRANSPARENT;        
@@ -183,8 +189,8 @@ function tw_makeFileChooserBtn(buttonId, tfId) {
     s.position = "absolute";
     s.overflow = "hidden";
     s.zIndex = "1";
-    s.opacity = "0";
-    if (tw_isIE) s.filter = "alpha(opacity=0)";
+    tw_setOpacity(iframe, 0);
+    
     iframe.scrolling = "no";
     iframe.src = "?_twr_=FileUploadPage.html";
     iframe.frameBorder = "0";

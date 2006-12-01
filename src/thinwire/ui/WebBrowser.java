@@ -28,10 +28,6 @@ package thinwire.ui;
 import java.io.File;
 import java.io.FileOutputStream;
 
-import thinwire.render.Renderer;
-import thinwire.ui.event.DropEvent;
-import thinwire.ui.event.DropListener;
-
 /**
  * A <code>WebBrowser</code> inserts a web browser object in your application.
  * <p>
@@ -65,10 +61,9 @@ import thinwire.ui.event.DropListener;
  */
 // TODO Nice to haves on the client side Iframe - Back/Forward/Stop/Refresh.
 // i.e. Browser like functionality.
-public class WebBrowser extends AbstractComponent implements DropEventComponent {
+public class WebBrowser extends AbstractComponent {
     public static final String PROPERTY_LOCATION = "location";
     
-    private EventListenerImpl<DropListener> dei = new EventListenerImpl<DropListener>(this);
     private String location = "";
     private File content;
  
@@ -76,27 +71,6 @@ public class WebBrowser extends AbstractComponent implements DropEventComponent 
     
     public WebBrowser(String location) {
         this.setLocation(location);
-    }
-    
-    void setRenderer(Renderer r) {
-        super.setRenderer(r);
-        dei.setRenderer(r);
-    }
-    
-    public void addDropListener(DropEventComponent dragComponent, DropListener listener) {
-        dei.addListener(dragComponent, listener);
-    }
-    
-    public void addDropListener(DropEventComponent[] dragComponents, DropListener listener) {
-        dei.addListener(dragComponents, listener);
-    }    
-    
-    public void removeDropListener(DropListener listener) {
-        dei.removeListener(listener);
-    }    
-
-    public void fireDrop(DropEvent ev) {
-        dei.fireDrop(ev);
     }
     
     public void setLocation(String location) {

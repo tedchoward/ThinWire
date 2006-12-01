@@ -27,12 +27,7 @@ package thinwire.ui;
 
 import java.util.Date;
 
-import thinwire.render.Renderer;
-import thinwire.ui.Tree.Item;
 import thinwire.ui.event.ActionEvent;
-import thinwire.ui.event.ActionListener;
-import thinwire.ui.event.DropEvent;
-import thinwire.ui.event.DropListener;
 
 /**
  * A <code>DateBox</code> is a <code>Component</code> that displays a
@@ -65,21 +60,13 @@ import thinwire.ui.event.DropListener;
  * </p>
  * @author Ted C. Howard
  */
-public class DateBox extends AbstractComponent implements ActionEventComponent, DropEventComponent {
+public class DateBox extends AbstractComponent {
     public static final String PROPERTY_SELECTED_DATE = "selectedDate";
     
-    private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>(this, EventListenerImpl.ACTION_VALIDATOR);
-    private EventListenerImpl<DropListener> dei = new EventListenerImpl<DropListener>(this);
     private Date selectedDate;
     
     public DateBox() {
         this(new Date());
-    }
-    
-    void setRenderer(Renderer r) {
-        super.setRenderer(r);
-        aei.setRenderer(r);
-        dei.setRenderer(r);
     }
     
     /**
@@ -107,48 +94,11 @@ public class DateBox extends AbstractComponent implements ActionEventComponent, 
         this.selectedDate = selectedDate;
         firePropertyChange(this, PROPERTY_SELECTED_DATE, oldDate, this.selectedDate);
     }
-
-    public void addActionListener(String action, ActionListener listener) {
-        aei.addListener(action, listener);
-    }
-
-    public void addActionListener(String[] actions, ActionListener listener) {
-        aei.addListener(actions, listener);
-    }
-
-    public void removeActionListener(ActionListener listener) {
-        aei.addListener(listener);
-    }
     
     public void fireAction(ActionEvent ev) {
         if (ev == null) throw new IllegalArgumentException("ev == null");
         if (!(ev.getSource() instanceof Date)) throw new IllegalArgumentException("!(ev.getSource() instanceof Date)");
         setSelectedDate((Date)ev.getSource());        
-        aei.fireAction(ev);
-    }
-    
-    /**
-     * A convienence method that is equivalent to <code>fireAction(new ActionEvent(this, action, date))</code>.
-     * @param action the action that occured.
-     * @param date the Date cell in the DateBox on which the action occured.
-     */
-    public void fireAction(String action, Date date) {
-        fireAction(new ActionEvent(this, action, date));
-    }
-    
-    public void addDropListener(DropEventComponent dragComponent, DropListener listener) {
-        dei.addListener(dragComponent, listener);
-    }
-    
-    public void addDropListener(DropEventComponent[] dragComponents, DropListener listener) {
-        dei.addListener(dragComponents, listener);
-    }    
-    
-    public void removeDropListener(DropListener listener) {
-        dei.removeListener(listener);
-    }
-
-    public void fireDrop(DropEvent ev) {
-        dei.fireDrop(ev);
+        super.fireAction(ev);
     }
 }

@@ -42,11 +42,9 @@ import thinwire.render.RenderStateEvent;
 import thinwire.render.RenderStateListener;
 import thinwire.render.Renderer;
 import thinwire.ui.event.*;
-import thinwire.ui.ActionEventComponent;
 import thinwire.ui.Component;
 import thinwire.ui.Container;
 import thinwire.ui.DateBox;
-import thinwire.ui.DropEventComponent;
 import thinwire.ui.GridBox;
 import thinwire.ui.HierarchyComponent;
 import thinwire.ui.Menu;
@@ -279,7 +277,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         } else if (KeyPressListener.class.isAssignableFrom(clazz)) {
             postClientEvent(REGISTER_EVENT_NOTIFIER, "keyPress", subType);
         } else if (DropListener.class.isAssignableFrom(clazz)) {
-            final DropEventComponent dragComponent = (DropEventComponent)subType;
+            final Component dragComponent = (Component)subType;
             
             wr.ai.invokeAfterRendered(dragComponent, new RenderStateListener() {
                 public void renderStateChange(RenderStateEvent ev) {
@@ -312,7 +310,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         } else if (KeyPressListener.class.isAssignableFrom(clazz)) {
             postClientEvent(UNREGISTER_EVENT_NOTIFIER, "keyPress", subType);
         } else if (DropListener.class.isAssignableFrom(clazz)) {
-            Integer dragComponentId = wr.ai.getComponentId((DropEventComponent)subType);
+            Integer dragComponentId = wr.ai.getComponentId((Component)subType);
             if (dragComponentId != null) wr.ai.clientSideMethodCall(dragComponentId, "removeDragTarget", id);
         }
     }    
@@ -518,11 +516,11 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     }
     
     boolean componentChangeFireDrop(WebComponentEvent event) {
-        DropEventComponent comp = (DropEventComponent)this.comp;
+        Component comp = (Component)this.comp;
 
         if (event.getName().equals(CLIENT_EVENT_DROP)) {
             String[] parts = ((String)event.getValue()).split(",", -1);
-            DropEventComponent dragComponent = (DropEventComponent)wr.ai.getComponentFromId(Integer.parseInt(parts[1]));
+            Component dragComponent = (Component)wr.ai.getComponentFromId(Integer.parseInt(parts[1]));
             comp.fireDrop(new DropEvent(comp, getEventObject(comp, parts[0]), dragComponent, getEventObject(dragComponent, parts[2])));
             return true;
         } else {
@@ -531,10 +529,9 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     }
     
     boolean componentChangeFireAction(WebComponentEvent event, String ignoreProperty) {
-        ActionEventComponent comp = (ActionEventComponent)this.comp;
         String name = event.getName();
         
-        if (name.equals(ActionEventComponent.ACTION_CLICK) || name.equals(ActionEventComponent.ACTION_DOUBLE_CLICK)) {
+        if (name.equals(Component.ACTION_CLICK) || name.equals(Component.ACTION_DOUBLE_CLICK)) {
             if (ignoreProperty != null) setPropertyChangeIgnored(ignoreProperty, true);
             comp.fireAction(new ActionEvent(comp, name, getEventObject(comp, (String)event.getValue())));
             if (ignoreProperty != null) setPropertyChangeIgnored(ignoreProperty, false);

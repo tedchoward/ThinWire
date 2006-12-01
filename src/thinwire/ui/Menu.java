@@ -163,6 +163,10 @@ public class Menu extends AbstractHierarchyComponent<Menu.Item> {
             Menu menu = getHierarchy();
             if (menu != null) menu.firePropertyChange(this, PROPERTY_ITEM_KEY_PRESS_COMBO, oldKeyPressCombo, keyPressCombo);                
         }
+        
+        public String toString() {
+            return "Menu.Item{" + super.toString() + ",enabled:" + this.isEnabled() + ",keyPressCombo:" + this.getKeyPressCombo() + "}";
+        }
     }
 
     /**
@@ -171,7 +175,7 @@ public class Menu extends AbstractHierarchyComponent<Menu.Item> {
     public Menu() {
         super(new Item(), new EventListenerImpl.SubTypeValidator() {
             public Object validate(Object subType) {
-                return subType != null && (subType.equals(ActionEventComponent.ACTION_CLICK)) ? subType : null;
+                return subType != null && (subType.equals(ACTION_CLICK)) ? subType : null;
             }
         });
     }
@@ -179,7 +183,7 @@ public class Menu extends AbstractHierarchyComponent<Menu.Item> {
     public void fireAction(ActionEvent ev) {
         if (ev == null) throw new IllegalArgumentException("ev == null");
         if (!ev.getAction().equals(ACTION_CLICK)) throw new IllegalArgumentException("!ev.getAction().equals(ACTION_CLICK)");
-        aei.fireAction(ev);
+        super.fireAction(ev);
     }
     
     public int getHeight() {

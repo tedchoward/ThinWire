@@ -85,7 +85,7 @@ public final class SplitLayout extends AbstractLayout {
         setMargin(margin);
         setSpacing(spacing);
         setMaximize(null);
-        setAutoLayout(true);
+        setAutoApply(true);
     }
     
     public void setContainer(Container<Component> container) {

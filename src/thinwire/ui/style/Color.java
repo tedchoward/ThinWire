@@ -32,7 +32,7 @@ import java.util.regex.Pattern;
 /**
  * @author Joshua J. Gertzen
  */
-public class Color {    
+public final class Color {    
     private static final Map<String, Color> NAMED_COLORS = new HashMap<String, Color>();
     private static final Color[] VALUES;
     

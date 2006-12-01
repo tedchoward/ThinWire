@@ -327,13 +327,6 @@ var tw_DateBox = tw_Component.extend({
         if (cell == null) return null;
         var dragBox = document.createElement("div");
         var s = dragBox.style;
-        s.position = "absolute";
-        s.textAlign = "center";
-        s.width = "75px";
-        s.height = "15px";
-        s.fontFamily = this._fontBox.style.fontFamily;
-        s.fontSize = this._fontBox.style.fontSize;
-        s.backgroundColor = tw_COLOR_WINDOW;
         dragBox._dragObject = this._getFormattedDate(this._getDate(cell));
         dragBox.appendChild(document.createTextNode(dragBox._dragObject));
         

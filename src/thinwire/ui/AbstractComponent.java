@@ -26,6 +26,10 @@
 package thinwire.ui;
 
 import thinwire.render.Renderer;
+import thinwire.ui.event.ActionEvent;
+import thinwire.ui.event.ActionListener;
+import thinwire.ui.event.DropEvent;
+import thinwire.ui.event.DropListener;
 import thinwire.ui.event.PropertyChangeListener;
 import thinwire.ui.event.KeyPressListener;
 import thinwire.ui.style.*;
@@ -48,6 +52,8 @@ abstract class AbstractComponent implements Component {
     private Label label;
     private Style style;
     private EventListenerImpl<PropertyChangeListener> pcei;
+    private EventListenerImpl<ActionListener> aei;
+    private EventListenerImpl<DropListener> dei;
     private EventListenerImpl<KeyPressListener> kpei;
     private Object userObject;
     private boolean focusCapable = true;
@@ -62,13 +68,15 @@ abstract class AbstractComponent implements Component {
     private boolean ignoreFirePropertyChange;
     
     AbstractComponent() {
-        this(true);
+        this(EventListenerImpl.ACTION_VALIDATOR);
     }
     
-    AbstractComponent(boolean visible) {
-        this.visible = visible;
+    AbstractComponent(EventListenerImpl.SubTypeValidator actionValidator) {
+        this.visible = true;
         app = Application.current();
         pcei = new EventListenerImpl<PropertyChangeListener>(this, null, app.getGloalPropertyChangeListenerImpl());
+        aei = new EventListenerImpl<ActionListener>(this, actionValidator);
+        dei = new EventListenerImpl<DropListener>(this);
         kpei = new EventListenerImpl<KeyPressListener>(this, EventListenerImpl.KEY_PRESS_VALIDATOR);
             
         this.style = new Style(app.getDefaultStyle(this.getClass()), this) {
@@ -80,6 +88,8 @@ abstract class AbstractComponent implements Component {
         
     void setRenderer(Renderer r) {
         pcei.setRenderer(r);
+        aei.setRenderer(r);
+        dei.setRenderer(r);
         kpei.setRenderer(r);                
     }
     
@@ -174,6 +184,38 @@ abstract class AbstractComponent implements Component {
         if (ignoreFirePropertyChange) return true;
         pcei.firePropertyChange(source, propertyName, oldValue, newValue);        
         return true;
+    }
+
+    public void addActionListener(String action, ActionListener listener) {
+        aei.addListener(action, listener);
+    }
+    
+    public void addActionListener(String[] actions, ActionListener listener) {
+        aei.addListener(actions, listener);
+    }    
+    
+    public void removeActionListener(ActionListener listener) {
+        aei.removeListener(listener);
+    }
+
+    public void fireAction(ActionEvent ev) {
+        aei.fireAction(ev);
+    }
+    
+    public void addDropListener(Component dragComponent, DropListener listener) {
+        dei.addListener(dragComponent, listener);
+    }
+    
+    public void addDropListener(Component[] dragComponents, DropListener listener) {
+        dei.addListener(dragComponents, listener);
+    }    
+    
+    public void removeDropListener(DropListener listener) {
+        dei.removeListener(listener);
+    }    
+
+    public void fireDrop(DropEvent ev) {
+        dei.fireDrop(ev);
     }
         
     public void addKeyPressListener(String keyPressCombo, KeyPressListener listener) {

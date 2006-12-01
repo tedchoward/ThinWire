@@ -33,6 +33,7 @@ import thinwire.ui.Component;
 import thinwire.ui.Window;
 import thinwire.ui.HierarchyComponent;
 import thinwire.ui.Menu;
+import thinwire.ui.event.ActionEvent;
 import thinwire.ui.event.ItemChangeEvent;
 import thinwire.ui.event.ItemChangeListener;
 import thinwire.ui.event.KeyPressEvent;
@@ -172,7 +173,7 @@ final class MenuRenderer extends ComponentRenderer implements ItemChangeListener
         KeyPressListener listener = new KeyPressListener() {
             public void keyPress(KeyPressEvent ev) {
                 Menu menu = item.getHierarchy();                        
-                if (menu != null) menu.fireAction(Menu.ACTION_CLICK, item);
+                if (menu != null) menu.fireAction(new ActionEvent(menu, Menu.ACTION_CLICK, item));
             }
         };
 

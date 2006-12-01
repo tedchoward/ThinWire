@@ -32,7 +32,7 @@ import thinwire.util.ImageInfo;
 /**
  * @author Joshua J. Gertzen
  */
-public interface HierarchyComponent<HI extends HierarchyComponent.Item> extends ActionEventComponent, ItemChangeEventComponent {
+public interface HierarchyComponent<HI extends HierarchyComponent.Item> extends ItemChangeEventComponent {
     public interface Item<H extends HierarchyComponent, I extends Item> {
         public static final String PROPERTY_ITEM_IMAGE = "itemImage";
         public static final String PROPERTY_ITEM_TEXT = "itemText";
@@ -116,11 +116,4 @@ public interface HierarchyComponent<HI extends HierarchyComponent.Item> extends 
      * @return the root item of the Menu.
      */
     public HI getRootItem();
-        
-    /**
-     * A convienence method that is equivalent to <code>fireAction(new ActionEvent(this, action, item))</code>.
-     * @param action the action that occured.
-     * @param item the hierarchy Item in on which the action occured.
-     */
-    public void fireAction(String action, HI item);    
 }

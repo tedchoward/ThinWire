@@ -116,12 +116,7 @@ abstract class AbstractContainer<T extends Component> extends AbstractComponent 
     private T childWithFocus;
     private Button standardButton;
     
-    AbstractContainer() {        
-        this(true);
-    }
-    
-    AbstractContainer(boolean visible) {
-        super(visible);
+    AbstractContainer() {
         children = new ChildList();
     }
 

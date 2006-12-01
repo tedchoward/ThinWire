@@ -153,6 +153,7 @@ final class TreeRenderer extends ComponentRenderer implements ItemChangeListener
     }    
 
 	static HierarchyComponent.Item fullIndexItem(HierarchyComponent root, String value) {
+        if (value.equals("")) return null;
         HierarchyComponent.Item ti = (HierarchyComponent.Item)root.getRootItem();
 		if (value.equals("rootItem")) return ti;
 		String ary[] = value.split("\\.");

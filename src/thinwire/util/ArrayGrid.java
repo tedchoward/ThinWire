@@ -367,7 +367,6 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
         private List<Object> l;
         private int columnIndex;
         private String name = "";
-        private String displayName = "";
                
         /**
          * Construct a Column.
@@ -506,29 +505,6 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
                 return l == null ? 0 : l.size();
             else
                 return parent.getRows().size();
-        }
-        
-        /**
-         * Returns the text to display in column headers.
-         * If the column's displayName field has a value, it is returned.
-         * Otherwise the column's name value is returned.
-         * @return Returns the displayName.
-         */
-        public String getDisplayName() {
-            if (this.displayName != null && this.displayName.length() > 0){
-                return this.displayName;
-            }else if (this.name != null && this.name.length() > 0){
-                return this.name;
-            }else{
-                return "";
-            }
-        }
-
-        /**
-         * @param displayName The displayName to set.
-         */
-        public void setDisplayName(String displayName) {
-            this.displayName = displayName == null ? "" : displayName;
         }
     }    
         

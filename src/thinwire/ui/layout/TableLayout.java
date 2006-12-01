@@ -25,169 +25,86 @@
  */
 package thinwire.ui.layout;
 
-import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.logging.Logger;
 
 import thinwire.ui.Component;
 import thinwire.ui.event.ItemChangeEvent;
 import thinwire.ui.event.ItemChangeEvent.Type;
-import thinwire.ui.layout.TableLayout.Range.Justify;
 import thinwire.util.ArrayGrid;
 import thinwire.util.Grid;
 
 /**
+ * A layout that manages Components in a table structure that is backed by a Grid.
+ * You can use this rapidly and easily layout user interfaces of almost any complexity.
+ * Additionaly, since this layout is backed by a Grid, you can dynamically manipulate
+ * the layout to accomplish sophisticated user interfaces.
+ * <p>
+ * The general concepts of this layout are adapted directly from the TableLayout
+ * project at http://tablelayout.dev.java.net/.  While, the TableLayout project
+ * at java.net is for the Java Swing UI framework, the basic idea behind the
+ * layout is applicable to any user interface framework.  In general, you can
+ * use a good portion of the documentation from that project to guide you in
+ * using this layout.
+ * </p>
+ * <p>
+ * There are two primary differences to keep in mind.  First,
+ * ThinWire layout's use 'limits', whereas Swing layouts use 'constraints'.  The
+ * concept is the same, but in ThinWire you set a limit by calling the "setLimit()"
+ * method on a Component.  Second, since this layout is backed by a ThinWire
+ * Grid, row/column additions and removals are done entirely different then
+ * how the TableLayout project handles it.
+ * </p>
+ * <p>
+ * With this layout, almost any Grid operation that the GridBox component supports
+ * can be performed.  This gives you extensive flexibility in how forms are laid
+ * out and manipulated.  Essentially, you can treat a TableLayout that's been
+ * set on a Panel as an extremely flexible GridBox.  It takes a little more setup
+ * then a GridBox because you have to create instances of the components you want
+ * to display in each cell.  Additionally, the overall performance will be lower
+ * if you have 100's of rows of information.  However, in exchange for those issues
+ * you can use this layout to pull off complex data grids that approach the capability
+ * of a modern spreadsheet.  
+ * </p> 
  * @author Joshua J. Gertzen
  * @author Ted C. Howard
  */
 public final class TableLayout extends AbstractLayout implements Grid<TableLayout.Row, TableLayout.Column> {
     private static final Logger log = Logger.getLogger(TableLayout.class.getName());
+
+    public enum Justify {
+        CENTER,
+        CENTER_BOTTOM,
+        CENTER_FULL,
+        CENTER_TOP,
+        FULL,
+        FULL_CENTER,
+        LEFT_BOTTOM,
+        LEFT_CENTER,
+        LEFT_FULL,
+        LEFT_TOP,
+        RIGHT_BOTTOM,
+        RIGHT_CENTER,
+        RIGHT_FULL,
+        RIGHT_TOP
+    };
     
-    public static final class Row extends ArrayGrid.Row {
-        private double height;
-        private boolean visible;
-
-        public Row(double height) {
-            super();
-            this.height = height;
-            this.visible = true;
-        }
-
-        public double getHeight() {
-            return height;
-        }
-
-        public void setHeight(double height) {
-            this.height = height;
-            TableLayout layout = (TableLayout) getParent();
-            if (layout.isAutoLayout()) layout.apply();
-        }
-
-        public boolean isVisible() {
-            return visible;
-        }
-
-        public void setVisible(boolean visible) {
-            this.visible = visible;
-            TableLayout layout = (TableLayout) getParent();
-            List<Component> kids = layout.getContainer().getChildren();
-            if (!visible) {
-                for (Component c : kids) {
-                    Range range = (Range) c.getLimit();
-                    if (range.getRowIndex() == getIndex()) {
-                        c.setVisible(false);
-                    } else if (getIndex() < range.getRowIndex()) {
-                        range.rowIndex--;
-                    } else if (getIndex() < (range.getRowIndex() + range.getHeight())) {
-                        range.height--;
-                    }
-                }
-            } else {
-                for (Component c : kids) {
-                    Range range = (Range) c.getLimit();
-                    if (getIndex() < range.getRowIndex() || (getIndex() == range.getRowIndex() && c.isVisible())){
-                        range.rowIndex++;
-                    } else if (range.getRowIndex() == getIndex() && !c.isVisible()) {
-                        c.setVisible(true);
-                    } else if (getIndex() < (range.getRowIndex() + range.getHeight())) {
-                        range.height++;
-                    }
-                }
-            }
-            
-            if (layout.isAutoLayout()) layout.apply();
-        }
-    }
-    
-    public static final class Column extends ArrayGrid.Column {
-        private double width;
-        private boolean visible;
-
-        public Column(double width) {
-            super();
-            this.width = width;
-            this.visible = true;
-        }
-
-        public double getWidth() {
-            return width;
-        }
-
-        public void setWidth(double width) {
-            this.width = width;
-            TableLayout layout = (TableLayout) getParent();
-            if (layout.isAutoLayout()) layout.apply();
-        }
-
-        public boolean isVisible() {
-            return visible;
-        }
-
-        public void setVisible(boolean visible) {
-            this.visible = visible;
-            TableLayout layout = (TableLayout) getParent();
-            List<Component> kids = layout.getContainer().getChildren();
-            if (!visible) {
-                for (Component c : kids) {
-                    Range range = (Range) c.getLimit();
-                    if (range.getColumnIndex() == getIndex()) {
-                        c.setVisible(false);
-                    } else if (getIndex() < range.getColumnIndex()) {
-                        range.columnIndex--;
-                    } else if (getIndex() < (range.getColumnIndex() + range.getWidth())) {
-                        range.width--;
-                    }
-                }
-            } else {
-                for (Component c : kids) {
-                    Range range = (Range) c.getLimit();
-                    if (getIndex() < range.getColumnIndex() || (getIndex() == range.getColumnIndex() && c.isVisible())){
-                        range.columnIndex++;
-                    } else if (range.getColumnIndex() == getIndex() && !c.isVisible()) {
-                        c.setVisible(true);
-                    } else if (getIndex() < (range.getColumnIndex() + range.getWidth())) {
-                        range.width++;
-                    }
-                }
-            }
-            
-            if (layout.isAutoLayout()) layout.apply();
-        }
-    }
-    
-    public static class Range {
-        
-        public enum Justify {
-            CENTER,
-            CENTER_BOTTOM,
-            CENTER_FULL,
-            CENTER_TOP,
-            FULL,
-            FULL_CENTER,
-            LEFT_BOTTOM,
-            LEFT_CENTER,
-            LEFT_FULL,
-            LEFT_TOP,
-            RIGHT_BOTTOM,
-            RIGHT_CENTER,
-            RIGHT_FULL,
-            RIGHT_TOP
-        };
-        
+    public static final class Range {
         private int columnIndex;
         private int rowIndex;
-        private TableLayout layout = null;
-        private int width;
-        private int height;
-        private String value;
-        private Justify justification;
+        private TableLayout layout;
+        private int columnSpan;
+        private int rowSpan;
+        private String stringValue;
+        private Justify justify;
         
-        public Range() {
-            this(0, 0, 1, 1, Justify.FULL);
-        }
-        
-        public Range(String range) {
+        public Range(TableLayout layout, String range) {
+            if (layout == null) throw new IllegalArgumentException("layout == null");
             String[] values = ((String)range).split("\\s*,\\s*");
             Justify just = Justify.FULL;
             int width = 1;
@@ -222,30 +139,43 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
                 }
                 
             }
-            init(values.length >= 1 ? Integer.parseInt(values[0]) : 0,
+            
+            init(layout, values.length >= 1 ? Integer.parseInt(values[0]) : 0,
                  values.length >= 2 ? Integer.parseInt(values[1]) : 0,
                  width, height, just);
         }
+
+        public Range(TableLayout layout, int column, int row) {
+            init(layout, column, row, 1, 1, Justify.FULL);
+        }
         
-        public Range(int column, int row, int width, int height, Justify justification) {
-            init(column, row, width, height, justification);
+        public Range(TableLayout layout, int column, int row, int columnSpan, int rowSpan) {
+            init(layout, column, row, columnSpan, rowSpan, Justify.FULL);
+        }
+        
+        public Range(TableLayout layout, int column, int row, int columnSpan, int rowSpan, Justify justify) {
+            init(layout, column, row, columnSpan, rowSpan, justify);
         }
 
-        private void init(int column, int row, int width, int height, Justify justification) {
+        private void init(TableLayout layout, int column, int row, int columnSpan, int rowSpan, Justify justification) {
+            if (layout == null) throw new IllegalArgumentException("layout == null");
             rangeCheck("column", column);            
             rangeCheck("row", row);
-            rangeCheck("width", width);
-            rangeCheck("height", height);
+            rangeCheck("columnSpan", columnSpan);
+            rangeCheck("rowSpan", rowSpan);
             this.columnIndex = column;
             this.rowIndex = row;
-            this.width = width;
-            this.height = height;
-            this.value = getClass().getName() + "(" + column + ", " + row + ", " + width + ", " + height + ")";
-            this.justification = justification;
+            this.columnSpan = columnSpan;
+            this.rowSpan = rowSpan;
+            this.justify = justification;
         }
         
         private void rangeCheck(String name, int value) {
             if (value < 0 || value > Short.MAX_VALUE) throw new IllegalArgumentException(Range.class.getName() + "." + name + " < 0 || " + Range.class.getName() + "." + name + " > " + Short.MAX_VALUE);
+        }
+        
+        public TableLayout getParent() {
+            return layout;
         }
         
         public int getColumnIndex() {
@@ -266,18 +196,17 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
             return layout.getRows().get(rowIndex);
         }
 
-        public int getWidth() {
-            return width;
+        public int getColumnSpan() {
+            return columnSpan;
         }
         
-        public int getHeight() {
-            return height;
+        public int getRowSpan() {
+            return rowSpan;
         }
         
-        public Justify getJustification() {
-            return justification;
+        public Justify getJustify() {
+            return justify;
         }
-
 
         public boolean equals(Object o) {
             return o instanceof Range && toString().equals(o.toString());
@@ -288,15 +217,138 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
         }
         
         public String toString() {
-            return value;
+            if (stringValue == null) stringValue = "TableLayout.Range{columnIndex:" + columnIndex + ",rowIndex:" + rowIndex + ",columnSpan:" + columnSpan + ",rowSpan:" + rowSpan + ",justify=" + justify + "}"; 
+            return stringValue;
         }
     }
     
-    private static final Range DEFAULT_LIMIT = new Range();
+    public static final class Row extends ArrayGrid.Row {
+        private double height;
+        private boolean visible;
+
+        public Row(double height) {
+            super();
+            this.height = height;
+            this.visible = true;
+        }
+
+        public double getHeight() {
+            return height;
+        }
+
+        public void setHeight(double height) {
+            this.height = height;
+            TableLayout layout = (TableLayout) getParent();
+            if (layout.isAutoApply()) layout.apply();
+        }
+
+        public boolean isVisible() {
+            return visible;
+        }
+
+        public void setVisible(boolean visible) {
+            if (this.visible == visible) return;
+            TableLayout layout = (TableLayout) getParent();
+            if (this.visible) layout.visibleRows.remove(this); 
+            this.visible = visible;
+            if (this.visible) layout.visibleRows.add(this);
+            List<Component> kids = layout.getContainer().getChildren();
+            
+            if (!visible) {
+                for (Component c : kids) {
+                    Range range = (Range) c.getLimit();
+                    if (range.getRowIndex() == getIndex()) {
+                        c.setVisible(false);
+                    } else if (getIndex() < range.getRowIndex()) {
+                        range.rowIndex--;
+                    } else if (getIndex() < (range.getRowIndex() + range.getRowSpan())) {
+                        range.rowSpan--;
+                    }
+                }
+            } else {
+                for (Component c : kids) {
+                    Range range = (Range) c.getLimit();
+                    if (getIndex() < range.getRowIndex() || (getIndex() == range.getRowIndex() && c.isVisible())){
+                        range.rowIndex++;
+                    } else if (range.getRowIndex() == getIndex() && !c.isVisible()) {
+                        c.setVisible(true);
+                    } else if (getIndex() < (range.getRowIndex() + range.getRowSpan())) {
+                        range.rowSpan++;
+                    }
+                }
+            }
+            
+            if (layout.isAutoApply()) layout.apply();
+        }
+    }
     
+    public static final class Column extends ArrayGrid.Column {
+        private double width;
+        private boolean visible;
+
+        public Column(double width) {
+            super();
+            this.width = width;
+            this.visible = true;
+        }
+
+        public double getWidth() {
+            return width;
+        }
+
+        public void setWidth(double width) {
+            this.width = width;
+            TableLayout layout = (TableLayout) getParent();
+            if (layout.isAutoApply()) layout.apply();
+        }
+
+        public boolean isVisible() {
+            return visible;
+        }
+
+        public void setVisible(boolean visible) {
+            if (this.visible == visible) return;
+            TableLayout layout = (TableLayout) getParent();
+            if (this.visible) layout.visibleColumns.remove(this); 
+            this.visible = visible;
+            if (this.visible) layout.visibleColumns.add(this);
+            List<Component> kids = layout.getContainer().getChildren();
+            
+            if (!visible) {
+                for (Component c : kids) {
+                    Range range = (Range) c.getLimit();
+                    if (range.getColumnIndex() == getIndex()) {
+                        c.setVisible(false);
+                    } else if (getIndex() < range.getColumnIndex()) {
+                        range.columnIndex--;
+                    } else if (getIndex() < (range.getColumnIndex() + range.getColumnSpan())) {
+                        range.columnSpan--;
+                    }
+                }
+            } else {
+                for (Component c : kids) {
+                    Range range = (Range) c.getLimit();
+                    if (getIndex() < range.getColumnIndex() || (getIndex() == range.getColumnIndex() && c.isVisible())){
+                        range.columnIndex++;
+                    } else if (range.getColumnIndex() == getIndex() && !c.isVisible()) {
+                        c.setVisible(true);
+                    } else if (getIndex() < (range.getColumnIndex() + range.getColumnSpan())) {
+                        range.columnSpan++;
+                    }
+                }
+            }
+            
+            if (layout.isAutoApply()) layout.apply();
+        }
+    }
+
     private int margin;
     private int spacing;
     private ArrayGrid<Row, Column> grid;
+    private SortedSet<Row> visibleRows;
+    private SortedSet<Row> roVisibleRows;
+    private SortedSet<Column> visibleColumns;
+    private SortedSet<Column> roVisibleColumns;
     private boolean ignoreSet;
 
     public TableLayout(double sizes[][]) {
@@ -317,6 +369,7 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
             @Override
             protected void fireItemChange(Type type, int rowIndex, int columnIndex, Object oldValue, Object newValue) {
                 if (rowIndex >= 0 && columnIndex == -1) {
+                    TableLayout.this.setAutoApply(false);
                     
                     if (type == ItemChangeEvent.Type.ADD) {
                         if (!ignoreSet) {
@@ -324,76 +377,90 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
                                 Range l = (Range) c.getLimit();
                                 if (rowIndex <= l.getRowIndex()) {
                                     l.rowIndex++;
-                                } else if (rowIndex < (l.getRowIndex() + l.getHeight())) {
-                                    l.height++;
+                                } else if (rowIndex < (l.getRowIndex() + l.getRowSpan())) {
+                                    l.rowSpan++;
                                 }
                             }
-                            TableLayout.this.setAutoLayout(false);
+                            
                             TableLayout.Row newRow = (TableLayout.Row) newValue;
+                            if (newRow.isVisible()) TableLayout.this.visibleRows.add(newRow);
                             List<Component> kids = TableLayout.this.getContainer().getChildren();
+                            
                             for (int i = 0, cnt = newRow.size(); i < cnt; i++) {
                                 Component c = (Component) newRow.get(i);
-                                c.setLimit(i + ", " + rowIndex);
+                                c.setLimit(new Range(TableLayout.this, i, rowIndex));
                                 kids.add(c);
                             }
-                            TableLayout.this.setAutoLayout(true);
                         }
                     } else if (type == ItemChangeEvent.Type.REMOVE) {
-                        TableLayout.this.setAutoLayout(false);
-                        for (Iterator<Component> i = TableLayout.this.getContainer().getChildren().iterator(); i.hasNext();) {
-                            Component c = i.next();
-                            Range r = (Range) c.getLimit();
-                            if (rowIndex == r.getRowIndex()) {
-                                i.remove();
-                            } else if (rowIndex < r.getRowIndex()) {
-                                r.rowIndex--;
-                            } else if (rowIndex < (r.getRowIndex() + r.getHeight())) {
-                                r.height--;
+                        if (getRows().size() == 0) { //Clear was called
+                            TableLayout.this.visibleRows.clear();
+                            TableLayout.this.getContainer().getChildren().clear();
+                        } else {
+                            if (((TableLayout.Row)oldValue).isVisible()) TableLayout.this.visibleRows.remove(oldValue);
+                            
+                            for (Iterator<Component> i = TableLayout.this.getContainer().getChildren().iterator(); i.hasNext();) {
+                                Component c = i.next();
+                                Range r = (Range) c.getLimit();
+                                if (rowIndex == r.getRowIndex()) {
+                                    i.remove();
+                                } else if (rowIndex < r.getRowIndex()) {
+                                    r.rowIndex--;
+                                } else if (rowIndex < (r.getRowIndex() + r.getRowSpan())) {
+                                    r.rowSpan--;
+                                }
                             }
                         }
-                        TableLayout.this.setAutoLayout(true);
                     } else if (type == ItemChangeEvent.Type.SET) {
-                        TableLayout.this.setAutoLayout(false);
                         List<Component> kids = TableLayout.this.getContainer().getChildren();
                         TableLayout.Row oldRow = (TableLayout.Row) oldValue;
+                        if (oldRow.isVisible()) TableLayout.this.visibleRows.remove(oldRow);
+                        
                         for(Iterator i = oldRow.iterator(); i.hasNext();) {
                             Component c = (Component) i.next();
                             kids.remove(c);
                         }
                         
+                        //TODO: Bug, for some reason the new row has nothing in it.
                         //TableLayout.Row newRow = (TableLayout.Row) newValue;
                         TableLayout.Row newRow = TableLayout.this.getRows().get(rowIndex);
+                        if (newRow.isVisible()) TableLayout.this.visibleRows.add(newRow);
+                        
                         for (int i = 0, cnt = newRow.size(); i < cnt; i++) {
                             Component c = (Component) newRow.get(i);
-                            c.setLimit(i + ", " + rowIndex);
+                            c.setLimit(new Range(TableLayout.this, i, rowIndex));
                             kids.add(c);
                         }
-                        TableLayout.this.setAutoLayout(true);
                     }
-                    TableLayout.this.apply();
+                    
+                    TableLayout.this.setAutoApply(true);
                 } else if (rowIndex == -1 && columnIndex >= 0) {
+                    TableLayout.this.setAutoApply(false);
+
                     if (type == ItemChangeEvent.Type.ADD) {
                         if (!ignoreSet) {
                             for (Component c : TableLayout.this.getContainer().getChildren()) {
                                 Range r = (Range) c.getLimit();
                                 if (columnIndex <= r.getColumnIndex()) {
                                     r.columnIndex++;
-                                } else if (columnIndex < (r.getColumnIndex() + r.getWidth())) {
-                                    r.width++;
+                                } else if (columnIndex < (r.getColumnIndex() + r.getColumnSpan())) {
+                                    r.columnSpan++;
                                 }
                             }
-                            TableLayout.this.setAutoLayout(false);
+                            
                             TableLayout.Column newColumn = (TableLayout.Column) newValue;
+                            if (newColumn.isVisible()) TableLayout.this.visibleColumns.add(newColumn);
                             List<Component> kids = TableLayout.this.getContainer().getChildren();
+                            
                             for (int i = 0, cnt = newColumn.size(); i < cnt; i++) {
                                 Component c = (Component) newColumn.get(i);
-                                c.setLimit(columnIndex + ", " + i);
+                                c.setLimit(new Range(TableLayout.this, columnIndex, i));
                                 kids.add(c);
                             }
-                            TableLayout.this.setAutoLayout(true);
                         }
                     } else if (type == ItemChangeEvent.Type.REMOVE) {
-                        TableLayout.this.setAutoLayout(false);
+                        if (((TableLayout.Column)oldValue).isVisible()) TableLayout.this.visibleColumns.remove(oldValue);
+                        
                         for (Iterator<Component> i = TableLayout.this.getContainer().getChildren().iterator(); i.hasNext();) {
                             Component c = i.next();
                             Range r = (Range) c.getLimit();
@@ -401,29 +468,31 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
                                 i.remove();
                             } else if (columnIndex < r.getColumnIndex()) {
                                 r.columnIndex--;
-                            } else if (columnIndex < (r.getColumnIndex() + r.getWidth())) {
-                                r.width--;
+                            } else if (columnIndex < (r.getColumnIndex() + r.getColumnSpan())) {
+                                r.columnSpan--;
                             }
                         }
-                        TableLayout.this.setAutoLayout(true);
                     } else if (type == ItemChangeEvent.Type.SET) {
-                        TableLayout.this.setAutoLayout(false);
                         List<Component> kids = TableLayout.this.getContainer().getChildren();
                         TableLayout.Column oldColumn = (TableLayout.Column) oldValue;
+                        if (oldColumn.isVisible()) TableLayout.this.visibleColumns.remove(oldColumn);
+                        
                         for(Iterator i = oldColumn.iterator(); i.hasNext();) {
                             Component c = (Component) i.next();
                             kids.remove(c);
                         }
                         
-                        TableLayout.Column newColumn = (TableLayout.Column) newValue;
+                        TableLayout.Column newColumn = (TableLayout.Column)newValue;
+                        if (newColumn.isVisible()) TableLayout.this.visibleColumns.add(newColumn);
+                        
                         for (int i = 0, cnt = newColumn.size(); i < cnt; i++) {
                             Component c = (Component) newColumn.get(i);
-                            c.setLimit(columnIndex + ", " + i);
+                            c.setLimit(new Range(TableLayout.this, columnIndex, i));
                             kids.add(c);
                         }
-                        TableLayout.this.setAutoLayout(true);
                     }
-                    TableLayout.this.apply();
+                    
+                    TableLayout.this.setAutoApply(true);
                 } else if (rowIndex != -1 && columnIndex != -1 && type == ItemChangeEvent.Type.SET) {
                     if (!ignoreSet && (oldValue == null || !oldValue.equals(newValue))) {
                         if (oldValue != null) {
@@ -431,7 +500,7 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
                             TableLayout.this.getContainer().getChildren().remove(oldValue);
                         }
                         Component newComp = (Component) newValue;
-                        newComp.setLimit(columnIndex + ", " + rowIndex);
+                        newComp.setLimit(new Range(TableLayout.this, columnIndex, rowIndex));
                         TableLayout.this.getContainer().getChildren().add(newComp);
                     }
                 }
@@ -444,9 +513,47 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
         List<Row> rows = getRows();
         for (double h : sizes[1]) rows.add(new Row(h));
         
+        Comparator<Row> rowIndexOrder = new Comparator<Row>() {
+            public int compare(Row r1, Row r2) {
+                int index1 = r1.getIndex();
+                int index2 = r2.getIndex();
+                
+                if (index1 < index2) {
+                    return -1;
+                } else if (index1 == index2){
+                    return 0;
+                } else {
+                    return 1;
+                }
+            }            
+        };
+
+        Comparator<Column> columnIndexOrder = new Comparator<Column>() {
+            public int compare(Column c1, Column c2) {
+                int index1 = c1.getIndex();
+                int index2 = c2.getIndex();
+                
+                if (index1 < index2) {
+                    return -1;
+                } else if (index1 == index2){
+                    return 0;
+                } else {
+                    return 1;
+                }
+            }            
+        };
+        
+        visibleRows = new TreeSet<Row>(rowIndexOrder);
+        visibleRows.addAll(rows);
+        roVisibleRows = Collections.unmodifiableSortedSet(visibleRows);
+
+        visibleColumns = new TreeSet<Column>(columnIndexOrder);
+        visibleColumns.addAll(columns);
+        roVisibleColumns = Collections.unmodifiableSortedSet(visibleColumns);
+        
         setSpacing(spacing);
         setMargin(margin);
-        setAutoLayout(true);
+        setAutoApply(true);
         ignoreSet = false;
     }
     
@@ -454,13 +561,12 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
     protected void addComponent(Component comp) {
         List<Row> rows = getRows();
         Range l = (Range) comp.getLimit();
-        if (l == null) l = DEFAULT_LIMIT;
         int row = l.getRowIndex();
         int col = l.getColumnIndex();
         ignoreSet = true;
-        for (int i = row, cnt = l.getHeight() + row; i < cnt; i++) {
+        for (int i = row, cnt = l.getRowSpan() + row; i < cnt; i++) {
             Row curRow = rows.get(i);
-            for (int j = col, cnt2 = l.getWidth() + col; j < cnt2; j++) {
+            for (int j = col, cnt2 = l.getColumnSpan() + col; j < cnt2; j++) {
                 curRow.set(j, comp);
             }
         }
@@ -471,13 +577,12 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
     protected void removeComponent(Component comp) {
         List<Row> rows = getRows();
         Range r = (Range) comp.getLimit();
-        if (r == null) r = DEFAULT_LIMIT;
         int row = r.getRowIndex();
         int col = r.getColumnIndex();
         ignoreSet = true;
-        for (int i = row, cnt = r.getHeight() + row; i < cnt; i++) {
+        for (int i = row, cnt = r.getRowSpan() + row; i < cnt; i++) {
             Row curRow = rows.get(i);
-            for (int j = col, cnt2 = r.getWidth() + col; j < cnt2; j++) {
+            for (int j = col, cnt2 = r.getColumnSpan() + col; j < cnt2; j++) {
                 curRow.set(j, null);
             }
         }
@@ -487,19 +592,22 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
     @Override
     protected Object getFormalLimit(Component comp) {
         Object oLimit = comp.getLimit();
-        Range r = null;
+        Range r;
         
         if (oLimit instanceof String) {
-            r =  new Range((String)oLimit);
+            r =  new Range(this, (String)oLimit);
         } else if (oLimit instanceof Range) {
             r = (Range)oLimit;
+            if (r.layout != this) r = new Range(this, r.getColumnIndex(), r.getRowIndex(),
+                    r.getColumnSpan(), r.getRowSpan(), r.getJustify());
+        } else {
+            r = new Range(this, 0, 0);
         }
         
-        if (r != null) r.layout = this;
         return r;
     }
     
-    private int[] getAbsoluteSizes(int availableSize, List<? extends List> sizes) {
+    private int[] getAbsoluteSizes(int availableSize, SortedSet<? extends List> sizes) {
         int length = sizes.size();
         int[] absoluteSizes = new int[length];
         availableSize -= (length - 1) * spacing + margin * 2;
@@ -511,9 +619,9 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
         }
         
         int pctSize = availableSize;
-
-        for (int i = 0, cnt = length; i < cnt; i++) {
-            Object o = sizes.get(i);
+        int i = 0;
+        
+        for (List o : sizes) {
             double size = o instanceof Row ? ((Row) o).getHeight() : ((Column) o).getWidth();
             
             if (size == 0) {
@@ -524,19 +632,24 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
             } else {
                 absoluteSizes[i] = (int)size;
             }
+            
+            i++;
         }
         
         if (fillCnt > 0) {
             int fillSize = availableSize / fillCnt;
             int lastIndex = -1;
+            i = 0;
             
-            for (int i = 0, cnt = length; i < cnt; i++) {
-                Object o = sizes.get(i);
+            for (List o : sizes) {
                 double size = o instanceof Row ? ((Row) o).getHeight() : ((Column) o).getWidth();
+
                 if (size == 0) {
                     absoluteSizes[i] = fillSize;
                     lastIndex = i;
                 }
+                
+                i++;
             }
             
             if (lastIndex != -1) absoluteSizes[lastIndex] += availableSize % fillCnt;
@@ -570,13 +683,12 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
         int[] absoluteWidths = getAbsoluteSizes(container.getInnerWidth(), getVisibleColumns());
         int[] absoluteHeights = getAbsoluteSizes(container.getInnerHeight(), getVisibleRows());
 
-        for (Component c : (List<Component>) container.getChildren()) {
+        for (Component c : container.getChildren()) {
             Range limit = (Range)c.getLimit();
-            if (limit == null) limit = DEFAULT_LIMIT;
-            Justify just = limit.getJustification();
+            Justify just = limit.getJustify();
             int x = margin, y = margin, width = 0, height = 0;
             
-            for (int i = 0, cnt = limit.width, column = limit.columnIndex; i < cnt; i++) {
+            for (int i = 0, cnt = limit.columnSpan, column = limit.columnIndex; i < cnt; i++) {
                 width += absoluteWidths[i + column] + spacing;
             }
             
@@ -584,7 +696,7 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
             
             if (just != Justify.FULL && c.getWidth() < width) width = c.getWidth();
             
-            for (int i = 0, cnt = limit.height, row = limit.rowIndex; i < cnt; i++) {
+            for (int i = 0, cnt = limit.rowSpan, row = limit.rowIndex; i < cnt; i++) {
                 height += absoluteHeights[i + row] + spacing;
             }
             
@@ -630,21 +742,11 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
         return grid.getRows();
     }
     
-    public List<Column> getVisibleColumns() {
-        List<Column> l = new ArrayList<Column>(getColumns());
-        for (Iterator<Column> i = l.iterator(); i.hasNext();) {
-            Column c = i.next();
-            if (!c.isVisible()) i.remove();
-        }
-        return l;
+    public SortedSet<Column> getVisibleColumns() {
+        return roVisibleColumns;
     }
     
-    public List<Row> getVisibleRows() {
-        List<Row> l = new ArrayList<Row>(getRows());
-        for (Iterator<Row> i = l.iterator(); i.hasNext();) {
-            Row r = i.next();
-            if (!r.isVisible()) i.remove();
-        }
-        return l;
+    public SortedSet<Row> getVisibleRows() {
+        return roVisibleRows;
     }
 }

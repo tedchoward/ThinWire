@@ -172,11 +172,11 @@ abstract class AbstractLayout implements Layout {
         return container;
     }
     
-    public boolean isAutoLayout() {
+    public boolean isAutoApply() {
         return autoLayout;
     }
 
-    public void setAutoLayout(boolean autoLayout) {
+    public void setAutoApply(boolean autoLayout) {
         this.autoLayout = autoLayout;
         if (autoLayout) apply();
     }

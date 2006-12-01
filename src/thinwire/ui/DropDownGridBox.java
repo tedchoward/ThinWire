@@ -328,7 +328,7 @@ public class DropDownGridBox extends DropDown<GridBox> {
                 for (int i = 0, size = cols.size(); i < size; i++) {
                     if (visibleState[i]) {
                         GridBox.Column col = cols.get(i);
-                        String name = col.getDisplayName();
+                        String name = col.getHeader().getText();
                         if (name.length() == 0) name = col.getName();
                         int len = name.length();
                         String upperName = name.toUpperCase();

@@ -25,10 +25,6 @@
  */
 package thinwire.ui;
 
-import thinwire.render.Renderer;
-import thinwire.ui.event.ActionEvent;
-import thinwire.ui.event.ActionListener;
-
 /**
  * A <code>Label</code> is the text that appears next to a control on a
  * screen.
@@ -76,11 +72,10 @@ import thinwire.ui.event.ActionListener;
  * 
  * @author Joshua J. Gertzen
  */
-public class Label extends AbstractTextComponent implements AlignTextComponent, ActionEventComponent {
+public class Label extends AbstractTextComponent implements AlignTextComponent {
     public static final String PROPERTY_LABEL_FOR = "labelFor";
     public static final String PROPERTY_WRAP_TEXT = "wrapText";
     
-    private EventListenerImpl<ActionListener> aei = new EventListenerImpl<ActionListener>(this, EventListenerImpl.ACTION_VALIDATOR);
     private AlignX alignX = AlignX.LEFT;
     private Component labelFor = null;
     private boolean wrapText;
@@ -100,35 +95,6 @@ public class Label extends AbstractTextComponent implements AlignTextComponent, 
         if (text != null) setText(text);
         setFocusCapable(false);
         setWrapText(false);
-    }
-        
-    void setRenderer(Renderer r) {
-        super.setRenderer(r);
-        aei.setRenderer(r);
-    }    
-		
-    public void addActionListener(String action, ActionListener listener) {
-        aei.addListener(action, listener);
-    }
-    
-    public void addActionListener(String[] actions, ActionListener listener) {
-        aei.addListener(actions, listener);
-    }    
-    
-    public void removeActionListener(ActionListener listener) {
-        aei.removeListener(listener);
-    }    
-
-    public void fireAction(ActionEvent ev) {
-        aei.fireAction(ev);
-    }
-    
-    /**
-     * A convienence method that is equivalent to <code>fireAction(new ActionEvent(this, action))</code>.
-     * @param action the action name
-     */
-    public void fireAction(String action) {
-        aei.fireAction(new ActionEvent(this, action));
     }
     
     public AlignX getAlignX() {
