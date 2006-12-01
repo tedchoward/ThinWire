@@ -147,7 +147,7 @@ final class TreeRenderer extends ComponentRenderer implements ItemChangeListener
             setPropertyChangeIgnored(name, true);
             ti.setExpanded(value.charAt(0) == 't');
             setPropertyChangeIgnored(name, false);            
-        } else if (!componentChangeFireAction(event, Tree.Item.PROPERTY_ITEM_SELECTED) && !componentChangeFireDrop(event)) {
+        } else {
             super.componentChange(event);
         }
     }    

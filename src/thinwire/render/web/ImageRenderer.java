@@ -51,8 +51,4 @@ final class ImageRenderer extends ComponentRenderer {
             super.propertyChange(pce);
         }
     }
-    
-    public void componentChange(WebComponentEvent event) {
-        if (!componentChangeFireAction(event, null) && !componentChangeFireDrop(event)) super.componentChange(event);
-    }           
 }

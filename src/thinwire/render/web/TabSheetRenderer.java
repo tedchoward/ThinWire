@@ -67,8 +67,4 @@ class TabSheetRenderer extends ContainerRenderer {
             super.propertyChange(pce);
         }
     }
-    
-    public void componentChange(WebComponentEvent event) {
-        if (!componentChangeFireAction(event, null) && !componentChangeFireDrop(event)) super.componentChange(event);
-    }           
 }

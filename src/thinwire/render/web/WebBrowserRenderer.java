@@ -53,8 +53,4 @@ final class WebBrowserRenderer extends ComponentRenderer {
             super.propertyChange(pce);
         }
     }
-    
-    public void componentChange(WebComponentEvent event) {
-        if (!componentChangeFireDrop(event)) super.componentChange(event);
-    }           
 }

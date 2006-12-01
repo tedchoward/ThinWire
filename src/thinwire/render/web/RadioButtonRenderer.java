@@ -122,7 +122,7 @@ final class RadioButtonRenderer extends TextComponentRenderer {
                 rb.setChecked(Boolean.valueOf(value).booleanValue());
                 setPropertyChangeIgnored(RadioButton.PROPERTY_CHECKED, false);
             }
-        } else if (!componentChangeFireDrop(event)) {
+        } else {
             super.componentChange(event);
         }
     }

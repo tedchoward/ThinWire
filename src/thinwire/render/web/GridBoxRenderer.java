@@ -391,7 +391,7 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
             GridBox.Column col = gb.getColumns().get(getRealIndex(Integer.parseInt(values[0])));
             if (col.getWidth() != -1) col.setWidth(Integer.parseInt(values[1]));
             setPropertyChangeIgnored(GridBox.Column.PROPERTY_COLUMN_WIDTH, false);
-        } else if (!componentChangeFireAction(event, GridBox.Row.PROPERTY_ROW_SELECTED) && !componentChangeFireDrop(event)) {
+        } else {
             super.componentChange(event);
         }
     }        

@@ -54,8 +54,4 @@ final class ButtonRenderer extends TextComponentRenderer {
             super.propertyChange(pce);
         }
     }   
-    
-    public void componentChange(WebComponentEvent event) {
-        if (!componentChangeFireAction(event, null)) super.componentChange(event);
-    }        	
 }

@@ -291,7 +291,6 @@ var tw_Component = Class.extend({
     addDragTarget: function(compId) {
         if (this._dragAndDropHandler == null) this._dragAndDropHandler = new tw_DragAndDropHandler(this);
         var target = tw_Component.instances[compId];
-        alert("adding DND: dropTarget=" + target._box.className + "(" + compId + ") <- dragSource=" + this._box.className + "(" + this._id + ")");
         this._dragAndDropHandler.addTarget(target);
     },
     
@@ -335,8 +334,8 @@ var tw_Component = Class.extend({
         }
     },
         
-    fireDrop: function(source, dragComponent, dragObject) {
-        tw_em.sendViewStateChanged(this._id, "drop", source + "," + dragComponent._id + "," + dragObject);
+    fireDrop: function(source, dragComponent, dragObject, dragX, dragY, dropX, dropY) {
+        tw_em.sendViewStateChanged(this._id, "drop", source + "," + dragComponent._id + "," + dragObject + "," + dragX + "," + dragY + "," + dropX + "," + dropY);
     },
     
     firePropertyChange: function(name, value, key) {

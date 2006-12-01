@@ -164,16 +164,12 @@ final class MenuRenderer extends ComponentRenderer implements ItemChangeListener
             sb.setLength(0);
         }
     }
-    
-    public void componentChange(WebComponentEvent event) {
-        if (!componentChangeFireAction(event, null)) super.componentChange(event);
-    }    
 
     private void setupKeyPressListener(final Menu.Item item) {
         KeyPressListener listener = new KeyPressListener() {
             public void keyPress(KeyPressEvent ev) {
                 Menu menu = item.getHierarchy();                        
-                if (menu != null) menu.fireAction(new ActionEvent(menu, Menu.ACTION_CLICK, item));
+                if (menu != null) menu.fireAction(new ActionEvent(menu, item, Menu.ACTION_CLICK));
             }
         };
 

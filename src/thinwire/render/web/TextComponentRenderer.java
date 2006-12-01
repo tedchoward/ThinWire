@@ -51,8 +51,4 @@ abstract class TextComponentRenderer extends ComponentRenderer {
             super.propertyChange(pce);
         }
     }
-    
-    public void componentChange(WebComponentEvent event) {
-        if (!componentChangeFireDrop(event)) super.componentChange(event);
-    }
 }

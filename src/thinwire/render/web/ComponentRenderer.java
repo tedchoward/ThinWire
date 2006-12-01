@@ -315,10 +315,42 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         }
     }    
     
+    public int getInt(String value) {
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+    
     public void componentChange(WebComponentEvent event) {
         String name = event.getName();
         
-        if (name.equals("size")) {
+        if (name.equals(Component.ACTION_CLICK) || name.equals(Component.ACTION_DOUBLE_CLICK)) {
+            String actionIgnoreProperty;
+            
+            if (this.comp instanceof DateBox) {
+                actionIgnoreProperty = DateBox.PROPERTY_SELECTED_DATE;
+            } else if (this.comp instanceof GridBox) {
+                actionIgnoreProperty = GridBox.Row.PROPERTY_ROW_SELECTED;
+            } else if (comp instanceof Tree) {
+                actionIgnoreProperty = Tree.Item.PROPERTY_ITEM_SELECTED;
+            } else {
+                actionIgnoreProperty = null;
+            }
+            
+            if (actionIgnoreProperty != null) setPropertyChangeIgnored(actionIgnoreProperty, true);
+            comp.fireAction(new ActionEvent(comp, getEventObject(comp, (String)event.getValue()), name));
+            if (actionIgnoreProperty != null) setPropertyChangeIgnored(actionIgnoreProperty, false);
+        } else if (event.getName().equals(CLIENT_EVENT_DROP)) {
+            String[] parts = ((String)event.getValue()).split(",", -1);
+            Component dragComponent = (Component)wr.ai.getComponentFromId(Integer.parseInt(parts[1]));
+            int dragX = getInt(parts[3]);
+            int dragY = getInt(parts[4]);
+            int sourceX = getInt(parts[5]);
+            int sourceY = getInt(parts[6]);
+            comp.fireDrop(new DropEvent(comp, getEventObject(comp, parts[0]), sourceX, sourceY, dragComponent, getEventObject(dragComponent, parts[2]), dragX, dragY));
+        } else if (name.equals("size")) {
             this.setPropertyChangeIgnored(Component.PROPERTY_WIDTH, true);
             this.setPropertyChangeIgnored(Component.PROPERTY_HEIGHT, true);
             String[] args = ((String)event.getValue()).split(",");
@@ -513,32 +545,6 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         }
         
         return o;
-    }
-    
-    boolean componentChangeFireDrop(WebComponentEvent event) {
-        Component comp = (Component)this.comp;
-
-        if (event.getName().equals(CLIENT_EVENT_DROP)) {
-            String[] parts = ((String)event.getValue()).split(",", -1);
-            Component dragComponent = (Component)wr.ai.getComponentFromId(Integer.parseInt(parts[1]));
-            comp.fireDrop(new DropEvent(comp, getEventObject(comp, parts[0]), dragComponent, getEventObject(dragComponent, parts[2])));
-            return true;
-        } else {
-            return false;
-        }
-    }
-    
-    boolean componentChangeFireAction(WebComponentEvent event, String ignoreProperty) {
-        String name = event.getName();
-        
-        if (name.equals(Component.ACTION_CLICK) || name.equals(Component.ACTION_DOUBLE_CLICK)) {
-            if (ignoreProperty != null) setPropertyChangeIgnored(ignoreProperty, true);
-            comp.fireAction(new ActionEvent(comp, name, getEventObject(comp, (String)event.getValue())));
-            if (ignoreProperty != null) setPropertyChangeIgnored(ignoreProperty, false);
-            return true;
-        } else {
-            return false;
-        }
     }
     
     final String getQualifiedURL(String location) {        

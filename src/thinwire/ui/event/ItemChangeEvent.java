@@ -35,7 +35,8 @@ import thinwire.ui.ItemChangeEventComponent;
  * @author Joshua J. Gertzen
  */
 public final class ItemChangeEvent extends EventObject {
-    private ItemChangeEventComponent sourceComponent;
+    private String stringValue;
+    private ItemChangeEventComponent sourceComponent;    
     private Type type;
 	private Object position;
 	private Object oldValue;
@@ -79,4 +80,18 @@ public final class ItemChangeEvent extends EventObject {
 	public Object getOldValue() {
 		return oldValue;
 	}	
+
+    public boolean equals(Object o) {
+        return o instanceof PropertyChangeEvent && toString().equals(o.toString());
+    }
+    
+    public int hashCode() {
+        return toString().hashCode();
+    }
+    
+    public String toString() {
+        if (stringValue == null) stringValue = "ItemChangeEvent{sourceComponent:" + sourceComponent.getClass().getName() + "@" + System.identityHashCode(sourceComponent) + 
+            ",source:" + source + ",type:" + type + ",position:" + position + ",newValue:" + newValue + ",oldValue:" + oldValue + "}";
+        return stringValue;
+    }
 }

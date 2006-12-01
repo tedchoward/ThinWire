@@ -27,6 +27,8 @@ var tw_DragAndDropHandler = Class.extend({
     _source: null,
     _targets: null,
     _dragBox: null,
+    _dragX: 0,
+    _dragY: 0,
     _dragInd: null,
     _dragBoxHandler: null,
     _cnt: null,
@@ -86,6 +88,9 @@ var tw_DragAndDropHandler = Class.extend({
             this._dragBoxHandler.releaseDrag();
             return;
         }
+        
+        this._dragX = tw_getEventOffsetX(event, this._source._box.className);
+        this._dragY = tw_getEventOffsetY(event, this._source._box.className);
         
         var s = this._dragBox.style;
         s.position = "absolute";
@@ -150,7 +155,9 @@ var tw_DragAndDropHandler = Class.extend({
                 var curTarget = this._targets[target];
                 
                 if (tw_getEventTarget(event, curTarget.getDropArea().className) == curTarget.getDropArea()) {
-                    curTarget.fireDrop(curTarget.getDropTarget(event), this._source, this._dragBox._dragObject);                    
+                    //tw_getEventTarget(event);
+                    curTarget.fireDrop(curTarget.getDropTarget(event), this._source, this._dragBox._dragObject, this._dragX, this._dragY, 
+                        tw_getEventOffsetX(event, curTarget._box.className), tw_getEventOffsetY(event, curTarget._box.className));                    
                 }
             }
             

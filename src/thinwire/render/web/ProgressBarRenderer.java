@@ -34,8 +34,4 @@ final class ProgressBarRenderer extends RangeComponentRenderer {
         init(PROGRESS_BAR_CLASS, wr, c, container);
         super.render(wr, comp, container);
     }
-    
-    public void componentChange(WebComponentEvent event) {
-        if (!componentChangeFireAction(event, null) && !componentChangeFireDrop(event)) super.componentChange(event);
-    }           
 }

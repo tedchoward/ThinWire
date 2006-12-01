@@ -33,6 +33,7 @@ import thinwire.ui.Component;
  * @author Joshua J. Gertzen
  */
 public final class PropertyChangeEvent extends EventObject {
+    private String stringValue;
     private Component sourceComponent;
     private String propertyName;
     private Object newValue;
@@ -61,5 +62,19 @@ public final class PropertyChangeEvent extends EventObject {
 
     public Object getOldValue() {
         return oldValue;
+    }
+    
+    public boolean equals(Object o) {
+        return o instanceof PropertyChangeEvent && toString().equals(o.toString());
+    }
+    
+    public int hashCode() {
+        return toString().hashCode();
+    }
+    
+    public String toString() {
+        if (stringValue == null) stringValue = "PropertyChangeEvent{sourceComponent:" + sourceComponent.getClass().getName() + "@" + System.identityHashCode(sourceComponent) + 
+            ",source:" + source + ",propertyName:" + propertyName + ",oldValue:" + oldValue + ",newValue:" + newValue + "}";
+        return stringValue;
     }
 }

@@ -65,7 +65,7 @@ final class DateBoxRenderer extends ComponentRenderer {
             setPropertyChangeIgnored(name, true);
             db.setSelectedDate(dt);
             setPropertyChangeIgnored(name, false);
-        } else if (!componentChangeFireAction(event, DateBox.PROPERTY_SELECTED_DATE) && !componentChangeFireDrop(event)) {
+        } else {
             super.componentChange(event);
         }
     }

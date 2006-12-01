@@ -140,6 +140,7 @@ public class KeyPressEvent extends EventObject {
         return encodeKeyPressCombo(ctrl, alt, shift, key);
     }
         
+    private String stringValue;
     private boolean ctrl;
     private boolean alt;
     private boolean shift;
@@ -177,5 +178,19 @@ public class KeyPressEvent extends EventObject {
     
     public String getKeyPressCombo() {
         return keyPressCombo;
+    }
+
+    public boolean equals(Object o) {
+        return o instanceof KeyPressEvent && toString().equals(o.toString());
+    }
+    
+    public int hashCode() {
+        return toString().hashCode();
+    }
+    
+    public String toString() {
+        if (stringValue == null) stringValue = "KeyPressEvent{sourceComponent:" + source.getClass().getName() + "@" + System.identityHashCode(source) + 
+            ",keyPressCombo:" + keyPressCombo + "}";
+        return stringValue;
     }
 }

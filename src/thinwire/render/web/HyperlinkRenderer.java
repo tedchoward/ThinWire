@@ -54,8 +54,4 @@ final class HyperlinkRenderer extends TextComponentRenderer {
             super.propertyChange(pce);
         }
     }
-    
-    public void componentChange(WebComponentEvent event) {
-        if (!componentChangeFireAction(event, null) && !componentChangeFireDrop(event)) super.componentChange(event);
-    }           
 }

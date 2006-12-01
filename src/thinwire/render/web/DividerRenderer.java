@@ -37,8 +37,4 @@ final class DividerRenderer extends ComponentRenderer {
         init(DIVIDER_CLASS, wr, c, container);
         super.render(wr, c, container);
 	}
-    
-    public void componentChange(WebComponentEvent event) {
-        if (!componentChangeFireAction(event, null) && !componentChangeFireDrop(event)) super.componentChange(event);
-    }           
 }

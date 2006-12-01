@@ -768,7 +768,7 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
      * @param range a GridBox.Range object that represents the part of the GridBox on which the action occured.
      */
     public void fireAction(String action, Range range) {
-        fireAction(new ActionEvent(this, action, range));
+        fireAction(new ActionEvent(this, range, action));
     }
 	
 	public List<GridBox.Column> getColumns() {

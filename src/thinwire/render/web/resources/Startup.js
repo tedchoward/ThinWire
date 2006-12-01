@@ -139,8 +139,34 @@ function tw_getEventButton(event) {
     return event.which ? event.which : event.button;
 }
 
-function tw_getEventOffsetX(event) {
-    return event.layerX ? event.layerX : event.offsetX;
+function tw_getEventOffsetX(event, className) {
+    var x = event.layerX ? event.layerX : event.offsetX;
+    
+    if (className != null) {
+        var source = tw_getEventTarget(event);
+
+        while (source != null && source.className != className) {
+            x += source.offsetLeft;
+            source = source.parentNode;
+        }
+    }
+    
+    return x;
+}
+
+function tw_getEventOffsetY(event, className) {
+    var y = event.layerY ? event.layerY : event.offsetY;
+    
+    if (className != null) {
+        var source = tw_getEventTarget(event);
+        
+        while (source != null && source.className != className) {
+            y += source.offsetTop;
+            source = source.parentNode;
+        }
+    }
+    
+    return y;
 }
 
 function tw_getEventKeyCode(event) {
