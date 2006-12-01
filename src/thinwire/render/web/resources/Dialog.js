@@ -35,7 +35,6 @@ var tw_Dialog = tw_BaseContainer.extend({
     _moveDrag: null,
     _resizeDrag: null,
     _imageResize: "url(?_twr_=dResize.png)",
-    _fontColor: "",
     
     construct: function(id, containerId, props) {
         arguments.callee.$.call(this, "dialog", id, 0);
@@ -178,9 +177,7 @@ var tw_Dialog = tw_BaseContainer.extend({
     setStyle: function(name, value) {
         arguments.callee.$.call(this, name, value);
 
-        if (name == "color") {
-            this._fontColor = this._fontBox.style.color;
-        } else if (name == "borderWidth" && this._closeButton != null) {
+        if (name == "borderWidth" && this._closeButton != null) {
             this._closeButton.style.borderWidth = value;
             this._calcCloseButtonSize(this._borderSize);        
         }

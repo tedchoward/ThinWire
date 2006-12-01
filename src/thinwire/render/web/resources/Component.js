@@ -51,7 +51,8 @@ var tw_Component = Class.extend({
     _focusCapable: true,
     _backgroundBox: null,
     _backgroundColor: "",
-    _disabledBackgroundColor: null,
+    _grayFontColor: null,
+    _fontColor: null,
     _borderBox: null,
     _scrollBox: null,
     _borderColor: null,
@@ -67,6 +68,7 @@ var tw_Component = Class.extend({
     construct: function(tagName, className, id, containerId) {
         var box = document.createElement(tagName);
         box.className = className;
+        this._grayFontColor = tw_COLOR_GRAYTEXT;
         var s = box.style;
         s.position = "absolute";
         s.overflow = "hidden";
@@ -133,7 +135,7 @@ var tw_Component = Class.extend({
         }
         
         this._enabled = enabled;
-        this._backgroundBox.style.backgroundColor = enabled ? this._backgroundColor : (this._disabledBackgroundColor == null ? tw_COLOR_THREEDFACE : this._disabledBackgroundColor);
+        if (this._fontBox != null) this._fontBox.style.color = enabled ? this._fontColor : this._grayFontColor;
     },
     
     setPropertyWithEffect: function(prop, value, unitSize, time) {
@@ -255,6 +257,7 @@ var tw_Component = Class.extend({
             }
         } else {
             var s = this._fontBox == null ? null : this._fontBox.style;
+            if (name == "color") this._fontColor = value;
         }
         
         if (s != null) s[name] = value;

@@ -27,8 +27,6 @@
 //TODO: When a button or component is disabled it should be excluded from the tabbing order.
 //TODO: focus gain / lose does not work in firefox.
 var tw_Button = tw_Component.extend({
-    _fontColor: null,
-        
     construct: function(id, containerId, props) {
         arguments.callee.$.call(this, "div", "button", id, containerId);
         var s = this._box.style;
@@ -41,8 +39,6 @@ var tw_Button = tw_Component.extend({
         var s = border.style;
         s.overflow = "hidden";
         s.position = "absolute";
-        //s.backgroundColor = tw_COLOR_TRANSPARENT;
-        //s.zIndex = "0";
         this._box.appendChild(border);
 
         var surface = this._fontBox = this._focusBox = document.createElement("a");
@@ -84,8 +80,9 @@ var tw_Button = tw_Component.extend({
     },
     
     _mouseUpListener: function(ev) {
-        if (!this._enabled || tw_getEventButton(ev) != 1) return;
-        this._borderBox.style.borderStyle = this._borderType;
+        if (this._enabled && tw_getEventButton(ev) == 1 || ev.type == "mouseout") {
+            this._borderBox.style.borderStyle = this._borderType;
+        }
     },
 
     //TODO: Will simply returning false from click when disabled, work in Gecko?
@@ -97,12 +94,6 @@ var tw_Button = tw_Component.extend({
         this._clickListener(ev); 
     },
 
-    setStyle: function(name, value) {
-        arguments.callee.$.call(this, name, value);
-        if (name == "backgroundColor") this._disabledBackgroundColor = value;
-        if (name == "color") this._fontColor = value;
-    },
-    
     setWidth: function(width) {
         arguments.callee.$.call(this, width);
         width -= this._boxSizeSub;
@@ -176,6 +167,12 @@ var tw_Button = tw_Component.extend({
             
             w.setStandardButton(null); 
         }
+    },
+
+    getDragBox: function() {
+        var dragBox = this._fontBox.cloneNode(true);
+        dragBox.style.backgroundColor = tw_COLOR_TRANSPARENT;
+        return dragBox;
     },
     
     destroy: function() {

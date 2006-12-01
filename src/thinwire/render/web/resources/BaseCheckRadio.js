@@ -33,7 +33,8 @@ var tw_BaseCheckRadio = tw_Component.extend({
     construct: function(className, id, containerId) {
         arguments.callee.$.call(this, "a", className, id, containerId);
         this._box.appendChild(document.createTextNode(""));
-
+        this._grayFontColor = tw_COLOR_WINDOWTEXT;
+        
         var s = this._box.style;
         s.display = "block";
         s.cursor = "default";        
@@ -135,8 +136,6 @@ var tw_BaseCheckRadio = tw_Component.extend({
                 this._oldBackgroundBox = this._backgroundBox;
                 this._backgroundBox = this._borderImage._c;
             }
-            
-            this._backgroundBox.style.backgroundColor = this._enabled ? this._backgroundColor : this._disabledBackgroundColor;
         }
     },
     

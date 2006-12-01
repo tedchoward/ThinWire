@@ -28,7 +28,7 @@ var tw_Label = tw_Component.extend({
     construct: function(id, containerId, props) {
         arguments.callee.$.call(this, "div", "label", id, containerId);
         this._box.appendChild(document.createTextNode(""));
-        
+        this._grayFontColor = tw_COLOR_WINDOWTEXT;
         var s = this._box.style;
         s.verticalAlign = "middle";
         s.whiteSpace = "nowrap";        

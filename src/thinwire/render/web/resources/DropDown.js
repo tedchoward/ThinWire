@@ -98,8 +98,8 @@ var tw_DropDown = tw_BaseText.extend({
         this.fireCompAction(subType, eventData);
     },
     
-    _buttonMouseDownListener: function(event) {
-        if (!this._enabled || tw_getEventButton(event) != 1) return; 
+    _buttonMouseDownListener: function(ev) {
+        if (!this._enabled || tw_getEventButton(ev) != 1) return; 
         var s = this._button.style;
         s.borderStyle = "solid";
         var pad = this._buttonBorderSize;
@@ -110,16 +110,17 @@ var tw_DropDown = tw_BaseText.extend({
         s.padding = pad + "px";
     },
         
-    _buttonMouseUpListener: function(event) {
-        if (!this._enabled || tw_getEventButton(event) != 1) return; 
-        var s = this._button.style;
-        s.borderStyle = "outset";
-        s.borderColor = tw_Component.getIEBorder(tw_COLOR_BUTTONFACE, "outset");
-        s.borderWidth = this._buttonBorderSize + "px";
-        s.padding = "0px";    
+    _buttonMouseUpListener: function(ev) {
+        if (this._enabled && tw_getEventButton(ev) == 1 || ev.type == "mouseout") {
+            var s = this._button.style;
+            s.borderStyle = "outset";
+            s.borderColor = tw_Component.getIEBorder(tw_COLOR_BUTTONFACE, "outset");
+            s.borderWidth = this._buttonBorderSize + "px";
+            s.padding = "0px";
+        }
     },
     
-    _buttonClickListener: function(event) {
+    _buttonClickListener: function(ev) {
         if (!this._enabled || this._ddComp == null) return;
         
         if (!this._ddComp.isVisible()) {

@@ -79,8 +79,8 @@ var tw_DragAndDropHandler = Class.extend({
             }
         }
         
-        if (this._targets == null) return;
-                
+        if (this._targets == null || !this._source._enabled) return;
+
         this._cnt = 0;
         this._dragBox = this._source.getDragBox(event);
         

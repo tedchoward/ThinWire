@@ -66,6 +66,14 @@ var tw_BaseContainer = tw_Component.extend({
         dragBox.style.backgroundColor = tw_COLOR_TRANSPARENT;
         return dragBox;
     },
+    
+    getDragArea: function() {
+        this._container;
+    },
+    
+    getDropArea: function() {
+        this._container;
+    },
         
     addComponent: function(insertAtIndex, comp) {
         if (insertAtIndex == -1 || insertAtIndex >= this._children.length) {

@@ -133,7 +133,7 @@ var tw_TabSheet = tw_BaseContainer.extend({
     
     getDragBox: function() {
         var dragBox = this._tab.cloneNode(true);
-        s.backgroundColor = tw_COLOR_TRANSPARENT;
+        dragBox.style.backgroundColor = tw_COLOR_TRANSPARENT;
         return dragBox;
     },
     
