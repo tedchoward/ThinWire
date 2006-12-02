@@ -73,6 +73,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     static final String SET_WIDTH = "setWidth";
     static final String SET_HEIGHT = "setHeight";
     static final String SET_VISIBLE = "setVisible";
+    static final String SET_FX_OPACITY = "setFXOpacity";
     static final String SET_PROPERTY_WITH_EFFECT = "setPropertyWithEffect";
 
     //Shared by other renderers
@@ -124,6 +125,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         if (!isPropertyChangeIgnored(Component.PROPERTY_Y)) addInitProperty(Component.PROPERTY_Y, comp.getY());
         if (!isPropertyChangeIgnored(Component.PROPERTY_WIDTH)) addInitProperty(Component.PROPERTY_WIDTH, comp.getWidth());
         if (!isPropertyChangeIgnored(Component.PROPERTY_HEIGHT)) addInitProperty(Component.PROPERTY_HEIGHT, comp.getHeight());        
+        if (!isPropertyChangeIgnored(FX.PROPERTY_FX_OPACITY)) addInitProperty(FX.PROPERTY_FX_OPACITY, comp.getStyle().getFX().getOpacity());        
         if (!isPropertyChangeIgnored(Component.PROPERTY_VISIBLE)) addInitProperty(Component.PROPERTY_VISIBLE, 
                 visibleChange != FX.Type.NONE && cr != null && cr.isFullyRendered() ? Boolean.FALSE : comp.isVisible());                
         if (!isPropertyChangeIgnored(Component.PROPERTY_ENABLED)) addInitProperty(Component.PROPERTY_ENABLED, comp.isEnabled());
@@ -460,6 +462,8 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
             if (((Boolean)newValue).booleanValue()) postClientEvent(SET_FOCUS, newValue);
         } else if (name.equals(Component.PROPERTY_FOCUS_CAPABLE)) {
             postClientEvent(SET_FOCUS_CAPABLE, pce.getNewValue());
+        } else if (name.equals(FX.PROPERTY_FX_OPACITY)) {
+            postClientEvent(SET_FX_OPACITY, pce.getNewValue());
         } else if (name.equals(Component.PROPERTY_X)) {
             setPropertyWithEffect(name, pce.getNewValue(), pce.getOldValue(), SET_X, FX.PROPERTY_FX_POSITION_CHANGE);
         } else if (name.equals(Component.PROPERTY_Y)) {
@@ -479,14 +483,6 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     final void postClientEvent(String methodName, Object... args) {
         wr.ai.clientSideMethodCall(id, methodName, args);
     }
-    
-    /*final void setPropertyChangeIgnored(String name, Object value, boolean ignore) {
-        if (ignore) {            
-            ignoredProperties.put(name, value);
-        } else {
-            ignoredProperties.remove(name);
-        }
-    }*/
 
     final void setPropertyChangeIgnored(String name, boolean ignore) {
         if (ignore) {            
@@ -494,7 +490,6 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         } else {
             ignoredProperties.remove(name);
         }
-        //setPropertyChangeIgnored(name, NO_VALUE, ignore);
     }
 
     final boolean isPropertyChangeIgnored(String name, Object value) {

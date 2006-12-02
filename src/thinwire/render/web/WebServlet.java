@@ -53,9 +53,8 @@ import javax.servlet.http.*;
 public final class WebServlet extends HttpServlet {    
     private static final int EVENT_WEB_COMPONENT = 0;
     private static final int EVENT_GET_EVENTS = 1;
-    private static final int EVENT_LOG_MESSAGE = 2;
-    private static final int EVENT_SYNC_CALL = 3;
-    private static final int EVENT_RUN_TIMER = 4;
+    private static final int EVENT_SYNC_CALL = 2;
+    private static final int EVENT_RUN_TIMER = 3;
     
     private static enum InitParam {
         MAIN_CLASS, EXTRA_ARGUMENTS, STYLE_SHEET;
@@ -255,16 +254,6 @@ public final class WebServlet extends HttpServlet {
                 }
                 
                 case EVENT_GET_EVENTS: break;
-                
-                case EVENT_LOG_MESSAGE: {
-                    readSimpleValue(sb, car);
-                    String levelName = sb.toString();
-                    readComplexValue(sb, car);                    
-                    String message = sb.toString();                    
-                    app.queueWebComponentEvent(new WebComponentEvent(WebApplication.APPEVENT_ID, WebApplication.APPEVENT_LOG_MESSAGE,
-                            new String[] {levelName, message}));
-                    break;
-                }
                 
                 case EVENT_SYNC_CALL: {
                     readComplexValue(sb, car);

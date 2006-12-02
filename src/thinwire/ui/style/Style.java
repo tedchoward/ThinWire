@@ -61,6 +61,7 @@ public class Style {
         fx.setPositionChange(FX.Type.NONE);
         fx.setSizeChange(FX.Type.NONE);
         fx.setVisibleChange(FX.Type.NONE);
+        fx.setOpacity(100);
         
         DEFAULT_STYLE = s;
     }

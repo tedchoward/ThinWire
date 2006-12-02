@@ -32,9 +32,8 @@
 var tw_EventManager = Class.extend({    
     _EVENT_WEB_COMPONENT: 0,
     _EVENT_GET_EVENTS: 1,
-    _EVENT_LOG_MESSAGE: 2, 
-    _EVENT_SYNC_CALL: 3,
-    _EVENT_RUN_TIMER: 4,
+    _EVENT_SYNC_CALL: 2,
+    _EVENT_RUN_TIMER: 3,
     _autoSyncResponse: true,
     _outboundEvents: null,
     _postOutboundEvents: false,
@@ -186,7 +185,6 @@ var tw_EventManager = Class.extend({
         }                            
     },
         
-    postLogMessage: function(levelName, msg) { this._postOutboundEvent(this._EVENT_LOG_MESSAGE, levelName + ":" + new String(msg).length + ":" + msg); },
     sendGetEvents: function() { this._sendOutboundEvent(this._EVENT_GET_EVENTS, null); },    
     sendRunTimer: function(id) { this._sendOutboundEvent(this._EVENT_RUN_TIMER, id + ":"); },    
     

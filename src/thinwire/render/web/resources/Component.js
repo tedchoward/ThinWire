@@ -53,6 +53,7 @@ var tw_Component = Class.extend({
     _width: 0,
     _height: 0,
     _enabled: true,
+    _visible: true,
     _focusCapable: true,
     _backgroundBox: null,
     _backgroundColor: "",
@@ -120,13 +121,13 @@ var tw_Component = Class.extend({
     },
     
     setVisible: function(visible) {
-        this.setOpacity(visible ? 100 : 0);
+        this._visible = visible;
+        this._box.style.display = visible ? "block" : "none";
     },
     
-    setOpacity: function(opacity) {
-        this._box.style.display = opacity > 0 ? "block" : "none";
-        tw_setOpacity(this._box, opacity);        
+    setFXOpacity: function(opacity) {
         this._opacity = opacity;
+        tw_setOpacity(this._box, opacity);        
     },
     
     setFocusCapable: function(focusCapable) {

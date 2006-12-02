@@ -126,10 +126,14 @@ var tw_TabSheet = tw_BaseContainer.extend({
         }
     },
     
-    setOpacity: function(opacity) {
-        this._tab.style.display = opacity > 0 ? "block" : "none";
-        tw_setOpacity(this._tab, opacity);        
+    setVisible: function(visible) {
+        this._visible = visible;
+        this._tab.style.display = visible ? "block" : "none";
+    },
+    
+    setFXOpacity: function(opacity) {
         this._opacity = opacity;
+        tw_setOpacity(this._tab, opacity);        
     },
     
     getDragArea: function() {

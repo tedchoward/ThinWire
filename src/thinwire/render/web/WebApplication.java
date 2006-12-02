@@ -101,7 +101,6 @@ public final class WebApplication extends Application {
         "EventManager.js",
         "Frame.js",
         "GridBox.js",
-        //"Logger.js",
         "Hyperlink.js",
         "Image.js",
         "KeyboardManager.js",
@@ -299,7 +298,6 @@ public final class WebApplication extends Application {
     static public final Integer APPEVENT_ID = new Integer(Integer.MAX_VALUE);
     static public final String APPEVENT_SHUTDOWN = "SHUTDOWN";
     static final String APPEVENT_FILEUPLOAD_COMPLETE = "FILEUPLOAD_COMPLETE";
-    static final String APPEVENT_LOG_MESSAGE = "LOG_MESSAGE";
     static final String APPEVENT_RUN_TIMER = "RUN_TIMER";
 
     private static class ClientSideScriptException extends RuntimeException {
@@ -331,19 +329,7 @@ public final class WebApplication extends Application {
             public void componentChange(WebComponentEvent event) {
                 String name = event.getName();
 
-                if (APPEVENT_LOG_MESSAGE.equals(name)) {
-                    String[] msg = (String[]) event.getValue();
-                    Level level = Level.parse(msg[0].toUpperCase());
-
-                    if (level == Level.SEVERE) {
-                        reportException(this, new ClientSideScriptException(msg[1]));
-                    } else if (log.isLoggable(level)) {
-                        LogRecord lr = new LogRecord(level, msg[1]);
-                        lr.setSourceClassName(CLASS_NAME);
-                        lr.setSourceMethodName("[client-side]");
-                        log.log(lr);
-                    }
-                } else if (APPEVENT_SHUTDOWN.equals(name)) {
+                if (APPEVENT_SHUTDOWN.equals(name)) {
                     getFrame().setVisible(false);
                 } else if (APPEVENT_RUN_TIMER.equals(name)) {
                     String timerId = (String)event.getValue();

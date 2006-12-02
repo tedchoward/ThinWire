@@ -34,9 +34,10 @@ package thinwire.ui.style;
  * @author Joshua J. Gertzen
  */
 public class FX {
-    public static final String PROPERTY_FX_POSITION_CHANGE = "fxPositionChange";
-    public static final String PROPERTY_FX_SIZE_CHANGE = "fxSizeChange";
-    public static final String PROPERTY_FX_VISIBLE_CHANGE = "fxVisibleChange";
+    public static final String PROPERTY_FX_POSITION_CHANGE = "fXPositionChange";
+    public static final String PROPERTY_FX_SIZE_CHANGE = "fXSizeChange";
+    public static final String PROPERTY_FX_VISIBLE_CHANGE = "fXVisibleChange";
+    public static final String PROPERTY_FX_OPACITY = "fXOpacity";
     
     public enum Type {
         NONE, SMOOTH;
@@ -50,6 +51,7 @@ public class FX {
     private Type positionChange;
     private Type sizeChange;
     private Type visibleChange;
+    private int opacity = -1;
     
     FX(Style parent) {
         this.parent = parent;
@@ -68,10 +70,12 @@ public class FX {
             if (getPositionChange().equals(df.getPositionChange())) setPositionChange(fx.getPositionChange());
             if (getSizeChange().equals(df.getSizeChange())) setSizeChange(fx.getSizeChange());
             if (getVisibleChange().equals(df.getVisibleChange())) setVisibleChange(fx.getVisibleChange());
+            if (getOpacity() == df.getOpacity()) setOpacity(fx.getOpacity());
         } else {
             setPositionChange(fx.getPositionChange());
             setSizeChange(fx.getSizeChange());
-            setVisibleChange(fx.getVisibleChange());            
+            setVisibleChange(fx.getVisibleChange());
+            setOpacity(fx.getOpacity());
         }
     }
         
@@ -116,5 +120,18 @@ public class FX {
         Type oldVisibleChange = this.visibleChange;
         this.visibleChange = visibleChange;
         if (parent != null) parent.firePropertyChange(this, PROPERTY_FX_VISIBLE_CHANGE, oldVisibleChange, this.visibleChange);
+    }
+    
+    public int getOpacity() {
+        if (opacity == -1) throw new IllegalStateException("opacity not initialized");
+        return opacity;
+    }
+    
+    public void setOpacity(int opacity) {
+        if (opacity <= 0 && parent.defaultStyle != null) opacity = parent.defaultStyle.getFX().getOpacity();
+        if (opacity <= 0 && opacity > 100) throw new IllegalArgumentException("opacity <= 0 || opacity > 100");
+        int oldOpacity = this.opacity;
+        this.opacity = opacity;
+        if (parent != null) parent.firePropertyChange(this, PROPERTY_FX_OPACITY, oldOpacity, opacity);
     }
 }
