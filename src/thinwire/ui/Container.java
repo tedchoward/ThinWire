@@ -38,14 +38,15 @@ import thinwire.ui.layout.Layout;
  * @author Joshua J. Gertzen
  */
 public interface Container<T extends Component> extends ItemChangeEventComponent {
-
+    public enum ScrollType {NONE, AS_NEEDED, ALWAYS}
+    
     /**
      * Contains the formal property name for the scroll type of the container.
-     * @see #setScroll(ScrollType)
-     * @see #getScroll()
+     * @see #setScrollType(ScrollType)
+     * @see #getScrollType()
      * @see ScrollType
      */
-    public static final String PROPERTY_SCROLL = "scroll";
+    public static final String PROPERTY_SCROLL_TYPE = "scrollType";
     
     /**
      * Contains the formal property name for the layout manager of the container.
@@ -59,7 +60,7 @@ public interface Container<T extends Component> extends ItemChangeEventComponent
      * Gets the current scrollType defined for the Container.
      * @return the current scrollType defined for the Container.
      */
-    ScrollType getScroll();
+    ScrollType getScrollType();
 
     /**
      * Sets the scrollType for the X and Y axis of this Container.
@@ -68,7 +69,7 @@ public interface Container<T extends Component> extends ItemChangeEventComponent
      * @see #PROPERTY_SCROLL
      * @see thinwire.ui.event.PropertyChangeEvent
      */
-    void setScroll(ScrollType scrollType);
+    void setScrollType(ScrollType scrollType);
 
     /**
      * Gets the current layout manager that is responsible for sizing and

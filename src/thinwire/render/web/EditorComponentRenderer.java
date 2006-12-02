@@ -25,7 +25,7 @@
  */
 package thinwire.render.web;
 
-import thinwire.ui.AlignX;
+import thinwire.ui.AlignTextComponent.AlignX;
 import thinwire.ui.Component;
 import thinwire.ui.EditorComponent;
 import thinwire.ui.event.PropertyChangeEvent;

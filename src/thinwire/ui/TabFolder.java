@@ -161,16 +161,16 @@ public class TabFolder extends AbstractContainer<TabSheet> {
      * This property is unsupported by the TabFolder component.
      * @throws UnsupportedOperationException indicating this property is not supported by TabFolder.
      */
-    public ScrollType getScroll() {
-        throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_SCROLL, true));        
+    public ScrollType getScrollType() {
+        throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_SCROLL_TYPE, true));        
     }
 
     /**
      * This property is unsupported by the TabFolder component.
      * @throws UnsupportedOperationException indicating this property is not supported by TabFolder.
      */
-    public void setScroll(ScrollType scrollType) {
-        throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_SCROLL, false));        
+    public void setScrollType(ScrollType scrollType) {
+        throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_SCROLL_TYPE, false));        
     }
 
     /**

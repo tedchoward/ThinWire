@@ -852,7 +852,7 @@ public final class WebApplication extends Application {
         
         if (w != null) {
             WindowRenderer wr = windowToRenderer.get(w);
-            return wr.getComponentId(comp);
+            return wr == null ? null : wr.getComponentId(comp);
         } else {
             return null;
         }

@@ -29,6 +29,11 @@ package thinwire.ui;
  * @author Joshua J. Gertzen
  */
 public interface AlignTextComponent extends TextComponent {
+    /**
+     * AlignX handles text alignment in screen elements.  Text can be left, right, or center.
+     */
+    public enum AlignX {LEFT, RIGHT, CENTER}
+    
     public static final String PROPERTY_ALIGN_X = "alignX";
 
     /**

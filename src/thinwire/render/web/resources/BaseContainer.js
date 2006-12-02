@@ -49,7 +49,7 @@ var tw_BaseContainer = tw_Component.extend({
         return (this._box == this._borderBox ? this._borderSize : 0) + this._offsetY - this._box.scrollTop;
     },
     
-    setScroll: function(scrollCode) {
+    setScrollType: function(scrollCode) {
         var overflow;
         
         switch (scrollCode) {

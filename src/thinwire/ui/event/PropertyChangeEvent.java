@@ -38,11 +38,16 @@ public final class PropertyChangeEvent extends EventObject {
     private String propertyName;
     private Object newValue;
     private Object oldValue;
+
+    public PropertyChangeEvent(Component sourceComponent, String propertyName, Object oldValue, Object newValue) {
+        this(sourceComponent, null, propertyName, oldValue, newValue);
+    }
     
     public PropertyChangeEvent(Component sourceComponent, Object source, String propertyName, Object oldValue, Object newValue) {
         super(source == null ? sourceComponent : source);
         if (sourceComponent == null) throw new IllegalArgumentException("sourceComponent == null");
-        if (propertyName == null || propertyName.length() == 0) throw new IllegalArgumentException("propertyName == null || propertyName.length() == 0"); 
+        if (propertyName == null || propertyName.length() == 0) throw new IllegalArgumentException("propertyName == null || propertyName.length() == 0");
+        this.sourceComponent = sourceComponent;
         this.propertyName = propertyName;
         this.newValue = newValue;
         this.oldValue = oldValue;

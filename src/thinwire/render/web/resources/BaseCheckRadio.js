@@ -33,7 +33,7 @@ var tw_BaseCheckRadio = tw_Component.extend({
     construct: function(className, id, containerId) {
         arguments.callee.$.call(this, "a", className, id, containerId);
         this._box.appendChild(document.createTextNode(""));
-        this._grayFontColor = tw_COLOR_WINDOWTEXT;
+        //this._grayFontColor = tw_COLOR_WINDOWTEXT;
         
         var s = this._box.style;
         s.display = "block";

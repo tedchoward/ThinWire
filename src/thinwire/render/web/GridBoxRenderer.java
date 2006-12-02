@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.HashSet;
 import java.util.HashMap;
 
-import thinwire.ui.AlignX;
+import thinwire.ui.AlignTextComponent.AlignX;
 import thinwire.ui.Application;
 import thinwire.ui.GridBox;
 import thinwire.ui.Component;

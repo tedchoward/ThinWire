@@ -584,7 +584,7 @@ public final class MessageBox {
 		    for (int i = 0; i < lines.length; i++) {
 		        Label label = new Label();
 		        label.setText(lines[i]);
-		        label.setAlignX(AlignX.CENTER);
+		        label.setAlignX(Label.AlignX.CENTER);
 		        label.setHeight(TEXT_LINE_HEIGHT);
 		        label.setWidth(width);
 		        label.setX(0);

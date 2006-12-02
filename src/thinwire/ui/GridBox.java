@@ -34,7 +34,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 
-import thinwire.ui.AlignX;
+import thinwire.ui.AlignTextComponent.AlignX;
 import thinwire.ui.DropDownGridBox;
 import thinwire.ui.DropDownGridBox.DefaultView;
 import thinwire.ui.event.ActionEvent;

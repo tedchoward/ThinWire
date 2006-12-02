@@ -83,7 +83,7 @@ tw_SplitLayout = Class.extend({
         this._drag.destroy();
         this._comp.destroy = this._compDestroy;
         this._compDestroy = null;
-        this._comp.destroy();
+        //this._comp.destroy();
         this._comp = null;
     }
 });

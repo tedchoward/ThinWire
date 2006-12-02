@@ -42,6 +42,7 @@ import thinwire.ui.event.ActionListener;
 import thinwire.ui.event.PropertyChangeEvent;
 import thinwire.ui.event.PropertyChangeListener;
 import thinwire.ui.style.Color;
+import thinwire.ui.AlignTextComponent.AlignX;
 
 /**
  * A <code>FileChooser</code> is a Component that enables a user to upload a

@@ -31,7 +31,7 @@ import java.util.List;
 
 import thinwire.ui.Component;
 import thinwire.ui.Container;
-import thinwire.ui.ScrollType;
+import thinwire.ui.Container.ScrollType;
 import thinwire.ui.event.ItemChangeEvent;
 import thinwire.ui.event.ItemChangeListener;
 import thinwire.ui.event.PropertyChangeEvent;
@@ -51,7 +51,7 @@ class ContainerRenderer extends ComponentRenderer implements ItemChangeListener 
         setPropertyChangeIgnored(Component.PROPERTY_FOCUS, true);
         setPropertyChangeIgnored(Component.PROPERTY_ENABLED, true);
         Container<Component> c = (Container<Component>)comp;
-        if (!isPropertyChangeIgnored(Container.PROPERTY_SCROLL)) addInitProperty(Container.PROPERTY_SCROLL, getScrollTypeCode(c.getScroll()));
+        if (!isPropertyChangeIgnored(Container.PROPERTY_SCROLL_TYPE)) addInitProperty(Container.PROPERTY_SCROLL_TYPE, getScrollTypeCode(c.getScrollType()));
         
         c.addItemChangeListener(this);
         super.render(wr, comp, container);
@@ -112,8 +112,8 @@ class ContainerRenderer extends ComponentRenderer implements ItemChangeListener 
     }
     
     public void propertyChange(PropertyChangeEvent pce) {        
-        if (pce.getPropertyName().equals(Container.PROPERTY_SCROLL)) {
-            if (isPropertyChangeIgnored(Container.PROPERTY_SCROLL)) return;
+        if (pce.getPropertyName().equals(Container.PROPERTY_SCROLL_TYPE)) {
+            if (isPropertyChangeIgnored(Container.PROPERTY_SCROLL_TYPE)) return;
             postClientEvent(SET_SCROLL, getScrollTypeCode((ScrollType)pce.getNewValue()));
         } else {
             super.propertyChange(pce);

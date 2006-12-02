@@ -145,15 +145,15 @@ abstract class AbstractContainer<T extends Component> extends AbstractComponent 
         return standardButton;
     }
     
-    public ScrollType getScroll() {
+    public ScrollType getScrollType() {
         return scroll;
     }
         
-    public void setScroll(ScrollType scrollType) {
+    public void setScrollType(ScrollType scrollType) {
         if (scrollType == null) throw new IllegalArgumentException("scrollType == null");
         ScrollType oldScroll = this.scroll;
         this.scroll = scrollType;
-        firePropertyChange(this, PROPERTY_SCROLL, oldScroll, scrollType);
+        firePropertyChange(this, PROPERTY_SCROLL_TYPE, oldScroll, scrollType);
     }
     
     public Layout getLayout() {

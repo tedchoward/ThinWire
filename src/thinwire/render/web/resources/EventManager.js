@@ -100,22 +100,20 @@ var tw_EventManager = Class.extend({
                 this._comm.send("POST", tw_APP_URL, msg);           
             }
             
-            if (this._inboundEvents.length > 0) {
-                while (!this._postOutboundEvents && this._inboundEvents.length > 0) {
-                    var call = this._inboundEvents.shift();            
-                    var obj = call.i == undefined ? (call.n == undefined ? window : call.n) : tw_Component.instances[call.i];                    
+            while (this._inboundEvents != null && this._inboundEvents.length > 0 && !this._postOutboundEvents) {
+                var call = this._inboundEvents.shift();            
+                var obj = call.i == undefined ? (call.n == undefined ? window : call.n) : tw_Component.instances[call.i];                    
+                
+                if (obj != null) {
+                    if (call.s) this._autoSyncResponse = true;
+                    var ret = obj[call.m].apply(obj, call.a);            
                     
-                    if (obj != null) {
-                        if (call.s) this._autoSyncResponse = true;
-                        var ret = obj[call.m].apply(obj, call.a);            
-                        
-                        if (call.s && this._autoSyncResponse) {
-                            this.sendSyncResponse(ret, true);
-                            timerTime = 0;
-                        }
+                    if (call.s && this._autoSyncResponse) {
+                        this.sendSyncResponse(ret, true);
+                        timerTime = 0;
                     }
-                }            
-            }
+                }
+            }            
     
             this._resetTimer(timerTime);
         }        
