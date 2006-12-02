@@ -360,10 +360,22 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
     }
     
     public TableLayout(double sizes[][], int margin, int spacing) {
-        super(Component.PROPERTY_LIMIT);
+        this();
         if (sizes == null || sizes.length != 2) throw new IllegalArgumentException("sizes == null || sizes.length != 2");
         if (sizes[0] == null || sizes[0].length == 0) throw new IllegalArgumentException("sizes[0] == null || sizes[0].length == 0");
         if (sizes[1] == null || sizes[1].length == 0) throw new IllegalArgumentException("sizes[1] == null || sizes[1].length == 0");
+        List<Column> columns = getColumns();
+        for (double w : sizes[0]) columns.add(new Column(w));
+        
+        List<Row> rows = getRows();
+        for (double h : sizes[1]) rows.add(new Row(h));
+        setSpacing(spacing);
+        setMargin(margin);
+    }
+    
+    public TableLayout() {
+        super(Component.PROPERTY_LIMIT);
+        
         ignoreSet = true;
         this.grid = new ArrayGrid<TableLayout.Row, TableLayout.Column>(this, TableLayout.Row.class, TableLayout.Column.class) {
             @Override
@@ -388,8 +400,10 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
                             
                             for (int i = 0, cnt = newRow.size(); i < cnt; i++) {
                                 Component c = (Component) newRow.get(i);
-                                c.setLimit(new Range(TableLayout.this, i, rowIndex));
-                                kids.add(c);
+                                if (c != null) {
+                                    c.setLimit(new Range(TableLayout.this, i, rowIndex));
+                                    kids.add(c);
+                                }
                             }
                         }
                     } else if (type == ItemChangeEvent.Type.REMOVE) {
@@ -454,8 +468,10 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
                             
                             for (int i = 0, cnt = newColumn.size(); i < cnt; i++) {
                                 Component c = (Component) newColumn.get(i);
-                                c.setLimit(new Range(TableLayout.this, columnIndex, i));
-                                kids.add(c);
+                                if (c != null) {
+                                    c.setLimit(new Range(TableLayout.this, columnIndex, i));
+                                    kids.add(c);
+                                }
                             }
                         }
                     } else if (type == ItemChangeEvent.Type.REMOVE) {
@@ -507,11 +523,7 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
             }
         };
         
-        List<Column> columns = getColumns();
-        for (double w : sizes[0]) columns.add(new Column(w));
         
-        List<Row> rows = getRows();
-        for (double h : sizes[1]) rows.add(new Row(h));
         
         Comparator<Row> rowIndexOrder = new Comparator<Row>() {
             public int compare(Row r1, Row r2) {
@@ -543,16 +555,17 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
             }            
         };
         
+        List<Row> rows = getRows();
         visibleRows = new TreeSet<Row>(rowIndexOrder);
         visibleRows.addAll(rows);
         roVisibleRows = Collections.unmodifiableSortedSet(visibleRows);
 
+        List<Column> columns = getColumns();
         visibleColumns = new TreeSet<Column>(columnIndexOrder);
         visibleColumns.addAll(columns);
         roVisibleColumns = Collections.unmodifiableSortedSet(visibleColumns);
         
-        setSpacing(spacing);
-        setMargin(margin);
+        
         setAutoApply(true);
         ignoreSet = false;
     }
