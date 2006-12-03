@@ -270,15 +270,6 @@ import thinwire.ui.Application;
  */
 public final class XOD {
     private static final Logger log = Logger.getLogger(XOD.class.getName());   
-
-    /*public static void main(String args[]) {
-        java.util.logging.ConsoleHandler handler = new java.util.logging.ConsoleHandler();
-        handler.setLevel(Level.FINEST);
-        log.addHandler(handler);
-        log.setLevel(Level.FINEST);
-        XOD xod = new XOD();
-        xod.execute("class:///thinwire.ui.Application/resources/DefaultStyle.xml");
-    }*/
     
     private static File getRelativeFile(String uri) {
         Application app = Application.current();
@@ -315,6 +306,10 @@ public final class XOD {
         aliases = new HashMap<String, Class>();
         uriStack = new ArrayList<String>();
         if (uri != null) execute(uri);
+    }
+    
+    public Map<String, Class> getAliasMap() {
+        return aliases;
     }
     
     /**

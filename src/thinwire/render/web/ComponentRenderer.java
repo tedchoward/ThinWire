@@ -56,6 +56,7 @@ import thinwire.ui.Menu;
 import thinwire.ui.Tree;
 import thinwire.ui.event.PropertyChangeEvent;
 import thinwire.ui.style.*;
+import thinwire.ui.style.FX.Transition;
 
 /**
  * @author Joshua J. Gertzen
@@ -73,7 +74,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     static final String SET_WIDTH = "setWidth";
     static final String SET_HEIGHT = "setHeight";
     static final String SET_VISIBLE = "setVisible";
-    static final String SET_FX_OPACITY = "setFXOpacity";
+    static final String SET_FX_OPACITY = "setOpacity";
     static final String SET_PROPERTY_WITH_EFFECT = "setPropertyWithEffect";
 
     //Shared by other renderers
@@ -125,7 +126,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         if (!isPropertyChangeIgnored(Component.PROPERTY_Y)) addInitProperty(Component.PROPERTY_Y, comp.getY());
         if (!isPropertyChangeIgnored(Component.PROPERTY_WIDTH)) addInitProperty(Component.PROPERTY_WIDTH, comp.getWidth());
         if (!isPropertyChangeIgnored(Component.PROPERTY_HEIGHT)) addInitProperty(Component.PROPERTY_HEIGHT, comp.getHeight());        
-        if (!isPropertyChangeIgnored(FX.PROPERTY_FX_OPACITY)) addInitProperty(FX.PROPERTY_FX_OPACITY, comp.getStyle().getFX().getOpacity());        
+        if (!isPropertyChangeIgnored(FX.PROPERTY_FX_OPACITY) && comp.getStyle().getFX().getOpacity() != 100) addInitProperty("opacity", comp.getStyle().getFX().getOpacity());        
         if (!isPropertyChangeIgnored(Component.PROPERTY_VISIBLE)) addInitProperty(Component.PROPERTY_VISIBLE, 
                 visibleChange != FX.Type.NONE && cr != null && cr.isFullyRendered() ? Boolean.FALSE : comp.isVisible());                
         if (!isPropertyChangeIgnored(Component.PROPERTY_ENABLED)) addInitProperty(Component.PROPERTY_ENABLED, comp.isEnabled());
@@ -417,37 +418,48 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         
         if (styleProp.equals(FX.PROPERTY_FX_VISIBLE_CHANGE)) {
             type = fx.getVisibleChange();
+        } else if (styleProp.equals(FX.PROPERTY_FX_OPACITY_CHANGE)) {
+            type = fx.getOpacityChange();
         } else if (styleProp.equals(FX.PROPERTY_FX_POSITION_CHANGE)) {
             type = fx.getPositionChange();
         } else {
             type = fx.getSizeChange();
         }
         
-        if (type == FX.Type.SMOOTH) {
-            int time;
-            int unitSize;
+        FX.Type NONE = FX.Type.NONE;
+        
+        if (type == NONE || (type.getDuration() == NONE.getDuration()) && type.getFrames() == NONE.getFrames()) {
+            postClientEvent(standardMethod, newValue);
+        } else {
+            int time = type.getDuration();
+            int prev, next;
             
             if (styleProp.equals(FX.PROPERTY_FX_VISIBLE_CHANGE)) {
                 propertyName = "opacity";
-                newValue = ((Boolean)newValue).booleanValue() ? 100 : 0;
-                unitSize = 10;
-                time = 250;
+                int opacity = comp.getStyle().getFX().getOpacity();
+                prev = ((Boolean)oldValue).booleanValue() ? opacity : 0;
+                next = ((Boolean)newValue).booleanValue() ? opacity : 0;
             } else {
-                int dist = (Integer)newValue - (Integer)oldValue;
-                if (dist < 0) dist = ~dist + 1;
-
-                if (styleProp.equals(FX.PROPERTY_FX_POSITION_CHANGE)) {                
-                    unitSize = 10;
-                    time = dist;
-                } else {
-                    unitSize = 10;
-                    time = dist;
-                }
+                if (styleProp.equals(FX.PROPERTY_FX_OPACITY_CHANGE)) propertyName = "opacity";
+                prev = (Integer)oldValue;
+                next = (Integer)newValue;
             }
             
-            wr.ai.clientSideMethodCall(id, SET_PROPERTY_WITH_EFFECT, propertyName, newValue, unitSize, time);
-        } else {
-            postClientEvent(standardMethod, newValue);
+            int change = next - prev;
+            if (change < 0) change = ~change + 1;
+            int steps = (int)Math.floor(time / type.getFrames() + .5) - 1;
+            Transition trans = type.getTransition();
+            StringBuffer seq = new StringBuffer();
+            seq.append('[');
+            double step = Math.floor(1.0 / steps * 100000) / 100000; //percent of each step;
+
+            for (int i = 1; i <= steps; i++) {
+                int size = (int)Math.floor(trans.apply(step * i) * change);                    
+                seq.append(next < prev ? prev - size : prev + size).append(',');
+            }
+            
+            seq.append(next).append(']');
+            wr.ai.clientSideMethodCall(id, SET_PROPERTY_WITH_EFFECT, propertyName, time, seq);
         }
     }    
     
@@ -463,7 +475,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         } else if (name.equals(Component.PROPERTY_FOCUS_CAPABLE)) {
             postClientEvent(SET_FOCUS_CAPABLE, pce.getNewValue());
         } else if (name.equals(FX.PROPERTY_FX_OPACITY)) {
-            postClientEvent(SET_FX_OPACITY, pce.getNewValue());
+            setPropertyWithEffect(name, pce.getNewValue(), pce.getOldValue(), SET_FX_OPACITY, FX.PROPERTY_FX_OPACITY_CHANGE);
         } else if (name.equals(Component.PROPERTY_X)) {
             setPropertyWithEffect(name, pce.getNewValue(), pce.getOldValue(), SET_X, FX.PROPERTY_FX_POSITION_CHANGE);
         } else if (name.equals(Component.PROPERTY_Y)) {

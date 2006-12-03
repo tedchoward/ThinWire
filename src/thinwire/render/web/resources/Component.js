@@ -117,7 +117,7 @@ var tw_Component = Class.extend({
     },
     
     isVisible: function() {
-        return this._opacity > 0;
+        return this._box.style.display == "block";
     },
     
     setVisible: function(visible) {
@@ -125,9 +125,10 @@ var tw_Component = Class.extend({
         this._box.style.display = visible ? "block" : "none";
     },
     
-    setFXOpacity: function(opacity) {
+    setOpacity: function(opacity) {
         this._opacity = opacity;
-        tw_setOpacity(this._box, opacity);        
+        tw_setOpacity(this._box, opacity);
+        this._box.style.display = opacity > 0 && this._visible ? "block" : "none";
     },
     
     setFocusCapable: function(focusCapable) {
@@ -144,11 +145,11 @@ var tw_Component = Class.extend({
         if (this._fontBox != null) this._fontBox.style.color = enabled ? this._fontColor : this._grayFontColor;
     },
     
-    setPropertyWithEffect: function(prop, value, unitSize, time) {
-        var get = "_" + prop;
+    setPropertyWithEffect: function(prop, time, seq) {
+        if (!this._inited) return;        
         prop = prop.charAt(0).toUpperCase() + prop.substring(1);
         var set = "set" + prop;
-        new tw_Animation(this, get, set, value - this[get], unitSize, time).start();
+        new tw_Animation(this, set, time, eval(seq)).start();
     },
     
     _focusListener: function() {
