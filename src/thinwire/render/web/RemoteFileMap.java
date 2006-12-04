@@ -50,6 +50,7 @@ final class RemoteFileMap {
         private int refCount;
         private String remoteName;
         private String localName;
+        private byte[] data;
     }
     
     private Map<String, RemoteFileInfo> remoteToFileInfo;
@@ -69,10 +70,18 @@ final class RemoteFileMap {
         RemoteFileInfo fileInfo = remoteToFileInfo.get(remoteName);
         
         if (fileInfo != null) {
-            byte[] data = WebApplication.getResourceBytes(fileInfo.localName);
+            byte[] data;
+            
+            if (fileInfo.data == null) {
+                data = WebApplication.getResourceBytes(fileInfo.localName);
+            } else {
+                data = fileInfo.data;
+            }
+
             if (log.isLoggable(LEVEL)) log.log(LEVEL, "Loaded file data for local file: localName='" + 
                     fileInfo.localName + "', remoteName='" + fileInfo.remoteName + "', refCount='" + 
-                    fileInfo.refCount + "', data.length='" + data.length + "'");                        
+                    fileInfo.refCount + "', data.length='" + data.length + "'");
+            
             return data;
         } else {        
             throw new RuntimeException(new FileNotFoundException("The specified remote file '" + remoteName + "' does not have a mapping to a local file"));
@@ -80,10 +89,18 @@ final class RemoteFileMap {
     }
     
     String add(String localName) {
-        return add(localName, null);
+        return add(localName, null, null);
+    }
+
+    String add(String localName, String remoteName) {
+        return add(localName, remoteName, null);
     }
     
-    String add(String localName, String remoteName) {               
+    String add(byte[] data, String remoteName) {
+        return add(null, remoteName, data);
+    }
+    
+    private String add(String localName, String remoteName, byte[] data) {               
         synchronized (localToFileInfo) {
             RemoteFileInfo fileInfo = localToFileInfo.get(localName);
             
@@ -91,6 +108,7 @@ final class RemoteFileMap {
                 fileInfo = new RemoteFileInfo();
                 fileInfo.localName = localName;
                 fileInfo.refCount = 1;
+                fileInfo.data = data;
                 
                 if (remoteName == null) {
                     int lastIndex = fileInfo.localName.lastIndexOf(File.separatorChar);

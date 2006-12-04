@@ -30,6 +30,7 @@
 */
 package thinwire.render.web;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.text.DecimalFormat;
@@ -42,7 +43,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
@@ -119,25 +119,6 @@ public final class WebApplication extends Application {
         "Startup.js",
         "FileUploadPage.html",
         "activityInd.gif",
-        "cbChecked.png",
-        "cbDisabledChecked.png",
-        "ddButton.png",
-        "ddDisabledButton.png",
-        "dResize.png",
-        "dragValid.png",
-        "dragInvalid.png",
-        "gbChecked.png",
-        "gbUnchecked.png",
-        "gbChildArrow.png",
-        "gbChildArrowInvert.png",
-        "gbSortOrderAsc.png",
-        "gbSortOrderDesc.png",
-        "leftArrow.png",
-        "rightArrow.png",
-        "menuArrow.png",
-        "menuArrowInvert.png",
-        "rbChecked.png",
-        "rbDisabledChecked.png",
         "treeEmpty.png",
         "treeExpand.png",
         "treeExpandBottom.png",
@@ -188,8 +169,8 @@ public final class WebApplication extends Application {
         try {
             //Write out the library JS
             String twPrefix = "ThinWire_v" + Application.getPlatformVersionInfo().get("productVersion");
-            File f = File.createTempFile(twPrefix, ".js");
-            GZIPOutputStream os = new GZIPOutputStream(new FileOutputStream(f));
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            GZIPOutputStream os = new GZIPOutputStream(baos);
             
             for (String res : BUILT_IN_RESOURCES) {
                 if (res.endsWith(".js")) {
@@ -199,8 +180,7 @@ public final class WebApplication extends Application {
             }
 
             os.close();
-            f.deleteOnExit();
-            return RemoteFileMap.INSTANCE.add(f.getCanonicalPath(), twPrefix + ".js");
+            return RemoteFileMap.INSTANCE.add(baos.toByteArray(), twPrefix + ".js");
         } catch (Exception e) {
             if (!(e instanceof RuntimeException)) e = new RuntimeException(e);
             throw (RuntimeException)e;
@@ -435,11 +415,11 @@ public final class WebApplication extends Application {
 
         try {
             XOD styleDef = new XOD();
-            if (styleSheet == null) styleSheet = DEFAULT_STYLE_SHEET;
-            styleDef.execute(styleSheet);
+            String sheet = styleSheet == null ? DEFAULT_STYLE_SHEET : styleSheet;
+            if (!sheet.endsWith(".xml")) sheet += "/Style.xml";
+            styleDef.execute(sheet);
             loadStyleSheet(styleDef);
             systemColors = getSystemColors();
-            
             StringBuilder sb = new StringBuilder();
             sb.append('{');
             
@@ -449,6 +429,20 @@ public final class WebApplication extends Application {
             
             sb.setCharAt(sb.length() - 1, '}');
             clientSideMethodCall("tw_Component", "setSystemColors", sb);
+
+            sb.setLength(0);
+            sb.append('{');
+            
+            for (Map.Entry<String, String> e : getSystemImages().entrySet()) {
+                String value = e.getValue();
+                //if (value != null && !value.matches("^\\w?:?[\\\\|/].*")) value = getBaseFolder() + File.separator + value;   
+                //value = RemoteFileMap.INSTANCE.add(new File(value).getCanonicalPath());
+                value = RemoteFileMap.INSTANCE.add(value);
+                sb.append(e.getKey()).append(":\"").append("%SYSROOT%").append(value).append("\",");
+            }
+            
+            sb.setCharAt(sb.length() - 1, '}');
+            clientSideMethodCall("tw_Component", "setSystemImages", sb);
         } catch (Exception e) {
             if (e instanceof RuntimeException) throw (RuntimeException)e;
             throw new RuntimeException(e);
@@ -564,7 +558,7 @@ public final class WebApplication extends Application {
         if (backgroundRepeat != null) getStyleValue(cr, sb, Background.PROPERTY_BACKGROUND_REPEAT, backgroundRepeat);
         if (backgroundPosition != null) getStyleValue(cr, sb, Background.PROPERTY_BACKGROUND_POSITION, backgroundPosition);
         
-        if (borderType != null) {
+        if (borderType != null && borderType != Border.Type.IMAGE) {
             if (borderType == Border.Type.NONE) {
                 borderType = Border.Type.SOLID;
                 borderColor = backgroundColor;
@@ -967,6 +961,7 @@ public final class WebApplication extends Application {
         WindowRenderer wr = (WindowRenderer) windowToRenderer.get(w);
         if (wr != null) throw new IllegalStateException("A window cannot be set to visible while it is already visible");
         windowToRenderer.put(w, wr = (WindowRenderer) getRenderer(w));
+        wr.ai = this;
         
         if (wr instanceof FrameRenderer) {
             styleToStyleClass = new HashMap<Style, String>();
@@ -990,7 +985,6 @@ public final class WebApplication extends Application {
             clientSideMethodCall("tw_Component", "setDefaultStyles", sb);
         }
         
-        wr.ai = this;
         wr.render(wr, w, w instanceof Dialog ? windowToRenderer.get(getFrame()) : null);
         log.fine("Showing window with id:" + wr.id);
     }
