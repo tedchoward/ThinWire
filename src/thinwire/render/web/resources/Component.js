@@ -57,7 +57,6 @@ var tw_Component = Class.extend({
     _focusCapable: true,
     _backgroundBox: null,
     _backgroundColor: "",
-    _grayFontColor: null,
     _fontColor: null,
     _borderBox: null,
     _scrollBox: null,
@@ -74,7 +73,6 @@ var tw_Component = Class.extend({
     construct: function(tagName, className, id, containerId) {
         var box = document.createElement(tagName);
         box.className = className;
-        this._grayFontColor = tw_COLOR_GRAYTEXT;
         var s = box.style;
         s.position = "absolute";
         s.overflow = "hidden";
@@ -142,7 +140,17 @@ var tw_Component = Class.extend({
         }
         
         this._enabled = enabled;
-        if (this._fontBox != null) this._fontBox.style.color = enabled ? this._fontColor : this._grayFontColor;
+        
+        if (this._fontBox != null && (this instanceof tw_Button || this instanceof tw_Menu || tw_COLOR_GRAYTEXT != "graytext")) {                    
+            this._fontBox.style.color = enabled ? this._fontColor : tw_COLOR_GRAYTEXT;
+        }
+        
+        if (this._backgroundBox != null && tw_COLOR_BACKGROUND != "background" && (this instanceof tw_BaseCheckRadio || this instanceof tw_BaseText || 
+                this instanceof tw_DateBox || this instanceof tw_GridBox || this instanceof tw_Tree || this instanceof tw_WebBrowser ||
+                this instanceof tw_ProgressBar)) {
+            var color = tw_COLOR_BACKGROUND == tw_COLOR_WINDOW ? this._parent._backgroundBox.style.backgroundColor : tw_COLOR_BACKGROUND;
+            this._backgroundBox.style.backgroundColor = enabled ? this._backgroundColor : color;
+        }
     },
     
     setBackgroundColor: function(color) { this.setStyle("backgroundColor", color); },
@@ -579,7 +587,46 @@ tw_Component.setDefaultStyles = function(defaultStyles) {
 
 tw_Component.styleScrollBars = function(box) {
     var s = box.style;
-    if (s.scrollbarBaseColor != undefined && tw_COLOR_SCROLLBAR != "scrollbar") s.scrollbarBaseColor = tw_COLOR_SCROLLBAR;
+    
+    if (s.scrollbarBaseColor != undefined && tw_COLOR_SCROLLBAR != "scrollbar") {
+        if (tw_COLOR_SCROLLBAR != tw_COLOR_BUTTONFACE) {
+            s.scrollbarBaseColor = tw_COLOR_SCROLLBAR;
+        } else {
+            s.scrollbarFaceColor = tw_COLOR_BUTTONFACE;
+            
+            if (tw_COLOR_BUTTONHIGHLIGHT == tw_COLOR_BUTTONSHADOW) {
+                var color = tw_COLOR_BUTTONSHADOW == tw_COLOR_BUTTONFACE ? "" : tw_COLOR_BUTTONSHADOW;
+                s.scrollbarHighlightColor = s.scrollbarShadowColor = s.scrollbarDarkShadowColor = s.scrollbar3dLightColor = color;
+            } else {
+                s.scrollbarHighlightColor = s.scrollbar3dLightColor = tw_COLOR_BUTTONHIGHLIGHT;
+                s.scrollbarShadowColor = s.scrollbarDarkShadowColor = tw_COLOR_BUTTONSHADOW;
+            }
+        }
+    }
+};
+
+tw_Component.applyButtonBorder = function(box, top, right, bottom, left) {
+    var s = box.style;
+    
+    if (tw_COLOR_BUTTONHIGHLIGHT == tw_COLOR_BUTTONSHADOW) {
+        if (tw_COLOR_BUTTONSHADOW == tw_COLOR_BUTTONFACE) {
+            s.borderStyle = "outset";
+            s.borderColor = tw_Component.getIEBorder(tw_COLOR_BUTTONFACE, "outset");
+        } else {
+            s.borderStyle = "solid";
+                        
+            if (top || right || bottom || left) {
+                var BF = tw_COLOR_BUTTONFACE;
+                var BS = tw_COLOR_BUTTONSHADOW;
+                s.borderColor = (top ? BF : BS) + " " + (right ? BF : BS) + " " + (bottom ? BF : BS) + " " + (left ? BF : BS);
+            } else {
+                s.borderColor = tw_COLOR_BUTTONSHADOW;
+            }
+        }
+    } else {
+        s.borderStyle = "solid";
+        s.borderColor = tw_COLOR_BUTTONHIGHLIGHT + " " + tw_COLOR_BUTTONSHADOW + " " + tw_COLOR_BUTTONSHADOW + " " + tw_COLOR_BUTTONHIGHLIGHT;
+    }
 };
 
 tw_Component.getIEBorder = function(color, type) {

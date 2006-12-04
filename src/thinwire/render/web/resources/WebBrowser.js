@@ -77,10 +77,7 @@ var tw_WebBrowser = tw_BaseBrowserLink.extend({
     getDragBox: function() {
         var dragBox = document.createElement("div");
         var s = dragBox.style;
-        //s.position = "absolute";
-        //s.textAlign = "center";
         s.height = "16px";
-        //s.backgroundColor = tw_COLOR_WINDOW;
         var hls = defaultStyles["hyperlink"];
         s.fontFamily = hls.fontFamily;
         s.fontSize = hls.fontSize;

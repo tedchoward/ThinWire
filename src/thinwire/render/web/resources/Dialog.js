@@ -72,8 +72,7 @@ var tw_Dialog = tw_BaseContainer.extend({
         s.lineHeight = 8 + "px";        
         s.backgroundColor = tw_COLOR_BUTTONFACE;
         s.color = tw_COLOR_BUTTONTEXT;
-        s.borderStyle = "outset";
-        s.borderColor = tw_Component.getIEBorder(tw_COLOR_BUTTONFACE, "outset");
+        tw_Component.applyButtonBorder(closeButton);
         closeButton.appendChild(document.createTextNode("X"));
         
         title.appendChild(closeButton);    
@@ -133,12 +132,12 @@ var tw_Dialog = tw_BaseContainer.extend({
         this.setFocus(true);
         if (tw_getEventButton(ev) != 1) return;  //only if left click        
         this._closeButton.style.borderStyle = "inset";
-        ev.cancelBubble = true; //TODO: is this cross browser?
+        tw_cancelEvent(ev);
     },
     
     _closeButtonMouseUpListener: function(ev) {
-        this._closeButton.style.borderStyle = "outset";
-        ev.cancelBubble = true;
+        tw_Component.applyButtonBorder(this._closeButton);
+        tw_cancelEvent(ev);        
     },       
 
     _closeButtonClickListener: function(ev) {

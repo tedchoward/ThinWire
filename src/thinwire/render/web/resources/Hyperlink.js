@@ -36,7 +36,6 @@ var tw_Hyperlink = tw_BaseBrowserLink.extend({
     construct: function(id, containerId, props) {
         arguments.callee.$.call(this, "a", "hyperlink", id, containerId);
         this._box.appendChild(document.createTextNode(""));
-        this._grayFontColor = tw_COLOR_WINDOWTEXT;
         
         var s = this._box.style;
         s.whiteSpace = "nowrap";

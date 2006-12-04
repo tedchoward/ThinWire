@@ -368,14 +368,14 @@ var tw_Tree = tw_Component.extend({
         if (item == null || this._currentItem === item) return;
         
         var s = item.textNode.style;
-        s.backgroundColor = tw_COLOR_HIGHLIGHT;
-        s.color = tw_COLOR_HIGHLIGHTTEXT;
+        s.backgroundColor = this._enabled ? tw_COLOR_HIGHLIGHT : tw_COLOR_INACTIVECAPTION;
+        s.color = this._enabled ? tw_COLOR_HIGHLIGHTTEXT : tw_COLOR_INACTIVECAPTIONTEXT;
         s.zIndex = 1;
         
         if (this._currentItem != undefined) {
             var s = this._currentItem.textNode.style;
-            s.backgroundColor = tw_COLOR_TRANSPARENT;
-            s.color = this._fontBox.style.color;
+            s.backgroundColor = "";
+            s.color = "";
             s.zIndex = 0;
         }
         
@@ -390,7 +390,7 @@ var tw_Tree = tw_Component.extend({
         this._currentItem = item;
         if (sendEvent) this.firePropertyChange("itemSelected", this._fullIndex(item));         
     },
-    
+        
     _fullIndexItem: function(findex) {
         if (findex == "rootItem")
             return this._rootItem;
@@ -508,7 +508,10 @@ var tw_Tree = tw_Component.extend({
     
     setEnabled: function(enabled) {
         arguments.callee.$.call(this, enabled);        
-        tw_setFocusCapable(this._box, enabled);        
+        tw_setFocusCapable(this._box, enabled);
+        var item = this._currentItem;
+        this._currentItem = undefined;
+        this._select(item);        
     },
     
     _expandImageURL: function(itemImg) {
@@ -568,7 +571,6 @@ var tw_Tree = tw_Component.extend({
     },
     
     getDragBox: function(event) {
-        //if (!this._enabled) return null;???
         var item = tw_getEventTarget(event, "treeRow");
         if (item == null) return null;
         var dragBox = document.createElement("div");
@@ -577,13 +579,7 @@ var tw_Tree = tw_Component.extend({
         dragBox.appendChild(item.getElementsByTagName("span")[0].cloneNode(true));
         
         var s = dragBox.style;
-        //s.position = "absolute";
         s.height = tw_Tree.rowHeight + "px";
-        //s.fontFamily = this._box.style.fontFamily;
-        //s.fontSize = this._box.style.fontSize;
-        //s.color = tw_COLOR_HIGHLIGHTTEXT;
-        //s.backgroundColor = tw_COLOR_HIGHLIGHT;
-        
         dragBox._dragObject = this._fullIndex(item);
         return dragBox;
     },

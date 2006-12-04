@@ -48,15 +48,14 @@ var tw_DropDown = tw_BaseText.extend({
         s.backgroundRepeat = "no-repeat";
         s.backgroundPosition = "center center";                
         s.backgroundColor = tw_COLOR_BUTTONFACE;
-        s.borderStyle = "outset";
-        s.borderColor = tw_Component.getIEBorder(tw_COLOR_BUTTONFACE, "outset");
+        tw_Component.applyButtonBorder(button);
         
         var s = buttonBorder.style;
         s.position = "absolute";
         s.right = "0px";
         s.backgroundColor = tw_COLOR_TRANSPARENT;
         s.borderStyle = "solid";
-        s.borderColor = tw_COLOR_WINDOWFRAME;                        
+        s.borderColor = tw_COLOR_ACTIVEBORDER;                        
         s.borderWidth = "0px";
         buttonBorder.appendChild(button);
         this._box.appendChild(buttonBorder);
@@ -118,8 +117,7 @@ var tw_DropDown = tw_BaseText.extend({
     _buttonMouseUpListener: function(ev) {
         if (this._enabled && tw_getEventButton(ev) == 1 || ev.type == "mouseout") {
             var s = this._button.style;
-            s.borderStyle = "outset";
-            s.borderColor = tw_Component.getIEBorder(tw_COLOR_BUTTONFACE, "outset");
+            tw_Component.applyButtonBorder(this._button);
             s.borderWidth = this._buttonBorderSize + "px";
             s.padding = "0px";
         }

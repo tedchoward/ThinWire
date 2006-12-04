@@ -63,9 +63,15 @@ var tw_ProgressBar = tw_BaseRange.extend({
     
     setStyle: function(name, value) {
         if (name == "color") {
-            this._selection.style.backgroundColor = value;
+            this._fontColor = value;
+            this._selection.style.backgroundColor = this._enabled ? this._fontColor : tw_COLOR_INACTIVECAPTION;
         } else {
             arguments.callee.$.call(this, name, value);
         }
+    },
+    
+    setEnabled: function(enabled) {
+        arguments.callee.$.call(this, enabled);
+        this._selection.style.backgroundColor = enabled ? this._fontColor : tw_COLOR_INACTIVECAPTION; 
     }
 });

@@ -63,14 +63,14 @@ var tw_GridBox = tw_Component.extend({
         delete props.checkedRows;
         delete props.parentIndex;
         
-        var header = document.createElement("div");
+        var header = this._header = document.createElement("div");
         header.className = "gridBoxHeader";
         var s = header.style;
         s.position = "absolute";
         s.backgroundColor = tw_COLOR_THREEDFACE;
+        s.color = tw_COLOR_BUTTONTEXT;
         s.display = "none";
         this._hresize = {column: null, startX: -1};        
-        this._header = header;
         this._box.appendChild(header);
         
         var body = this._scrollBox = document.createElement("div");
@@ -441,8 +441,8 @@ var tw_GridBox = tw_Component.extend({
         var childNodes = content.childNodes;
     
         if (state) {
-            var color = tw_COLOR_HIGHLIGHTTEXT;
-            var backgroundColor = tw_COLOR_HIGHLIGHT;
+            var color = this._enabled ? tw_COLOR_HIGHLIGHTTEXT : tw_COLOR_INACTIVECAPTIONTEXT;
+            var backgroundColor = this._enabled ? tw_COLOR_HIGHLIGHT : tw_COLOR_INACTIVECAPTION;
             var arrowImage = tw_GridBox.imageChildArrowInvert;
             var cell = childNodes.item(0).childNodes.item(index);
             var body = content.parentNode;        
@@ -535,6 +535,8 @@ var tw_GridBox = tw_Component.extend({
     setEnabled: function(enabled) {
         arguments.callee.$.call(this, enabled);        
         tw_setFocusCapable(this._box, enabled);
+        this._toggleHighlight(this._currentIndex, true);
+        this._header.style.color = this._enabled ? tw_COLOR_BUTTONTEXT : tw_COLOR_GRAYTEXT;
     },
         
     keyPressNotify: function(keyPressCombo) {
@@ -798,8 +800,7 @@ var tw_GridBox = tw_Component.extend({
 
         s.borderWidth = (this._borderSize > 2 ? 2 : this._borderSize) + "px";        
         s.backgroundColor = tw_COLOR_BUTTONFACE;
-        s.borderStyle = "outset";
-        s.borderColor = tw_Component.getIEBorder(tw_COLOR_BUTTONFACE, "outset");
+        tw_Component.applyButtonBorder(columnHeader, true, false, false, true);
         
         columnHeader.appendChild(tw_Component.setRichText(name));
                 

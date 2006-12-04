@@ -59,11 +59,10 @@ var tw_DateBox = tw_Component.extend({
         s.overflow = "hidden";
         s.whiteSpace = "nowrap";        
         s.height = tw_DateBox.rowHeight + "px";
-        
+        s.color = tw_COLOR_BUTTONTEXT;
         s.backgroundColor = tw_COLOR_BUTTONFACE;
-        s.borderStyle = "outset"; 
-        s.borderColor = tw_Component.getIEBorder(tw_COLOR_BUTTONFACE, "outset");
-        
+        tw_Component.applyButtonBorder(this._header, true, true, false, true);
+
         this._header.appendChild(document.createTextNode(tw_DateBox.MONTHS[this._today.getMonth()] + " " + this._today.getFullYear()));
         
         this._prev = this._createButton("url(?_twr_=leftArrow.png)", "left");
@@ -122,6 +121,13 @@ var tw_DateBox = tw_Component.extend({
         this._table.style.height = tblHeight + "px";
     },
     
+    setEnabled: function(enabled) {
+        arguments.callee.$.call(this, enabled);
+        var cell = this._getCellFromDate(this._selectedDate);
+        if (cell != undefined && cell != null) this._toggleSelection(cell, true);
+        this._header.style.color = this._enabled ? tw_COLOR_BUTTONTEXT : tw_COLOR_GRAYTEXT;
+    },
+    
     setStyle: function(name, value) {
         arguments.callee.$.call(this, name, value);
         
@@ -141,7 +147,7 @@ var tw_DateBox = tw_Component.extend({
         var row = document.createElement("tr");
         var s = table.style;
         s.height = "17px";
-        s.borderBottom = "1px solid " + tw_COLOR_WINDOWFRAME;
+        s.borderBottom = "1px solid " + tw_COLOR_ACTIVEBORDER;
         s.marginLeft = "auto";
         s.marginRight = "auto";
         for (var i = 0; i < days.length; i++) {
@@ -161,14 +167,14 @@ var tw_DateBox = tw_Component.extend({
         var tbody = document.createElement("tbody");
         table.appendChild(tbody);
         var s = table.style;
-        s.borderBottom = "1px solid " + tw_COLOR_WINDOWFRAME;
+        s.borderBottom = "1px solid " + tw_COLOR_ACTIVEBORDER;
         s.marginLeft = "auto";
         s.marginRight = "auto";
         for (var i = 0; i < 6; i++) {
             var row = document.createElement("tr");
             for (var j = 0; j < 7; j++) {
                 var cell = document.createElement("td");
-                cell.style.border = "none 1px " + tw_COLOR_WINDOWFRAME;
+                cell.style.border = "none 1px " + tw_COLOR_ACTIVEBORDER;
                 cell.style.padding = "1px";
                 cell.appendChild(document.createTextNode(""));
                 tw_addEventListener(cell, ["click", "dblclick"], this._cellClickListener);
@@ -221,6 +227,7 @@ var tw_DateBox = tw_Component.extend({
     _getClickAction: tw_Component.getClickAction,
     
     _cellClickListener: function(event) {
+        if (!this._enabled) return;
         var cell = tw_getEventTarget(event);
         var rowIdx = this._getRowIndex(cell);
         var newDt = parseInt(cell.firstChild.nodeValue);
@@ -256,12 +263,14 @@ var tw_DateBox = tw_Component.extend({
     },
     
     _btnClickListener: function(event) {
+        if (!this._enabled) return;
         var btn = tw_getEventTarget(event);
         var dm = btn.style.backgroundImage.indexOf("right") >= 0 ? 1 : -1;
         this._incrementMonth(dm);
     },
     
     _footerClickListener: function(event) {
+        if (!this._enabled) return;
         var footer = tw_getEventTarget(event);
         this.setSelectedDate(this._today);
         var formattedDate = this._getFormattedDate(this._selectedDate);
@@ -283,8 +292,13 @@ var tw_DateBox = tw_Component.extend({
     },
     
     _toggleSelection: function (cell, selected) {
-        cell.style.backgroundColor = selected ? tw_COLOR_HIGHLIGHT : "";
-        cell.style.color = selected ? tw_COLOR_HIGHLIGHTTEXT : "";
+        if (this._enabled) {
+            cell.style.backgroundColor = selected ? tw_COLOR_HIGHLIGHT : "";
+            cell.style.color = selected ? tw_COLOR_HIGHLIGHTTEXT : "";
+        } else {
+            cell.style.backgroundColor = selected ? tw_COLOR_INACTIVECAPTION : "";
+            cell.style.color = selected ? tw_COLOR_INACTIVECAPTIONTEXT : "";
+        }
     },
     
     _createButton: function(img, align) {
