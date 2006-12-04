@@ -42,6 +42,7 @@ public class Style {
         Style s = new Style();
         s.setOpacity(100);
         s.setColor(Color.THREEDFACE);
+        
         Font f = s.getFont();
         f.setFamily(Font.Family.SANS_SERIF);
         f.setColor(Color.BLACK);
@@ -51,10 +52,11 @@ public class Style {
         f.setStrike(false);
         f.setSize(8);
         
-        s.getBackground().setColor(Color.WHITE);
-        s.getBackground().setImage("");
-        s.getBackground().setRepeat(Background.Repeat.NONE);
-        s.getBackground().setPosition(Background.Position.LEFT_TOP);
+        Background bg = s.getBackground();
+        bg.setColor(Color.WHITE);
+        bg.setImage("");
+        bg.setRepeat(Background.Repeat.NONE);
+        bg.setPosition(Background.Position.LEFT_TOP);
 
         Border b = s.getBorder();
         b.setColor(Color.WHITE);
@@ -67,6 +69,7 @@ public class Style {
         fx.setSizeChange(Effect.Motion.NONE);
         fx.setVisibleChange(Effect.Motion.NONE);
         fx.setOpacityChange(Effect.Motion.NONE);
+        fx.setColorChange(Effect.Motion.NONE);
         
         DEFAULT_STYLE = s;
     }

@@ -393,8 +393,10 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
             type = fx.getOpacityChange();
         } else if (styleProp.equals(FX.PROPERTY_FX_POSITION_CHANGE)) {
             type = fx.getPositionChange();
-        } else {
+        } else if (styleProp.equals(FX.PROPERTY_FX_SIZE_CHANGE)) {
             type = fx.getSizeChange();
+        } else {
+            type = fx.getColorChange();
         }
         
         Effect.Motion NONE = Effect.Motion.NONE;
@@ -403,34 +405,66 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
             postClientEvent(standardMethod, newValue);
         } else {
             int time = type.getDuration();
-            int prev, next;
-            
-            if (styleProp.equals(FX.PROPERTY_FX_VISIBLE_CHANGE)) {
-                propertyName = "opacity";
-                int opacity = comp.getStyle().getOpacity();
-                prev = ((Boolean)oldValue).booleanValue() ? opacity : 0;
-                next = ((Boolean)newValue).booleanValue() ? opacity : 0;
-            } else {
-                if (styleProp.equals(FX.PROPERTY_FX_OPACITY_CHANGE)) propertyName = "opacity";
-                prev = (Integer)oldValue;
-                next = (Integer)newValue;
-            }
-            
-            int change = next - prev;
-            if (change < 0) change = ~change + 1;
-            int steps = (int)Math.floor(time / type.getFrames() + .5) - 1;
-            Effect.Transition trans = type.getTransition();
             StringBuffer seq = new StringBuffer();
-            seq.append('[');
+            Effect.Transition trans = type.getTransition();
+            int steps = (int)Math.floor(time / type.getFrames() + .5) - 1;
             double step = Math.floor(1.0 / steps * 100000) / 100000; //percent of each step;
-
-            for (int i = 1; i <= steps; i++) {
-                int size = (int)Math.floor(trans.apply(step * i) * change);                    
-                seq.append(next < prev ? prev - size : prev + size).append(',');
-            }
             
-            seq.append(next).append(']');
-            wr.ai.clientSideMethodCall(id, SET_PROPERTY_WITH_EFFECT, propertyName, time, seq);
+            if (styleProp.equals(FX.PROPERTY_FX_COLOR_CHANGE)) {
+                Color prev = (Color)oldValue;
+                if (prev.isSystemColor()) prev = wr.ai.systemColors.get(prev.toString());
+                Color next = (Color)newValue;
+                if (next.isSystemColor()) next = wr.ai.systemColors.get(next.toString());
+                
+                if (prev == null || next == null) {
+                    postClientEvent(standardMethod, newValue);
+                } else {
+                    int rChange = next.getRed() - prev.getRed();
+                    if (rChange < 0) rChange = ~rChange + 1;
+                    int gChange = next.getGreen() - prev.getGreen();
+                    if (gChange < 0) gChange = ~gChange + 1;
+                    int bChange = next.getBlue() - prev.getBlue();
+                    if (bChange < 0) bChange = ~bChange + 1;
+                    seq.append('[');
+        
+                    for (int i = 1; i <= steps; i++) {
+                        int rSize = (int)Math.floor(trans.apply(step * i) * rChange);
+                        rSize = next.getRed() < prev.getRed() ? prev.getRed() - rSize : prev.getRed() + rSize;
+                        int gSize = (int)Math.floor(trans.apply(step * i) * gChange);
+                        gSize = next.getGreen() < prev.getGreen() ? prev.getGreen() - gSize : prev.getGreen() + gSize;
+                        int bSize = (int)Math.floor(trans.apply(step * i) * bChange);
+                        bSize = next.getBlue() < prev.getBlue() ? prev.getBlue() - bSize : prev.getBlue() + bSize;
+                        seq.append("\"rgb(").append(rSize).append(',').append(gSize).append(',').append(bSize).append(")\"").append(',');
+                    }
+                    
+                    seq.append('"').append(next.toRGBString()).append('"').append(']');
+                    wr.ai.clientSideMethodCall(id, SET_PROPERTY_WITH_EFFECT, propertyName, time, seq);
+                }
+            } else {
+                int prev, next;
+                
+                if (styleProp.equals(FX.PROPERTY_FX_VISIBLE_CHANGE)) {
+                    propertyName = "opacity";
+                    int opacity = comp.getStyle().getOpacity();
+                    prev = ((Boolean)oldValue).booleanValue() ? opacity : 0;
+                    next = ((Boolean)newValue).booleanValue() ? opacity : 0;
+                } else {
+                    prev = (Integer)oldValue;
+                    next = (Integer)newValue;
+                }
+                
+                int change = next - prev;
+                if (change < 0) change = ~change + 1;
+                seq.append('[');
+    
+                for (int i = 1; i <= steps; i++) {
+                    int size = (int)Math.floor(trans.apply(step * i) * change);                    
+                    seq.append(next < prev ? prev - size : prev + size).append(',');
+                }
+                
+                seq.append(next).append(']');
+                wr.ai.clientSideMethodCall(id, SET_PROPERTY_WITH_EFFECT, propertyName, time, seq);
+            }
         }
     }    
     
@@ -445,6 +479,10 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
             if (((Boolean)newValue).booleanValue()) postClientEvent(SET_FOCUS, newValue);
         } else if (name.equals(Component.PROPERTY_FOCUS_CAPABLE)) {
             postClientEvent(SET_FOCUS_CAPABLE, pce.getNewValue());
+        } else if (name.equals(Style.PROPERTY_COLOR) || name.equals(Background.PROPERTY_BACKGROUND_COLOR) ||
+                name.equals(Border.PROPERTY_BORDER_COLOR) || name.equals(Font.PROPERTY_FONT_COLOR)) {
+            String setMethod = "set" + Character.toUpperCase(name.charAt(0)) + name.substring(1);
+            setPropertyWithEffect(name, pce.getNewValue(), pce.getOldValue(), setMethod, FX.PROPERTY_FX_COLOR_CHANGE);
         } else if (name.equals(Style.PROPERTY_OPACITY)) {
             setPropertyWithEffect(name, pce.getNewValue(), pce.getOldValue(), SET_OPACITY, FX.PROPERTY_FX_OPACITY_CHANGE);
         } else if (name.equals(Component.PROPERTY_X)) {

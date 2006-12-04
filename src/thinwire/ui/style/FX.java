@@ -40,12 +40,14 @@ public class FX {
     public static final String PROPERTY_FX_SIZE_CHANGE = "fXSizeChange";
     public static final String PROPERTY_FX_VISIBLE_CHANGE = "fXVisibleChange";
     public static final String PROPERTY_FX_OPACITY_CHANGE = "fXOpacityChange";
+    public static final String PROPERTY_FX_COLOR_CHANGE = "fXColorChange";
     
     private Style parent;
     private Motion positionChange;
     private Motion sizeChange;
     private Motion visibleChange;
     private Motion opacityChange;
+    private Motion colorChange;
     
     FX(Style parent) {
         this.parent = parent;
@@ -65,11 +67,13 @@ public class FX {
             if (getSizeChange().equals(df.getSizeChange())) setSizeChange(fx.getSizeChange());
             if (getVisibleChange().equals(df.getVisibleChange())) setVisibleChange(fx.getVisibleChange());
             if (getOpacityChange().equals(df.getOpacityChange())) setOpacityChange(fx.getOpacityChange());
+            if (getColorChange().equals(df.getColorChange())) setColorChange(fx.getColorChange());
         } else {
             setPositionChange(fx.getPositionChange());
             setSizeChange(fx.getSizeChange());
             setVisibleChange(fx.getVisibleChange());
             setOpacityChange(fx.getOpacityChange());
+            setColorChange(fx.getColorChange());
         }
     }
         
@@ -83,6 +87,8 @@ public class FX {
             setVisibleChange((Effect.Motion)value);
         } else if (name.equals(FX.PROPERTY_FX_OPACITY_CHANGE)) {
             setOpacityChange((Effect.Motion)value);
+        } else if (name.equals(FX.PROPERTY_FX_COLOR_CHANGE)) {
+            setColorChange((Effect.Motion)value);
         } else {
             throw new IllegalArgumentException("unknown style property '" + name + "'");
         }
@@ -160,5 +166,18 @@ public class FX {
         Motion oldOpacityChange = this.opacityChange;
         this.opacityChange = opacityChange;
         if (parent != null) parent.firePropertyChange(this, PROPERTY_FX_OPACITY_CHANGE, oldOpacityChange, this.opacityChange);
+    }
+
+    public Motion getColorChange() {
+        if (colorChange == null) throw new IllegalArgumentException("colorChange == null");
+        return colorChange;
+    }
+    
+    public void setColorChange(Motion colorChange) {
+        if (colorChange == null && parent.defaultStyle != null) colorChange = parent.defaultStyle.getFX().getColorChange();
+        if (colorChange == null) throw new IllegalArgumentException("colorChange == null");
+        Motion oldColorChange = this.colorChange;
+        this.colorChange = colorChange;
+        if (parent != null) parent.firePropertyChange(this, PROPERTY_FX_COLOR_CHANGE, oldColorChange, this.colorChange);
     }
 }

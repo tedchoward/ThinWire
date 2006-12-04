@@ -99,7 +99,7 @@ public final class Effect {
             throw new IllegalArgumentException("the specified value '" + value + "' does not identify a known transition");
         }
         
-        public Transition() { }
+        protected Transition() { }
         
         private Transition(boolean addToList) {
             VALUES.add(this);
@@ -182,7 +182,7 @@ public final class Effect {
             this.transition = transition;
             
             if (name == null) {
-                stringValue = duration + " " + frames + " " + transition;
+                stringValue = duration + " " + frames + (duration == 0 && frames == 1 ? "" : " " + transition);
                 ordinal = -1;
                 this.name = "";
             } else {

@@ -145,6 +145,10 @@ var tw_Component = Class.extend({
         if (this._fontBox != null) this._fontBox.style.color = enabled ? this._fontColor : this._grayFontColor;
     },
     
+    setBackgroundColor: function(color) { this.setStyle("backgroundColor", color); },
+    setBorderColor: function(color) { this.setStyle("borderColor", color); },
+    setFontColor: function(color) { this.setStyle("color", color); },
+    
     setPropertyWithEffect: function(prop, time, seq) {
         if (!this._inited) return;        
         prop = prop.charAt(0).toUpperCase() + prop.substring(1);
