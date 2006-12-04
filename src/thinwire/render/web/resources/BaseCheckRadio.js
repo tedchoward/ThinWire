@@ -34,6 +34,7 @@ var tw_BaseCheckRadio = tw_Component.extend({
     _imageDisabledChecked: "",
     _imageDisabledUnchecked: "",
     _image: null,
+    _checked: false,
     
     construct: function(className, id, containerId) {
         arguments.callee.$.call(this, "a", className, id, containerId);
@@ -62,13 +63,19 @@ var tw_BaseCheckRadio = tw_Component.extend({
         s.backgroundColor = tw_COLOR_TRANSPARENT;
         s.backgroundPosition = "center";
         s.backgroundRepeat = "no-repeat";
+        s.backgroundImage = "";
         s.width = s.height = tw_BaseCheckRadio.boxSize + "px"
         this._borderBox.appendChild(this._image);        
         this._box.appendChild(this._borderBox);
+                
+        if (this instanceof tw_CheckBox) {
+            this._imageChecked = "url(" + tw_IMAGE_CHECKBOX_CHECK + ")";
+            this._imageDisabledChecked = "url(" + tw_IMAGE_CHECKBOX_CHECKDISABLED + ")";
+        } else {
+            this._imageChecked = "url(" + tw_IMAGE_RADIOBUTTON_CHECK + ")";
+            this._imageDisabledChecked = "url(" + tw_IMAGE_RADIOBUTTON_CHECKDISABLED + ")";
+        }
         
-        var prefix = (this instanceof tw_CheckBox) ? "cb" : "rb";
-        this._imageChecked = "url(?_twr_=" + prefix + "Checked.png)";
-        this._imageDisabledChecked = "url(?_twr_=" + prefix + "DisabledChecked.png)";    
         tw_addEventListener(this._box, ["click", "dblclick"], this._clickListener.bind(this));    
         tw_addEventListener(this._box, "focus", this._focusListener.bind(this));        
         tw_addEventListener(this._box, "blur", this._blurListener.bind(this));         
@@ -148,7 +155,7 @@ var tw_BaseCheckRadio = tw_Component.extend({
     setText: tw_Component.setText,
    
     isChecked: function() {
-        return this._image.style.backgroundImage.indexOf("Checked") != -1;
+        return this._checked;
     },
     
     setChecked: function(checked, sendEvent) {
@@ -158,6 +165,7 @@ var tw_BaseCheckRadio = tw_Component.extend({
             this._image.style.backgroundImage = "";
         }
 
+        this._checked = checked;
         if (sendEvent) this.firePropertyChange("checked", checked);
     },
     

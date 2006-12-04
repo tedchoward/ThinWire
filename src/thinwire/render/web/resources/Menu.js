@@ -177,7 +177,7 @@ var tw_Menu = tw_Component.extend({
         if (!this._enabled) return;
         var overItem = tw_getEventTarget(event, "menuItem");
         
-        if (overItem == null) {        
+        if (overItem == null) {
             var item = tw_getEventTarget(event, "mainMenuItem");
             if (!this._menusAreVisible) this._setHighlight(item, false);
         }
@@ -282,7 +282,7 @@ var tw_Menu = tw_Component.extend({
     _setArrowVisible: function(item, visible) {
         var b = item.firstChild;
         var img = "";
-        if (visible) img = b.tw_invertArrow ? "url(?_twr_=menuArrowInvert.png)" : "url(?_twr_=menuArrow.png)";
+        if (visible) img = "url(" + (b.tw_invertArrow ? tw_IMAGE_MENU_CHILDARROWINVERT : tw_IMAGE_MENU_CHILDARROW) + ")";
         if (b.style.backgroundImage != img) b.style.backgroundImage = img;
     },    
     
@@ -316,7 +316,13 @@ var tw_Menu = tw_Component.extend({
                     button.style.backgroundColor = tw_COLOR_HIGHLIGHT;
                 }
                 
-                if (this._activeMenuItem != null && this._fullIndex(item).indexOf(this._fullIndex(this._activeMenuItem)) != 0) this.close(this._activeMenuItem);
+                if (this._activeMenuItem != null) {
+                    var itemIndex = this._fullIndex(item);
+                    var activeIndex = this._fullIndex(this._activeMenuItem);
+                    activeIndex = activeIndex.substring(0, itemIndex.length);
+                    if (itemIndex.indexOf(activeIndex) != 0) this.close(this._fullIndexItem(activeIndex));
+                }
+                
                 this._activeMenuItem = item;
             } else {                
                 button.tw_invertArrow = false;
@@ -680,11 +686,8 @@ var tw_Menu = tw_Component.extend({
             for (var i = nodes.length; --i >= 0;) {
                 var item = nodes.item(i);
                 if (item.className == "menuDivider") continue;
-                
-                if (item.lastChild.style.visibility != "hidden") {
-                    this.close(item);
-                    this._setHighlight(item, false);
-                }
+                if (item.lastChild.style.visibility != "hidden") this.close(item);
+                this._setHighlight(item, false);
             }
 
             this._setHighlight(menu, false);

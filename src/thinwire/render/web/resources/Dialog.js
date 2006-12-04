@@ -39,7 +39,6 @@ var tw_Dialog = tw_BaseContainer.extend({
     _modalFlashCount: -1,
     _moveDrag: null,
     _resizeDrag: null,
-    _imageResize: "url(?_twr_=dResize.png)",
     
     construct: function(id, containerId, props) {
         arguments.callee.$.call(this, "dialog", id, 0);
@@ -162,7 +161,7 @@ var tw_Dialog = tw_BaseContainer.extend({
             s.height = "12px";
             s.position = "absolute";
             s.overflow = "hidden";
-            s.backgroundImage = this._imageResize;
+            s.backgroundImage = "url(" + tw_IMAGE_DIALOG_RESIZE + ")";
             s.backgroundRepeat = "no-repeat";
             s.backgroundPosition = "top right";
             s.right = "0px";

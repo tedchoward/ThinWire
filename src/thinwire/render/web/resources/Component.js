@@ -641,6 +641,13 @@ tw_Component.setSystemColors = function(systemColors) {
     }
 };
 
+tw_Component.setSystemImages = function(systemImages) {
+    for (var name in systemImages) {
+        varName = "tw_IMAGE_" + name.toUpperCase();
+        window[varName] = tw_Component.expandUrl(systemImages[name]);
+    }
+};
+
 tw_Component.expandUrl = function(url, wrapInUrl) {
     if (url == null) return "";
     if (url.indexOf("%SYSROOT%") == 0) url = tw_APP_URL + "?_twr_=" + url.substring(9);

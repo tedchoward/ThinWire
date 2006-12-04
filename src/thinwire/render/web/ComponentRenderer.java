@@ -163,11 +163,14 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     private void setStyle(String propertyName, Object oldValue) {
         if (propertyName.startsWith("fx") || isPropertyChangeIgnored(propertyName)) return;
         Style s = comp.getStyle();
+        if (propertyName.equals(Border.PROPERTY_BORDER_TYPE) && s.getBorder().getType() == Border.Type.IMAGE) return;
         Object value;
         
         if (propertyName.equals(Border.PROPERTY_BORDER_COLOR)) {
             if (s.getBorder().getType() == Border.Type.NONE) return;
             value = s.getBorder().getColor();
+        } else if (propertyName.equals(Border.PROPERTY_BORDER_IMAGE)) {
+            value = s.getBorder().getImageInfo();
         } else {
             value = s.getProperty(propertyName);
         }
@@ -579,7 +582,6 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
             }
                     
             if (uri == null || uri.getScheme() == null) uri = wr.ai.getRelativeFile(location).toURI();
-            
             String scheme = uri.getScheme();        
             
             if (scheme.equals("file") || scheme.equals("class")) {

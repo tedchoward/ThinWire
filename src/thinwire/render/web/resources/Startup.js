@@ -329,18 +329,35 @@ function tw_shutdownInstance(text) {
         tw_Frame.active.destroy();
     }
     
-    document.title = "[ThinWire]";
+    document.title = "[ThinWire(R) RIA Ajax Framework - http://www.thinwire.com]";
     
     if (text != null) {
-        var message = document.createElement("div");    
+        var message = document.createElement("div");
+        var title = document.createElement("div");
+        var s = title.style;
+        s.fontSize = "10pt"
+        s.fontWeight = "bold";
+        s.backgroundColor = "activecaption";
+        s.padding = "2px";
+        var link = document.createElement("a");
+        var s = link.style;
+        s.textDecoration = "none";
+        s.color = "captiontext";
+        link.href = "http://www.thinwire.com";
+        link.appendChild(document.createTextNode("ThinWire(R) RIA Ajax Framework"));
+        title.appendChild(link);
+        message.appendChild(title);
         message.appendChild(document.createTextNode(text));
         message.className = "label";
-        var s = message.style;    
-        s.width = "320px";
+        var s = message.style;
+        s.position = "absolute";
+        s.width = "400px";
         s.top = ((tw_getVisibleHeight() - 200) / 2) + "px";
         s.left = ((tw_getVisibleWidth() - parseInt(s.width)) / 2) + "px";
         s.backgroundColor = "threedface";
-        s.border = "1px solid black";
+        s.border = "1px solid " + "activeborder";
+        s.color = "windowtext";
+        s.fontFamily = "Tahoma, sans-serif";
         s.whiteSpace = "normal";
         s.fontSize = "14pt";
         s.textAlign = "center";

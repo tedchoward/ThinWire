@@ -283,21 +283,16 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
             GridBox gb = (GridBox)getParent();
             
             if (gb != null) {
-                boolean oldSelected = gb.selectedRow == this;
-
-                if (selected) {
-                    if (gb.selectedRow != null && gb.selectedRow != this) gb.selectedRow.setSelected(false);
+                if (selected && gb.selectedRow != this) {
+                    if (gb.selectedRow != null) gb.firePropertyChange(gb.selectedRow, PROPERTY_ROW_SELECTED, true, false);
+                    gb.priorSelectedRow = gb.selectedRow;
                     gb.selectedRow = this;
-                    gb.firePropertyChange(this, PROPERTY_ROW_SELECTED, oldSelected, selected);
-                    //#IFDEF V1_1_COMPAT
-                    if (gb.compatModeOn) gb.firePropertyChange(this, "selected", oldSelected, selected);
-                    //#ENDIF
-                } else if (gb.selectedRow == this) {
-                    gb.selectedRow = null;
-                    gb.firePropertyChange(this, PROPERTY_ROW_SELECTED, oldSelected, selected);
-                    //#IFDEF V1_1_COMPAT
-                    if (gb.compatModeOn) gb.firePropertyChange(this, "selected", oldSelected, selected);
-                    //#ENDIF
+                    gb.firePropertyChange(this, PROPERTY_ROW_SELECTED, false, true);
+                } else if (!selected && gb.selectedRow == this) {
+                    gb.firePropertyChange(this, PROPERTY_ROW_SELECTED, true, false);
+                    gb.priorSelectedRow = this;
+                    gb.selectedRow = gb.getRows().size() > 0 ? gb.getRows().get(0) : null;
+                    if (gb.selectedRow != null) gb.firePropertyChange(gb.selectedRow, PROPERTY_ROW_SELECTED, false, true);
                 }
             }
         }
@@ -602,6 +597,7 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
     private boolean compatModeOn;
     //#ENDIF
     private Row selectedRow;
+    private Row priorSelectedRow;
     private Column sortedColumn;
     private Column.SortOrder sortedColumnOrder = GridBox.Column.SortOrder.NONE; 
     
@@ -628,6 +624,8 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
                         if (getRows().size() == 0) { //Clear was called
                             GridBox.this.rowsWithChildren.clear();
                             GridBox.this.checkedRows.clear();
+                            GridBox.this.selectedRow = null;
+                            GridBox.this.priorSelectedRow = null;
                         } else { 
                             GridBox.Row oldRow = (GridBox.Row)oldValue; 
                             if (oldRow.getChild() != null) GridBox.this.rowsWithChildren.remove(oldRow);
@@ -644,6 +642,8 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
                             } else if (rowIndex <= GridBox.this.selectedRow.getIndex()) {
                                 if (GridBox.this.selectedRow.getIndex() - 1 >= 0) rows.get(GridBox.this.selectedRow.getIndex() - 1).setSelected(true);
                             }
+                            
+                            if (oldRow == GridBox.this.priorSelectedRow) GridBox.this.priorSelectedRow = null;
                         }
                     } else if (type == ItemChangeEvent.Type.ADD) {
                         GridBox.Row newRow = (GridBox.Row)newValue;
@@ -673,7 +673,6 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
                         GridBox.Row oldRow = (GridBox.Row)oldValue;
                         if (oldRow.getChild() != null) GridBox.this.rowsWithChildren.remove(oldRow);
                         if (oldRow.isChecked()) GridBox.this.checkedRows.remove(oldRow);
-                        if (oldRow.isSelected() && !newRow.isSelected()) rows.get(0).setSelected(true);
                         
                         if (newRow.getChild() != null) {
                             GridBox.this.rowsWithChildren.add(newRow);
@@ -681,7 +680,8 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
                         }
                         
                         if (newRow.isChecked()) GridBox.this.checkedRows.add(newRow);
-                        if (newRow.isSelected()) newRow.setSelected(true);
+                        if (oldRow.isSelected()) newRow.setSelected(true);
+                        if (oldRow == GridBox.this.priorSelectedRow) GridBox.this.priorSelectedRow = null;
                     }
                 }
                 
@@ -861,6 +861,14 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
 	public Row getSelectedRow() {
         return selectedRow;
 	}
+    
+    /**
+     * Returns the prior row that was selected.
+     * @return the prior row that was selected.
+     */
+    public Row getPriorSelectedRow() {
+        return priorSelectedRow;
+    }
 
 	/**
 	 * Returns any rows that are checked.

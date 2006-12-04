@@ -163,7 +163,7 @@ var tw_DropDown = tw_BaseText.extend({
 
     setEnabled: function(enabled) {
         arguments.callee.$.call(this, enabled);
-        this._button.style.backgroundImage = enabled ? "url(?_twr_=ddButton.png)" : "url(?_twr_=ddDisabledButton.png)";
+        this._button.style.backgroundImage = "url(" + (enabled ? tw_IMAGE_DROPDOWN_BUTTONARROW : tw_IMAGE_DROPDOWN_BUTTONARROWDISABLED) + ")";
         if (enabled && !this._editAllowed) this._editor.readOnly = true;
     },
             

@@ -259,7 +259,6 @@ var tw_GridBox = tw_Component.extend({
     },
 
     _scrollListener: function(event) {
-        if (!this._enabled) return;
         var body = this._content.parentNode;        
         this._header.style.left = "-" + body.scrollLeft + "px";
         if (this._childOpen) this.closeChildren();
@@ -360,10 +359,10 @@ var tw_GridBox = tw_Component.extend({
             var s = cell.style;        
     
             if (state == 0) {
-                s.backgroundImage = tw_GridBox.imageUnchecked;
+                s.backgroundImage = "url(" + tw_IMAGE_GRIDBOX_UNCHECKED + ")";
                 s.paddingLeft = "18px";
             } else if (state == 1) {
-                s.backgroundImage = tw_GridBox.imageChecked;
+                s.backgroundImage = "url(" + tw_IMAGE_GRIDBOX_CHECKED + ")";
                 s.paddingLeft = "18px";
             }            
         }
@@ -443,7 +442,7 @@ var tw_GridBox = tw_Component.extend({
         if (state) {
             var color = this._enabled ? tw_COLOR_HIGHLIGHTTEXT : tw_COLOR_INACTIVECAPTIONTEXT;
             var backgroundColor = this._enabled ? tw_COLOR_HIGHLIGHT : tw_COLOR_INACTIVECAPTION;
-            var arrowImage = tw_GridBox.imageChildArrowInvert;
+            var arrowImage = "url(" + tw_IMAGE_GRIDBOX_CHILDARROWINVERT + ")";
             var cell = childNodes.item(0).childNodes.item(index);
             var body = content.parentNode;        
             var cellOffset = cell.offsetTop + cell.offsetHeight - body.scrollTop;        
@@ -456,7 +455,7 @@ var tw_GridBox = tw_Component.extend({
         } else {
             var color = this._fontBox.style.color;
             var backgroundColor = tw_COLOR_TRANSPARENT;
-            var arrowImage = tw_GridBox.imageChildArrow;
+            var arrowImage = "url(" + tw_IMAGE_GRIDBOX_CHILDARROW + ")";;
         }   
         
         for (var i = 0, cnt = this._getColumnCount(); i < cnt; i++) {
@@ -487,7 +486,7 @@ var tw_GridBox = tw_Component.extend({
                 h.style.width = width <= this._headerBorderSizeSub ? "0px" : width - this._headerBorderSizeSub + "px";                      
             }
 
-            this.setVisibleHeader(this._visibleHeader);    
+            this.setColumnWidth();
         }
     },
     
@@ -666,13 +665,11 @@ var tw_GridBox = tw_Component.extend({
         var gbHeight = this._height - this._borderSizeSub;
         
         if (visibleHeader) {
-            var headerWidth = this._width - this._headerBorderSizeSub;
-            if (headerWidth < 0) headerWidth = 0;
-            header.style.width = headerWidth + "px";
             var headerHeight = tw_GridBox.rowHeight + this._headerBorderSizeSub;
             header.style.height = headerHeight + "px";            
             header.style.top = this._box.scrollTop + "px";
-            if (this._visibleHeader) tw_addEventListener(this._box.childNodes.item(1), "scroll", this._scrollListener);                    
+            this.setColumnWidth();
+            if (!this._visibleHeader) tw_addEventListener(this._box.childNodes.item(1), "scroll", this._scrollListener);                    
             header.style.display = "block";
             body.style.top = headerHeight + "px";
             body.style.height = gbHeight < headerHeight ? "0px" : (gbHeight - headerHeight) + "px";
@@ -680,7 +677,7 @@ var tw_GridBox = tw_Component.extend({
             header.style.display = "none";
             body.style.top = "0px";
             body.style.height = gbHeight < 0 ? "0px" : (gbHeight + "px");
-            if (!this._visibleHeader) tw_removeEventListener(this._box.childNodes.item(1), "scroll", this._scrollListener);                    
+            if (this._visibleHeader) tw_removeEventListener(this._box.childNodes.item(1), "scroll", this._scrollListener);                    
         }
         
         this._visibleHeader = visibleHeader;
@@ -697,7 +694,7 @@ var tw_GridBox = tw_Component.extend({
                 var style = childNodes.item(i).style;
                 
                 if (visibleCheckBoxes) {                
-                    style.backgroundImage = checkedIndices == null || checkedIndices.indexOf("," + i + ",") == -1 ? tw_GridBox.imageUnchecked : tw_GridBox.imageChecked;
+                    style.backgroundImage = "url(" + (checkedIndices == null || checkedIndices.indexOf("," + i + ",") == -1 ? tw_IMAGE_GRIDBOX_UNCHECKED : tw_IMAGE_GRIDBOX_CHECKED) + ")";
                 } else {
                     style.backgroundImage = "";
                 }
@@ -723,14 +720,14 @@ var tw_GridBox = tw_Component.extend({
     
         if (arguments.length > 0) {
             var columnHeader = header.childNodes.item(index);
-            columnHeader.style.width = width <= this._borderSizeSub ? "0px" : width - this._borderSizeSub + "px";
+            columnHeader.style.width = width <= this._headerBorderSizeSub ? "0px" : width - this._headerBorderSizeSub + "px";
             column.style.width = width + "px";
         }
         
         var totalFixedWidth = 0;
     
         for (var i = 0, cnt = this._getColumnCount(); i < cnt; i++) {
-            var c = content.childNodes.item(i);                        
+            var c = content.childNodes.item(i);
             totalFixedWidth += parseInt(c.style.width);
         }
     
@@ -749,8 +746,8 @@ var tw_GridBox = tw_Component.extend({
 
     setColumnSortOrder: function(index, sortOrder) {
         var img = "";
-        if (sortOrder == 1) img = tw_GridBox.imageSortOrderAsc;
-        else if (sortOrder == 2) img = tw_GridBox.imageSortOrderDesc;
+        if (sortOrder == 1) img = "url(" + tw_IMAGE_GRIDBOX_SORTARROWASC + ")";
+        else if (sortOrder == 2) img = "url(" + tw_IMAGE_GRIDBOX_SORTARROWDESC + ")";
         this._header.childNodes.item(index).style.backgroundImage = img;
     },
     
@@ -779,7 +776,7 @@ var tw_GridBox = tw_Component.extend({
         if (!this._visibleCheckBoxes || index < 0) return;
         var style = this._content.firstChild.childNodes.item(index).style;
         if (state == -1) state = style.backgroundImage.indexOf("gbUnchecked") >= 0;
-        style.backgroundImage = state ? tw_GridBox.imageChecked : tw_GridBox.imageUnchecked;
+        style.backgroundImage = "url(" + (state ? tw_IMAGE_GRIDBOX_CHECKED : tw_IMAGE_GRIDBOX_UNCHECKED) + ")";
         if (sendEvent) this.firePropertyChange("rowChecked", (state ? "t" : "f") + index, "rowChecked" + index);
     },
 
@@ -796,7 +793,7 @@ var tw_GridBox = tw_Component.extend({
         s.textAlign = alignX;
         s.backgroundRepeat = "no-repeat";
         s.backgroundPosition = "center right";
-        if (sortOrder != 0) s.backgroundImage = sortOrder == 1 ? tw_GridBox.imageSortOrderAsc : tw_GridBox.imageSortOrderDesc; 
+        if (sortOrder != 0) s.backgroundImage = "url(" + (sortOrder == 1 ? tw_IMAGE_GRIDBOX_SORTARROWASC : tw_IMAGE_GRIDBOX_SORTARROWDESC) + ")"; 
 
         s.borderWidth = (this._borderSize > 2 ? 2 : this._borderSize) + "px";        
         s.backgroundColor = tw_COLOR_BUTTONFACE;
@@ -849,10 +846,10 @@ var tw_GridBox = tw_Component.extend({
         columnHeader.replaceChild(tw_Component.setRichText(name), columnHeader.firstChild);
                 
         column.style.width = width + "px";
-        columnHeader.style.width = width <= this._borderSizeSub ? "0px" : width - this._borderSizeSub + "px";
+        columnHeader.style.width = width <= this._headerBorderSizeSub ? "0px" : width - this._headerBorderSizeSub + "px";
         
         column.style.textAlign = columnHeader.style.textAlign = alignX;
-        if (sortOrder != 0) columnHeader.backgroundImage = sortOrder == 1 ? tw_GridBox.imageSortOrderAsc : tw_GridBox.imageSortOrderDesc;        
+        if (sortOrder != 0) columnHeader.backgroundImage = "url(" + (sortOrder == 1 ? tw_IMAGE_GRIDBOX_SORTARROWASC : tw_IMAGE_GRIDBOX_SORTARROWDESC) + ")";        
         if (!(values instanceof Array)) eval("values = " + values);
                 
         for (var i = 0, cnt = values.length; i < cnt; i++) {
@@ -1051,10 +1048,4 @@ var tw_GridBox = tw_Component.extend({
 
 tw_GridBox.rowHeight = 14;
 tw_GridBox.childColumnWidth = 12;
-tw_GridBox.imageChecked = "url(?_twr_=gbChecked.png)";
-tw_GridBox.imageUnchecked = "url(?_twr_=gbUnchecked.png)";
-tw_GridBox.imageChildArrow = "url(?_twr_=gbChildArrow.png)";
-tw_GridBox.imageChildArrowInvert = "url(?_twr_=gbChildArrowInvert.png)";
-tw_GridBox.imageSortOrderDesc = "url(?_twr_=gbSortOrderDesc.png)";
-tw_GridBox.imageSortOrderAsc = "url(?_twr_=gbSortOrderAsc.png)";
 

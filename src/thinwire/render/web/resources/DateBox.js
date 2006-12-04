@@ -65,10 +65,10 @@ var tw_DateBox = tw_Component.extend({
 
         this._header.appendChild(document.createTextNode(tw_DateBox.MONTHS[this._today.getMonth()] + " " + this._today.getFullYear()));
         
-        this._prev = this._createButton("url(?_twr_=leftArrow.png)", "left");
+        this._prev = this._createButton("url(" + tw_IMAGE_DATEBOX_PREVARROW + ")", "left");
         this._header.appendChild(this._prev);
         
-        this._next = this._createButton("url(?_twr_=rightArrow.png)", "right");
+        this._next = this._createButton("url(" + tw_IMAGE_DATEBOX_NEXTARROW + ")", "right");
         this._header.appendChild(this._next);
         
         this._box.appendChild(this._header);

@@ -173,9 +173,18 @@ public class Tree extends AbstractHierarchyComponent<Tree.Item> {
         public void setSelected(boolean selected) {
             Tree tree = getHierarchy();
             if (tree == null) throw new IllegalStateException("the item must be added to a Tree before it can be set to selected");
-            Tree.Item oldSelectedItem = tree.selectedItem;                         
-            tree.selectedItem = selected ? this : tree.getRootItem();
-            tree.firePropertyChange(this, PROPERTY_ITEM_SELECTED, oldSelectedItem == this, tree.selectedItem == this);
+            
+            if (selected && tree.selectedItem != this) {
+                if (tree.selectedItem != null) tree.firePropertyChange(tree.selectedItem, PROPERTY_ITEM_SELECTED, true, false);
+                tree.priorSelectedItem = tree.selectedItem;
+                tree.selectedItem = this;
+                tree.firePropertyChange(this, PROPERTY_ITEM_SELECTED, false, true);
+            } else if (!selected && tree.selectedItem == this) {
+                tree.firePropertyChange(this, PROPERTY_ITEM_SELECTED, true, false);
+                tree.priorSelectedItem = this;
+                tree.selectedItem = tree.getRootItem();
+                tree.firePropertyChange(tree.selectedItem, PROPERTY_ITEM_SELECTED, false, true);
+            }
         }
 
         /**
@@ -207,6 +216,7 @@ public class Tree extends AbstractHierarchyComponent<Tree.Item> {
     
     private boolean rootItemVisible;
     private Item selectedItem;
+    private Item priorSelectedItem;
 
     /**
      * Constructs a new Tree.
@@ -234,13 +244,22 @@ public class Tree extends AbstractHierarchyComponent<Tree.Item> {
         this.rootItemVisible = rootItemVisible;
         firePropertyChange(this, PROPERTY_ROOT_ITEM_VISIBLE, oldRootItemVisible, rootItemVisible);
     }
-
+    
     /**
      * Get the selected item of Tree.
      * @return the selected item of Tree.
      */
     public Item getSelectedItem() {
         return selectedItem;
+    }
+
+    /**
+     * Gets the prior selected item of Tree.
+     * @return the prior selected item of Tree.
+     */
+    public Item getPriorSelectedItem() {
+        if (priorSelectedItem.getParent() == null || priorSelectedItem.getHierarchy() != this) priorSelectedItem = null;
+        return priorSelectedItem;
     }
 
     public void fireAction(ActionEvent ev) {

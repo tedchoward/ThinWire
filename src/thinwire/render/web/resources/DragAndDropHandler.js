@@ -66,11 +66,11 @@ var tw_DragAndDropHandler = Class.extend({
     },
     
     _mouseOut: function(event) {
-        this._dragInd.src = tw_DragAndDropHandler.imageInvalid;
+        this._dragInd.src = tw_IMAGE_DRAGDROP_INVALID;
     },
     
     _mouseOver: function(event) {
-        this._dragInd.src = tw_DragAndDropHandler.imageValid;
+        this._dragInd.src = tw_IMAGE_DRAGDROP_VALID;
     },
     
     _mouseDown: function(event) {
@@ -118,7 +118,7 @@ var tw_DragAndDropHandler = Class.extend({
         var s = this._dragInd.style;             
         s.zIndex = ++tw_Component.zIndex;
         s.display = "none";
-        this._dragInd.src = tw_DragAndDropHandler.imageInvalid;
+        this._dragInd.src = tw_IMAGE_DRAGDROP_INVALID;
         document.body.appendChild(this._dragBox);
         document.body.appendChild(this._dragInd);
 
@@ -194,7 +194,4 @@ var tw_DragAndDropHandler = Class.extend({
         this._source = this._targets = this._dragBox = this._dragInd = null;
     }
 });
-
-tw_DragAndDropHandler.imageValid = "?_twr_=dragValid.png";
-tw_DragAndDropHandler.imageInvalid = "?_twr_=dragInvalid.png";
 

@@ -42,7 +42,7 @@ public class Border {
     public static final String PROPERTY_BORDER_IMAGE = "borderImage";
     
     public enum Type {
-        NONE, SOLID, DOUBLE, INSET, OUTSET, RIDGE, GROOVE, DASHED, DOTTED;
+        NONE, SOLID, DOUBLE, INSET, OUTSET, RIDGE, GROOVE, DASHED, DOTTED, IMAGE;
         
         public String toString() {
             return name().toLowerCase();
@@ -54,6 +54,7 @@ public class Border {
     private int size = -1;
     private Color color;
     private ImageInfo imageInfo = new ImageInfo(null);
+    private Type imageType;
     
     Border(Style parent) {
         this.parent = parent;
@@ -74,10 +75,10 @@ public class Border {
             if (getColor().equals(db.getColor())) setColor(border.getColor());            
             if (getImage().equals(db.getImage())) setImage(border.getImage());            
         } else {
-            setType(border.getType());
+            setImage(border.getImage());
             setSize(border.getSize());
             setColor(border.getColor());
-            setImage(border.getImage());
+            setType(border.getType());
         }
     }
     
@@ -125,8 +126,10 @@ public class Border {
     public void setType(Type type) {
         if (type == null && parent.defaultStyle != null) type = parent.defaultStyle.getBorder().getType();
         if (type == null) throw new IllegalArgumentException("type == null");
+        if (type == Type.IMAGE && getImage().length() == 0) throw new IllegalStateException("type == Type.IMAGE && getImage().length() == 0");
         Type oldType = this.type; 
         this.type = type;
+        if (oldType == Type.IMAGE && type != Type.IMAGE) setImage("");
         if (parent != null) parent.firePropertyChange(this, PROPERTY_BORDER_TYPE, oldType, this.type);
     }
     
@@ -163,9 +166,22 @@ public class Border {
     public void setImage(String image) {
         if (image == null && parent.defaultStyle != null) image = parent.defaultStyle.getBorder().getImage();
         if (image == null) throw new IllegalArgumentException("image == null && defaultStyle.getBorder().getImage() == null");
-        String oldImage = imageInfo.getName();        
+        String oldImage = imageInfo.getName();
         imageInfo = new ImageInfo(image);
         if (parent != null) parent.firePropertyChange(this, PROPERTY_BORDER_IMAGE, oldImage, imageInfo.getName());
+        
+        if (imageInfo.getName().length() > 0) {
+            if (type != Type.IMAGE) {
+                imageType = type;
+                setType(Type.IMAGE);
+            }
+        } else if (oldImage.length() > 0) {
+            if (getType() == Type.IMAGE) {
+                setType(imageType);
+            }
+
+            imageType = null;
+        }
     }
     
     public ImageInfo getImageInfo() {

@@ -231,7 +231,7 @@ public abstract class Application {
                 }
                 
                 if (is != null) {
-                    //is = new BufferedInputStream(is);
+                    is = new BufferedInputStream(is);
                     
                     if (innerFile != null) {
                         ZipInputStream zip = new ZipInputStream(is);
@@ -292,6 +292,7 @@ public abstract class Application {
     private Map<String, String> fileMap;
     //#ENDIF
     private Map<String, Color> systemColors;
+    private Map<String, String> systemImages;
     private Map<Class<? extends Component>, Style> compTypeToStyle;
     
     protected Application() {
@@ -528,6 +529,7 @@ public abstract class Application {
     protected void loadStyleSheet(XOD props) {
         compTypeToStyle = new HashMap<Class<? extends Component>, Style>();
         systemColors = new HashMap<String, Color>();
+        systemImages = new HashMap<String, String>();
 
         for (Map.Entry<String, Object> e : props.getObjectMap().entrySet()) {
             String name = e.getKey();
@@ -559,6 +561,15 @@ public abstract class Application {
                 if (systemColors.get(name) == null) systemColors.put(name, c);
             }
         }
+        
+        for (Map.Entry<String, String> e : props.getPropertyMap().entrySet()) {
+            String key = e.getKey();
+            
+            if (key.startsWith("image.")) {
+                key = key.substring(6).replace('.', '_').toUpperCase();
+                systemImages.put(key, e.getValue());
+            }
+        }
     }
     
     protected Map<Class<? extends Component>, Style> getDefaultStyles() {
@@ -568,7 +579,11 @@ public abstract class Application {
     protected Map<String, Color> getSystemColors() {
         return systemColors;
     }
-    
+
+    protected Map<String, String> getSystemImages() {
+        return systemImages;
+    }
+
     public Style getDefaultStyle(Class<? extends Component> clazz) {
         if (clazz == null) throw new IllegalArgumentException("clazz == null");
         Style style = compTypeToStyle.get(clazz);

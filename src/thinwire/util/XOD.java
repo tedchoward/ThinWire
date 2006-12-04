@@ -285,6 +285,7 @@ public final class XOD {
     private Map<Object, String> idMap;
     private List<Object> objects;
     private Map<String, Class> aliases;
+    private Map<String, String> properties;
     private Map<Class, Map<String, Object[]>> propertyAliases;
     private List<String> uriStack;
     private boolean processingInclude;
@@ -304,12 +305,17 @@ public final class XOD {
         objectMap = new HashMap<String, Object>();
         objects = new ArrayList<Object>();
         aliases = new HashMap<String, Class>();
+        properties = new HashMap<String, String>();
         uriStack = new ArrayList<String>();
         if (uri != null) execute(uri);
     }
     
     public Map<String, Class> getAliasMap() {
         return aliases;
+    }
+    
+    public Map<String, String> getPropertyMap() {
+        return properties;
     }
     
     /**
@@ -356,9 +362,16 @@ public final class XOD {
         Object ret = null;
         
         try {
-            uriStack.add(uri);
             DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            BufferedInputStream is = new BufferedInputStream(Application.getResourceAsStream(uri));                   
+            BufferedInputStream is = new BufferedInputStream(Application.getResourceAsStream(uri));
+            uriStack.add(uri);
+
+            int index = uri.lastIndexOf('/');
+            if (index == -1) index = uri.lastIndexOf('\\');
+            if (index == -1) index = 0;
+            properties.put("xod.file", uri.substring(index));
+            properties.put("xod.path", index == 0 ? "" : uri.substring(0, index));
+
             Document doc = builder.parse(is);
             is.close();
             ret = processBranch(parent, doc.getChildNodes(), level);
@@ -368,6 +381,15 @@ public final class XOD {
             throw (RuntimeException)e;
         } finally {
             uriStack.remove(uriStack.size() - 1);
+            
+            if (uriStack.size() > 0) {
+                uri = uriStack.get(uriStack.size() - 1);
+                int index = uri.lastIndexOf('/');
+                if (index == -1) index = uri.lastIndexOf('\\');
+                if (index == -1) index = 0;
+                properties.put("xod.file", uri.substring(index));
+                properties.put("xod.path", index == 0 ? "" : uri.substring(0, index));
+            }
         }
         
         return ret;
@@ -420,6 +442,13 @@ public final class XOD {
             if (level != 0 && !processingInclude) throw new DOMException(DOMException.INVALID_STATE_ERR, "level != 0");            
             if (log.isLoggable(Level.FINEST)) log.finest("xod");
             processBranch(parent, n.getChildNodes(), level + 1);
+        } else if (name.equals("property") && parent == null) {
+            if (n.getAttributes().getLength() != 2) throw new DOMException(DOMException.NOT_SUPPORTED_ERR, name + ":n.getAttributes().getLength() != 2");
+            String key = (String)n.getAttributes().getNamedItem("name").getNodeValue();
+            String value = (String)n.getAttributes().getNamedItem("value").getNodeValue();
+            value = this.replaceProperties(value);
+            properties.put(key, value);
+            if (log.isLoggable(Level.FINEST)) log.finest("property[name:" + key + ",value:" + value + "]");
         } else if (name.equals("alias")) {
             if (n.getAttributes().getLength() != 2) throw new DOMException(DOMException.NOT_SUPPORTED_ERR, name + ":n.getAttributes().getLength() != 2");
             //if (n.getChildNodes().getLength() != 0) throw new DOMException(DOMException.NOT_SUPPORTED_ERR, name + ":n.getChildNodes().getLength() != 0");
@@ -583,8 +612,12 @@ public final class XOD {
                         if (attrName.equals("id")) {
                             id = attrValue;
                         } else {
+                            String setter = "set" + Character.toUpperCase(attrName.charAt(0)) + attrName.substring(1);
+                            
                             for (Method m : c.getMethods()) {
-                                if (m.getName().equals(attrName)) {
+                                String methodName = m.getName();
+                                
+                                if (methodName.equals(attrName) || methodName.equals(setter)) {
                                     Class[] args = m.getParameterTypes();
                                     
                                     if (args.length == 1) {
@@ -592,14 +625,21 @@ public final class XOD {
                                         
                                         if (Modifier.isStatic(m.getModifiers())) {
                                             ret = invoke(null, m, arg);
+                                            
                                             if (!c.isInstance(ret)) {
+                                                if (log.isLoggable(Level.FINEST)) log.finest("invoked static id=" + id + ":" + c.getName() + "." + methodName + "('" + attrValue + "')");
                                                 ret = null;
                                             } else {
-                                                if (log.isLoggable(Level.FINEST)) log.finest("new " + c.getName() + ".valueOf('" + attrValue + "')");
+                                                if (log.isLoggable(Level.FINEST)) log.finest("static factory new id=" + id + ":" + c.getName() + "." + methodName + "('" + attrValue + "')");
                                             }
                                         } else {
                                             if (nonStatic == null) nonStatic = new ArrayList<Object[]>(3);
-                                            nonStatic.add(new Object[]{m, arg});
+                                            
+                                            if (methodName.equals(attrName)) {
+                                                nonStatic.add(0, new Object[]{m, arg});
+                                            } else {
+                                                nonStatic.add(new Object[]{m, arg});
+                                            }
                                         }
                                     }
                                 }
@@ -615,7 +655,7 @@ public final class XOD {
                     if (nonStatic != null) {
                         for (Object[] callMeth : nonStatic) {
                             invoke(ret, (Method)callMeth[0], callMeth[1]);
-                            if (log.isLoggable(Level.FINEST)) log.finest("calling simple method:" + c.getName() + "." + ((Method)callMeth[0]).getName() + "(" + callMeth[1] + ")");
+                            if (log.isLoggable(Level.FINEST)) log.finest("invoked id=" + id + ":" + c.getName() + "." + ((Method)callMeth[0]).getName() + "(" + callMeth[1] + ")");
                         }
                     }
 
@@ -659,30 +699,26 @@ public final class XOD {
         return ret;
     }
 
-    private static final Pattern REGEX_PROPERTY = Pattern.compile(".*?[$][{]([\\w.]+)[}].*?");
+    private static final Pattern REGEX_PROPERTY = Pattern.compile("(.*?)[$][{]([\\w.]+)[}](.*?)");
     
     private String replaceProperties(String value) {
+        if (log.isLoggable(Level.FINEST)) log.finest("before replaceProperties:" + value);
         if (value != null && value.indexOf("${") >= 0) {
             StringBuffer sb = new StringBuffer();
             Matcher m = REGEX_PROPERTY.matcher(value);
             
             while (m.find()) {
-                String prop = m.group(1);
-                
-                if (prop.equals("xod.file")) {
-                    prop = uriStack.get(0);
-                    int index = prop.lastIndexOf('/');
-                    if (index == -1) index = prop.lastIndexOf('\\');
-                    prop = prop.substring(0, index + 1);
-                }
-                
-                m.appendReplacement(sb, prop);
+                String prop = m.group(2);
+                String val = properties.get(prop);
+                if (val == null) val = "${" + prop + "}";
+                m.appendReplacement(sb, m.group(1) + val + m.group(3));
             }
             
             m.appendTail(sb);
             value = sb.toString();
         }
         
+        if (log.isLoggable(Level.FINEST)) log.finest("after replaceProperties:" + value);
         return value;
     }
     
