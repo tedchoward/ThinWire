@@ -273,6 +273,51 @@ public class Font {
         }
     }
     
+    
+    public void setProperty(String name, Object value) {
+        if (name.equals(Font.PROPERTY_FONT_FAMILY)) {
+            setFamily((Font.Family)value); 
+        } else if (name.equals(Font.PROPERTY_FONT_SIZE)) {
+            setSize((Integer)value); 
+        } else if (name.equals(Font.PROPERTY_FONT_COLOR)) {
+            setColor((Color)value); 
+        } else if (name.equals(Font.PROPERTY_FONT_BOLD)) {
+            setBold((Boolean)value); 
+        } else if (name.equals(Font.PROPERTY_FONT_ITALIC)) {
+            setItalic((Boolean)value); 
+        } else if (name.equals(Font.PROPERTY_FONT_UNDERLINE)) {
+            setUnderline((Boolean)value);
+        } else if (name.equals(Font.PROPERTY_FONT_STRIKE)) {
+            setStrike((Boolean)value);
+        } else {
+            throw new IllegalArgumentException("unknown style property '" + name + "'");
+        }
+    }
+    
+    public Object getProperty(String name) {
+        Object ret;
+        
+        if (name.equals(Font.PROPERTY_FONT_FAMILY)) {
+            ret = getFamily(); 
+        } else if (name.equals(Font.PROPERTY_FONT_SIZE)) {
+            ret = getSize(); 
+        } else if (name.equals(Font.PROPERTY_FONT_COLOR)) {
+            ret = getColor(); 
+        } else if (name.equals(Font.PROPERTY_FONT_BOLD)) {
+            ret = isBold(); 
+        } else if (name.equals(Font.PROPERTY_FONT_ITALIC)) {
+            ret = isItalic(); 
+        } else if (name.equals(Font.PROPERTY_FONT_UNDERLINE)) {
+            ret = isUnderline();
+        } else if (name.equals(Font.PROPERTY_FONT_STRIKE)) {
+            ret = isStrike();
+        } else {
+            throw new IllegalArgumentException("unknown style property '" + name + "'");
+        }
+        
+        return ret;
+    }
+    
     public Style getParent() {
         return parent;
     }

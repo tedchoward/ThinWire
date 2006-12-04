@@ -207,6 +207,38 @@ public class Background {
             setPosition(background.getPosition());
         }
     }
+    
+    public void setStyleProperty(String name, Object value) {
+        if (name.equals(Background.PROPERTY_BACKGROUND_COLOR)) {
+            setColor((Color)value);
+        } else if (name.equals(Background.PROPERTY_BACKGROUND_IMAGE)) {
+            setImage((String)value);
+        } else if (name.equals(Background.PROPERTY_BACKGROUND_POSITION)) {
+            setPosition((Background.Position)value);
+        } else if (name.equals(Background.PROPERTY_BACKGROUND_REPEAT)) {
+            setRepeat((Background.Repeat)value);
+        } else {
+            throw new IllegalArgumentException("unknown style property '" + name + "'");
+        }
+    }
+    
+    public Object getStyleProperty(String name) {
+        Object ret;
+        
+        if (name.equals(Background.PROPERTY_BACKGROUND_COLOR)) {
+            ret = getColor();
+        } else if (name.equals(Background.PROPERTY_BACKGROUND_IMAGE)) {
+            ret = getImage();
+        } else if (name.equals(Background.PROPERTY_BACKGROUND_POSITION)) {
+            ret = getPosition();
+        } else if (name.equals(Background.PROPERTY_BACKGROUND_REPEAT)) {
+            ret = getRepeat();
+        } else {
+            throw new IllegalArgumentException("unknown style property '" + name + "'");
+        }
+        
+        return ret;
+    }
 
     public Style getParent() {
         return parent;

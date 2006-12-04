@@ -49,7 +49,7 @@ import thinwire.ui.event.ItemChangeListener;
 import thinwire.ui.event.PropertyChangeEvent;
 import thinwire.ui.event.PropertyChangeListener;
 import thinwire.ui.event.ItemChangeEvent.Type;
-import thinwire.ui.style.Style;
+import thinwire.ui.style.*;
 import thinwire.util.ArrayGrid;
 import thinwire.util.Grid;
 
@@ -588,6 +588,13 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
     public static final String PROPERTY_VISIBLE_CHECK_BOXES = "visibleCheckBoxes";
     public static final String PROPERTY_FULL_ROW_CHECK_BOX = "fullRowCheckBox";
     
+    private static final String[] STYLE_PROPERTIES = {Font.PROPERTY_FONT_BOLD, Font.PROPERTY_FONT_COLOR, Font.PROPERTY_FONT_FAMILY,
+        Font.PROPERTY_FONT_ITALIC, Font.PROPERTY_FONT_SIZE, Font.PROPERTY_FONT_UNDERLINE, Font.PROPERTY_FONT_STRIKE,
+        Background.PROPERTY_BACKGROUND_COLOR, Background.PROPERTY_BACKGROUND_IMAGE, Background.PROPERTY_BACKGROUND_POSITION,
+        Background.PROPERTY_BACKGROUND_REPEAT, Border.PROPERTY_BORDER_COLOR, Border.PROPERTY_BORDER_IMAGE, Border.PROPERTY_BORDER_SIZE,
+        Border.PROPERTY_BORDER_TYPE
+    };
+    
     private boolean visibleHeader;
     private boolean visibleCheckBoxes;
     private boolean fullRowCheckBox;
@@ -696,15 +703,17 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
                 }
             }            
         };
+      
         
-        addPropertyChangeListener(DropDown.STYLE_PROPERTIES, new PropertyChangeListener() {
+        
+        addPropertyChangeListener(STYLE_PROPERTIES, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent ev) {
                 String propertyName = ev.getPropertyName();
                 Object o = ev.getNewValue();
 
                 for (GridBox.Row row : getRowsWithChildren()) {
                     Style s = row.getChild().getStyle();
-                    DropDown.setStyleValue(s, propertyName, o);                    
+                    s.setProperty(propertyName, o);                    
                 }
             }
         });

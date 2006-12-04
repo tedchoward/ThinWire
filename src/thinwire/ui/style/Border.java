@@ -81,6 +81,38 @@ public class Border {
         }
     }
     
+    public void setProperty(String name, Object value) {
+        if (name.equals(Border.PROPERTY_BORDER_COLOR)) {
+            setColor((Color)value);
+        } else if (name.equals(Border.PROPERTY_BORDER_TYPE)) {
+            setType((Border.Type)value);
+        } else if (name.equals(Border.PROPERTY_BORDER_SIZE)) {
+            setSize((Integer)value); 
+        } else if (name.equals(Border.PROPERTY_BORDER_IMAGE)) {
+            setImage((String)value); 
+        } else {
+            throw new IllegalArgumentException("unknown style property '" + name + "'");
+        }
+    }
+    
+    public Object getProperty(String name) {
+        Object ret;
+        
+        if (name.equals(Border.PROPERTY_BORDER_COLOR)) {
+            ret = getColor();
+        } else if (name.equals(Border.PROPERTY_BORDER_TYPE)) {
+            ret = getType();
+        } else if (name.equals(Border.PROPERTY_BORDER_SIZE)) {
+            ret = getSize(); 
+        } else if (name.equals(Border.PROPERTY_BORDER_IMAGE)) {
+            ret = getImage(); 
+        } else {
+            throw new IllegalArgumentException("unknown style property '" + name + "'");
+        }
+        
+        return ret;
+    }
+
     public Style getParent() {
         return parent;
     }    

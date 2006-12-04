@@ -34,9 +34,14 @@ package thinwire.ui.style;
  * @author Joshua J. Gertzen
  */
 public class Style {  
+    public static final String PROPERTY_OPACITY = "opacity";
+    public static final String PROPERTY_COLOR = "color";
+    
     private static final Style DEFAULT_STYLE;
     static {
         Style s = new Style();
+        s.setOpacity(100);
+        s.setColor(Color.THREEDFACE);
         Font f = s.getFont();
         f.setFamily(Font.Family.SANS_SERIF);
         f.setColor(Color.BLACK);
@@ -58,16 +63,17 @@ public class Style {
         b.setImage("");
         
         FX fx = s.getFX();
-        fx.setPositionChange(FX.Type.NONE);
-        fx.setSizeChange(FX.Type.NONE);
-        fx.setVisibleChange(FX.Type.NONE);
-        fx.setOpacityChange(FX.Type.NONE);
-        fx.setOpacity(100);
+        fx.setPositionChange(Effect.Motion.NONE);
+        fx.setSizeChange(Effect.Motion.NONE);
+        fx.setVisibleChange(Effect.Motion.NONE);
+        fx.setOpacityChange(Effect.Motion.NONE);
         
         DEFAULT_STYLE = s;
     }
     
     private Object parent;
+    private Color color;
+    private int opacity = -1;
     private Font font;
     private Background background;
     private Border border;
@@ -110,14 +116,89 @@ public class Style {
 
     public void copy(Style style, boolean onlyIfDefault) {
         if (style == null) throw new IllegalArgumentException("style == null");
+        
+        if (onlyIfDefault) {
+            if (getColor().equals(defaultStyle.getColor())) setColor(style.getColor());
+            if (getOpacity() == defaultStyle.getOpacity()) setOpacity(style.getOpacity());
+        } else {
+            setColor(style.getColor());
+            setOpacity(style.getOpacity());
+        }
+        
         getFont().copy(style.getFont(), onlyIfDefault);
         getBackground().copy(style.getBackground(), onlyIfDefault);
         getBorder().copy(style.getBorder(), onlyIfDefault);
         getFX().copy(style.getFX());        
     }
     
+    public void setProperty(String name, Object value) {
+        if (name.equals(PROPERTY_OPACITY)) {
+            setOpacity((Integer)value);
+        } else if (name.equals(PROPERTY_COLOR)) {
+            setColor((Color)value);
+        } else if (name.startsWith("background")) {
+            getBackground().setStyleProperty(name, value);
+        } else if (name.startsWith("border")) {
+            getBorder().setProperty(name, value);
+        } else if (name.startsWith("font")) {
+            getFont().setProperty(name, value); 
+        } else if (name.startsWith("fX")) {
+            getFX().setProperty(name, value); 
+        } else {
+            throw new IllegalArgumentException("unknown style property '" + name + "'");
+        }
+    }
+    
+    public Object getProperty(String name) {
+        Object ret;
+        
+        if (name.equals(PROPERTY_OPACITY)) {
+            ret = getOpacity();
+        } else if (name.equals(PROPERTY_COLOR)) {
+            ret = getColor();
+        } else if (name.startsWith("background")) {
+            ret = getBackground().getStyleProperty(name);
+        } else if (name.startsWith("border")) {
+            ret = getBorder().getProperty(name);
+        } else if (name.startsWith("font")) {
+            ret = getFont().getProperty(name); 
+        } else if (name.startsWith("fX")) {
+            ret = getFX().getProperty(name); 
+        } else {
+            throw new IllegalArgumentException("unknown style property '" + name + "'");
+        }
+        
+        return ret;
+    }
+    
     public Object getParent() {
         return parent;
+    }
+    
+    public Color getColor() {
+        if (color == null)  throw new IllegalStateException("color not initialized");
+        return color;
+    }
+    
+    public void setColor(Color color) {
+        if (color == null && defaultStyle != null) color = defaultStyle.getColor();        
+        if (color == null) throw new IllegalArgumentException("color == null && defaultStyle.getColor() == null");
+        Color oldColor = this.color;
+        this.color = color;        
+        if (parent != null) firePropertyChange(this, PROPERTY_COLOR, oldColor, this.color);
+    }
+    
+    public int getOpacity() {
+        if (opacity == -1) throw new IllegalStateException("opacity not initialized");
+        return opacity;
+    }
+    
+    public void setOpacity(int opacity) {
+        if (opacity <= 0 && defaultStyle != null) opacity = defaultStyle.getOpacity();
+        if (opacity <= 0 && opacity > 100) throw new IllegalArgumentException("opacity <= 0 || opacity > 100");
+        int oldOpacity = this.opacity;
+        this.opacity = opacity;
+        if (parent != null) firePropertyChange(this, PROPERTY_OPACITY, oldOpacity, opacity);
     }
     
     public Font getFont() {

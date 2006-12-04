@@ -36,6 +36,8 @@ import thinwire.ui.event.PropertyChangeEvent;
 import thinwire.ui.event.PropertyChangeListener;
 import thinwire.ui.event.ItemChangeEvent.Type;
 import thinwire.ui.layout.Layout;
+import thinwire.ui.style.Font;
+import thinwire.ui.style.Background;
 import thinwire.ui.style.Style;
 
 /**
@@ -92,6 +94,12 @@ public class TabFolder extends AbstractContainer<TabSheet> {
     static final int TABS_HEIGHT = 20;
     private static final String[] BOUNDS_PROPERTIES = new String[] {Component.PROPERTY_X, Component.PROPERTY_Y, Component.PROPERTY_WIDTH, Component.PROPERTY_HEIGHT};
     
+    private static final String[] STYLE_PROPERTIES = {Font.PROPERTY_FONT_BOLD, Font.PROPERTY_FONT_COLOR, Font.PROPERTY_FONT_FAMILY,
+        Font.PROPERTY_FONT_ITALIC, Font.PROPERTY_FONT_SIZE, Font.PROPERTY_FONT_UNDERLINE, Font.PROPERTY_FONT_STRIKE,
+        Background.PROPERTY_BACKGROUND_COLOR, Background.PROPERTY_BACKGROUND_IMAGE, Background.PROPERTY_BACKGROUND_POSITION,
+        Background.PROPERTY_BACKGROUND_REPEAT
+    };
+    
 	private int currentIndex = -1;
 	
 	public TabFolder() {
@@ -129,14 +137,14 @@ public class TabFolder extends AbstractContainer<TabSheet> {
             }
         });
         
-        addPropertyChangeListener(DropDown.STYLE_PROPERTIES, new PropertyChangeListener() {
+        addPropertyChangeListener(STYLE_PROPERTIES, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent ev) {
                 String propertyName = ev.getPropertyName();
                 Object o = ev.getNewValue();
 
                 for (TabSheet ts : getChildren()) {
                     Style s = ts.getStyle();
-                    DropDown.setStyleValue(s, propertyName, o);
+                    s.setProperty(propertyName, o);
                 }
             }
         });

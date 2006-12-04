@@ -59,41 +59,9 @@ public class DropDown<T extends Component> extends AbstractMaskEditorComponent {
     public static final String PROPERTY_VIEW = "view";
     public static final String PROPERTY_COMPONENT = "component";
     
-    static final String[] STYLE_PROPERTIES = {Font.PROPERTY_FONT_BOLD, Font.PROPERTY_FONT_COLOR, Font.PROPERTY_FONT_FAMILY,
-        Font.PROPERTY_FONT_ITALIC, Font.PROPERTY_FONT_SIZE, Font.PROPERTY_FONT_UNDERLINE, Border.PROPERTY_BORDER_COLOR, Border.PROPERTY_BORDER_TYPE,
-        Border.PROPERTY_BORDER_SIZE, Background.PROPERTY_BACKGROUND_COLOR, FX.PROPERTY_FX_POSITION_CHANGE, FX.PROPERTY_FX_SIZE_CHANGE,
-        FX.PROPERTY_FX_VISIBLE_CHANGE
+    private static final String[] STYLE_PROPERTIES = {Font.PROPERTY_FONT_BOLD, Font.PROPERTY_FONT_COLOR, Font.PROPERTY_FONT_FAMILY,
+        Font.PROPERTY_FONT_ITALIC, Font.PROPERTY_FONT_SIZE, Font.PROPERTY_FONT_UNDERLINE, Font.PROPERTY_FONT_STRIKE
     };
-    
-    static void setStyleValue(Style s, String propertyName, Object o) {
-        if (propertyName.equals(Background.PROPERTY_BACKGROUND_COLOR)) {
-            s.getBackground().setColor((Color)o);
-        } else if (propertyName.equals(Border.PROPERTY_BORDER_COLOR)) {
-            s.getBorder().setColor((Color)o);
-        } else if (propertyName.equals(Border.PROPERTY_BORDER_TYPE)) {
-            s.getBorder().setType((Border.Type)o);
-        } else if (propertyName.equals(Border.PROPERTY_BORDER_SIZE)) {
-            s.getBorder().setSize((Integer)o); 
-        } else if (propertyName.equals(Font.PROPERTY_FONT_FAMILY)) {
-            s.getFont().setFamily((Font.Family)o); 
-        } else if (propertyName.equals(Font.PROPERTY_FONT_SIZE)) {
-            s.getFont().setSize((Integer)o); 
-        } else if (propertyName.equals(Font.PROPERTY_FONT_COLOR)) {
-            s.getFont().setColor((Color)o); 
-        } else if (propertyName.equals(Font.PROPERTY_FONT_BOLD)) {
-            s.getFont().setBold((Boolean)o); 
-        } else if (propertyName.equals(Font.PROPERTY_FONT_ITALIC)) {
-            s.getFont().setItalic((Boolean)o); 
-        } else if (propertyName.equals(Font.PROPERTY_FONT_UNDERLINE)) {
-            s.getFont().setUnderline((Boolean)o);
-        } else if (propertyName.equals(FX.PROPERTY_FX_POSITION_CHANGE)) {
-            s.getFX().setPositionChange((FX.Type)o);
-        } else if (propertyName.equals(FX.PROPERTY_FX_SIZE_CHANGE)) {
-            s.getFX().setSizeChange((FX.Type)o);
-        } else if (propertyName.equals(FX.PROPERTY_FX_VISIBLE_CHANGE)) {
-            s.getFX().setVisibleChange((FX.Type)o);
-        }
-    }
 
     static void copyDropDownStyle(Component parent, Component child, boolean copyBackground) {
         Style cs = child.getStyle();
@@ -159,10 +127,9 @@ public class DropDown<T extends Component> extends AbstractMaskEditorComponent {
         addPropertyChangeListener(STYLE_PROPERTIES, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent ev) {
                 String propertyName = ev.getPropertyName();
-                if (propertyName.startsWith("border") || propertyName.startsWith("background")) return;
                 Style s = getComponent().getStyle();
                 Object o = ev.getNewValue();
-                setStyleValue(s, propertyName, o);
+                s.setProperty(propertyName, o);
             }
         });
         
