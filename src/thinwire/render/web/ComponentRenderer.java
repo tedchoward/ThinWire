@@ -479,7 +479,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
             if (((Boolean)newValue).booleanValue()) postClientEvent(SET_FOCUS, newValue);
         } else if (name.equals(Component.PROPERTY_FOCUS_CAPABLE)) {
             postClientEvent(SET_FOCUS_CAPABLE, pce.getNewValue());
-        } else if (name.equals(Style.PROPERTY_COLOR) || name.equals(Background.PROPERTY_BACKGROUND_COLOR) ||
+        } else if (name.equals(Background.PROPERTY_BACKGROUND_COLOR) ||
                 name.equals(Border.PROPERTY_BORDER_COLOR) || name.equals(Font.PROPERTY_FONT_COLOR)) {
             String setMethod = "set" + Character.toUpperCase(name.charAt(0)) + name.substring(1);
             setPropertyWithEffect(name, pce.getNewValue(), pce.getOldValue(), setMethod, FX.PROPERTY_FX_COLOR_CHANGE);

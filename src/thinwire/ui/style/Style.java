@@ -35,13 +35,11 @@ package thinwire.ui.style;
  */
 public class Style {  
     public static final String PROPERTY_OPACITY = "opacity";
-    public static final String PROPERTY_COLOR = "color";
     
     private static final Style DEFAULT_STYLE;
     static {
         Style s = new Style();
         s.setOpacity(100);
-        s.setColor(Color.THREEDFACE);
         
         Font f = s.getFont();
         f.setFamily(Font.Family.SANS_SERIF);
@@ -121,10 +119,8 @@ public class Style {
         if (style == null) throw new IllegalArgumentException("style == null");
         
         if (onlyIfDefault) {
-            if (getColor().equals(defaultStyle.getColor())) setColor(style.getColor());
             if (getOpacity() == defaultStyle.getOpacity()) setOpacity(style.getOpacity());
         } else {
-            setColor(style.getColor());
             setOpacity(style.getOpacity());
         }
         
@@ -137,8 +133,6 @@ public class Style {
     public void setProperty(String name, Object value) {
         if (name.equals(PROPERTY_OPACITY)) {
             setOpacity((Integer)value);
-        } else if (name.equals(PROPERTY_COLOR)) {
-            setColor((Color)value);
         } else if (name.startsWith("background")) {
             getBackground().setStyleProperty(name, value);
         } else if (name.startsWith("border")) {
@@ -157,8 +151,6 @@ public class Style {
         
         if (name.equals(PROPERTY_OPACITY)) {
             ret = getOpacity();
-        } else if (name.equals(PROPERTY_COLOR)) {
-            ret = getColor();
         } else if (name.startsWith("background")) {
             ret = getBackground().getStyleProperty(name);
         } else if (name.startsWith("border")) {
@@ -176,19 +168,6 @@ public class Style {
     
     public Object getParent() {
         return parent;
-    }
-    
-    public Color getColor() {
-        if (color == null)  throw new IllegalStateException("color not initialized");
-        return color;
-    }
-    
-    public void setColor(Color color) {
-        if (color == null && defaultStyle != null) color = defaultStyle.getColor();        
-        if (color == null) throw new IllegalArgumentException("color == null && defaultStyle.getColor() == null");
-        Color oldColor = this.color;
-        this.color = color;        
-        if (parent != null) firePropertyChange(this, PROPERTY_COLOR, oldColor, this.color);
     }
     
     public int getOpacity() {
