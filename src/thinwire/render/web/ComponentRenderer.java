@@ -155,7 +155,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         
         wr.ai.setPackagePrivateMember("renderer", comp, this);        
         
-        if (comp.isFocusCapable() && ((Container)wr.comp).getComponentWithFocus() == null) comp.setFocus(true);
+        if (comp.isFocusCapable() && comp.isEnabled() && ((Container)wr.comp).getComponentWithFocus() == null) comp.setFocus(true);
         
         wr.ai.flushRenderCallbacks(comp, id);        
 	}
