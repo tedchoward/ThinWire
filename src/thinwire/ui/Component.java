@@ -34,6 +34,7 @@ import thinwire.ui.event.ActionEvent;
 import thinwire.ui.event.ActionListener;
 import thinwire.ui.event.DropEvent;
 import thinwire.ui.event.DropListener;
+import thinwire.ui.event.KeyPressEvent;
 import thinwire.ui.event.KeyPressListener;
 import thinwire.ui.event.PropertyChangeListener;
 import thinwire.ui.style.Style;
@@ -289,6 +290,10 @@ public interface Component {
     void removeDropListener(DropListener listener);
 
     void fireDrop(DropEvent ev);    
+
+    void fireDrop(Component dragComponent);    
+    
+    void fireDrop(Component dragComponent, Object dragObject);    
     
     /**
      * Adds a <code>KeyPressListener</code> that will be notified when the specified key press combination occurs.
@@ -397,10 +402,16 @@ public interface Component {
      * difference, is in terms of a browser's default behavior for a specific key press combination. If you use this mechanism
      * to trigger an F1 keypress, the browser's default behavior (typically bringing up a help window), will not occur.
      * </p>
-     * @param keyPressCombo a key press combo in any dash separated format supported by
-     *        {@link thinwire.ui.event.KeyPressEvent#normalizeKeyPressCombo(String)}.
      * @throws IllegalArgumentException if <code>keyPressCombo</code> is null, or if <code>keyPressCombo</code> is an empty
      *         string, or if <code>keyPressCombo</code> represents an invalid key combo.
+     * @param ev a KeyPressEvent that represents the key press combo you want to signal has occured.
+     */
+    void fireKeyPress(KeyPressEvent ev);
+    
+    /** 
+     * A convenience method that is equal to this.fireKeyPress(new KeyPressEvent(keyPressCombo, this)); 
+     * @param keyPressCombo a key press combo in any dash separated format supported by
+     *        {@link thinwire.ui.event.KeyPressEvent#normalizeKeyPressCombo(String)}.
      * @see thinwire.ui.event.KeyPressEvent#encodeKeyPressCombo(boolean, boolean, boolean, String)
      * @see thinwire.ui.event.KeyPressEvent#normalizeKeyPressCombo(String)
      */

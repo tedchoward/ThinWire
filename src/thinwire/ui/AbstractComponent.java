@@ -35,6 +35,7 @@ import thinwire.ui.event.ActionEvent;
 import thinwire.ui.event.ActionListener;
 import thinwire.ui.event.DropEvent;
 import thinwire.ui.event.DropListener;
+import thinwire.ui.event.KeyPressEvent;
 import thinwire.ui.event.PropertyChangeListener;
 import thinwire.ui.event.KeyPressListener;
 import thinwire.ui.style.*;
@@ -208,11 +209,11 @@ abstract class AbstractComponent implements Component {
     }
 
     public void fireAction(String action) {
-        fireAction(new ActionEvent(this, action));
+        fireAction(new ActionEvent(action, this));
     }
     
     public void fireAction(String action, Object source) {
-        fireAction(new ActionEvent(this, source, action));
+        fireAction(new ActionEvent(action, this, source));
     }
     
     public void addDropListener(Component dragComponent, DropListener listener) {
@@ -230,6 +231,14 @@ abstract class AbstractComponent implements Component {
     public void fireDrop(DropEvent ev) {
         dei.fireDrop(ev);
     }
+    
+    public void fireDrop(Component dragComponent) {
+        fireDrop(new DropEvent(this, dragComponent));
+    }
+    
+    public void fireDrop(Component dragComponent, Object dragObject) {
+        fireDrop(new DropEvent(this, null, dragComponent, dragObject));
+    }
         
     public void addKeyPressListener(String keyPressCombo, KeyPressListener listener) {
         kpei.addListener(keyPressCombo, listener);
@@ -243,8 +252,12 @@ abstract class AbstractComponent implements Component {
         kpei.removeListener(listener);
     }
     
+    public void fireKeyPress(KeyPressEvent ev) {
+        kpei.fireKeyPress(ev);
+    }
+    
     public void fireKeyPress(String keyPressCombo) {
-        kpei.fireKeyPress(this, keyPressCombo);
+        fireKeyPress(new KeyPressEvent(keyPressCombo, this));
     }
     
     public Object getParent() {

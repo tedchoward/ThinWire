@@ -44,26 +44,27 @@ public final class PropertyChangeEvent extends EventObject {
     private Object newValue;
     private Object oldValue;
 
-    public PropertyChangeEvent(Component sourceComponent, String propertyName, Object oldValue, Object newValue) {
-        this(sourceComponent, null, propertyName, oldValue, newValue);
+    public PropertyChangeEvent(String propertyName, Object oldValue, Object newValue, Component sourceComponent) {
+        this(propertyName, oldValue, newValue, sourceComponent, null);
     }
     
-    public PropertyChangeEvent(Component sourceComponent, Object source, String propertyName, Object oldValue, Object newValue) {
+    public PropertyChangeEvent(String propertyName, Object oldValue, Object newValue, Component sourceComponent, Object source) {
         super(source == null ? sourceComponent : source);
         if (sourceComponent == null) throw new IllegalArgumentException("sourceComponent == null");
         if (propertyName == null || propertyName.length() == 0) throw new IllegalArgumentException("propertyName == null || propertyName.length() == 0");
-        this.sourceComponent = sourceComponent;
+        if (newValue != null && oldValue != null && newValue.getClass().isInstance(oldValue)) throw new IllegalArgumentException("newValue must be of the same class type as oldValue");
         this.propertyName = propertyName;
         this.newValue = newValue;
         this.oldValue = oldValue;
-    }
-
-    public Component getSourceComponent() {
-        return sourceComponent;
+        this.sourceComponent = sourceComponent;
     }
     
     public String getPropertyName() {
         return propertyName;
+    }
+
+    public Component getSourceComponent() {
+        return sourceComponent;
     }
     
     public Object getNewValue() {
@@ -83,8 +84,10 @@ public final class PropertyChangeEvent extends EventObject {
     }
     
     public String toString() {
-        if (stringValue == null) stringValue = "PropertyChangeEvent{sourceComponent:" + sourceComponent.getClass().getName() + "@" + System.identityHashCode(sourceComponent) + 
-            ",source:" + source + ",propertyName:" + propertyName + ",oldValue:" + oldValue + ",newValue:" + newValue + "}";
+        if (stringValue == null) stringValue = "PropertyChangeEvent{propertyName:" + propertyName + 
+            ",oldValue:" + oldValue + ",newValue:" + newValue +
+            ",sourceComponent:" + sourceComponent.getClass().getName() + "@" + System.identityHashCode(sourceComponent) + 
+            ",source:" + source + "@" + System.identityHashCode(source) + "}";  
         return stringValue;
     }
 }

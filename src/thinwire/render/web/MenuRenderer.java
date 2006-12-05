@@ -173,7 +173,7 @@ final class MenuRenderer extends ComponentRenderer implements ItemChangeListener
         KeyPressListener listener = new KeyPressListener() {
             public void keyPress(KeyPressEvent ev) {
                 Menu menu = item.getHierarchy();                        
-                if (menu != null) menu.fireAction(new ActionEvent(menu, item, Menu.ACTION_CLICK));
+                if (menu != null) menu.fireAction(new ActionEvent(Menu.ACTION_CLICK, menu, item));
             }
         };
 

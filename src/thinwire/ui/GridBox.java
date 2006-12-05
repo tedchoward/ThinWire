@@ -776,15 +776,6 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
         super.fireAction(ev);
     }
     
-    /**
-     * A convienence method that is equivalent to <code>fireAction(new ActionEvent(this, action, range))</code>.
-     * @param action the action that occured.
-     * @param range a GridBox.Range object that represents the part of the GridBox on which the action occured.
-     */
-    public void fireAction(String action, Range range) {
-        fireAction(new ActionEvent(this, range, action));
-    }
-	
 	public List<GridBox.Column> getColumns() {
 		return grid.getColumns();
 	}

@@ -33,7 +33,6 @@ package thinwire.ui.event;
 import java.util.EventObject;
 
 import thinwire.ui.Component;
-import thinwire.util.ImageInfo;
 
 /**
  * @author Joshua J. Gertzen
@@ -42,44 +41,88 @@ import thinwire.util.ImageInfo;
 public final class DropEvent extends EventObject {
     private String stringValue;
     private Component sourceComponent;
+    private Component dragComponent;
+    private Object dragObject;
+    private int sourceComponentX;
+    private int sourceComponentY;
     private int sourceX;
     private int sourceY;
-    private Object dragObject;
-    private Component dragComponent;
+    private int dragComponentX;
+    private int dragComponentY;
     private int dragX;
     private int dragY;
     
     public DropEvent(Component sourceComponent, Component dragComponent) {
-        this(sourceComponent, null, 0, 0, dragComponent, null, 0, 0);
-
+        this(sourceComponent, null, -1, -1, -1, -1, dragComponent, null, -1, -1, -1, -1, true);
     }
 
-    public DropEvent(Component sourceComponent, int sourceX, int sourceY, Component dragComponent, int dragX, int dragY) {
-        this(sourceComponent, null, sourceX, sourceY, dragComponent, null, dragX, dragY);
-    }    
-    
+    public DropEvent(Component sourceComponent, int sourceComponentX, int sourceComponentY, Component dragComponent, int dragComponentX, int dragComponentY) {
+        this(sourceComponent, null, sourceComponentX, sourceComponentY, -1, -1, dragComponent, null, dragComponentX, dragComponentY, -1, -1, true);
+    }
+
     public DropEvent(Component sourceComponent, Object source, Component dragComponent, Object dragObject) {
-        this(sourceComponent, source, 0, 0, dragComponent, dragObject, 0, 0);
+        this(sourceComponent, source, -1, -1, -1, -1, dragComponent, dragObject, -1, -1, -1, -1, true);
+    }
+
+    public DropEvent(Component sourceComponent, Object source, int sourceComponentX, int sourceComponentY, int sourceX, int sourceY, Component dragComponent, Object dragObject, int dragComponentX, int dragComponentY, int dragX, int dragY) {        
+        this(sourceComponent, source, sourceComponentX, sourceComponentY, sourceX, sourceY, dragComponent, dragObject, dragComponentX, dragComponentY, dragX, dragY, true);
     }
     
-    public DropEvent(Component sourceComponent, Object source, int sourceX, int sourceY, Component dragComponent, Object dragObject, int dragX, int dragY) {        
+    private DropEvent(Component sourceComponent, Object source, int sourceComponentX, int sourceComponentY, int sourceX, int sourceY, Component dragComponent, Object dragObject, int dragComponentX, int dragComponentY, int dragX, int dragY, boolean init) {        
         super(source == null ? sourceComponent : source);
-        if (sourceComponent == null || dragComponent == null) throw new IllegalArgumentException("sourceComponent == null || dragComponent == null");
+        if (sourceComponent == null) throw new IllegalArgumentException("sourceComponent == null");
+        if (init && sourceComponentX == -1) sourceComponentX = 0;
+        if (init && sourceComponentY == -1) sourceComponentY = 0;
+        if (sourceComponentX < 0) throw new IllegalArgumentException("sourceComponentX{" + sourceComponentX + "} < 0");
+        if (sourceComponentY < 0) throw new IllegalArgumentException("sourceComponentY{" + sourceComponentY + "} < 0");
+        if (init && sourceX == -1) sourceX = sourceComponentX;
+        if (init && sourceY == -1) sourceY = sourceComponentY;
         if (sourceX < 0) throw new IllegalArgumentException("sourceX{" + sourceX + "} < 0");
         if (sourceY < 0) throw new IllegalArgumentException("sourceY{" + sourceY + "} < 0");
+
+        if (dragComponent == null) throw new IllegalArgumentException("dragComponent == null");
+        if (dragObject == null) dragObject = dragComponent;
+        if (init && dragComponentX == -1) dragComponentX = 0;
+        if (init && dragComponentY == -1) dragComponentY = 0;
+        if (dragComponentX < 0) throw new IllegalArgumentException("dragComponentX{" + dragComponentX + "} < 0");
+        if (dragComponentY < 0) throw new IllegalArgumentException("dragComponentY{" + dragComponentY + "} < 0");
+        if (init && dragX == -1) dragX = dragComponentX;
+        if (init && dragY == -1) dragY = dragComponentY;
         if (dragX < 0) throw new IllegalArgumentException("dragX{" + dragX + "} < 0");
         if (dragY < 0) throw new IllegalArgumentException("dragY{" + dragY + "} < 0");
+
         this.sourceComponent = sourceComponent;
+        this.sourceComponentX = sourceComponentX;
+        this.sourceComponentY = sourceComponentY;
         this.sourceX = sourceX;
         this.sourceY = sourceY;
-        this.dragObject = dragObject == null ? dragComponent : dragObject;
+        
         this.dragComponent = dragComponent;
+        this.dragObject = dragObject;
+        this.dragComponentX = dragComponentX;
+        this.dragComponentY = dragComponentY;
         this.dragX = dragX;
         this.dragY = dragY;
     }
     
     public Component getSourceComponent() {
         return sourceComponent;
+    }
+    
+    public Component getDragComponent() {
+        return dragComponent;
+    }
+        
+    public Object getDragObject() {
+        return dragObject;
+    }
+    
+    public int getSourceComponentX() {
+        return sourceComponentX;
+    }
+    
+    public int getSourceComponentY() {
+        return sourceComponentY;
     }
     
     public int getSourceX() {
@@ -90,12 +133,12 @@ public final class DropEvent extends EventObject {
         return sourceY;
     }
     
-    public Object getDragObject() {
-        return dragObject;
+    public int getDragComponentX() {
+        return dragComponentX;
     }
     
-    public Component getDragComponent() {
-        return dragComponent;
+    public int getDragComponentY() {
+        return dragComponentY;
     }
     
     public int getDragX() {
@@ -115,10 +158,16 @@ public final class DropEvent extends EventObject {
     }
     
     public String toString() {
-        if (stringValue == null) stringValue = "DropEvent{sourceComponent:" + sourceComponent.getClass().getName() + "@" + System.identityHashCode(sourceComponent) + 
-            ",source:" + source + ",sourceX:" + getSourceX() + ",sourceY:" + getSourceY() + 
-            ",dragComponent:" + dragComponent.getClass().getName() + "@" + System.identityHashCode(dragComponent) + 
-            ",dragObject:" + dragObject + ",dragX:" + getDragX() + ",dragY:" + getDragY() + "}";
+        if (stringValue == null) stringValue = "DropEvent{" + 
+        "sourceComponent:" + sourceComponent.getClass().getName() + "@" + System.identityHashCode(sourceComponent) +
+        ",source:" + source + "@" + System.identityHashCode(source) + 
+        ",sourceComponentX:" + sourceComponentX + ",sourceComponentY:" + sourceComponentY + 
+        ",sourceX:" + sourceX + ",sourceY:" + sourceY +
+        ",dragComponent:" + dragComponent.getClass().getName() + "@" + System.identityHashCode(dragComponent) +
+        ",dragObject:" + dragObject + "@" + System.identityHashCode(dragObject) + 
+        ",dragComponentX:" + dragComponentX + ",dragComponentY:" + dragComponentY + 
+        ",dragX:" + dragX + ",dragY:" + dragY +
+        "}";
         return stringValue;
     }
 }

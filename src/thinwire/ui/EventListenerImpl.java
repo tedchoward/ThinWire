@@ -229,7 +229,7 @@ class EventListenerImpl<E extends EventListener> {
     
     void firePropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
         if(!hasListeners() && renderer == null) return;
-        PropertyChangeEvent pce = new PropertyChangeEvent(comp, source, propertyName, oldValue, newValue);
+        PropertyChangeEvent pce = new PropertyChangeEvent(propertyName, oldValue, newValue, comp, source);
         if (renderer != null) renderer.propertyChange(pce);
         if (hasListeners()) fireEvent(pce, propertyName);        
     }
@@ -272,8 +272,7 @@ class EventListenerImpl<E extends EventListener> {
         fireEvent(ev, ev.getDragComponent());
     }
     
-    void fireKeyPress(Component source, String keyPressCombo) {
-        KeyPressEvent kpe = new KeyPressEvent(source, keyPressCombo);
+    void fireKeyPress(KeyPressEvent kpe) {
         if (!hasListeners()) return;
         fireEvent(kpe, kpe.getKeyPressCombo());        
     }

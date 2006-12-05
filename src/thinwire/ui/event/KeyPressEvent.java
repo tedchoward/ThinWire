@@ -152,7 +152,7 @@ public class KeyPressEvent extends EventObject {
     private String key;
     private String keyPressCombo;
     
-    public KeyPressEvent(Component source, String keyPressCombo) {
+    public KeyPressEvent(String keyPressCombo, Component source) {
         super(source);
         this.keyPressCombo = keyPressCombo = normalizeKeyPressCombo(keyPressCombo);
         ctrl = keyPressCombo.indexOf("Ctrl-") >= 0;
@@ -194,8 +194,8 @@ public class KeyPressEvent extends EventObject {
     }
     
     public String toString() {
-        if (stringValue == null) stringValue = "KeyPressEvent{sourceComponent:" + source.getClass().getName() + "@" + System.identityHashCode(source) + 
-            ",keyPressCombo:" + keyPressCombo + "}";
+        if (stringValue == null) stringValue = "KeyPressEvent{keyPressCombo:" + keyPressCombo + 
+            ",sourceComponent:" + source.getClass().getName() + "@" + System.identityHashCode(source) + "}";
         return stringValue;
     }
 }

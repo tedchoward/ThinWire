@@ -322,16 +322,16 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
             }
             
             if (actionIgnoreProperty != null) setPropertyChangeIgnored(actionIgnoreProperty, true);
-            comp.fireAction(new ActionEvent(comp, getEventObject(comp, (String)event.getValue()), name));
+            comp.fireAction(new ActionEvent(name, comp, getEventObject(comp, (String)event.getValue())));
             if (actionIgnoreProperty != null) setPropertyChangeIgnored(actionIgnoreProperty, false);
         } else if (event.getName().equals(CLIENT_EVENT_DROP)) {
             String[] parts = ((String)event.getValue()).split(",", -1);
             Component dragComponent = (Component)wr.ai.getComponentFromId(Integer.parseInt(parts[1]));
-            int dragX = getInt(parts[3]);
-            int dragY = getInt(parts[4]);
-            int sourceX = getInt(parts[5]);
-            int sourceY = getInt(parts[6]);
-            comp.fireDrop(new DropEvent(comp, getEventObject(comp, parts[0]), sourceX, sourceY, dragComponent, getEventObject(dragComponent, parts[2]), dragX, dragY));
+            int dragComponentX = getInt(parts[3]);
+            int dragComponentY = getInt(parts[4]);
+            int sourceComponentX = getInt(parts[5]);
+            int sourceComponentY = getInt(parts[6]);
+            comp.fireDrop(new DropEvent(comp, getEventObject(comp, parts[0]), sourceComponentX, sourceComponentY, 0, 0, dragComponent, getEventObject(dragComponent, parts[2]), dragComponentX, dragComponentY, 0, 0));
         } else if (name.equals("size")) {
             this.setPropertyChangeIgnored(Component.PROPERTY_WIDTH, true);
             this.setPropertyChangeIgnored(Component.PROPERTY_HEIGHT, true);
@@ -382,7 +382,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
             
             setPropertyChangeIgnored(Component.PROPERTY_FOCUS, false);            
         } else if (name.equals("keyPress")) {
-            comp.fireKeyPress((String)event.getValue());
+            comp.fireKeyPress(new KeyPressEvent((String)event.getValue(), comp));
         }
     }
 
