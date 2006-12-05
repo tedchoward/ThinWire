@@ -32,7 +32,6 @@ package thinwire.render.web;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -270,7 +269,7 @@ public final class WebApplication extends Application {
         private boolean repeat;
     }
 
-    private static final String DEFAULT_STYLE_SHEET = "class:///" + Application.class.getName() + "/resources/DefaultStyle.xml";
+    private static final String DEFAULT_STYLE_SHEET = "class:///" + Application.class.getName() + "/resources/DefaultStyle.zip";
     
     WebApplication(final WebServlet servlet, final HttpSession httpSession, final String mainClass, String styleSheet, final String[] args) {
         nameToRenderer = new HashMap<String, Class<ComponentRenderer>>();

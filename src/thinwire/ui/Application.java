@@ -43,8 +43,7 @@ import java.util.Properties;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
+import java.util.zip.*;
 
 import thinwire.render.Renderer;
 import thinwire.ui.event.ActionEvent;
@@ -234,16 +233,19 @@ public abstract class Application {
                     is = new BufferedInputStream(is);
                     
                     if (innerFile != null) {
-                        //log.info("Loading ZIP uri=" + uri + "," + innerFile);
-
+                        innerFile = innerFile.replace('\\', '/');
                         ZipInputStream zip = new ZipInputStream(is);
                         ZipEntry entry;
                         
                         while ((entry = zip.getNextEntry()) != null) {
-                            if (entry.getName().equals(innerFile)) {
+                            if (!entry.isDirectory() && entry.getName().equals(innerFile)) {
                                 byte[] bytes = new byte[(int)entry.getSize()];
-                                zip.read(bytes);
-                                //log.info("Found file=" + bytes.length);
+                                int pos = 0, cnt;
+
+                                while ((cnt = zip.read(bytes, pos, bytes.length - pos)) > 0) {
+                                    pos += cnt;
+                                }
+                                
                                 is = new ByteArrayInputStream(bytes);
                                 break;
                             }
