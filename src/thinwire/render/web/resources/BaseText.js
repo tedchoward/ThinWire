@@ -64,6 +64,7 @@ var tw_BaseText = tw_Component.extend({
         this._focusListener = this._focusListener.bind(this);
         this._blurListener = this._blurListener.bind(this);
         
+        tw_addEventListener(editor, ["click", "dblclick"], this._clickListener.bind(this));
         tw_addEventListener(editor, "keyup", this._keyUpListener.bind(this));
         tw_addEventListener(editor, "mouseup", this._mouseUpListener.bind(this));
         tw_addEventListener(editor, "focus", this._focusListener);
@@ -629,6 +630,8 @@ var tw_BaseText = tw_Component.extend({
         dragBox.appendChild(document.createTextNode(this._editor.value));
         return dragBox;
     },
+    
+    _clickListener: tw_Component.clickListener,
         
     destroy: function() {
         this._editor = null;

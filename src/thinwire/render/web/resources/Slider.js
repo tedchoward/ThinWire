@@ -31,7 +31,6 @@
 var tw_Slider = tw_BaseRange.extend({
     _cursorDrag: null,
     _max: null,
-    _clickListener: null,
     _line: null,
    
     construct: function(id, containerId, props) {
@@ -51,7 +50,6 @@ var tw_Slider = tw_BaseRange.extend({
         this._borderBox = this._selection;
         this._cursorDrag = new tw_DragHandler(this._selection, this._cursorDragListener.bind(this));
         
-        tw_addEventListener(this._box, "click", this._clickListener.bind(this));
         this.init(-1, props);
     },
     
@@ -128,11 +126,6 @@ var tw_Slider = tw_BaseRange.extend({
     
     _updateSelection: function() {
         arguments.callee.$.call(this, "left");
-    },
-    
-    _clickListener: function() {
-        if (!this._enabled) return;
-       this.setFocus(true);
     },
     
     getMax: function() {
