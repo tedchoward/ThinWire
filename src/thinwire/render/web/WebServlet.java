@@ -126,7 +126,6 @@ public final class WebServlet extends HttpServlet {
         }
 
         response.setContentType("text/html");        
-        //log.info("WebApplication.MAIN_PAGE=" + WebApplication.MAIN_PAGE);
         response.getOutputStream().write(WebApplication.MAIN_PAGE);        
 
         List<String> args = new ArrayList<String>();
@@ -274,7 +273,7 @@ public final class WebServlet extends HttpServlet {
         } while (r.read() == ':');
         
         String events = app.getClientEvents();
-        if (log.isLoggable(Level.FINEST)) log.finest("handleGetEvents:" + events);
+        if (log.isLoggable(Level.FINEST)) log.finest("handleGetEvents:" + (events != null ? events.length() : 0) + ":" + events);
         
         if (events != null) {
             response.setContentType("text/plain; charset=utf-8");

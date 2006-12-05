@@ -435,7 +435,7 @@ var tw_GridBox = tw_Component.extend({
     },
     
     _toggleHighlight: function(index, state) {
-        if (this._getColumnCount() < 1) return;
+        if (this._getColumnCount() < 1 || index < 0) return;
         var content = this._content;
         var childNodes = content.childNodes;
     

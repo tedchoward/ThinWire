@@ -757,9 +757,20 @@ public final class WebApplication extends Application {
             } else {
                 sb.append("},");
 
-                if (sb.length() >= 1000) {
+                if (sb.length() >= 1024) {
                     processClientEvents = true;
                     sb.notify();
+                    
+                    //Slow things down if the buffer gets this big.
+                    if (sb.length() >= 32768) {
+                        int count = 50;
+                        
+                        while (--count >= 0 && sb.length() >= 1024) {
+                            try {
+                                sb.wait(100);
+                            } catch (InterruptedException e) { }
+                        }
+                    }
                 } else {
                     processClientEvents = false;
                 }

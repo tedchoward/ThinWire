@@ -623,12 +623,4 @@ var tw_Tree = tw_Component.extend({
 });
 
 tw_Tree.rowHeight = 16;
-tw_Tree.imageLeaf = "?_twr_=treeLeaf.png";
-tw_Tree.imageLeafBottom = "?_twr_=treeLeafBottom.png";
-tw_Tree.imageStraight = "?_twr_=treeStraight.png";
-tw_Tree.imageExpand = "?_twr_=treeExpand.png";
-tw_Tree.imageExpandBottom = "?_twr_=treeExpandBottom.png";
-tw_Tree.imageUnexpand = "?_twr_=treeUnexpand.png";
-tw_Tree.imageUnexpandBottom = "?_twr_=treeUnexpandBottom.png";
-tw_Tree.imageEmpty = "?_twr_=treeEmpty.png";
 
