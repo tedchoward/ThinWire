@@ -118,7 +118,6 @@ public final class WebApplication extends Application {
         "class:///" + SplitLayout.class.getName() + "/resources/SplitLayout.js",
         "Startup.js",
         "FileUploadPage.html",
-        "activityInd.gif",
         "treeEmpty.png",
         "treeExpand.png",
         "treeExpandBottom.png",
@@ -135,7 +134,7 @@ public final class WebApplication extends Application {
         "treeUnexpandTop.png",
     };
     
-    static final String MAIN_PAGE;
+    static final byte[] MAIN_PAGE;
     
     static {
         String classURL = "class:///" + CLASS_NAME + "/resources/";
@@ -143,22 +142,15 @@ public final class WebApplication extends Application {
         for (String res : BUILT_IN_RESOURCES) {
             if (!res.endsWith(".js")) {
                 if (!res.startsWith("class:///")) res = classURL + res;
-                RemoteFileMap.INSTANCE.add(res);
+                RemoteFileMap.INSTANCE.add(res, null, Application.getResourceBytes(res));
             }
         }
 
         try {
-            MAIN_PAGE = "MainPage.html";
             String twLib = loadJSLibrary(classURL);
-
-            //Write out the MainPage.html after replacing the JS lib name
-            File f = File.createTempFile(twLib.substring(0, twLib.lastIndexOf('.')), ".html");
-            f.deleteOnExit();
-            FileOutputStream fos = new FileOutputStream(f);
-            fos.write(new String(WebApplication.getResourceBytes(classURL + MAIN_PAGE))
-                .replaceAll("[$][{]ThinWire[.]js[}]", twLib).getBytes());
-            fos.close();
-            RemoteFileMap.INSTANCE.add(f.getCanonicalPath(), MAIN_PAGE);
+            //Store the MainPage.html after replacing the JS lib name
+            MAIN_PAGE = new String(WebApplication.getResourceBytes(classURL + "MainPage.html"))
+                .replaceAll("[$][{]ThinWire[.]js[}]", twLib).getBytes();
         } catch (Exception e) {
             if (!(e instanceof RuntimeException)) e = new RuntimeException(e);
             throw (RuntimeException)e;
@@ -180,7 +172,7 @@ public final class WebApplication extends Application {
             }
 
             os.close();
-            return RemoteFileMap.INSTANCE.add(baos.toByteArray(), twPrefix + ".js");
+            return RemoteFileMap.INSTANCE.add(null, twPrefix + ".js", baos.toByteArray());
         } catch (Exception e) {
             if (!(e instanceof RuntimeException)) e = new RuntimeException(e);
             throw (RuntimeException)e;
@@ -435,9 +427,13 @@ public final class WebApplication extends Application {
             
             for (Map.Entry<String, String> e : getSystemImages().entrySet()) {
                 String value = e.getValue();
-                //if (value != null && !value.matches("^\\w?:?[\\\\|/].*")) value = getBaseFolder() + File.separator + value;   
-                //value = RemoteFileMap.INSTANCE.add(new File(value).getCanonicalPath());
-                value = RemoteFileMap.INSTANCE.add(value);
+                
+                if (!value.matches("^\\w{3,}://.*")) {
+                    if (value != null && !value.matches("^\\w?:?[\\\\|/].*")) value = getBaseFolder() + File.separator + value;   
+                    value = new File(value).getCanonicalPath();
+                }
+                
+                value = RemoteFileMap.INSTANCE.add(value, null, Application.getResourceBytes(value));
                 sb.append(e.getKey()).append(":\"").append("%SYSROOT%").append(value).append("\",");
             }
             

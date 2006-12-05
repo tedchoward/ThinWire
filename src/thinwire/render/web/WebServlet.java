@@ -126,7 +126,8 @@ public final class WebServlet extends HttpServlet {
         }
 
         response.setContentType("text/html");        
-        response.getOutputStream().write(RemoteFileMap.INSTANCE.load(WebApplication.MAIN_PAGE));        
+        //log.info("WebApplication.MAIN_PAGE=" + WebApplication.MAIN_PAGE);
+        response.getOutputStream().write(WebApplication.MAIN_PAGE);        
 
         List<String> args = new ArrayList<String>();
         StringBuilder sb = new StringBuilder();        

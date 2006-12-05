@@ -515,7 +515,8 @@ var tw_Component = Class.extend({
         this.setStyle("backgroundPosition", style["backgroundPosition"]);
         
         if (this._borderBox != null) {
-            this.setStyle("borderStyle", style["borderStyle"]);
+            var borderStyle = style["borderStyle"];
+            if (borderStyle != undefined) this.setStyle("borderStyle", borderStyle);
             this.setStyle("borderWidth", style["borderWidth"]);
             this.setStyle("borderColor", style["borderColor"]);
             this.setStyle("borderImage", style["borderImage"]);

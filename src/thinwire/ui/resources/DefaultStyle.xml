@@ -145,7 +145,8 @@
   <!-- NO SPECIAL MEANING -->
   <Color id="windowtext" valueOf="rgb(0, 0, 0)"/>
 
-  <property name="image.activityIndicator" value="${xod.path}${path.image}activityInd.png"/>
+  <!-- NOTE: If you comment out the activityIndicator line, it will remove the activity indicator -->
+  <property name="image.activityIndicator" value="${xod.path}${path.image}activityInd.gif"/>
   <property name="image.dragDrop.valid" value="${xod.path}${path.image}dragValid.png"/>
   <property name="image.dragDrop.invalid" value="${xod.path}${path.image}dragInvalid.png"/>
   
@@ -231,7 +232,7 @@
   </Style>
   
   <Style id="RadioButton" copy="CheckBox">
-    <border image="${xod.path}${path.image}rbBorder.png"/>
+    <border image="${xod.path}/rbBorder.png"/>
   </Style>
   <property name="image.radioButton.check" value="${xod.path}${path.image}rbChecked.png"/>
   <property name="image.radioButton.checkDisabled" value="${xod.path}${path.image}rbDisabledChecked.png"/>

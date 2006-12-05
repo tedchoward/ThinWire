@@ -95,12 +95,8 @@ final class RemoteFileMap {
     String add(String localName, String remoteName) {
         return add(localName, remoteName, null);
     }
-    
-    String add(byte[] data, String remoteName) {
-        return add(null, remoteName, data);
-    }
-    
-    private String add(String localName, String remoteName, byte[] data) {               
+
+    String add(String localName, String remoteName, byte[] data) {               
         synchronized (localToFileInfo) {
             RemoteFileInfo fileInfo = localToFileInfo.get(localName);
             

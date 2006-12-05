@@ -40,6 +40,7 @@ var tw_EventManager = Class.extend({
     _vsEventOrder: null,
     _inboundEvents: null,
     _activityInd: null,
+    _activityIndSet: false,
     _activityIndTimer: 0,
     _timerId: 0,
     _comm: null,
@@ -71,11 +72,16 @@ var tw_EventManager = Class.extend({
 
     _setActivityIndVisible: function(state) {
         if (this._activityInd != null) {
+            if (!this._activityIndSet && window.tw_IMAGE_ACTIVITYINDICATOR != undefined) {
+                this._activityInd.src = tw_IMAGE_ACTIVITYINDICATOR;
+                this._activityIndSet = true;
+            }
+            
             if (state) {
                 if (this._activityIndTimer != 0) {
                     clearTimeout(this._activityIndTimer);
                     this._activityIndTimer = 0;                    
-                } else {
+                } else if (this._activityIndSet) {
                     this._activityInd.style.zIndex = ++tw_Component.zIndex;
                     this._activityInd.style.display = "block";
                 }
@@ -200,12 +206,11 @@ var tw_EventManager = Class.extend({
     
     start: function() {
         this._activityInd = document.createElement("img");
-        this._activityInd.src = tw_EventManager.imageActivityInd;
         var s = this._activityInd.style;
         s.position = "absolute";
         s.right = "1px";
         s.top = "1px";
-        s.display = "none";        
+        s.display = "none";
         document.body.appendChild(this._activityInd);                
         
         this._comm = new tw_HttpRequest(this._inboundEventListener);
@@ -229,4 +234,3 @@ var tw_EventManager = Class.extend({
     }         
 });
 
-tw_EventManager.imageActivityInd = "?_twr_=activityInd.gif";
