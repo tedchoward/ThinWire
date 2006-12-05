@@ -46,7 +46,7 @@ import thinwire.ui.event.PropertyChangeEvent;
  */
 class ContainerRenderer extends ComponentRenderer implements ItemChangeListener {
     private static final String CONTAINER_CLASS = "tw_Container";
-    private static final String SET_SCROLL = "setScroll";
+    private static final String SET_SCROLL_TYPE = "setScrollType";
     private static final String REMOVE_COMPONENT = "removeComponent";            
 
     private Map<Component, ComponentRenderer> compToRenderer;
@@ -119,7 +119,7 @@ class ContainerRenderer extends ComponentRenderer implements ItemChangeListener 
     public void propertyChange(PropertyChangeEvent pce) {        
         if (pce.getPropertyName().equals(Container.PROPERTY_SCROLL_TYPE)) {
             if (isPropertyChangeIgnored(Container.PROPERTY_SCROLL_TYPE)) return;
-            postClientEvent(SET_SCROLL, getScrollTypeCode((ScrollType)pce.getNewValue()));
+            postClientEvent(SET_SCROLL_TYPE, getScrollTypeCode((ScrollType)pce.getNewValue()));
         } else {
             super.propertyChange(pce);
         }
