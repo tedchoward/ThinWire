@@ -270,6 +270,18 @@ public interface Component {
      */
     void fireAction(ActionEvent ev);
     
+    /** 
+     * A convenience method that is equal to this.fireAction(new ActionEvent(this, action)); 
+     * @param action the action to perform on the component.
+     */
+    void fireAction(String action);
+    
+    /** 
+     * A convenience method that is equal to this.fireAction(new ActionEvent(this, action)); 
+     * @param action the action to perform on the component.
+     */
+    void fireAction(String action, Object source);
+    
     void addDropListener(Component dragSource, DropListener listener);
     
     void addDropListener(Component[] dragSources, DropListener listener);

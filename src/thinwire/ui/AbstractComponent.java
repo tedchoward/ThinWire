@@ -206,6 +206,14 @@ abstract class AbstractComponent implements Component {
     public void fireAction(ActionEvent ev) {
         aei.fireAction(ev);
     }
+
+    public void fireAction(String action) {
+        fireAction(new ActionEvent(this, action));
+    }
+    
+    public void fireAction(String action, Object source) {
+        fireAction(new ActionEvent(this, source, action));
+    }
     
     public void addDropListener(Component dragComponent, DropListener listener) {
         dei.addListener(dragComponent, listener);
