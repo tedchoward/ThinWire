@@ -30,8 +30,8 @@
 */
 package thinwire.util;
 
-import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -363,11 +363,11 @@ public final class XOD {
         
         try {
             DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            BufferedInputStream is = new BufferedInputStream(Application.getResourceAsStream(uri));
+            uri = uri.replace('\\', '/');
+            InputStream is = Application.getResourceAsStream(uri);
             uriStack.add(uri);
-
+            
             int index = uri.lastIndexOf('/');
-            if (index == -1) index = uri.lastIndexOf('\\');
             if (index == -1) index = 0;
             properties.put("xod.file", uri.substring(index));
             properties.put("xod.path", index == 0 ? "" : uri.substring(0, index));
@@ -385,7 +385,6 @@ public final class XOD {
             if (uriStack.size() > 0) {
                 uri = uriStack.get(uriStack.size() - 1);
                 int index = uri.lastIndexOf('/');
-                if (index == -1) index = uri.lastIndexOf('\\');
                 if (index == -1) index = 0;
                 properties.put("xod.file", uri.substring(index));
                 properties.put("xod.path", index == 0 ? "" : uri.substring(0, index));
@@ -699,7 +698,7 @@ public final class XOD {
         return ret;
     }
 
-    private static final Pattern REGEX_PROPERTY = Pattern.compile("(.*?)[$][{]([\\w.]+)[}](.*?)");
+    private static final Pattern REGEX_PROPERTY = Pattern.compile("(.*?)[$][{]([\\w.]+)[}](.*?)", Pattern.DOTALL);
     
     private String replaceProperties(String value) {
         if (log.isLoggable(Level.FINEST)) log.finest("before replaceProperties:" + value);

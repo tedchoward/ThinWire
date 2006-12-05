@@ -118,20 +118,6 @@ public final class WebApplication extends Application {
         "class:///" + SplitLayout.class.getName() + "/resources/SplitLayout.js",
         "Startup.js",
         "FileUploadPage.html",
-        "treeEmpty.png",
-        "treeExpand.png",
-        "treeExpandBottom.png",
-        "treeExpandBottomTop.png",
-        "treeExpandTop.png",
-        "treeLeaf.png",
-        "treeLeafBottom.png",
-        "treeLeafBottomTop.png",
-        "treeLeafTop.png",
-        "treeStraight.png",
-        "treeUnexpand.png",
-        "treeUnexpandBottom.png",
-        "treeUnexpandBottomTop.png",
-        "treeUnexpandTop.png",
     };
     
     static final byte[] MAIN_PAGE;
@@ -409,7 +395,7 @@ public final class WebApplication extends Application {
             XOD styleDef = new XOD();
             String sheet = styleSheet == null ? DEFAULT_STYLE_SHEET : styleSheet;
             if (!sheet.endsWith(".xml")) sheet += "/Style.xml";
-            styleDef.execute(sheet);
+            styleDef.execute(getSystemFile(sheet));
             loadStyleSheet(styleDef);
             systemColors = getSystemColors();
             StringBuilder sb = new StringBuilder();
@@ -426,13 +412,7 @@ public final class WebApplication extends Application {
             sb.append('{');
             
             for (Map.Entry<String, String> e : getSystemImages().entrySet()) {
-                String value = e.getValue();
-                
-                if (!value.matches("^\\w{3,}://.*")) {
-                    if (value != null && !value.matches("^\\w?:?[\\\\|/].*")) value = getBaseFolder() + File.separator + value;   
-                    value = new File(value).getCanonicalPath();
-                }
-                
+                String value = getSystemFile(e.getValue());
                 value = RemoteFileMap.INSTANCE.add(value, null, Application.getResourceBytes(value));
                 sb.append(e.getKey()).append(":\"").append("%SYSROOT%").append(value).append("\",");
             }
@@ -445,6 +425,15 @@ public final class WebApplication extends Application {
         }
         
         appThread.start();
+    }
+    
+    private String getSystemFile(String value) throws Exception {
+        if (!value.matches("^\\w{3,}://.*")) {
+            if (value != null && !value.matches("^\\w?:?[\\\\|/].*")) value = getBaseFolder() + File.separator + value;   
+            value = new File(value).getCanonicalPath();
+        }
+        
+        return value;
     }
     
     Integer getNextComponentId() {

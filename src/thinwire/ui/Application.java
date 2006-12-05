@@ -234,6 +234,8 @@ public abstract class Application {
                     is = new BufferedInputStream(is);
                     
                     if (innerFile != null) {
+                        //log.info("Loading ZIP uri=" + uri + "," + innerFile);
+
                         ZipInputStream zip = new ZipInputStream(is);
                         ZipEntry entry;
                         
@@ -241,13 +243,14 @@ public abstract class Application {
                             if (entry.getName().equals(innerFile)) {
                                 byte[] bytes = new byte[(int)entry.getSize()];
                                 zip.read(bytes);
+                                //log.info("Found file=" + bytes.length);
                                 is = new ByteArrayInputStream(bytes);
                                 break;
                             }
                             
                             zip.closeEntry();
                         }
-                        
+                                                
                         zip.close();
                     }
                 }

@@ -142,20 +142,41 @@ var tw_Tree = tw_Component.extend({
         this.setRootItemVisible(visible);
     },
         
+    _lookupTopImage: function(img) {
+        switch (img) {
+            case tw_IMAGE_TREE_EXPANDBOTTOM: return tw_IMAGE_TREE_EXPANDBOTTOMTOP;
+            case tw_IMAGE_TREE_EXPAND: return tw_IMAGE_TREE_EXPANDTOP;
+            case tw_IMAGE_TREE_LEAFBOTTOM: return tw_IMAGE_TREE_LEAFBOTTOMTOP;
+            case tw_IMAGE_TREE_LEAF: return tw_IMAGE_TREE_LEAFTOP;
+            case tw_IMAGE_TREE_UNEXPANDBOTTOM: return tw_IMAGE_TREE_UNEXPANDBOTTOMTOP;
+            case tw_IMAGE_TREE_UNEXPAND: return tw_IMAGE_TREE_UNEXPANDTOP;
+            default: return null;
+        }
+    },
+
+    _lookupBottomImage: function(img) {
+        switch (img) {
+            case tw_IMAGE_TREE_EXPANDBOTTOMTOP: return tw_IMAGE_TREE_EXPANDBOTTOM;
+            case tw_IMAGE_TREE_EXPANDTOP: return tw_IMAGE_TREE_EXPAND;
+            case tw_IMAGE_TREE_LEAFBOTTOMTOP: return tw_IMAGE_TREE_LEAFBOTTOM;
+            case tw_IMAGE_TREE_LEAFTOP: return tw_IMAGE_TREE_LEAF;
+            case tw_IMAGE_TREE_UNEXPANDBOTTOMTOP: return tw_IMAGE_TREE_UNEXPANDBOTTOM;
+            case tw_IMAGE_TREE_UNEXPANDTOP: return tw_IMAGE_TREE_UNEXPAND;
+            default: return null;
+        }
+    },
+    
     _setTopImage: function() {
         var treeTop = this._treeTop;
         if (treeTop.hasChildNodes() == false) return;
         var bi = treeTop.firstChild.imageNode.src;
         
         if (!this._rootItemVisible) {
-            var idx = bi.lastIndexOf(".png");
-            var nbi = bi.slice(0,idx) + "Top" + bi.slice(idx,bi.length);
-            treeTop.firstChild.imageNode.src = nbi;
+            treeTop.firstChild.imageNode.src = this._lookupTopImage(bi);
         } else {
-            var idx = bi.lastIndexOf("Top.png");
-            if (idx < 0) return;
-            var nbi = bi.slice(0,idx) + bi.slice(idx+3,bi.length);
-            treeTop.firstChild.imageNode.src = nbi;
+            var img = this._lookupBottomImage(bi);
+            if (img == null) return;
+            treeTop.firstChild.imageNode.src = img;
         }
     },
     
@@ -165,9 +186,9 @@ var tw_Tree = tw_Component.extend({
         node.tw_expanded = state;
         
         if (state) {
-            node.imageNode.src = node == node.parentNode.lastChild ? tw_Tree.imageExpandBottom : tw_Tree.imageExpand;
+            node.imageNode.src = node == node.parentNode.lastChild ? tw_IMAGE_TREE_EXPANDBOTTOM : tw_IMAGE_TREE_EXPAND;
         } else {
-            node.imageNode.src = node == node.parentNode.lastChild ? tw_Tree.imageUnexpandBottom : tw_Tree.imageUnexpand;
+            node.imageNode.src = node == node.parentNode.lastChild ? tw_IMAGE_TREE_UNEXPANDBOTTOM : tw_IMAGE_TREE_UNEXPAND;
         }
 
         node.subNodes.style.display = state ? "block" : "none";            
@@ -190,9 +211,7 @@ var tw_Tree = tw_Component.extend({
     _makeTopImage: function() {
         if (!this._rootItemVisible) {
             var bi = this._treeTop.firstChild.imageNode.src;
-            var idx = bi.lastIndexOf(".png");
-            var nbi = bi.slice(0,idx) + "Top" + bi.slice(idx,bi.length);
-            this._treeTop.firstChild.imageNode.src = nbi;
+            this._treeTop.firstChild.imageNode.src = this._lookupTopImage(bi);
         } 
     },
     
@@ -206,10 +225,10 @@ var tw_Tree = tw_Component.extend({
         if (basenode.hasChildNodes()==false) {
           if (level > 0) {
             basenode.parentNode.tw_isLeaf = false; 
-            if (basenode.parentNode.imageNode.src == tw_Tree.imageLeaf)
-                basenode.parentNode.imageNode.src = tw_Tree.imageUnexpand;
+            if (basenode.parentNode.imageNode.src == tw_IMAGE_TREE_LEAF)
+                basenode.parentNode.imageNode.src = tw_IMAGE_TREE_UNEXPAND;
             else {
-                basenode.parentNode.imageNode.src = tw_Tree.imageUnexpandBottom;
+                basenode.parentNode.imageNode.src = tw_IMAGE_TREE_UNEXPANDBOTTOM;
             }
           }
         }
@@ -228,11 +247,11 @@ var tw_Tree = tw_Component.extend({
                 var prevRow = basenode.lastChild;
                 
                 if (prevRow.tw_isLeaf)
-                    prevRow.imageNode.src = tw_Tree.imageLeaf;
+                    prevRow.imageNode.src =  tw_IMAGE_TREE_LEAF;
                 else if (prevRow.tw_expanded)
-                    prevRow.imageNode.src = tw_Tree.imageExpand;
+                    prevRow.imageNode.src =  tw_IMAGE_TREE_EXPAND;
                 else 
-                    prevRow.imageNode.src = tw_Tree.imageUnexpand;
+                    prevRow.imageNode.src =  tw_IMAGE_TREE_UNEXPAND;
             }
             
             basenode.appendChild(node);
@@ -242,7 +261,7 @@ var tw_Tree = tw_Component.extend({
             bottom = false;
         }
         
-        var bimg = bottom ? tw_Tree.imageLeafBottom : tw_Tree.imageLeaf;
+        var bimg = bottom ?  tw_IMAGE_TREE_LEAFBOTTOM : tw_IMAGE_TREE_LEAF;
         node.tw_isLeaf = true;
         node.tw_expanded = false;  
     
@@ -253,7 +272,7 @@ var tw_Tree = tw_Component.extend({
         for (var i=0; i < level; i++) {
             tiNode = document.createElement("img");
             tiNode.style.verticalAlign = "middle";
-            tiNode.src = tw_Tree.imageStraight;
+            tiNode.src = tw_IMAGE_TREE_STRAIGHT;
             node.appendChild(tiNode);
         }
         
@@ -266,7 +285,7 @@ var tw_Tree = tw_Component.extend({
                 branch = row.parentNode;
                 prow = branch.parentNode;
                 pbranch = branch.parentNode.parentNode;
-                if (prow == pbranch.lastChild) node.childNodes.item(imgLevel).src = tw_Tree.imageEmpty;
+                if (prow == pbranch.lastChild) node.childNodes.item(imgLevel).src = tw_IMAGE_TREE_EMPTY;
                 row = prow;
                 imgLevel--;
             }
@@ -325,11 +344,11 @@ var tw_Tree = tw_Component.extend({
             this._refreshLine(rnode.previousSibling, level, false); 
             var prevRow = rnode.previousSibling;
             if (prevRow.tw_isLeaf)
-                prevRow.imageNode.src = tw_Tree.imageLeafBottom;
+                prevRow.imageNode.src = tw_IMAGE_TREE_LEAFBOTTOM;
             else if (prevRow.tw_expanded)
-                prevRow.imageNode.src = tw_Tree.imageExpandBottom;
+                prevRow.imageNode.src = tw_IMAGE_TREE_EXPANDBOTTOM;
             else 
-                prevRow.imageNode.src = tw_Tree.imageUnexpandBottom;
+                prevRow.imageNode.src = tw_IMAGE_TREE_UNEXPANDBOTTOM;
           }
         }
     
@@ -341,11 +360,11 @@ var tw_Tree = tw_Component.extend({
             parent.style.display = "none";
             parent.tw_isLeaf = true;
             bs = parent.parentNode.imageNode;
-            if ((bs.src == tw_Tree.imageExpand) ||
-               (bs.src == tw_Tree.imageUnexpand))
-                bs.src = tw_Tree.imageLeaf;
+            if ((bs.src == tw_IMAGE_TREE_EXPAND) ||
+               (bs.src == tw_IMAGE_TREE_UNEXPAND))
+                bs.src = tw_IMAGE_TREE_LEAF;
             else
-                bs.src = tw_Tree.imageLeafBottom;
+                bs.src = tw_IMAGE_TREE_LEAFBOTTOM;
           }
         }
         
@@ -354,7 +373,7 @@ var tw_Tree = tw_Component.extend({
     
     _refreshLine: function(row, level, visible) {
         if (row.tw_isLeaf) return;
-        var img = visible ? tw_Tree.imageStraight : tw_Tree.imageEmpty;
+        var img = visible ? tw_IMAGE_TREE_STRAIGHT : tw_IMAGE_TREE_EMPTY;
         var child;
     
         for (var i=0; i < row.subNodes.childNodes.length; i++) {
