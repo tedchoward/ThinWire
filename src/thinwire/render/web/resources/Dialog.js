@@ -63,6 +63,9 @@ var tw_Dialog = tw_BaseContainer.extend({
         var s = closeButton.style;
         s.textAlign = "center";
         s.position = "absolute";
+        s.backgroundPosition = "center";
+        s.backgroundRepeat = "no-repeat";
+        s.backgroundImage = "url(" + tw_IMAGE_DIALOG_CLOSE + ")";
         s.margin = "0px";
         s.padding = "1px";    
         s.overflow = "hidden";
@@ -72,7 +75,6 @@ var tw_Dialog = tw_BaseContainer.extend({
         s.backgroundColor = tw_COLOR_BUTTONFACE;
         s.color = tw_COLOR_BUTTONTEXT;
         tw_Component.applyButtonBorder(closeButton);
-        closeButton.appendChild(document.createTextNode("X"));
         
         title.appendChild(closeButton);    
         dialog.appendChild(title);
