@@ -36,7 +36,7 @@ var tw_Button = tw_Component.extend({
         arguments.callee.$.call(this, "div", "button", id, containerId);
         var s = this._box.style;
         s.borderStyle = "solid";
-        s.borderColor = tw_COLOR_ACTIVEBORDER;
+        s.borderColor = tw_COLOR_WINDOWFRAME;
         s.borderWidth = "0px";
         s.backgroundColor = tw_COLOR_TRANSPARENT;
         

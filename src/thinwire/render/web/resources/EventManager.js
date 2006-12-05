@@ -94,7 +94,7 @@ var tw_EventManager = Class.extend({
     
     _hideActivityInd: function() {
         this._activityIndTimer = 0;
-        this._activityInd.style.display = "none";        
+        if (this._activityInd != null) this._activityInd.style.display = "none";        
     },
         
     _eventLoop: function() {
@@ -223,14 +223,11 @@ var tw_EventManager = Class.extend({
     
     stop: function() {
         if (this._timerId != 0) clearTimeout(this._timerId);
-        this._timerId = 0;
+        if (this._activityIndTimer != 0) clearTimeout(this._activityIndTimer);
+        this._activityIndTimer = this._timerId = 0;
         if (this._comm != null) this._comm.abort();
-        this._outboundEvents = null;
-        this._inboundEvents = null;
-        this._vsEventOrder = null;
-        this._comm = null;
         document.body.removeChild(this._activityInd);
-        this._activityInd = null;
+        this._outboundEvents = this._inboundEvents = this._vsEventOrder = this._comm = this._activityInd = null;
     }         
 });
 

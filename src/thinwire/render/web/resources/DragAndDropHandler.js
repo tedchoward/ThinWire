@@ -101,7 +101,7 @@ var tw_DragAndDropHandler = Class.extend({
         s.position = "absolute";
         s.overflow = "hidden";
         s.display = "none";
-        s.border = "1px dotted " + tw_COLOR_ACTIVEBORDER;
+        s.border = "1px dotted " + tw_COLOR_WINDOWFRAME;
         tw_setOpacity(this._dragBox, 70);
         s.zIndex = ++tw_Component.zIndex;
         

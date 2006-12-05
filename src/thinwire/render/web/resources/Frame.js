@@ -196,7 +196,7 @@ var tw_Frame = tw_BaseContainer.extend({
     },
     
     setTitle: function(title) {
-        document.title = title.length > 0 ? title : "(untitled)";
+        document.title = title.length > 0 ? title : "(Untitled ThinWire Application)";
     },
     
     getStandardButton: function() {

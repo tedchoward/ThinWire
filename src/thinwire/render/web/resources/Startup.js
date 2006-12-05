@@ -329,7 +329,12 @@ function tw_shutdownInstance(text) {
         tw_Frame.active.destroy();
     }
     
-    document.title = "[ThinWire(R) RIA Ajax Framework - http://www.thinwire.com]";
+    if (window.tw_COLOR_ACTIVECAPTION == undefined) tw_COLOR_ACTIVECAPTION = "rgb(0, 84, 227)";
+    if (window.tw_COLOR_CAPTIONTEXT == undefined) tw_COLOR_CAPTIONTEXT = "rgb(255, 255, 255)";
+    if (window.tw_COLOR_THREEDFACE == undefined) tw_COLOR_THREEDFACE = "rgb(236, 233, 216)";
+    if (window.tw_COLOR_WINDOWFRAME == undefined) tw_COLOR_WINDOWFRAME = "rgb(0, 0, 0)";
+    if (window.tw_COLOR_WINDOWTEXT == undefined) tw_COLOR_WINDOWTEXT = "rgb(255, 255, 255)";
+    document.title = "ThinWire Application Session Has Ended";
     
     if (text != null) {
         var message = document.createElement("div");
@@ -337,14 +342,14 @@ function tw_shutdownInstance(text) {
         var s = title.style;
         s.fontSize = "10pt"
         s.fontWeight = "bold";
-        s.backgroundColor = "activecaption";
+        s.backgroundColor = tw_COLOR_ACTIVECAPTION;
         s.padding = "2px";
         var link = document.createElement("a");
         var s = link.style;
         s.textDecoration = "none";
-        s.color = "captiontext";
+        s.color = tw_COLOR_CAPTIONTEXT;
         link.href = "http://www.thinwire.com";
-        link.appendChild(document.createTextNode("ThinWire(R) RIA Ajax Framework"));
+        link.appendChild(document.createTextNode(document.title));
         title.appendChild(link);
         message.appendChild(title);
         message.appendChild(document.createTextNode(text));
@@ -354,9 +359,9 @@ function tw_shutdownInstance(text) {
         s.width = "400px";
         s.top = ((tw_getVisibleHeight() - 200) / 2) + "px";
         s.left = ((tw_getVisibleWidth() - parseInt(s.width)) / 2) + "px";
-        s.backgroundColor = "threedface";
-        s.border = "1px solid " + "activeborder";
-        s.color = "windowtext";
+        s.backgroundColor = tw_COLOR_THREEDFACE;
+        s.border = "1px solid " + tw_COLOR_WINDOWFRAME;
+        s.color = tw_COLOR_WINDOWTEXT;
         s.fontFamily = "Tahoma, sans-serif";
         s.whiteSpace = "normal";
         s.fontSize = "14pt";

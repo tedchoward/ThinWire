@@ -55,7 +55,7 @@ var tw_DropDown = tw_BaseText.extend({
         s.right = "0px";
         s.backgroundColor = tw_COLOR_TRANSPARENT;
         s.borderStyle = "solid";
-        s.borderColor = tw_COLOR_ACTIVEBORDER;                        
+        s.borderColor = tw_COLOR_WINDOWFRAME;                        
         s.borderWidth = "0px";
         buttonBorder.appendChild(button);
         this._box.appendChild(buttonBorder);

@@ -147,7 +147,7 @@ var tw_DateBox = tw_Component.extend({
         var row = document.createElement("tr");
         var s = table.style;
         s.height = "17px";
-        s.borderBottom = "1px solid " + tw_COLOR_ACTIVEBORDER;
+        s.borderBottom = "1px solid " + tw_COLOR_WINDOWFRAME;
         s.marginLeft = "auto";
         s.marginRight = "auto";
         for (var i = 0; i < days.length; i++) {
@@ -167,14 +167,14 @@ var tw_DateBox = tw_Component.extend({
         var tbody = document.createElement("tbody");
         table.appendChild(tbody);
         var s = table.style;
-        s.borderBottom = "1px solid " + tw_COLOR_ACTIVEBORDER;
+        s.borderBottom = "1px solid " + tw_COLOR_WINDOWFRAME;
         s.marginLeft = "auto";
         s.marginRight = "auto";
         for (var i = 0; i < 6; i++) {
             var row = document.createElement("tr");
             for (var j = 0; j < 7; j++) {
                 var cell = document.createElement("td");
-                cell.style.border = "none 1px " + tw_COLOR_ACTIVEBORDER;
+                cell.style.border = "none 1px " + tw_COLOR_WINDOWFRAME;
                 cell.style.padding = "1px";
                 cell.appendChild(document.createTextNode(""));
                 tw_addEventListener(cell, ["click", "dblclick"], this._cellClickListener);

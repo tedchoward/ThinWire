@@ -52,7 +52,6 @@ public final class PropertyChangeEvent extends EventObject {
         super(source == null ? sourceComponent : source);
         if (sourceComponent == null) throw new IllegalArgumentException("sourceComponent == null");
         if (propertyName == null || propertyName.length() == 0) throw new IllegalArgumentException("propertyName == null || propertyName.length() == 0");
-        if (newValue != null && oldValue != null && newValue.getClass().isInstance(oldValue)) throw new IllegalArgumentException("newValue must be of the same class type as oldValue");
         this.propertyName = propertyName;
         this.newValue = newValue;
         this.oldValue = oldValue;
