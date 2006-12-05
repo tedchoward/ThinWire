@@ -67,11 +67,10 @@ var tw_Dialog = tw_BaseContainer.extend({
         s.backgroundRepeat = "no-repeat";
         s.backgroundImage = "url(" + tw_IMAGE_DIALOG_CLOSE + ")";
         s.margin = "0px";
-        s.padding = "1px";    
         s.overflow = "hidden";
-        s.top = "3px";
-        s.right = "3px";
-        s.lineHeight = 8 + "px";        
+        s.top = "2px";
+        s.right = "2px";
+        if (tw_isIE) s.fontSize = "0px";
         s.backgroundColor = tw_COLOR_BUTTONFACE;
         s.color = tw_COLOR_BUTTONTEXT;
         tw_Component.applyButtonBorder(closeButton);
@@ -95,12 +94,6 @@ var tw_Dialog = tw_BaseContainer.extend({
         this.setActive(true);
 
         this.init(-1, props);
-    },
-    
-    _calcCloseButtonSize: function(borderSize) {
-        var subtractSize = tw_sizeIncludesBorders ? 0 : (parseInt(this._closeButton.style.padding) + borderSize) * 2;
-        this._closeButton.style.width = 16 - subtractSize + "px";
-        this._closeButton.style.height = 14 - subtractSize + "px";        
     },
         
     _moveDragListener: function(ev) {
@@ -183,8 +176,10 @@ var tw_Dialog = tw_BaseContainer.extend({
         arguments.callee.$.call(this, name, value);
 
         if (name == "borderWidth" && this._closeButton != null) {
-            this._closeButton.style.borderWidth = value;
-            this._calcCloseButtonSize(this._borderSize);        
+            var s = this._closeButton.style; 
+            s.borderWidth = value;
+            s.width = 16 - this._borderSizeSub + "px";
+            s.height = 14 - this._borderSizeSub + "px";        
         }
     },
     
