@@ -45,6 +45,7 @@ var tw_BaseRange = tw_Component.extend({
         s.lineHeight = "0px";
         this._box.appendChild(selection);
         this._selection = this._backgroundBox = selection;
+        tw_addEventListener(this._box, ["click", "dblclick"], this._clickListener.bind(this));
     },
     
     _recalc: function() {
@@ -93,5 +94,7 @@ var tw_BaseRange = tw_Component.extend({
         } else {
             s[hprop] = Math.floor(this.getCurrentIndex() * this._multiplier) + "px";
         }
-    }
+    },
+    
+    _clickListener: tw_Component.clickListener
 });

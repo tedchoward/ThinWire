@@ -81,7 +81,7 @@ var tw_BaseCheckRadio = tw_Component.extend({
         tw_addEventListener(this._box, "blur", this._blurListener.bind(this));         
     },
     
-    _clickListener: function() {
+    _clickListener: function(ev) {
         if (!this._enabled) return;
         this.setFocus(true)
         //#IFNDEF V1_1_COMPAT
@@ -92,6 +92,10 @@ var tw_BaseCheckRadio = tw_Component.extend({
         //#IFNDEF V1_1_COMPAT
         }
         //#ENDIF
+        
+        var action = tw_Component.getClickAction(ev.type);
+        if (action == null) return;
+        this.fireAction(action);
     },
 
     setWidth: function(width) {

@@ -59,6 +59,7 @@ var tw_WebBrowser = tw_BaseBrowserLink.extend({
         this._box.appendChild(dragLayer);
         this._box.appendChild(browser);
         tw_WebBrowser.instances[id] = this;
+        tw_addEventListener(this._box, ["click", "dblclick"], this._clickListener.bind(this));
         this.init(-1, props);
     },
     
@@ -88,6 +89,8 @@ var tw_WebBrowser = tw_BaseBrowserLink.extend({
         dragBox.appendChild(document.createTextNode(this._browser.src));
         return dragBox;
     },
+    
+    _clickListener: tw_Component.clickListener,
     
     destroy: function() {
         delete tw_WebBrowser.instances[this._id];
