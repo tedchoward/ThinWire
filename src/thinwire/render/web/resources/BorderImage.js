@@ -107,6 +107,7 @@ var tw_BorderImage = Class.extend({
             this._e.style.borderWidth = "0px";
             this._e.style.backgroundImage = "";
             this._e.style.backgroundColor = "transparent";
+            this._e.style.overflow = "";
             
             this._e.appendChild(this._t);
             this._e.appendChild(this._b);
