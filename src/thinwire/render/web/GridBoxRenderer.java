@@ -389,7 +389,7 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
         } else if (name.equals(VIEW_STATE_COLUMN_SORT)) {
             Column col = gb.getColumns().get(getRealIndex(Integer.parseInt(value)));
             col.setSortOrder(col.getSortOrder() == Column.SortOrder.ASC ? Column.SortOrder.DESC : Column.SortOrder.ASC); 
-            postClientEvent(SET_ROW_INDEX_SELECTED, gb.getSelectedRow().getIndex(), Boolean.FALSE);
+            if (gb.getSelectedRow() != null) postClientEvent(SET_ROW_INDEX_SELECTED, gb.getSelectedRow().getIndex(), Boolean.FALSE);
         } else if (name.equals(GridBox.Column.PROPERTY_COLUMN_WIDTH)) {
             setPropertyChangeIgnored(GridBox.Column.PROPERTY_COLUMN_WIDTH, true);
             String[] values = value.split(",");
