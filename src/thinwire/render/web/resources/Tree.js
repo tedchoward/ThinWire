@@ -135,7 +135,9 @@ var tw_Tree = tw_Component.extend({
             tw_addEventListener(textNode, ["click", "dblClick"], this._textClickListener);
             tw_addEventListener(textNode, "dblclick", this._buttonClickListener);
             
-            this._box.insertBefore(node,this._box.firstChild);
+            //TODO: Is this the best way to fix this
+            var mainBox = this._borderImage == null ? this._box : this._borderImage._box;
+            mainBox.insertBefore(node,mainBox.firstChild);
             this._rootItem = node;
         }
         
