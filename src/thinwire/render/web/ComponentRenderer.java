@@ -598,22 +598,16 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
             URI uri;
             WindowRenderer wr = this instanceof WindowRenderer ? (WindowRenderer)this : this.wr;
             
-            try {        
-                uri = new URI(location);
-            } catch (URISyntaxException e) {
-                uri = null;
-            }
-                    
-            if (uri == null || uri.getScheme() == null) uri = wr.ai.getRelativeFile(location).toURI();
-            String scheme = uri.getScheme();        
-            
-            if (scheme.equals("file") || scheme.equals("class")) {
-                if (!scheme.equals("class")) location = wr.ai.getRelativeFile(location).getAbsolutePath();
+            if (location.startsWith("file") || location.startsWith("class") || wr.ai.getRelativeFile(location).exists()) {
+                if (!location.startsWith("class")) location = wr.ai.getRelativeFile(location).getAbsolutePath();
                 if (remoteFiles == null) remoteFiles = new ArrayList<String>(5);
                 remoteFiles.add(location);
                 location = "%SYSROOT%" + RemoteFileMap.INSTANCE.add(location);
             } else {
-                location = uri.toString();
+                try {
+                    location = new URI(location).toString();
+                } catch (URISyntaxException e) {
+                }
             }
         } else {
             location = "";
