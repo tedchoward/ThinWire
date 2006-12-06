@@ -32,6 +32,7 @@ var tw_Menu = tw_Component.extend({
     _menusAreVisible: false,
     _activeMenuItem: null,
     _windowMenu: false,
+    _regExRGB: /rgb[(]\s*|\s*,\s*|\s*[)]/,
     
     construct: function(id, containerId, props) {
         arguments.callee.$.call(this, "div", "mainMenu", id, containerId);
@@ -190,7 +191,7 @@ var tw_Menu = tw_Component.extend({
         if (overItem == null) {
             var item = tw_getEventTarget(event, "mainMenuItem");
             
-            if (item.style.color != tw_COLOR_GRAYTEXT && item.lastChild.childNodes.length == 0) {
+            if (!this._colorMatches(item.style.color, tw_COLOR_GRAYTEXT) && item.lastChild.childNodes.length == 0) {
                 this.fireAction("click", this._fullIndex(item));
                 this._setHighlight(item, false);
                 this._menusAreVisible = false;
@@ -204,15 +205,20 @@ var tw_Menu = tw_Component.extend({
         var parentContent = item.parentNode;            
         this._setHighlight(item, true);
         
-        if (item.style.color != tw_COLOR_GRAYTEXT)
-            this._open(item);
+        if (!this._colorMatches(item.style.color, tw_COLOR_GRAYTEXT)) this._open(item);
+    },
+    
+    _colorMatches: function(c1, c2) {
+        var c1 = c1.split(this._regExRGB);
+        var c2 = c2.split(this._regExRGB);
+        return c1[0] == c2[0] && c1[1] == c2[1] && c1[2] == c2[2];
     },
     
     _itemClick: function(event) {
         if (!this._enabled) return;
         var item = tw_getEventTarget(event, "menuItem");
         
-        if (this._menusAreVisible && item.style.color != tw_COLOR_GRAYTEXT && item.lastChild.childNodes.length == 0) {
+        if (this._menusAreVisible && !this._colorMatches(item.style.color, tw_COLOR_GRAYTEXT) && item.lastChild.childNodes.length == 0) {
             this.fireAction("click", this._fullIndex(item));
             var mainMenuItem = tw_getEventTarget(event, "mainMenuItem");            
             this._menusAreVisible = false;
@@ -308,7 +314,7 @@ var tw_Menu = tw_Component.extend({
             if (highlight) {
                 button.tw_invertArrow = true;
                 
-                if (item.style.color == tw_COLOR_GRAYTEXT) {
+                if (this._colorMatches(item.style.color, tw_COLOR_GRAYTEXT)) {
                     button.style.color = tw_COLOR_INACTIVECAPTIONTEXT;
                     button.style.backgroundColor = tw_COLOR_INACTIVECAPTION;
                 } else {
@@ -321,6 +327,15 @@ var tw_Menu = tw_Component.extend({
                     var activeIndex = this._fullIndex(this._activeMenuItem);
                     activeIndex = activeIndex.substring(0, itemIndex.length);
                     if (itemIndex.indexOf(activeIndex) != 0) this.close(this._fullIndexItem(activeIndex));
+                }
+                
+                var nodes = item.parentNode.childNodes;
+                
+                for (var i = nodes.length; --i >= 0;) {
+                    var it = nodes.item(i);
+                    if (it === item || it.className == "menuDivider") continue;
+                    if (it.lastChild.style.visibility != "hidden") this.close(it);
+                    this._setHighlight(it, false);
                 }
                 
                 this._activeMenuItem = item;
@@ -575,7 +590,7 @@ var tw_Menu = tw_Component.extend({
                 this._setText(item, data.t);
                 if (data.g != undefined) this._setImageUrl(item, data.g);        
                 if (data.k != undefined) this._setKeyPressCombo(item, data.k);
-                if (data.d != undefined) { item.style.color = tw_COLOR_GRAYTEXT; }
+                if (data.d != undefined) item.style.color = tw_COLOR_GRAYTEXT;
                 
                 if (data.c != undefined) {
                     for (var i = 0, cnt = data.c.length; i < cnt; i++) {
@@ -583,7 +598,7 @@ var tw_Menu = tw_Component.extend({
                     }
                 }                
     
-                if (data.en == false) { item.style.color = tw_COLOR_GRAYTEXT; }
+                if (data.en == false) item.style.color = tw_COLOR_GRAYTEXT;
             }
         }
     },

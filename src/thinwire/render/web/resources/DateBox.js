@@ -322,7 +322,7 @@ var tw_DateBox = tw_Component.extend({
     
     _getCellFromDate: function(date, override) {
         if (override == null) override = false;
-        if (!override && date.getMonth() != this._curDate.getMonth() || date.getFullYear() != this._curDate.getFullYear()) return;
+        if (!override && (date.getMonth() != this._curDate.getMonth() || date.getFullYear() != this._curDate.getFullYear())) return;
         var dateInt = date.getDate();
         var rows = this._table.firstChild.childNodes;
         for (var i = 0; i < rows.length; i++) {
