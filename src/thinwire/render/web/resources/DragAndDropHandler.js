@@ -160,7 +160,6 @@ var tw_DragAndDropHandler = Class.extend({
                 var curTarget = this._targets[target];
                 
                 if (tw_getEventTarget(event, curTarget.getDropArea().className) == curTarget.getDropArea()) {
-                    //tw_getEventTarget(event);
                     curTarget.fireDrop(curTarget.getDropTarget(event), this._source, this._dragBox._dragObject, this._dragX, this._dragY, 
                         tw_getEventOffsetX(event, curTarget._box.className), tw_getEventOffsetY(event, curTarget._box.className));                    
                 }

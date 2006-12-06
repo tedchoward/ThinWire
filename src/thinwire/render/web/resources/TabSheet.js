@@ -149,6 +149,10 @@ var tw_TabSheet = tw_BaseContainer.extend({
     getDropArea: function() {
         return this._tab;
     },
+    
+    getClickBox: function() {
+        return this._tab;
+    },
 
     destroy: function() {
         arguments.callee.$.call(this);

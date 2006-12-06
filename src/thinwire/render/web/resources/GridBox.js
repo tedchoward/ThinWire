@@ -281,12 +281,12 @@ var tw_GridBox = tw_Component.extend({
             var msg = position.join("@");
             var action = this._getClickAction(event.type, msg);
             if (action == null) return;
-            this.fireAction(action, msg);
+            this.fireAction(event, action, msg);
         } else {
             var msg = position.join("@");
             var action = this._getClickAction(event.type, msg);
             if (action == null) return;
-            this.fireAction(action, msg);
+            this.fireAction(event, action, msg);
             
             if (this._lastColumn().childNodes.item(position[1]).tw_child != undefined) {
                 this._setChildVisible(position[1], true);
@@ -598,11 +598,11 @@ var tw_GridBox = tw_Component.extend({
                     //You cannot have children and visibleCheckBoxes, otherwise if dropdown close.
                     if (this._childGridBoxes != null && this._lastColumn().childNodes.item(this._currentIndex).tw_child != undefined) {
                         this.setRowIndexSelected(this._currentIndex, true);
-                        this.fireAction("click", "0@" + this._currentIndex);
+                        this.fireAction(null, "click", "0@" + this._currentIndex);
                         this._setChildVisible(this._currentIndex, true);
                     } else if (keyPressCombo == "Enter") {
                         this.setRowIndexSelected(this._currentIndex, true);
-                        this.fireAction("click", "0@" + this._currentIndex);
+                        this.fireAction(null, "click", "0@" + this._currentIndex);
                     }
                     
                     break;

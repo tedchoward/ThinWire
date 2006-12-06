@@ -46,6 +46,10 @@ var tw_BaseContainer = tw_Component.extend({
         return this._container;
     },
 
+    getClickBox: function() {
+        return this._container;
+    },
+
     getOffsetX: function() {
         return (this._box == this._borderBox ? this._borderSize : 0) + this._offsetX - this._box.scrollLeft;
     },
@@ -133,4 +137,11 @@ tw_BaseContainer.keyPressNotifyCtrlEnterButton = function(keyPressCombo) {
         return arguments.callee.$.call(this, keyPressCombo);
     }
 };
+
+tw_BaseContainer.containerClickListener = function(ev) {
+    if (!this._enabled) return;
+    var action = tw_Component.getClickAction(ev.type);
+    if (action == null) return;
+    this.fireAction(ev, action);
+}
 

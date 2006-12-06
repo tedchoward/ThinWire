@@ -73,7 +73,7 @@ var tw_Tree = tw_Component.extend({
         this._select(item, true);
         var action = this._getClickAction(event.type, item);
         if (action == null) return;
-        this.fireAction(action, this._fullIndex(item));
+        this.fireAction(event, action, this._fullIndex(item));
     },
     
     _getClickAction: tw_Component.getClickAction,
@@ -517,7 +517,7 @@ var tw_Tree = tw_Component.extend({
             case "Enter": 
                 if (this._currentItem != null) {
                     this._setExpanded(this._currentItem, !this._currentItem.tw_expanded, true);
-                    this.fireAction("click", this._fullIndex(this._currentItem));
+                    this.fireAction(null, "click", this._fullIndex(this._currentItem));
                 }
                 break;
                 

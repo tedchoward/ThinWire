@@ -192,7 +192,7 @@ var tw_Menu = tw_Component.extend({
             var item = tw_getEventTarget(event, "mainMenuItem");
             
             if (!this._colorMatches(item.style.color, tw_COLOR_GRAYTEXT) && item.lastChild.childNodes.length == 0) {
-                this.fireAction("click", this._fullIndex(item));
+                this.fireAction(event, "click", this._fullIndex(item));
                 this._setHighlight(item, false);
                 this._menusAreVisible = false;
             }
@@ -219,7 +219,7 @@ var tw_Menu = tw_Component.extend({
         var item = tw_getEventTarget(event, "menuItem");
         
         if (this._menusAreVisible && !this._colorMatches(item.style.color, tw_COLOR_GRAYTEXT) && item.lastChild.childNodes.length == 0) {
-            this.fireAction("click", this._fullIndex(item));
+            this.fireAction(event, "click", this._fullIndex(item));
             var mainMenuItem = tw_getEventTarget(event, "mainMenuItem");            
             this._menusAreVisible = false;
             this.close(mainMenuItem);

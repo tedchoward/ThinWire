@@ -32,8 +32,11 @@
 var tw_Container = tw_BaseContainer.extend({
     construct: function(id, containerId, props) {
         arguments.callee.$.call(this, "container", id, containerId);
+        tw_addEventListener(this.getClickBox(), ["click", "dblclick"], this._containerClickListener.bind(this)); 
         this._fontBox = null;
         this.init(-1, props);
-    }
+    },
+    
+    _containerClickListener: tw_BaseContainer.containerClickListener
 });
 

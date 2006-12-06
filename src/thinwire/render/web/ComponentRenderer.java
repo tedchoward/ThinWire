@@ -324,6 +324,11 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         
         if (name.equals(Component.ACTION_CLICK) || name.equals(Component.ACTION_DOUBLE_CLICK)) {
             String actionIgnoreProperty;
+            String value = (String)event.getValue();
+            String[] vals = value.split(",");
+            int x = getInt(vals[0]);
+            int y = getInt(vals[1]);
+            value = vals[2];
             
             if (this.comp instanceof DateBox) {
                 actionIgnoreProperty = DateBox.PROPERTY_SELECTED_DATE;
@@ -331,12 +336,15 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
                 actionIgnoreProperty = GridBox.Row.PROPERTY_ROW_SELECTED;
             } else if (comp instanceof Tree) {
                 actionIgnoreProperty = Tree.Item.PROPERTY_ITEM_SELECTED;
+            } else if (comp instanceof Container) {
+                actionIgnoreProperty = null;
+                value = "";
             } else {
                 actionIgnoreProperty = null;
             }
             
             if (actionIgnoreProperty != null) setPropertyChangeIgnored(actionIgnoreProperty, true);
-            comp.fireAction(new ActionEvent(name, comp, getEventObject(comp, (String)event.getValue())));
+            comp.fireAction(new ActionEvent(name, comp, getEventObject(comp, value), x, y, x, y));
             if (actionIgnoreProperty != null) setPropertyChangeIgnored(actionIgnoreProperty, false);
         } else if (event.getName().equals(CLIENT_EVENT_DROP)) {
             String[] parts = ((String)event.getValue()).split(",", -1);
@@ -345,7 +353,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
             int dragComponentY = getInt(parts[4]);
             int sourceComponentX = getInt(parts[5]);
             int sourceComponentY = getInt(parts[6]);
-            comp.fireDrop(new DropEvent(comp, getEventObject(comp, parts[0]), sourceComponentX, sourceComponentY, 0, 0, dragComponent, getEventObject(dragComponent, parts[2]), dragComponentX, dragComponentY, 0, 0));
+            comp.fireDrop(new DropEvent(comp, getEventObject(comp, parts[0]), sourceComponentX, sourceComponentY, sourceComponentX, sourceComponentY, dragComponent, getEventObject(dragComponent, parts[2]), dragComponentX, dragComponentY, dragComponentX, dragComponentY));
         } else if (name.equals("size")) {
             this.setPropertyChangeIgnored(Component.PROPERTY_WIDTH, true);
             this.setPropertyChangeIgnored(Component.PROPERTY_HEIGHT, true);

@@ -56,10 +56,14 @@ var tw_TabFolder = tw_BaseContainer.extend({
         s.zIndex = "0";
         s.top = tw_TabFolder._tabsHeight + "px";
 
+        tw_addEventListener(this.getClickBox(), ["click", "dblclick"], this._containerClickListener.bind(this)); 
+        
         this._box.appendChild(this._container);    
         this.init(-1, props);
     },
     
+    _containerClickListener: tw_BaseContainer.containerClickListener,
+
     setStyle: function(name, value) {
         arguments.callee.$.call(this, name, value);
         if (name == "borderWidth") this._offsetX = this._offsetY = parseInt(value);

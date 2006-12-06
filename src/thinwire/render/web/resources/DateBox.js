@@ -240,7 +240,7 @@ var tw_DateBox = tw_Component.extend({
         this.firePropertyChange("selectedDate", formattedDate);
         var action = this._getClickAction(event.type, formattedDate);
         if (action == null) return;
-        this.fireAction(action, formattedDate);
+        this.fireAction(event, action, formattedDate);
     },
     
     _getDate: function(cell) {
@@ -276,7 +276,7 @@ var tw_DateBox = tw_Component.extend({
         this.firePropertyChange("selectedDate", formattedDate);
         var action = this._getClickAction(event.type, formattedDate);
         if (action == null) return;
-        this.fireAction(action, formattedDate);
+        this.fireAction(event, action, formattedDate);
     },
     
     _setMonth: function(date) {

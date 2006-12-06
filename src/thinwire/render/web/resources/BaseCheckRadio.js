@@ -95,7 +95,7 @@ var tw_BaseCheckRadio = tw_Component.extend({
         
         var action = tw_Component.getClickAction(ev.type);
         if (action == null) return;
-        this.fireAction(action);
+        this.fireAction(ev, action);
     },
 
     setWidth: function(width) {

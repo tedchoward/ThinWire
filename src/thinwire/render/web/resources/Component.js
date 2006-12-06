@@ -346,14 +346,28 @@ var tw_Component = Class.extend({
     
     //NOTE: We never need to update the server about a clicked event if there are no listeners
     // since no state change occurs.
-    fireAction: function(action, source) {
+    fireAction: function(ev, action, source) {
         if (this._eventNotifiers != null) {
             var actions = this._eventNotifiers["action"];            
             
             if (actions != undefined && actions[action] === true) {
-                tw_em.sendViewStateChanged(this._id, action, source);
+                var x = 0, y = 0;
+                
+                if (ev != null) {
+                    var clickBox = this.getClickBox();
+                    x = tw_getEventOffsetX(ev, clickBox.className);
+                    y = tw_getEventOffsetY(ev, clickBox.className);
+                    if (x < 0) x = 0;
+                    if (y < 0) y = 0;
+                }
+                
+                tw_em.sendViewStateChanged(this._id, action, x + "," + y + "," + source);
             }
         }
+    },
+    
+    getClickBox: function() {
+        return this._box;
     },
         
     fireDrop: function(source, dragComponent, dragObject, dragX, dragY, dropX, dropY) {
@@ -673,7 +687,7 @@ tw_Component.clickListener = function(ev, comp) {
     if (comp._focusCapable) comp.setFocus(true);
     var action = tw_Component.getClickAction(ev.type);
     if (action == null) return;
-    comp.fireAction(action);
+    comp.fireAction(ev, action);
 };
 
 tw_Component.getClickAction = function(type, index) {

@@ -145,11 +145,17 @@ function tw_getEventButton(event) {
 }
 
 function tw_getEventOffsetX(event, className) {
-    var x = event.layerX ? event.layerX : event.offsetX;
+    var source = tw_getEventTarget(event);
+    var x;
+    
+    if (event.layerX) {
+        x = event.layerX;
+       if (source.className != className) x -= source.offsetLeft;
+    } else {
+        x = event.offsetX;
+    }
     
     if (className != null) {
-        var source = tw_getEventTarget(event);
-
         while (source != null && source.className != className) {
             x += source.offsetLeft;
             source = source.parentNode;
@@ -160,17 +166,23 @@ function tw_getEventOffsetX(event, className) {
 }
 
 function tw_getEventOffsetY(event, className) {
-    var y = event.layerY ? event.layerY : event.offsetY;
-    
+    var source = tw_getEventTarget(event);
+    var y;
+
+    if (event.layerY) {
+        y = event.layerY;
+       if (source.className != className) y -= source.offsetTop;
+    } else {
+        y = event.offsetX;
+    }
+
     if (className != null) {
-        var source = tw_getEventTarget(event);
-        
         while (source != null && source.className != className) {
             y += source.offsetTop;
             source = source.parentNode;
         }
     }
-    
+
     return y;
 }
 
