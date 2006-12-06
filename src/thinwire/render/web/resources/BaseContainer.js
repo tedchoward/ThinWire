@@ -73,11 +73,11 @@ var tw_BaseContainer = tw_Component.extend({
     },
     
     getDragArea: function() {
-        this._container;
+        return this._container;
     },
     
     getDropArea: function() {
-        this._container;
+        return this._container;
     },
         
     addComponent: function(insertAtIndex, comp) {
