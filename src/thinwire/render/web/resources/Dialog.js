@@ -108,7 +108,7 @@ var tw_Dialog = tw_BaseContainer.extend({
     _moveDragListener: function(ev) {
         if (ev.type == 1) {
             var x = this._x + ev.changeInX;
-            var y = this._y + ev.changeInY;
+            var y = this.getY() + ev.changeInY;
             if (x < 0) x = 0;
             if (y < 0) y = 0;                        
             this.setX(x);
@@ -217,7 +217,7 @@ var tw_Dialog = tw_BaseContainer.extend({
     },
     
     getY: function() {
-        var y = arguments.callee.$.call(this);
+        var y = this._y;
         if (tw_Frame.active.getMenu() != null) y -= tw_Dialog.menuBarHeight;
         return y;
     },
