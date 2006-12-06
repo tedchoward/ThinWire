@@ -49,12 +49,16 @@ var tw_Animation = Class.extend({
     },    
     
     _run: function() {
-        var size = this._sequence[this._position];
-        this._obj[this._setter](size);
-        this._position++;
-        
-        if (this._position < this._sequence.length) {
-            setTimeout(this._run, this._unitTime);
+        if (this._obj._inited) {
+            var size = this._sequence[this._position];
+            this._obj[this._setter](size);
+            this._position++;
+            
+            if (this._position < this._sequence.length) {
+                setTimeout(this._run, this._unitTime);
+            } else {
+                this.destroy();
+            }
         } else {
             this.destroy();
         }

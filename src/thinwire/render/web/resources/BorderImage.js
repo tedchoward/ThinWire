@@ -155,6 +155,7 @@ var tw_BorderImage = Class.extend({
     setWidth: function(width) {
         if (this._box == null || this._borderSize < 0 || width < 0) return;
         width -= this._borderSizeSub;
+        if (width < 0) width = 0;
         this._box.style.width = width + "px";
         width = width * this._pctWidth;
         this._clipLeft = Math.floor(width * this._pctLeft);
@@ -172,6 +173,7 @@ var tw_BorderImage = Class.extend({
     setHeight: function(height) {
         if (this._box == null || this._borderSize < 0 || height < 0) return;
         height -= this._borderSizeSub;
+        if (height < 0) height = 0;
         this._box.style.height = height + "px";
         height *= this._pctHeight;
         this._clipTop = Math.floor(height * this._pctTop);
