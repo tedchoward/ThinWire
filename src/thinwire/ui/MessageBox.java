@@ -404,6 +404,7 @@ public final class MessageBox {
 		if (buttons == null || buttons.length() == 0) buttons = "OK";
         hasButtons = true;
 	    dialog = getDialog();
+        dialog.setWaitForWindow(true);
 		dialog.setVisible(true);
 		return buttonId;
 	}

@@ -104,6 +104,8 @@ var tw_BorderImage = Class.extend({
         if (box != null) {
             this._box = box;
             this._e = box.cloneNode(false);
+            this._e.className = "";
+            this._e.id = this._e.id + "_borderImage";
             this._e.style.borderWidth = "0px";
             this._e.style.backgroundImage = "";
             this._e.style.backgroundColor = "transparent";
@@ -189,8 +191,7 @@ var tw_BorderImage = Class.extend({
     },
     
     destroy: function() {
-        this.setBox(null);
-        this._c = this._t = this._b = this._l = this._r = this._lt = this._lb = this._rt = this._rb = null;
+        this._box = this._e = this._c = this._t = this._b = this._l = this._r = this._lt = this._lb = this._rt = this._rb = null;
     }
 });
 

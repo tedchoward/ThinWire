@@ -70,7 +70,7 @@ public final class Frame extends AbstractWindow {
     
     //Prevent the creation of any other Frame.
     Frame() {
-        setWaitForWindow(false);
+        
     }
     
     /**

@@ -177,8 +177,6 @@ public class FileChooser extends Panel {
     }
     
     private static final Logger log = Logger.getLogger(FileChooser.class.getName());
-    private static final String MAKE_FILE_CHOOSER_BUTTON = "tw_makeFileChooserBtn";
-    private static final String FILE_CHOOSER_SUBMIT = "tw_FileChooser_submit";
     private static final int BROWSE_BUTTON_WIDTH = 80;
     private static final int BROWSE_BUTTON_HEIGHT = 20;
     private static final int TEXT_FIELD_BUTTON_GAP = 5;
@@ -187,7 +185,6 @@ public class FileChooser extends Panel {
     private WebApplication app;
     private TextField fileName;
     private Button browseButton;
-    private int browseButtonId;
     
     private PropertyChangeListener sizeListener = new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent ev) {
@@ -229,11 +226,9 @@ public class FileChooser extends Panel {
         addPropertyChangeListener(new String[] { PROPERTY_WIDTH, PROPERTY_HEIGHT }, sizeListener);
         setSize(300, 20);
         
-        app.invokeAfterRendered(browseButton, new RenderStateListener() {
+        app.addRenderStateListener(browseButton, new RenderStateListener() {
             public void renderStateChange(RenderStateEvent ev) {
-                int fileNameId = app.getComponentId(fileName);
-                browseButtonId = app.getComponentId(browseButton);
-                app.clientSideFunctionCall(MAKE_FILE_CHOOSER_BUTTON, new Object[] { browseButtonId, fileNameId });
+                app.clientSideMethodCall("tw_FileChooser", "newInstance", app.getComponentId(browseButton), app.getComponentId(fileName));
             }
         });
     }
@@ -244,7 +239,7 @@ public class FileChooser extends Panel {
      */
     public FileInfo getFileInfo() {
         if (fileName.getText().length() == 0) return null;
-        app.clientSideFunctionCall(FILE_CHOOSER_SUBMIT, browseButtonId);
+        app.clientSideMethodCall("tw_FileChooser", "submit", app.getComponentId(fileName));
         FileInfo fi = ((Application) app).getFileInfo();
         return fi;
     }   

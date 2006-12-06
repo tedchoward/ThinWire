@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -115,6 +116,7 @@ public final class WebApplication extends Application {
         "Tree.js",
         "WebBrowser.js",
         "class:///" + SplitLayout.class.getName() + "/resources/SplitLayout.js",
+        "FileChooser.js",
         "Startup.js",
         "FileUploadPage.html",
     };
@@ -230,7 +232,7 @@ public final class WebApplication extends Application {
     private Map<Window, WindowRenderer> windowToRenderer;
     private Map<Integer, WebComponentListener> webComponentListeners;
     private Set<String> clientSideIncludes;
-    private Map<Component, Object> renderCallbacks;
+    private Map<Component, Object> renderStateListeners;
     Map<Style, String> styleToStyleClass;
     private String[] syncCallResponse = new String[1];
     private boolean threadCaptured;
@@ -665,30 +667,45 @@ public final class WebApplication extends Application {
         return clientSideCallImpl(true, componentId, methodName, args);   
     }
     
-    public void invokeAfterRendered(Component comp, RenderStateListener r) {
+    public void addRenderStateListener(Component comp, RenderStateListener r) {
         Integer id = getComponentId(comp);
 
         if (id == null) {
-            if (renderCallbacks == null) renderCallbacks = new WeakHashMap<Component, Object>();            
-            Object o = renderCallbacks.get(comp);            
+            if (renderStateListeners == null) renderStateListeners = new WeakHashMap<Component, Object>();            
+            Object o = renderStateListeners.get(comp);            
 
             if (o instanceof RenderStateListener) {
-                List l = new ArrayList<RenderStateListener>(3);
-                l.add(o);
-                l.add(r);
-                renderCallbacks.put(comp, l);
+                if (o != r) {
+                    Set<RenderStateListener> l = new HashSet<RenderStateListener>(3);
+                    l.add((RenderStateListener)o);
+                    l.add(r);
+                    renderStateListeners.put(comp, l);
+                }
+            } else if (o instanceof Set) {
+                ((Set)o).add(r);
             } else {
-                if (o == null) renderCallbacks.put(comp, o = new ArrayList<RenderStateListener>(3));                
-                ((List)o).add(r);                
+                renderStateListeners.put(comp, r);
             }
         } else {        
             r.renderStateChange(new RenderStateEvent(comp, id));
         }
     }
     
+    public void removeRenderStateListener(Component comp, RenderStateListener r) {
+        if (renderStateListeners != null) {
+            Object o = renderStateListeners.get(comp);            
+
+            if (o instanceof RenderStateListener) {
+                if (o == r) renderStateListeners.remove(comp);
+            } else if (o instanceof List) {
+                ((List)o).remove(r);
+            }
+        }
+    }
+    
     void flushRenderCallbacks(Component comp, Integer id) {
-        if (renderCallbacks == null) return;
-        Object o = renderCallbacks.remove(comp);        
+        if (renderStateListeners == null) return;
+        Object o = renderStateListeners.get(comp);        
         if (o == null) return;
         
         RenderStateEvent ev = new RenderStateEvent(comp, id);
@@ -696,7 +713,7 @@ public final class WebApplication extends Application {
         if (o instanceof RenderStateListener) {
             ((RenderStateListener)o).renderStateChange(ev);
         } else {        
-            for (RenderStateListener r : ((List<RenderStateListener>)o)) {
+            for (RenderStateListener r : ((Set<RenderStateListener>)o)) {
                 r.renderStateChange(ev);
             }
         }

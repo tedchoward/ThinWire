@@ -100,16 +100,23 @@ package thinwire.ui;
  */
 public class Dialog extends AbstractWindow {
     public static final String PROPERTY_RESIZE_ALLOWED = "resizeAllowed";
+    public static final String PROPERTY_REPOSITION_ALLOWED = "repositionAllowed";
+    public static final String PROPERTY_MODAL = "modal";
     
     private static final int TITLE_BAR_HEIGHT = 18 + 1;
         
     private boolean resizeAllowed;
+    private boolean repositionAllowed = true;
+    private boolean modal = true;
     
     /**
      * Constructs a new Dialog with no title. 
      */
     public Dialog() {
         this(null);
+        //#IFDEF V1_1_COMPAT                    
+        this.waitForWindow = true;
+        //#ENDIF
     }
     
     /**
@@ -121,7 +128,7 @@ public class Dialog extends AbstractWindow {
         setWidth(320);
         setHeight(240);        
     }
-        
+
     public boolean isResizeAllowed() {
         return resizeAllowed;
     }
@@ -130,6 +137,27 @@ public class Dialog extends AbstractWindow {
         boolean oldResizeAllowed = this.resizeAllowed;
         this.resizeAllowed = resizeAllowed;
         firePropertyChange(this, PROPERTY_RESIZE_ALLOWED, oldResizeAllowed, this.resizeAllowed);
+    }
+
+    public boolean isRepositionAllowed() {
+        return repositionAllowed;
+    }
+
+    public void setRepositionAllowed(boolean repositionAllowed) {
+        boolean oldRepositionAllowed = this.repositionAllowed;
+        this.repositionAllowed = repositionAllowed;
+        firePropertyChange(this, PROPERTY_REPOSITION_ALLOWED, oldRepositionAllowed, this.repositionAllowed);
+    }
+    
+    public boolean isModal() {
+        return modal;
+    }
+    
+    public void setModal(boolean modal) {
+        if (this.isVisible()) throw new IllegalStateException("You cannot change the modal state of a visible Dialog");
+        boolean oldModal = this.modal;
+        this.modal = modal;
+        firePropertyChange(this, PROPERTY_MODAL, oldModal, this.modal);
     }
     
     public int getInnerHeight() {

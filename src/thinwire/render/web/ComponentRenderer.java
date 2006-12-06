@@ -236,6 +236,8 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         }
     }
     
+    private RenderStateListener dragRenderListener;
+    
     public void eventSubTypeListenerAdded(Class<? extends EventListener> clazz, Object subType) {
         if (PropertyChangeListener.class.isAssignableFrom(clazz)) {
             String prop = clientSideProps.get(subType);
@@ -260,12 +262,23 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
             postClientEvent(REGISTER_EVENT_NOTIFIER, "keyPress", subType);
         } else if (DropListener.class.isAssignableFrom(clazz)) {
             final Component dragComponent = (Component)subType;
+
+            if (dragRenderListener == null) {
+                dragRenderListener = new RenderStateListener() {
+                    public void renderStateChange(RenderStateEvent ev) {
+                        if (wr == null) {
+                            if (dragRenderListener != null) {
+                                ((WebApplication)WebApplication.current()).removeRenderStateListener(comp, dragRenderListener);
+                                dragRenderListener = null;
+                            }
+                        } else {
+                            wr.ai.clientSideMethodCall(wr.ai.getComponentId(dragComponent), "addDragTarget", id);
+                        }
+                    }
+                };
+            }
             
-            wr.ai.invokeAfterRendered(dragComponent, new RenderStateListener() {
-                public void renderStateChange(RenderStateEvent ev) {
-                    wr.ai.clientSideMethodCall(wr.ai.getComponentId(dragComponent), "addDragTarget", id);
-                }
-            });
+            wr.ai.addRenderStateListener(dragComponent, dragRenderListener);
         }
     }
     
@@ -294,6 +307,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         } else if (DropListener.class.isAssignableFrom(clazz)) {
             Integer dragComponentId = wr.ai.getComponentId((Component)subType);
             if (dragComponentId != null) wr.ai.clientSideMethodCall(dragComponentId, "removeDragTarget", id);
+            if (dragRenderListener != null) wr.ai.removeRenderStateListener((Component)subType, dragRenderListener);
         }
     }    
     

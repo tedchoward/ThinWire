@@ -93,20 +93,20 @@ public final class SplitLayout extends AbstractLayout {
         setAutoApply(true);
     }
     
+    private RenderStateListener spacerListener = new RenderStateListener() {
+        public void renderStateChange(RenderStateEvent ev) {
+            app.clientSideMethodCall("tw_SplitLayout", "newInstance", ev.getId(), margin);                
+        }
+    };
+    
     public void setContainer(Container<Component> container) {
         if (this.container != null) {
-            Integer id = app.getComponentId(spacer);
-            if (id != null) app.clientSideMethodCall("tw_SplitLayout", "destroy", id);
+            app.removeRenderStateListener(spacer, spacerListener);
             this.container.getChildren().remove(spacer);
         }
         
         if (container != null) {
-            app.invokeAfterRendered(spacer, new RenderStateListener() {
-                public void renderStateChange(RenderStateEvent ev) {
-                    app.clientSideMethodCall("tw_SplitLayout", "newInstance", ev.getId(), margin);                
-                }
-            });               
-
+            app.addRenderStateListener(spacer, spacerListener);               
             spacer.setVisible(false);
             container.getChildren().add(spacer);
         }

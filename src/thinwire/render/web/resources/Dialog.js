@@ -42,9 +42,10 @@ var tw_Dialog = tw_BaseContainer.extend({
     
     construct: function(id, containerId, props) {
         arguments.callee.$.call(this, "dialog", id, 0);
+        tw_addEventListener(this._box, "mousedown", this._mouseDownListener.bind(this));
         var dialog = this._box;
         var s = dialog.style;
-        s.cursor = "default";    
+        s.cursor = "default";
         s.overflow = "visible";
         
         var title = this._fontBox = document.createElement("div");
@@ -57,7 +58,6 @@ var tw_Dialog = tw_BaseContainer.extend({
         s.overflow = "hidden";
         s.backgroundColor = tw_COLOR_ACTIVECAPTION;
         title.appendChild(document.createTextNode(""));
-        this._moveDrag = new tw_DragHandler(title, this._moveDragListener.bind(this));                
         
         var closeButton = this._closeButton = document.createElement("div");
         var s = closeButton.style;
@@ -85,7 +85,9 @@ var tw_Dialog = tw_BaseContainer.extend({
         s.backgroundColor = tw_COLOR_TRANSPARENT;
         dialog.appendChild(this._container);
 
-        tw_Frame.active.setModalLayerVisible(true, this);
+        this.setModal(props.modal);
+        if (!props.modal) this._mouseDownListener();
+        delete props.modal;
         
         tw_addEventListener(closeButton, "mousedown", this._closeButtonMouseDownListener.bind(this));
         tw_addEventListener(closeButton, ["mouseup", "mouseout"], this._closeButtonMouseUpListener.bind(this)); 
@@ -94,6 +96,13 @@ var tw_Dialog = tw_BaseContainer.extend({
         this.setActive(true);
 
         this.init(-1, props);
+    },
+    
+    _mouseDownListener: function(ev) {
+        if (tw_Dialog.active !== this) {
+            if (tw_Dialog.active != null) tw_Dialog.active.setActive(false);
+            this.setActive(true);
+        }
     },
         
     _moveDragListener: function(ev) {
@@ -147,6 +156,21 @@ var tw_Dialog = tw_BaseContainer.extend({
         } 
     },
 
+    setModal: function(modal) {
+        if (modal) tw_Frame.active.setModalLayerVisible(modal, this);
+    },
+    
+    setRepositionAllowed: function(repositionAllowed) {
+        if (repositionAllowed) {
+            if (this._moveDrag != null) return;
+            this._moveDrag = new tw_DragHandler(this._fontBox, this._moveDragListener.bind(this));                
+        } else {
+            if (this._moveDrag == null) return;
+            this._moveDrag.destroy();
+            this._moveDrag = null;
+        }
+    },
+    
     setResizeAllowed: function(resizeAllowed) {
         if (resizeAllowed) {
             if (this._resizeDrag != null) return;
@@ -267,7 +291,7 @@ var tw_Dialog = tw_BaseContainer.extend({
         } else {
             s.backgroundColor = tw_COLOR_INACTIVECAPTION;
             s.color = tw_COLOR_INACTIVECAPTIONTEXT;
-            this._moveDrag.releaseDrag();
+            if (this._moveDrag != null) this._moveDrag.releaseDrag();
             if (this.getMenu() != null) this.getMenu().close();            
             if (!flash) tw_Dialog.active = null;
         }
@@ -285,8 +309,9 @@ var tw_Dialog = tw_BaseContainer.extend({
         //When removeComponent is called on Frame, this destroy method is called again so we want to stop it.
         if (this._closeButton == null) return;
         if (tw_Dialog.active === this) tw_Dialog.active = null;
-        this._moveDrag.destroy();
-        this._menu = this._standardButton = this._drag = this._closeButton = null;                
+        if (this._moveDrag != null) this._moveDrag.destroy();
+        if (this._resizeDrag != null) this._resizeDrag.destroy();
+        this._menu = this._standardButton = this._moveDrag = this._resizeDrag = this._closeButton = null;                
         tw_Frame.active.setModalLayerVisible(false);
         document.body.removeChild(this._box);
         arguments.callee.$.call(this);

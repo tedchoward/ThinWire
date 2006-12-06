@@ -711,7 +711,9 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
             int x = margin, y = margin, width = 0, height = 0;
             
             for (int i = 0, cnt = limit.columnSpan, column = limit.columnIndex; i < cnt; i++) {
-                width += absoluteWidths[i + column] + spacing;
+                int index = i + column;
+                if (index >= absoluteWidths.length) throw new IllegalStateException("limit=" + limit + " exceeds layout=" + this + " for component " + c);
+                width += absoluteWidths[index] + spacing;
             }
             
             width -= spacing;
@@ -719,7 +721,9 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
             if (just != Justify.FULL && c.getWidth() < width) width = c.getWidth();
             
             for (int i = 0, cnt = limit.rowSpan, row = limit.rowIndex; i < cnt; i++) {
-                height += absoluteHeights[i + row] + spacing;
+                int index = i + row;
+                if (index >= absoluteHeights.length) throw new IllegalStateException("limit=" + limit + " exceeds layout=" + this + " for component " + c);
+                height += absoluteHeights[index] + spacing;
             }
             
             height -= spacing;
@@ -770,5 +774,9 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
     
     public SortedSet<Row> getVisibleRows() {
         return roVisibleRows;
+    }
+    
+    public String toString() {
+        return "TableLayout@" + System.identityHashCode(this) + "{columns.size=" + grid.getColumns().size() + ",rows.size=" + grid.getRows().size() + "}";
     }
 }

@@ -40,7 +40,7 @@ abstract class AbstractWindow extends AbstractContainer<Component> implements Wi
     
     String title = "";
     Menu menu;
-    boolean waitForWindow = true;
+    boolean waitForWindow;
 
     AbstractWindow() {
         super.setVisible(false);

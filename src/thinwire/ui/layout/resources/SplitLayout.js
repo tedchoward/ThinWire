@@ -29,6 +29,7 @@
  */
 tw_SplitLayout = Class.extend({
     _comp: null,
+    _compDestroy: null,
     _vertical: false,
     _drag: null,
     _margin: 0,
@@ -84,11 +85,12 @@ tw_SplitLayout = Class.extend({
     },
     
     destroy: function() {
-        this._drag.destroy();
-        this._comp.destroy = this._compDestroy;
-        this._compDestroy = null;
-        //this._comp.destroy();
-        this._comp = null;
+        if (this._comp != null) {
+            this._drag.destroy();
+            this._comp.destroy = this._compDestroy;
+            if (this._comp._inited) this._comp.destroy();
+            this._compDestroy = this._comp = this._drag = null;
+        }
     }
 });
 
@@ -97,12 +99,6 @@ tw_SplitLayout.instances = {};
 tw_SplitLayout.newInstance = function(id, margin) {
     var sl = tw_SplitLayout.instances[id] = new tw_SplitLayout(id);
     sl.setMargin(margin);
-};
-
-tw_SplitLayout.destroy = function(id) {
-    var splitLayout = tw_SplitLayout.instances[id];
-    if (splitLayout != undefined) splitLayout.destroy();
-    delete tw_SplitLayout.instances[id];
 };
 
 tw_SplitLayout.setMargin = function(id, margin) {

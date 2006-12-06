@@ -37,10 +37,9 @@ var tw_DateBox = tw_Component.extend({
     _prev: null,
     _header: null,
     _footer: null,
-    _headerBorderSizeSub: null,
     _columnHeaders: null,
-    _footerClickListener: null,
-    
+    _headerBorderSizeSub: 0,
+
     construct: function(id, containerId, props) {
         arguments.callee.$.call(this, "div", "dateBox", id, containerId);
         
@@ -360,6 +359,12 @@ var tw_DateBox = tw_Component.extend({
         var cell = tw_getEventTarget(event);
         if (cell == null) return null;
         return this._getFormattedDate(this._getDate(cell));
+    },
+    
+    destroy: function() {
+        this._today = this._curDate = this._selectedDate = this._table = this._next = this._prev
+            = this._header = this._footer = _columnHeaders = null;
+        arguments.callee.$.call(this);
     }
 });
 

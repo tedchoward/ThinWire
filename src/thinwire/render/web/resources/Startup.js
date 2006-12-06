@@ -208,43 +208,6 @@ function tw_setLayerTransparent(box) {
     }
 }
 
-function tw_makeFileChooserBtn(buttonId, tfId) {
-    var btn = tw_Component.instances[buttonId];
-    var tf = tw_Component.instances[tfId];
-    var iframe = document.createElement("iframe");
-    
-    s = iframe.style;
-    s.top = "0px";
-    s.width = btn._width + "px";
-    s.height = btn._height + "px";
-    s.position = "absolute";
-    s.overflow = "hidden";
-    s.zIndex = "1";
-    tw_setOpacity(iframe, 0);
-    
-    iframe.scrolling = "no";
-    iframe.src = "?_twr_=FileUploadPage.html";
-    iframe.frameBorder = "0";
-    iframe.onreadystatechange = iframe.onload = function() {
-        if (tw_isIE && iframe.readyState != "complete") return;
-        input = iframe.contentWindow.document.getElementsByTagName("input")[0];
-        if (input != null) {
-            input.name = "file";
-            input.onchange = function() {
-                tf.setText(this.value);
-                tf.firePropertyChange("text", this.value);
-            };
-        }
-    };
-    btn._iframe = iframe;
-    btn._box.appendChild(iframe);
-}
-
-function tw_FileChooser_submit(buttonId) {
-    var btn = tw_Component.instances[buttonId];
-    btn._iframe.contentWindow.document.getElementById("uploadForm").submit();
-}
-
 function tw_getTime() {
     return new Date().getTime();
 }
