@@ -58,14 +58,16 @@ import thinwire.ui.style.Font;
 
 class RichTextParser {
     
-    private static final Pattern BOLD_TAG_REGEX = Pattern.compile("(.*?)<b>(.+)</b>(.*)");
-    private static final String BOLD_TAG_REPLACEMENT = "$1<font bold=\"true\">$2</font>$3";
-    private static final Pattern ITALIC_TAG_REGEX = Pattern.compile("(.*?)<i>(.+)</i>(.*)");
-    private static final String ITALIC_TAG_REPLACEMENT = "$1<font italic=\"true\">$2</font>$3";
-    private static final Pattern UNDERLINE_TAG_REGEX = Pattern.compile("(.*?)<u>(.+)</u>(.*)");
-    private static final String UNDERLINE_TAG_REPLACEMENT = "$1<font underline=\"true\">$2</font>$3";
-    private static final Pattern STRIKE_TAG_REGEX = Pattern.compile("(.*?)<s>(.+)</s>(.*)");
-    private static final String STRIKE_TAG_REPLACEMENT = "$1<font strike=\"true\">$2</font>$3";
+    private static final Pattern BOLD_TAG_REGEX = Pattern.compile("<b>");
+    private static final String BOLD_TAG_REPLACEMENT = "<font bold=\"true\">";
+    private static final Pattern ITALIC_TAG_REGEX = Pattern.compile("<i>");
+    private static final String ITALIC_TAG_REPLACEMENT = "<font italic=\"true\">";
+    private static final Pattern UNDERLINE_TAG_REGEX = Pattern.compile("<u>");
+    private static final String UNDERLINE_TAG_REPLACEMENT = "<font underline=\"true\">";
+    private static final Pattern STRIKE_TAG_REGEX = Pattern.compile("<s>");
+    private static final String STRIKE_TAG_REPLACEMENT = "<font strike=\"true\">";
+    private static final Pattern CLOSING_TAG_REGEX = Pattern.compile("</[bius]>");
+    private static final String CLOSING_TAG_REPLACEMENT = "</font>";
     
     private final Logger log = Logger.getLogger(RichTextParser.class.getName());
     private final Map<String, Validator> fontAtts = new HashMap<String, Validator>();
@@ -244,6 +246,7 @@ class RichTextParser {
                 tmpText = ITALIC_TAG_REGEX.matcher(tmpText).replaceAll(ITALIC_TAG_REPLACEMENT);
                 tmpText = UNDERLINE_TAG_REGEX.matcher(tmpText).replaceAll(UNDERLINE_TAG_REPLACEMENT);
                 tmpText = STRIKE_TAG_REGEX.matcher(tmpText).replaceAll(STRIKE_TAG_REPLACEMENT);
+                tmpText = CLOSING_TAG_REGEX.matcher(tmpText).replaceAll(CLOSING_TAG_REPLACEMENT);
                 sb = new StringBuilder();
                 DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
                 document = db.parse(new ByteArrayInputStream(("<richText>" + tmpText + "</richText>").getBytes()));
