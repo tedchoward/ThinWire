@@ -51,11 +51,11 @@ var tw_BaseContainer = tw_Component.extend({
     },
 
     getOffsetX: function() {
-        return (this._box == this._borderBox ? this._borderSize : 0) + this._offsetX - this._box.scrollLeft;
+        return (this._box == this._borderBox ? this._borderSize : 0) + this._offsetX - this._container.scrollLeft;
     },
 
     getOffsetY: function() {
-        return (this._box == this._borderBox ? this._borderSize : 0) + this._offsetY - this._box.scrollTop;
+        return (this._box == this._borderBox ? this._borderSize : 0) + this._offsetY - this._container.scrollTop;
     },
     
     setScrollType: function(scrollCode) {

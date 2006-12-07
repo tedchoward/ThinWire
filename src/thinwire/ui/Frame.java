@@ -110,6 +110,8 @@ public final class Frame extends AbstractWindow {
     void sizeChanged(int width, int height) {
         try {
             allowSizeChange = true;
+            if (width < 0) width = 0;
+            if (height < 0) height = 0;
             setSize(width, height);
         } finally {
             allowSizeChange = false;
