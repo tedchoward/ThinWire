@@ -91,7 +91,7 @@ function tw_setElementFocus(comp, state) {
     try {
         var elem = comp._focusBox;
         if (state && elem.focus) {
-            if (tw_isFireFox) setTimeout(comp._focus, 0);
+            if (tw_isFirefox) setTimeout(comp._focus, 0);
             else elem.focus();
         } else if (!state && elem.blur) elem.blur();
     } catch (e) {

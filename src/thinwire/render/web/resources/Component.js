@@ -207,7 +207,7 @@ var tw_Component = Class.extend({
     },
     
     _focus: function() {
-        if (this._focusBox.focus) this._focusBox.focus();
+        this._focusBox.focus();
     },
     
     setStyles: function(styles) {
