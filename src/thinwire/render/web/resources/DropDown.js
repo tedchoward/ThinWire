@@ -97,9 +97,9 @@ var tw_DropDown = tw_BaseText.extend({
         comp.fireAction = this._fireCloseAction;
     },
     
-    _fireCloseAction: function(subType, eventData) {
-        if (subType == "click") tw_Component.instances[this._dropDownId]._ddComp.setVisible(false);
-        this.fireCompAction(subType, eventData);
+    _fireCloseAction: function(subType, action, data) {
+        if (action == "click") tw_Component.instances[this._dropDownId]._ddComp.setVisible(false);
+        this.fireCompAction(subType, action, data);
     },
     
     _buttonMouseDownListener: function(ev) {
