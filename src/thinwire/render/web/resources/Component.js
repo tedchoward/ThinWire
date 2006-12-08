@@ -589,7 +589,8 @@ var tw_Component = Class.extend({
         if (this._borderImage != null) this._borderImage.destroy(); 
         delete tw_Component.instances[this._id];
         this._box = this._focusBox = this._eventNotifiers = this._backgroundBox = 
-            this._borderBox = this._fontBox = this._scrollBox = this._parent = null;
+            this._borderBox = this._fontBox = this._scrollBox = this._parent = this._borderImage = null;
+            
         if (tw_Component.priorFocus === this) tw_Component.priorFocus = null;
         if (tw_Component.currentFocus === this) tw_Component.currentFocus = null;
         if (this._dragAndDropHandler != null) {

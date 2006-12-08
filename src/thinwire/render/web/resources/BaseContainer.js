@@ -99,27 +99,25 @@ var tw_BaseContainer = tw_Component.extend({
         }        
     },
     
-    removeComponent: function(componentId) {        
-        for (var i = this._children.length; --i >= 0;) {
-            var child = this._children[i];
-            
-            if (child._id == componentId) {
-                this._container.removeChild(child._box);                
-                this._children.splice(i, 1);
+    removeComponent: function(componentId) {
+        if (!this._inited) return;
+        var child = tw_Component.instances[componentId];
+        this._container.removeChild(child._box);
+        var i = child._parentIndex;
+        this._children.splice(i, 1);
 
-                for (var cnt = this._children.length; i < cnt; i++) {
-                    this._children[i]._parentIndex--;
-                }
-                
-                child.destroy();
-                break;
-            }
+        for (var cnt = this._children.length; i < cnt; i++) {
+            this._children[i]._parentIndex--;
         }
+        
+        child.destroy();
     },
     
     destroy: function() {
         for (var i = this._children.length; --i >= 0;) {
-            this._children[i].destroy();
+            var child = this._children[i];
+            this._container.removeChild(child._box);
+            child.destroy();
         }
         
         this._container = this._children = null;
