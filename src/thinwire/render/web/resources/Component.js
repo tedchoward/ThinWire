@@ -84,6 +84,7 @@ var tw_Component = Class.extend({
         
         tw_Component.instances[id] = this;
         this._parent = containerId instanceof Class ? containerId : tw_Component.instances[containerId];
+        this._focus = this._focus.bind(this);
     },
             
     setX: function(x) {
@@ -182,7 +183,7 @@ var tw_Component = Class.extend({
                 //component will trigger a false event on the prior.
                 if (tw_Component.currentFocus != null) {
                     tw_Component.currentFocus.setFocus(false);
-                    tw_setElementFocus(tw_Component.currentFocus._focusBox, false);
+                    tw_setElementFocus(tw_Component.currentFocus, false);
                 }
                 
                 tw_Component.priorFocus = tw_Component.currentFocus; 
@@ -190,7 +191,7 @@ var tw_Component = Class.extend({
                 tw_em.removeQueuedViewStateChange("focus");
                 this.firePropertyChange("focus", true, "focus");
                 if (tw_Component.priorFocus != null && tw_Component.priorFocus.hasPropertyChangeListener("focus")) tw_em.sendGetEvents();
-                tw_setElementFocus(this._focusBox, true);                
+                tw_setElementFocus(this, true);                
                 var isPriorButton = tw_Component.priorFocus instanceof tw_Button;
                 var isButton = this instanceof tw_Button;
                 
@@ -203,6 +204,10 @@ var tw_Component = Class.extend({
                 }
             }
         }
+    },
+    
+    _focus: function() {
+        if (this._focusBox.focus) this._focusBox.focus();
     },
     
     setStyles: function(styles) {

@@ -168,7 +168,7 @@ var tw_TabFolder = tw_BaseContainer.extend({
         
         if (active) {
             this._focusBox = sheet._tab;
-            tw_setElementFocus(this._focusBox, true);            
+            tw_setElementFocus(this, true);            
             this._currentIndex = index;
         }
 
