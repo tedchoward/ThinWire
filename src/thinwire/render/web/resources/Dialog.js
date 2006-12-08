@@ -207,8 +207,12 @@ var tw_Dialog = tw_BaseContainer.extend({
         }
     },
     
+    getOffsetX: function() {
+        return -this._container.scrollLeft;
+    },
+    
     getOffsetY: function() {
-        return arguments.callee.$.call(this) + tw_Dialog.titleBarHeight + (this.getMenu() != null ? tw_Dialog.menuBarHeight : 0);
+        return tw_Dialog.titleBarHeight + (this.getMenu() != null ? tw_Dialog.menuBarHeight : 0) - this._container.scrollTop;
     },     
         
     setY: function(y) {
@@ -224,14 +228,14 @@ var tw_Dialog = tw_BaseContainer.extend({
     
     setWidth: function(width) {
         arguments.callee.$.call(this, width);
+        width -= this._borderSizeSub;
         this._container.style.width = width < 0 ? "0px" : width + "px";
     },
     
     setHeight: function(height) {
         arguments.callee.$.call(this, height);        
         height -= tw_Dialog.titleBarHeight + (this._menu == null ? 0 : tw_Dialog.menuBarHeight) + this._borderSizeSub;
-        if (height < 0) height = 0;
-        this._container.style.height = height + "px";
+        this._container.style.height = height < 0 ? "0px" : height + "px";
     },
     
     keyPressNotify: tw_BaseContainer.keyPressNotifyCtrlEnterButton,

@@ -250,13 +250,13 @@ var tw_DropDown = tw_BaseText.extend({
                 parent = parent._parent;
             }
             
-            var borderSize = parent instanceof tw_Dialog ? parent._borderSize : 0;
-            offsetX += parent.getOffsetX() - borderSize;
-            offsetY += parent.getOffsetY() - borderSize;
+            offsetX += parent.getOffsetX();
+            offsetY += parent.getOffsetY();
             
             var comp = this._ddComp;
             var availableHeight = tw_getVisibleHeight() - comp._box.parentNode.offsetTop - offsetY - this._height;
             offsetY += (availableHeight < comp._height ? -comp._height : this._height);
+            
             comp.setY(offsetY);
             comp.setX(offsetX);
             comp.setCompVisible(true);

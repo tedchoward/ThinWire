@@ -124,7 +124,10 @@ public class Border {
     }
 
     public void setType(Type type) {
-        if (type == null && parent.defaultStyle != null) type = parent.defaultStyle.getBorder().getType();
+        if (type == null && parent.defaultStyle != null) {
+            type = parent.defaultStyle.getBorder().getType();
+            if (type == Type.IMAGE) setImage(parent.defaultStyle.getBorder().getImage());
+        }
         if (type == null) throw new IllegalArgumentException("type == null");
         if (type == Type.IMAGE && getImage().length() == 0) throw new IllegalStateException("type == Type.IMAGE && getImage().length() == 0");
         Type oldType = this.type; 
@@ -177,6 +180,7 @@ public class Border {
             }
         } else if (oldImage.length() > 0) {
             if (getType() == Type.IMAGE) {
+                if (imageType == null && parent.defaultStyle.getBorder().getType() == Type.IMAGE) imageType = Type.SOLID;
                 setType(imageType);
             }
 

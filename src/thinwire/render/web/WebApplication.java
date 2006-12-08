@@ -775,9 +775,6 @@ public final class WebApplication extends Application {
                 sb.append("},");
 
                 if (sb.length() >= 1024) {
-                    processClientEvents = true;
-                    sb.notify();
-                    
                     //Slow things down if the buffer gets this big.
                     if (sb.length() >= 32768) {
                         int count = 50;
@@ -788,6 +785,9 @@ public final class WebApplication extends Application {
                             } catch (InterruptedException e) { }
                         }
                     }
+                    
+                    processClientEvents = true;
+                    sb.notify();
                 } else {
                     processClientEvents = false;
                 }
@@ -1001,27 +1001,25 @@ public final class WebApplication extends Application {
         log.fine("Showing window with id:" + wr.id);
     }
 
-    public void checkForUnwaitFrame() {
-        if (getFrame().isWaitForWindow()) {
-            boolean unwaitFrame = true;
-
-            for (Window w : windowToRenderer.keySet()) {
-                if (getFrame() != w && w.isWaitForWindow()) {
-                    unwaitFrame = false;
-                    break;
-                }
-            }
-
-            if (unwaitFrame) getFrame().setWaitForWindow(false);
-        }
-    }
-
     protected void hideWindow(Window w) {
         WindowRenderer wr = (WindowRenderer) windowToRenderer.remove(w);
         if (wr == null) throw new IllegalStateException("Cannot close a window that has not been set to visible");
         log.fine("Closing window with id:" + wr.id);
         wr.destroy();
-        checkForUnwaitFrame();
+        Frame f = getFrame(); 
+        
+        if (f.isWaitForWindow()) {
+            boolean unwaitFrame = true;
+
+            for (Dialog d : f.getDialogs()) {
+                if (d.isWaitForWindow()) {
+                    unwaitFrame = false;
+                    break;
+                }
+            }
+
+            if (unwaitFrame) f.setWaitForWindow(false);
+        }        
     }
 
     WindowRenderer getWindowRenderer(Window w) {

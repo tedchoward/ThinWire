@@ -430,23 +430,16 @@ var tw_Tree = tw_Component.extend({
         return node;
     },
     
-    _getIndex: function(node) {
-        //TODO djv fix bug
-        var index = 0;
-        while ((node = node.previousSibling) != null) index++;
-        return index;
-    },
-    
     _fullIndex: function(titem) {
         if (titem == null) return "";
         if (titem === this._rootItem) return "rootItem";
         
-        var index = this._getIndex(titem);
+        var index = tw_getElementIndex(titem);
         var value = index;
         
         while (titem.parentNode !== this._treeTop) {
             titem = titem.parentNode.parentNode;
-            index = this._getIndex(titem);
+            index = tw_getElementIndex(titem);
             value = index + "." + value;
         }
         

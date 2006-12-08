@@ -84,6 +84,7 @@ var tw_Component = Class.extend({
         
         tw_Component.instances[id] = this;
         this._parent = containerId instanceof Class ? containerId : tw_Component.instances[containerId];
+        this._focus = this._focus.bind(this);
     },
             
     setX: function(x) {
@@ -134,7 +135,7 @@ var tw_Component = Class.extend({
     },
     
     setEnabled: function(enabled) {
-        if (this === tw_Component.currentFocus) {
+        if (!enabled && this === tw_Component.currentFocus) {
             var nextComp = this.getNextComponent(true);
             if (nextComp != null && nextComp !== this) nextComp.setFocus(true);
         }
@@ -182,7 +183,7 @@ var tw_Component = Class.extend({
                 //component will trigger a false event on the prior.
                 if (tw_Component.currentFocus != null) {
                     tw_Component.currentFocus.setFocus(false);
-                    tw_setElementFocus(tw_Component.currentFocus._focusBox, false);
+                    tw_setElementFocus(tw_Component.currentFocus, false);
                 }
                 
                 tw_Component.priorFocus = tw_Component.currentFocus; 
@@ -190,7 +191,7 @@ var tw_Component = Class.extend({
                 tw_em.removeQueuedViewStateChange("focus");
                 this.firePropertyChange("focus", true, "focus");
                 if (tw_Component.priorFocus != null && tw_Component.priorFocus.hasPropertyChangeListener("focus")) tw_em.sendGetEvents();
-                tw_setElementFocus(this._focusBox, true);                
+                tw_setElementFocus(this, true);                
                 var isPriorButton = tw_Component.priorFocus instanceof tw_Button;
                 var isButton = this instanceof tw_Button;
                 
@@ -203,6 +204,10 @@ var tw_Component = Class.extend({
                 }
             }
         }
+    },
+    
+    _focus: function() {
+        this._focusBox.focus();
     },
     
     setStyles: function(styles) {
@@ -258,6 +263,7 @@ var tw_Component = Class.extend({
                     this._borderImage = null;
                     if (this._borderBox === this._box) this._box = bi._box;
                     this._borderBox = bi._box;
+                    bi.setBox(null);
                     bi.destroy();
                 } else if (value.length > 0) {
                     if (bi == null) {
@@ -361,6 +367,7 @@ var tw_Component = Class.extend({
                     if (y < 0) y = 0;
                 }
                 
+                if (source == null) source = "";
                 tw_em.sendViewStateChanged(this._id, action, x + "," + y + "," + source);
             }
         }
@@ -582,7 +589,8 @@ var tw_Component = Class.extend({
         if (this._borderImage != null) this._borderImage.destroy(); 
         delete tw_Component.instances[this._id];
         this._box = this._focusBox = this._eventNotifiers = this._backgroundBox = 
-            this._borderBox = this._fontBox = this._scrollBox = this._parent = null;
+            this._borderBox = this._fontBox = this._scrollBox = this._parent = this._borderImage = null;
+            
         if (tw_Component.priorFocus === this) tw_Component.priorFocus = null;
         if (tw_Component.currentFocus === this) tw_Component.currentFocus = null;
         if (this._dragAndDropHandler != null) {

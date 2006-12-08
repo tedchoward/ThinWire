@@ -43,6 +43,15 @@ function tw_removeTimerTask(id) {
     }
 }
 
+function tw_getElementIndex(node) {
+    var index = 0;
+
+    while ((node = node.previousSibling) != null)
+        index++;
+    
+    return index;
+}
+
 //TODO: Is document.activeElement supported by Firefox?
 function tw_getActiveElement() {
     return document.activeElement == undefined ? null : document.activeElement;
@@ -78,10 +87,13 @@ function tw_getVisibleHeight() {
     }
 }
 
-function tw_setElementFocus(elem, state) {
+function tw_setElementFocus(comp, state) {
     try {
-        if (state && elem.focus) elem.focus();
-        else if (!state && elem.blur) elem.blur();
+        var elem = comp._focusBox;
+        if (state && elem.focus) {
+            if (tw_isFirefox) setTimeout(comp._focus, 0);
+            else elem.focus();
+        } else if (!state && elem.blur) elem.blur();
     } catch (e) {
         //Firefox sometimes throws an error when attemptting to set focus.
         //ignore the error for now until solution is found.

@@ -120,12 +120,13 @@ var tw_BaseCheckRadio = tw_Component.extend({
     
     setEnabled: function(enabled) {
         tw_setFocusCapable(this._box, enabled);
-        if (enabled == this._enabled) return;
         arguments.callee.$.call(this, enabled);
+        if (enabled == this._enabled) return;
         if (this.isChecked()) this._image.style.backgroundImage = enabled ? this._imageChecked : this._imageDisabledChecked;
     },
     
     setStyle: function(name, value) {
+        var hadBorderImage = this._borderImage != null;
         arguments.callee.$.call(this, name, value);
         
         if (name == "borderWidth") {
@@ -146,11 +147,13 @@ var tw_BaseCheckRadio = tw_Component.extend({
                     this._backgroundBox = this._oldBackgroundBox;
                     delete this._oldBackgroundBox;
                 }
-            } else {
+            } else if (!hadBorderImage) {
                 this._backgroundBox.style.backgroundColor = tw_COLOR_TRANSPARENT;
                 this._oldBackgroundBox = this._backgroundBox;
                 this._backgroundBox = this._borderImage._c;
             }
+            this._backgroundBox.style.backgroundColor = this._backgroundColor;
+            this.setEnabled(this._enabled);
         }
     },
     

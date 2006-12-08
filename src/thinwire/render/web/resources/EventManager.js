@@ -109,9 +109,12 @@ var tw_EventManager = Class.extend({
                 this._vsEventOrder = {};
                 this._comm.send("POST", tw_APP_URL, msg);           
             }
+
+            var calls = this._inboundEvents;
+            this._inboundEvents = [];
             
-            while (this._inboundEvents != null && this._inboundEvents.length > 0 && !this._postOutboundEvents) {
-                var call = this._inboundEvents.shift();            
+            for (var i = 0, cnt = calls.length; i < cnt; i++) {
+                var call = calls[i];            
                 var obj = call.i == undefined ? (call.n == undefined ? window : call.n) : tw_Component.instances[call.i];                    
                 
                 if (obj != null) {

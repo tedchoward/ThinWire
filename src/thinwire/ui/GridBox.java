@@ -218,8 +218,15 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
          * @param c the new Row's values.
          */
         public Row(Collection<? extends Object> c) {
-            this();
-            addAll(c);
+            this(c.toArray(), false);
+        }
+        
+        /**
+         * Construct a Row that contains the values of the specified Collection.
+         * @param a the new Row's values.
+         */
+        public Row(boolean checked, Collection<? extends Object> c) {
+            this(c.toArray(), checked);
         }
         
         /**
@@ -227,7 +234,22 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
          * @param a the new Row's values.
          */
         public Row(Object... a) {
+            this(a, false);
+        }
+        
+        /**
+         * Construct a Row that contains the values of the specified Array.
+         * @param a the new Row's values.
+         */
+        public Row(boolean checked, Object... a) {
+            this(a, checked);
+        }
+        
+        private Row(Object[] a, boolean checked) {
             this();
+            
+            if (selected) setSelected(true);
+            if (checked) setChecked(true);
             
             for (Object o : a)
                 add(o);
@@ -383,18 +405,72 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
          * @param c the new Column's values
          */
         public Column(Collection< ? extends Object> c) {
-            this();
-            addAll(c);
+            this(c.toArray(), null, true, -1, null);
         }
 
         /**
          * Construct a Column that contains the values of the specified Array.
          * @param a the new Column's values
          */
-        public Column(Object... a) {
-            this();
+        public Column(String name, boolean visible, Collection< ? extends Object> c) {
+            this(c.toArray(), name, visible, -1, null);
+        }
+        
+        /**
+         * Construct a Column that contains the values of the specified Array.
+         * @param a the new Column's values
+         */
+        public Column(String name, boolean visible, int width, Collection< ? extends Object> c) {
+            this(c.toArray(), name, visible, width, null);
+        }
 
-            for (Object o : a)
+        /**
+         * Construct a Column that contains the values of the specified Array.
+         * @param a the new Column's values
+         */
+        public Column(String name, boolean visible, int width, AlignX alignX, Collection< ? extends Object> c) {
+            this(c.toArray(), name, visible, width, alignX);
+        }        
+        /**
+         * Construct a Column that contains the values of the specified Array.
+         * @param a the new Column's values
+         */
+        public Column(Object... a) {
+            this(a, null, true, -1, null);
+        }
+
+        /**
+         * Construct a Column that contains the values of the specified Array.
+         * @param a the new Column's values
+         */
+        public Column(String name, boolean visible, Object... a) {
+            this(a, name, visible, -1, null);
+        }
+        
+        /**
+         * Construct a Column that contains the values of the specified Array.
+         * @param a the new Column's values
+         */
+        public Column(String name, boolean visible, int width, Object... a) {
+            this(a, name, visible, width, null);
+        }
+
+        /**
+         * Construct a Column that contains the values of the specified Array.
+         * @param a the new Column's values
+         */
+        public Column(String name, boolean visible, int width, AlignX alignX, Object... a) {
+            this(a, name, visible, width, alignX);
+        }
+        
+        private Column(Object[] values, String name, boolean visible, int width, AlignX alignX) {
+            this();
+            if (name != null) setName(name);
+            if (visible != this.visible) setVisible(visible);
+            if (width != -1) setWidth(width);
+            if (alignX != null) setAlignX(alignX);
+            
+            for (Object o : values)
                 add(o);
         }
 

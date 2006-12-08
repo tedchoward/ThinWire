@@ -267,7 +267,7 @@ var tw_GridBox = tw_Component.extend({
     _cellClickListener: function(event) {
         if (!this._enabled) return;
         this.setFocus(true);
-        var cell = tw_getEventTarget(event);
+        var cell = tw_getEventTarget(event, "gridBoxCell");
         var column = cell.parentNode;
         var position = this._getCellPosition(cell);
 
@@ -308,27 +308,12 @@ var tw_GridBox = tw_Component.extend({
     _getCellPosition: function(cell, x) {
         if (cell.className == "gridBoxCell") {
             var column = cell.parentNode;
-            var columnIndex = 0;
-            var walk = column;
-            
-            while ((walk = walk.previousSibling) != null)
-                columnIndex++;
-            
-            var rowIndex = 0;
-            var walk = cell;
-            
-            while ((walk = walk.previousSibling) != null)
-                rowIndex++;
-            
+            var columnIndex = tw_getElementIndex(column);
+            var rowIndex = tw_getElementIndex(cell);
             return [columnIndex, rowIndex];
         } else if (cell.className == "gridBoxColumnHeader") {
             var column = cell;
-            var columnIndex = 0;
-            var walk = column;
-            
-            while ((walk = walk.previousSibling) != null)
-                columnIndex++;
-            
+            var columnIndex = tw_getElementIndex(column);
             return [columnIndex, -1];
         } else if (cell.className == "gridBoxBody" && x > 0 && this._getColumnCount() > 0) {
             var columnIndex = -1;
@@ -392,25 +377,27 @@ var tw_GridBox = tw_Component.extend({
             var gbc = cell.tw_child;
             
             if (gbc != undefined) {
-                var y = cell.offsetTop - this._content.parentNode.scrollTop;
-                if (this._visibleHeader) y += tw_GridBox.rowHeight + this._borderSizeSub;
-                var available = tw_getVisibleHeight() - this._box.parentNode.offsetTop - parseInt(this._box.style.top) - y - 5;
-                if (available < gbc._height) y -= gbc._height - tw_GridBox.rowHeight;
-                if (y < 0) y = 0;
+                var baseWindow = this._root.getBaseWindow();
+                
+                var y = cell.offsetTop - this._content.parentNode.scrollTop + this._y;
+                var available = tw_getVisibleHeight();
+                if (baseWindow instanceof tw_Dialog) available -= baseWindow._y;
+                if (available - y < gbc._height) y -= gbc._height - tw_GridBox.rowHeight;
+                if (y < 0) y = available - gbc._height;
+                
+                var x = this._x + this._width;
+                
+                var available = tw_getVisibleWidth();
+                if (baseWindow instanceof tw_Dialog) available -= baseWindow._x;
+                if (available - x < gbc._width) x -= gbc._width + this._width;
+                if (x < 0) x = available - gbc._width;
+                
+                gbc.setX(x);
                 gbc.setY(y);
                 
-                var x = this._width;
-                var leftGap = -(this._box.parentNode.offsetLeft + parseInt(this._box.style.left));
-                available = tw_getVisibleWidth() + leftGap - x - 5;
-                if (available < gbc._width) x = -gbc._width;
-                if (x < leftGap) x = leftGap;
-                gbc.setX(x);
-                
                 //TODO: if this is part of a dropdown, then we need to store off the selected row
-                //if (gbc._root._dropDown != null) {
-                        
-                //}
-                
+                //if (gbc._root._dropDown != null)
+                                        
                 gbc.setVisible(true);
                 this._childOpen = true;
                 gbc.setFocus(true);
@@ -487,32 +474,6 @@ var tw_GridBox = tw_Component.extend({
             }
 
             this.setColumnWidth();
-        }
-    },
-    
-    setX: function(x) {
-        if (this._parent instanceof tw_GridBox) {
-            var ox = x + this._parent._x;
-            arguments.callee.$.call(this, ox);
-            this._x = x;
-        } else {
-            arguments.callee.$.call(this, x);
-        }
-    },
-        
-    setY: function(y) {
-        if (this._parent instanceof tw_GridBox) {
-            var oy = y + this._parent._y;
-            
-            if (this._root._parent instanceof tw_BaseContainer && this._root === this._parent) {
-                var win = this.getBaseWindow();
-                if (win instanceof tw_Dialog) oy += win.getOffsetY();
-            }
-            
-            arguments.callee.$.call(this, oy);
-            this._y = y;        
-        } else {
-            arguments.callee.$.call(this, y);
         }
     },
         

@@ -168,7 +168,7 @@ var tw_TabFolder = tw_BaseContainer.extend({
         
         if (active) {
             this._focusBox = sheet._tab;
-            tw_setElementFocus(this._focusBox, true);            
+            tw_setElementFocus(this, true);            
             this._currentIndex = index;
         }
 
@@ -204,6 +204,10 @@ var tw_TabFolder = tw_BaseContainer.extend({
         this._setTabActive(this._currentIndex, true);
         this.setFocus(true);
         if (sendEvent) this.firePropertyChange("currentIndex", index);
+    },
+    
+    getTabCount: function() {
+        return this._container.childNodes.length;
     },
     
     destroy: function() {
