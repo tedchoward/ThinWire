@@ -206,6 +206,10 @@ var tw_TabFolder = tw_BaseContainer.extend({
         if (sendEvent) this.firePropertyChange("currentIndex", index);
     },
     
+    getTabCount: function() {
+        return this._container.childNodes.length;
+    },
+    
     destroy: function() {
         arguments.callee.$.call(this);
         this._tabs = null;

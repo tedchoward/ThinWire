@@ -308,27 +308,12 @@ var tw_GridBox = tw_Component.extend({
     _getCellPosition: function(cell, x) {
         if (cell.className == "gridBoxCell") {
             var column = cell.parentNode;
-            var columnIndex = 0;
-            var walk = column;
-            
-            while ((walk = walk.previousSibling) != null)
-                columnIndex++;
-            
-            var rowIndex = 0;
-            var walk = cell;
-            
-            while ((walk = walk.previousSibling) != null)
-                rowIndex++;
-            
+            var columnIndex = tw_getElementIndex(column);
+            var rowIndex = tw_getElementIndex(cell);
             return [columnIndex, rowIndex];
         } else if (cell.className == "gridBoxColumnHeader") {
             var column = cell;
-            var columnIndex = 0;
-            var walk = column;
-            
-            while ((walk = walk.previousSibling) != null)
-                columnIndex++;
-            
+            var columnIndex = tw_getElementIndex(column);
             return [columnIndex, -1];
         } else if (cell.className == "gridBoxBody" && x > 0 && this._getColumnCount() > 0) {
             var columnIndex = -1;

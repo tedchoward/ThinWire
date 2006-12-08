@@ -325,7 +325,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         if (name.equals(Component.ACTION_CLICK) || name.equals(Component.ACTION_DOUBLE_CLICK)) {
             String actionIgnoreProperty;
             String value = (String)event.getValue();
-            String[] vals = value.split(",");
+            String[] vals = value.split(",", -1);
             int x = getInt(vals[0]);
             int y = getInt(vals[1]);
             value = vals[2];

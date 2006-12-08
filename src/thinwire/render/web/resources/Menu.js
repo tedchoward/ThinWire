@@ -603,20 +603,13 @@ var tw_Menu = tw_Component.extend({
         }
     },
     
-    _getIndex: function(node) {
-        var index = 0;
-        while ((node = node.previousSibling) != null)
-            index++;
-        return index;
-    },
-    
     _fullIndex: function(item) {        
-        var index = this._getIndex(item);
+        var index = tw_getElementIndex(item);
         var value = index;            
         
         while (item.className != "mainMenuItem" ) {
             item = item.parentNode.parentNode;
-            var index = this._getIndex(item);
+            var index = tw_getElementIndex(item);
             var value = index + "." + value;
         }
         

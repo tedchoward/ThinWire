@@ -223,23 +223,27 @@ public class TabSheet extends AbstractContainer<Component> implements TextCompon
     }   
     
     public void setVisible(boolean visible) {
+        boolean oldVisible = isVisible();
         super.setVisible(visible);
-        TabFolder tf = (TabFolder)getParent();
         
-        if (tf != null) {
-            List<TabSheet> l = tf.getChildren();
-            int index = l.indexOf(this);
+        if (oldVisible != visible) {
+            TabFolder tf = (TabFolder)getParent();
             
-            if (index == tf.getCurrentIndex()) {            
-                if (index + 1 < l.size()) {
-                    index++;
-                } else if (index > 0) {
-                    index--;
-                } else {
-                    index = -1;
-                }
+            if (tf != null) {
+                List<TabSheet> l = tf.getChildren();
+                int index = l.indexOf(this);
                 
-                tf.setCurrentIndex(index);
+                if (index == tf.getCurrentIndex()) {            
+                    if (index + 1 < l.size()) {
+                        index++;
+                    } else if (index > 0) {
+                        index--;
+                    } else {
+                        index = -1;
+                    }
+                    
+                    tf.setCurrentIndex(index);
+                }
             }
         }
     }

@@ -46,7 +46,6 @@ var tw_TabSheet = tw_BaseContainer.extend({
         s.overflow = "hidden";
         s.whiteSpace = "nowrap";
         s.styleFloat = "left"; //Doesn't work in FF.
-        s.display = "block";
 
         var tabImage = document.createElement("div");
         tabImage.className = "floatDivLeft"; //hack for FF
@@ -99,13 +98,11 @@ var tw_TabSheet = tw_BaseContainer.extend({
         if (active) {
             var margin = 0;
             bs.zIndex = 1;
-            bs.display = "block";
             s.height = tw_TabFolder._tabsHeight + (tw_sizeIncludesBorders ? this._borderSize : margin) + "px";
             s.paddingLeft = s.paddingRight = "4px";
         } else {
             var margin = 2;
             bs.zIndex = 0;
-            bs.display = "none";
             s.height = tw_TabFolder._tabsHeight - (tw_sizeIncludesBorders ? this._borderSize : this._borderSize + margin) + "px";
             s.paddingLeft = s.paddingRight = "2px";
         }
@@ -122,18 +119,32 @@ var tw_TabSheet = tw_BaseContainer.extend({
         } else if (name == "borderWidth") {
             this._tab.style.lineHeight = tw_TabFolder._tabsHeight - (tw_sizeIncludesBorders ? this._borderSize : this._borderSizeSub) + "px";
             this._borderBox.style.borderBottomWidth = "0px";
-            this.setActiveStyle(this._box.style.display == "block");
+            this.setActiveStyle(this._box.style.zIndex == 1);
         }
     },
     
     setVisible: function(visible) {
         this._visible = visible;
-        this._tab.style.display = visible ? "block" : "none";
+        this._container.style.display = this._tab.style.display = visible ? "block" : "none";
+        
+        if (this._inited && this._tab != null && this._parent != null) { 
+            var index = tw_getElementIndex(this._tab);
+            var current = this._parent._currentIndex;
+            
+            if (current >= 0 && index >= 0) {
+                if (index == current) {
+                    this._parent._setTabActive(current, false);
+                } else {
+                    this._parent.setCurrentIndex(current, false);
+                }
+            }
+        }
     },
     
-    setFXOpacity: function(opacity) {
+    setOpacity: function(opacity) {
         this._opacity = opacity;
-        tw_setOpacity(this._tab, opacity);        
+        tw_setOpacity(this._tab, opacity);
+        this._tab.style.display = opacity > 0 && this._visible ? "block" : "none";
     },
     
     getDragArea: function() {

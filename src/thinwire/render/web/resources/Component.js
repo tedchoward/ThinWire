@@ -362,6 +362,7 @@ var tw_Component = Class.extend({
                     if (y < 0) y = 0;
                 }
                 
+                if (source == null) source = "";
                 tw_em.sendViewStateChanged(this._id, action, x + "," + y + "," + source);
             }
         }

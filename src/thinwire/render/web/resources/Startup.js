@@ -43,6 +43,15 @@ function tw_removeTimerTask(id) {
     }
 }
 
+function tw_getElementIndex(node) {
+    var index = 0;
+
+    while ((node = node.previousSibling) != null)
+        index++;
+    
+    return index;
+}
+
 //TODO: Is document.activeElement supported by Firefox?
 function tw_getActiveElement() {
     return document.activeElement == undefined ? null : document.activeElement;
