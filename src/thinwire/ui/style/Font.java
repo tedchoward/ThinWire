@@ -278,7 +278,7 @@ public class Font {
         if (name.equals(Font.PROPERTY_FONT_FAMILY)) {
             setFamily((Font.Family)value); 
         } else if (name.equals(Font.PROPERTY_FONT_SIZE)) {
-            setSize((Integer)value); 
+            setSize((Double)value); 
         } else if (name.equals(Font.PROPERTY_FONT_COLOR)) {
             setColor((Color)value); 
         } else if (name.equals(Font.PROPERTY_FONT_BOLD)) {
