@@ -775,6 +775,7 @@ public final class WebApplication extends Application {
                 sb.append("},");
 
                 if (sb.length() >= 1024) {
+                    /*
                     //Slow things down if the buffer gets this big.
                     if (sb.length() >= 32768) {
                         int count = 50;
@@ -785,7 +786,7 @@ public final class WebApplication extends Application {
                             } catch (InterruptedException e) { }
                         }
                     }
-                    
+                    */
                     processClientEvents = true;
                     sb.notify();
                 } else {
