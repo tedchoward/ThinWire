@@ -20,8 +20,8 @@
   contact the following company who invented, built and supports the technology:
   
                 Custom Credit Systems, Richardson, TX 75081, USA.
-   	            email: info@thinwire.com    ph: +1 (888) 644-6405
- 	                        http://www.thinwire.com
+                email: info@thinwire.com    ph: +1 (888) 644-6405
+                            http://www.thinwire.com
 #ENDIF
 #IFDEF ALT_LICENSE
 #LICENSE_HEADER#
@@ -30,14 +30,17 @@
 */
 package thinwire.render.web;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.CharArrayReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.Reader;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -225,7 +228,9 @@ public final class WebApplication extends Application {
 
     Map<String, Color> systemColors;
 
-    private StringBuilder sbClientEvents;
+    private StringBuilder sbUpdateEvents;
+    private StringBuilder sbActionEvents;
+    private char[] complexValueBuffer;
     private List<WebComponentEvent> eventQueue;
     private Map<String, Timer> timerMap;
     private Map<String, Class<ComponentRenderer>> nameToRenderer;
@@ -244,15 +249,15 @@ public final class WebApplication extends Application {
     private AppThread appThread;
     
     FileInfo[] fileList = new FileInfo[1];
-	
-	//Stress Test Variables.
-	private UserActionListener userActionListener;    
-	private boolean playBackOn = false;
-	private long playBackStart = -1;
-	private long playBackDuration = -1;
-	private long recordDuration = -1;
-	private boolean playBackEventReceived = false;
-	//end Stress Test.
+    
+    //Stress Test Variables.
+    private UserActionListener userActionListener;    
+    private boolean playBackOn = false;
+    private long playBackStart = -1;
+    private long playBackDuration = -1;
+    private long recordDuration = -1;
+    private boolean playBackEventReceived = false;
+    //end Stress Test.
 
     static public final Integer APPEVENT_ID = new Integer(Integer.MAX_VALUE);
     static public final String APPEVENT_SHUTDOWN = "SHUTDOWN";
@@ -278,8 +283,9 @@ public final class WebApplication extends Application {
         windowToRenderer = new HashMap<Window, WindowRenderer>();
         eventQueue = new ArrayList<WebComponentEvent>();
         timerMap = new HashMap<String, Timer>();
-        sbClientEvents = new StringBuilder(4096);
-        sbClientEvents.append('[');
+        sbUpdateEvents = new StringBuilder(4096);
+        sbActionEvents = new StringBuilder(1024);
+        complexValueBuffer = new char[256];
         webComponentListeners = new HashMap<Integer, WebComponentListener>();        
         id = httpSession.getId();
         setBaseFolder(servlet.getServletContext().getRealPath(""));
@@ -317,7 +323,9 @@ public final class WebApplication extends Application {
                         getFrame().setVisible(true);
                         
                         do {
+                            threadWaiting = true;
                             eventQueue.wait();
+                            threadWaiting = false;
                             WebComponentEvent event = eventQueue.remove(0);
                             
                             if (event != null) {
@@ -348,7 +356,7 @@ public final class WebApplication extends Application {
                             "The application instance has shutdown. Press F5 to restart the application or close the browser to end your session.");
 
                     if (userActionListener != null){
-                    	userActionListener.stop();
+                        userActionListener.stop();
                     }                    
 
                     // Set the execution thread to null,
@@ -739,45 +747,53 @@ public final class WebApplication extends Application {
         }        
     }
     
+    private Object lastClientObject;
+    
     private String clientSideCallImpl(boolean sync, Object objectId, String name, Object[] args) {
-        StringBuilder sb = sbClientEvents;
+        StringBuilder sb = sbUpdateEvents;
         String ret = null;
 
         synchronized (sb) {
             processClientEvents = true;
-            sb.append("{m:\"").append(name).append('\"');            
             
             if (objectId != null) {
-                if (objectId instanceof Integer) {
-                    sb.append(",i:").append(objectId);
-                } else {
-                    sb.append(",n:").append((String)objectId);
+                if (!objectId.equals(lastClientObject)) {
+                    sb.append("o=");
+                    
+                    if (objectId instanceof Integer) {
+                        sb.append("twi[").append(objectId).append("];");
+                    } else {
+                        sb.append((String)objectId).append(';');
+                    }
                 }
+            } else if (!"window".equals(lastClientObject)) {
+                sb.append("o=window;");
             }
 
-            if (args != null && args.length > 0) {
-                sb.append(",a:[");
+            if (sync) sb.append("this._s=1;r=");
+            sb.append("o.").append(name).append('(');
 
+            if (args != null && args.length > 0) {
                 for (int i = 0, cnt = args.length; i < cnt; i++) {
                     encodeObject(sb, args[i]);
                     sb.append(',');
                 }
 
-                sb.setCharAt(sb.length() - 1, ']');
-            } else
-                sb.append(",a:[]");
+                sb.setCharAt(sb.length() - 1, ')');
+                sb.append(';');
+            } else {
+                sb.append(");");
+            }
 
             if (sync) {
-                sb.append(",s:1},");
+                sb.append("if(this._s)this._sr(r);");
                 processClientEvents = true;
                 sb.notify();
             } else {
-                sb.append("},");
-
                 if (sb.length() >= 1024) {
-                    /*
+                    
                     //Slow things down if the buffer gets this big.
-                    if (sb.length() >= 32768) {
+                    /*if (sb.length() >= 32768) {
                         int count = 50;
                         
                         while (--count >= 0 && sb.length() >= 1024) {
@@ -785,8 +801,8 @@ public final class WebApplication extends Application {
                                 sb.wait(100);
                             } catch (InterruptedException e) { }
                         }
-                    }
-                    */
+                    }*/
+                    
                     processClientEvents = true;
                     sb.notify();
                 } else {
@@ -835,7 +851,123 @@ public final class WebApplication extends Application {
 
         return ret;
     }
+    
+    String getUpdateEvents() {
+        String s = null;
+
+        synchronized (sbUpdateEvents) {
+            try {
+                while (true) {
+                    if (processClientEvents) {
+                        synchronized (eventQueue) {
+                            if (!threadWaiting) {
+                                sbUpdateEvents.insert(0, "this.sendGetEvents();");
+                            }
+                        }
+
+                        int length = sbUpdateEvents.length();
+
+                        if (length > 1) {
+                            s = sbUpdateEvents.substring(0, length);
+                            sbUpdateEvents.setLength(0);
+                        }
+
+                        processClientEvents = false;
+                        break;
+                    } else {
+                        processClientEvents = true;
+                        sbUpdateEvents.wait(100);
+                    }
+                }
+            } catch (InterruptedException e) {
+                log.log(Level.SEVERE, null, e);
+            }
+        }
+
+        return s;
+    }
+    
+    private static final char EVENT_WEB_COMPONENT = '0';
+    private static final char EVENT_GET_EVENTS = '1';
+    private static final char EVENT_SYNC_CALL = '2';
+    private static final char EVENT_RUN_TIMER = '3';
+    
+    void processActionEvents(BufferedReader r) throws IOException {
+        StringBuilder sb = sbActionEvents;
         
+        do {
+            char eventType = (char)r.read();
+            r.read(); //Remove ':'
+            
+            switch (eventType) {                
+                case EVENT_WEB_COMPONENT: {
+                    readSimpleValue(sb, r);
+                    Integer source = Integer.valueOf(sb.toString());
+                    WebComponentListener wcl = getWebComponentListener(source);
+                    
+                    if (wcl == null) {
+                        throw new IllegalStateException("action event received for component id " + source + ", but no component with that id exists");
+                    } else {
+                        readSimpleValue(sb, r);
+                        String name = sb.toString();
+                        readComplexValue(sb, r);
+                        String value = sb.toString();                       
+                        if (log.isLoggable(Level.FINEST)) log.finest("EVENT_WEB_COMPONENT:source=" + source + ",name=" + name + ",value=" + value);
+                        queueWebComponentEvent(new WebComponentEvent(source, name, value));
+                    }
+                    
+                    break;                  
+                }
+                
+                case EVENT_GET_EVENTS: break;
+                
+                case EVENT_SYNC_CALL: {
+                    readComplexValue(sb, r);
+                    String value = sb.toString();
+                    notifySyncCallResponse(value);
+                    if (log.isLoggable(Level.FINEST)) log.finest("EVENT_SYNC_CALL:response=" + value);
+                    break;
+                }
+                
+                case EVENT_RUN_TIMER: {
+                    readSimpleValue(sb, r);
+                    String timerId = sb.toString();
+                    queueWebComponentEvent(new WebComponentEvent(WebApplication.APPEVENT_ID, WebApplication.APPEVENT_RUN_TIMER, timerId));
+                    break;
+                }
+            }            
+        } while (r.read() == ':');
+    }
+    
+    private void readSimpleValue(StringBuilder sb, Reader r) throws IOException {
+        sb.setLength(0);
+        char ch;
+        
+        while ((ch = (char)r.read()) != ':') {
+            if (ch == -1) throw new IllegalStateException("premature end of simple value on action event encountered[" + sb.toString() + "]");
+            sb.append(ch);
+        }        
+    }
+    
+    private void readComplexValue(StringBuilder sb, Reader r) throws IOException {
+        readSimpleValue(sb, r);
+        int length = Integer.parseInt(sb.toString());
+        
+        if (length > 0) {
+            sb.setLength(0);
+            int size;
+            char[] buff = complexValueBuffer;
+            int buffLen = buff.length;
+            
+            do {
+                size = length > buffLen ? buffLen : length;
+                size = r.read(buff, 0, size);
+                if (size == -1) throw new IllegalStateException("premature end of complex value on action event encountered[" + sb.toString() + "]");
+                length -= size;
+                sb.append(buff, 0, size);
+            } while (length > 0);
+        }
+    }
     
     public Integer getComponentId(Component comp) {
         Object w = comp;
@@ -859,44 +991,7 @@ public final class WebApplication extends Application {
     public Component getComponentFromId(Integer id) {
         return ((ComponentRenderer)getWebComponentListener(id)).comp;
     }
-
-    String getClientEvents() {
-        String s = null;
-
-        synchronized (sbClientEvents) {
-            try {
-                while (true) {
-                    if (processClientEvents) {
-                        synchronized (eventQueue) {
-                            if (!threadWaiting) {
-                                sbClientEvents.insert(1, "{m:\"sendGetEvents\",n:tw_em,a:[]},");
-                            }
-                        }
-
-                        int length = sbClientEvents.length();
-
-                        if (length > 1) {
-                            sbClientEvents.setCharAt(length - 1, ']');
-                            s = sbClientEvents.substring(0, length);
-                            sbClientEvents.setLength(0);
-                            sbClientEvents.append('[');
-                        }
-
-                        processClientEvents = false;
-                        break;
-                    } else {
-                        processClientEvents = true;
-                        sbClientEvents.wait(100);
-                    }
-                }
-            } catch (InterruptedException e) {
-                log.log(Level.SEVERE, null, e);
-            }
-        }
-
-        return s;
-    }
-
+    
     void setWebComponentListener(Integer compId, WebComponentListener listener) {
         synchronized (webComponentListeners) {
             if (listener == null)
@@ -931,11 +1026,11 @@ public final class WebApplication extends Application {
                 if (eventQueue.size() > 0) {
                     event = eventQueue.remove(0);
                     if (this.userActionListener != null){
-                 	   this.notifyUserActionReceived(event);
+                       this.notifyUserActionReceived(event);
                     }
                     if (this.playBackOn && !this.playBackEventReceived){
-                    	this.playBackEventReceived = true;
-                    	this.playBackStart = new Date().getTime();
+                        this.playBackEventReceived = true;
+                        this.playBackStart = new Date().getTime();
                     }
                 } else {
                     try {
@@ -952,11 +1047,11 @@ public final class WebApplication extends Application {
 
             if (event != null) {
                 if (this.playBackOn){
-                	this.flushClientEvents();
-                	if (WebApplication.APPEVENT_SHUTDOWN.equals(event.getName())){
-                		this.setPlayBackOn(false);
-                	}
-                }            	
+                    this.flushClientEvents();
+                    if (WebApplication.APPEVENT_SHUTDOWN.equals(event.getName())){
+                        this.setPlayBackOn(false);
+                    }
+                }               
                 WebComponentListener wcl = getWebComponentListener((Integer) event.getSource());
                 if (wcl != null) wcl.componentChange(event);
                 if (currentCaptureCount == captureCount) threadCaptured = true;
@@ -1078,54 +1173,54 @@ public final class WebApplication extends Application {
     }    
 
     public void setUserActionListener(UserActionListener listener) {
-		this.userActionListener = listener;
-	}
+        this.userActionListener = listener;
+    }
 
-	private void notifyUserActionReceived(WebComponentEvent evt) {
-		UserActionEvent uae = new UserActionEvent(evt);
-		this.userActionListener.actionReceived(uae);
-	}
+    private void notifyUserActionReceived(WebComponentEvent evt) {
+        UserActionEvent uae = new UserActionEvent(evt);
+        this.userActionListener.actionReceived(uae);
+    }
     
     protected void finalize() {
         log.log(Level.FINER, "finalizing app " + this.id);
     }
 
-	public void setPlayBackOn(boolean playBackOn){
-		this.playBackOn = playBackOn;
-		if (!this.playBackOn){
-			this.endPlayBack();
-		}
-	}
-	
-	private void flushClientEvents() {
-		synchronized (sbClientEvents) {
-			sbClientEvents.setLength(0);
-			sbClientEvents.append('[');
-		}
-	}
-	
-	private void endPlayBack(){
-		log.entering("ThinWireApplication", "endPlayBack");
-		this.playBackDuration = new Date().getTime() - this.playBackStart;
+    public void setPlayBackOn(boolean playBackOn){
+        this.playBackOn = playBackOn;
+        if (!this.playBackOn){
+            this.endPlayBack();
+        }
+    }
+    
+    private void flushClientEvents() {
+        synchronized (sbUpdateEvents) {
+            sbUpdateEvents.setLength(0);
+            sbUpdateEvents.append('[');
+        }
+    }
+    
+    private void endPlayBack(){
+        log.entering("ThinWireApplication", "endPlayBack");
+        this.playBackDuration = new Date().getTime() - this.playBackStart;
         StringBuilder sb = new StringBuilder(EOL + EOL);
-		sb.append(Thread.currentThread().getName()
-				+ " Playback Statistics" + EOL);
-		sb.append("-----------------------------------------------------" + EOL);
-		sb.append("Duration of recording session:  " + this.recordDuration + EOL);
-		sb.append(" Duration of playback session:  " + this.playBackDuration + EOL);
-		DecimalFormat df = new DecimalFormat();
-		df.setMinimumFractionDigits(2);
-		df.setMinimumIntegerDigits(1);
-		double drecord = new Long(this.recordDuration).doubleValue();
-		double dplay = new Long(this.playBackDuration).doubleValue();
-		double pctChange = (((dplay/drecord) - 1) * 100);
-		sb.append("                     % change:  " + df.format(pctChange)  + EOL + EOL);
-		log.info(sb.toString());	
-		log.exiting("ThinWireApplication", "endPlayBack");
-	}
+        sb.append(Thread.currentThread().getName()
+                + " Playback Statistics" + EOL);
+        sb.append("-----------------------------------------------------" + EOL);
+        sb.append("Duration of recording session:  " + this.recordDuration + EOL);
+        sb.append(" Duration of playback session:  " + this.playBackDuration + EOL);
+        DecimalFormat df = new DecimalFormat();
+        df.setMinimumFractionDigits(2);
+        df.setMinimumIntegerDigits(1);
+        double drecord = new Long(this.recordDuration).doubleValue();
+        double dplay = new Long(this.playBackDuration).doubleValue();
+        double pctChange = (((dplay/drecord) - 1) * 100);
+        sb.append("                     % change:  " + df.format(pctChange)  + EOL + EOL);
+        log.info(sb.toString());    
+        log.exiting("ThinWireApplication", "endPlayBack");
+    }
 
-	public void setRecordDuration(long recordDuration) {
-		this.recordDuration = recordDuration;
-	}
-	
+    public void setRecordDuration(long recordDuration) {
+        this.recordDuration = recordDuration;
+    }
+    
 }

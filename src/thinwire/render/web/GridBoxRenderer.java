@@ -219,7 +219,7 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
             if (name.equals(GridBox.PROPERTY_VISIBLE_HEADER)) {
                 postClientEvent(SET_VISIBLE_HEADER, newValue);
             } else if (name.equals(GridBox.PROPERTY_VISIBLE_CHECK_BOXES)) {
-                postClientEvent(SET_VISIBLE_CHECK_BOXES, newValue, newValue == Boolean.TRUE ? getCheckedRowIndices(null) : null);
+                postClientEvent(SET_VISIBLE_CHECK_BOXES, newValue, newValue == Boolean.TRUE ? getCheckedRowIndices(null).toString() : null);
             } else if (name.equals(GridBox.PROPERTY_FULL_ROW_CHECK_BOX)) {
                 postClientEvent(SET_FULL_ROW_CHECK_BOX, newValue);
             } else if (name.equals(Component.PROPERTY_WIDTH)) {
