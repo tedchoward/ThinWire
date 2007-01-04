@@ -92,6 +92,8 @@ public class DropDown<T extends Component> extends AbstractMaskEditorComponent {
     	protected void init(DropDown<T> dropDown, T comp) {
     		dd = dropDown;
     		ddc = comp;
+            String oldValue = dd.getText();
+            if (oldValue.length() > 0) setValue(oldValue);
     	}
     	
     	protected void addCloseComponent(final Component comp) {

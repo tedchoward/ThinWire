@@ -289,12 +289,14 @@ public class FileChooser extends Panel {
     public static List<FileInfo> show(final boolean showDescription, boolean multiFile) {
         final Frame f = Application.current().getFrame();
         final Dialog dlg = new Dialog(multiFile ? "Upload Multiple Files" : "Upload File");
+        dlg.setWaitForWindow(true);
         final List<Component> kids = dlg.getChildren();
         final List<Component[]> files = new ArrayList<Component[]>();
         final List<FileInfo> fileInfoList = new ArrayList<FileInfo>();
         
         int width = 600;
-        int height = showDescription ? 98 : 121;
+        int height = showDescription ? 121 : 98;
+        final int incHeight = showDescription ? 50 : 25;
         
         dlg.setBounds((f.getWidth() - width) / 2, (f.getHeight() - height) / 2, width, height);
         files.add(addRow(dlg, 0, showDescription));
@@ -330,7 +332,7 @@ public class FileChooser extends Panel {
             addBtn.setBounds(5, dlg.getInnerHeight() - 27, 80, 22);
             addBtn.addActionListener(Button.ACTION_CLICK, new ActionListener() {
                 public void actionPerformed(ActionEvent ev) {
-                    dlg.setHeight(dlg.getHeight() + 50);
+                    dlg.setHeight(dlg.getHeight() + incHeight);
                     dlg.setY((f.getHeight() - dlg.getHeight()) / 2);
                     files.add(addRow(dlg, files.size(), showDescription));
                     if (files.size() > 1) removeBtn.setEnabled(true);
@@ -347,7 +349,7 @@ public class FileChooser extends Panel {
                         kids.remove(c.getLabel());
                         kids.remove(c);
                     }
-                    dlg.setHeight(dlg.getHeight() - 50);
+                    dlg.setHeight(dlg.getHeight() - incHeight);
                     dlg.setY((f.getHeight() - dlg.getHeight()) / 2);
                     if (files.size() <= 1) ((Button) ev.getSource()).setEnabled(false);
                 }
