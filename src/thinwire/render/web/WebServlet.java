@@ -31,6 +31,7 @@
 package thinwire.render.web;
 
 import java.io.*;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -228,49 +229,53 @@ public final class WebServlet extends HttpServlet {
         BufferedReader r = request.getReader();
         StringBuilder sb = new StringBuilder();
         
-        do {
-            readSimpleValue(sb, r);
-            int eventType = Integer.parseInt(sb.toString());
-            readComplexValue(sb, r);
-            CharArrayReader car = new CharArrayReader(sb.toString().toCharArray());
-            
-            switch (eventType) {                
-                case EVENT_WEB_COMPONENT: {
-                    readSimpleValue(sb, car);
-                    Integer source = Integer.valueOf(sb.toString());
-                    WebComponentListener wcl = app.getWebComponentListener(source);
-                    
-                    if (wcl != null) {
+        try {
+            do {
+                readSimpleValue(sb, r);
+                int eventType = Integer.parseInt(sb.toString());
+                readComplexValue(sb, r);
+                CharArrayReader car = new CharArrayReader(sb.toString().toCharArray());
+                
+                switch (eventType) {                
+                    case EVENT_WEB_COMPONENT: {
                         readSimpleValue(sb, car);
-                        String name = sb.toString();
-                        readComplexValue(sb, car);
-                        String value = sb.toString();                       
-                        if (log.isLoggable(Level.FINEST)) log.finest("EVENT_WEB_COMPONENT:source=" + source + ",name=" + name + ",value=" + value);
-                        WebComponentEvent wce = new WebComponentEvent(source, name, value);
-                        app.queueWebComponentEvent(wce);
+                        Integer source = Integer.valueOf(sb.toString());
+                        WebComponentListener wcl = app.getWebComponentListener(source);
+                        
+                        if (wcl != null) {
+                            readSimpleValue(sb, car);
+                            String name = sb.toString();
+                            readComplexValue(sb, car);
+                            String value = sb.toString();                       
+                            if (log.isLoggable(Level.FINEST)) log.finest("EVENT_WEB_COMPONENT:source=" + source + ",name=" + name + ",value=" + value);
+                            WebComponentEvent wce = new WebComponentEvent(source, name, value);
+                            app.queueWebComponentEvent(wce);
+                        }
+                        
+                        break;                  
                     }
                     
-                    break;                  
-                }
-                
-                case EVENT_GET_EVENTS: break;
-                
-                case EVENT_SYNC_CALL: {
-                    readComplexValue(sb, car);
-                    String value = sb.toString();
-                    app.notifySyncCallResponse(value);
-                    if (log.isLoggable(Level.FINEST)) log.finest("EVENT_SYNC_CALL:response=" + value);
-                    break;
-                }
-                
-                case EVENT_RUN_TIMER: {
-                    readSimpleValue(sb, car);
-                    String timerId = sb.toString();
-                    app.queueWebComponentEvent(new WebComponentEvent(WebApplication.APPEVENT_ID, WebApplication.APPEVENT_RUN_TIMER, timerId));
-                    break;
-                }
-            }            
-        } while (r.read() == ':');
+                    case EVENT_GET_EVENTS: break;
+                    
+                    case EVENT_SYNC_CALL: {
+                        readComplexValue(sb, car);
+                        String value = sb.toString();
+                        app.notifySyncCallResponse(value);
+                        if (log.isLoggable(Level.FINEST)) log.finest("EVENT_SYNC_CALL:response=" + value);
+                        break;
+                    }
+                    
+                    case EVENT_RUN_TIMER: {
+                        readSimpleValue(sb, car);
+                        String timerId = sb.toString();
+                        app.queueWebComponentEvent(new WebComponentEvent(WebApplication.APPEVENT_ID, WebApplication.APPEVENT_RUN_TIMER, timerId));
+                        break;
+                    }
+                }            
+            } while (r.read() == ':');
+        } catch (SocketTimeoutException e) {
+            log.log(Level.WARNING, "Invalid action event format received from client", e);
+        }
         
         String events = app.getClientEvents();
         if (log.isLoggable(Level.FINEST)) log.finest("handleGetEvents:" + (events != null ? events.length() : 0) + ":" + events);
