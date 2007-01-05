@@ -601,7 +601,7 @@ var tw_Component = Class.extend({
 });
 
 tw_Component.zIndex = 0;
-var twi = tw_Component.instances = {};
+tw_Component.instances = {};
 tw_Component.priorFocus = null;
 tw_Component.currentFocus = null;
 tw_Component.defaultStyles = null;
