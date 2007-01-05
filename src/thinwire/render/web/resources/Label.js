@@ -1,7 +1,7 @@
 /*
 #IFNDEF ALT_LICENSE
                            ThinWire(R) RIA Ajax Framework
-                 Copyright (C) 2003-2006 Custom Credit Systems
+                 Copyright (C) 2003-2007 Custom Credit Systems
 
   This library is free software; you can redistribute it and/or modify it under
   the terms of the GNU Lesser General Public License as published by the Free

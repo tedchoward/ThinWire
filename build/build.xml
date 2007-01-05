@@ -5,7 +5,7 @@
 <!--
 #IFNDEF ALT_LICENSE
                            ThinWire(R) RIA Ajax Framework
-                 Copyright (C) 2003-2006 Custom Credit Systems
+                 Copyright (C) 2003-2007 Custom Credit Systems
 
   This library is free software; you can redistribute it and/or modify it under
   the terms of the GNU Lesser General Public License as published by the Free
@@ -232,7 +232,7 @@
 			</fileset>
 		
 			<bottom><![CDATA[
-				<div class="FooterText"><a href="http://www.thinwire.com">ThinWire&reg;</a> is a registered of <a href="http://www.customcreditsystems.com">Custom Credit Systems</a>&nbsp;&nbsp;Copyright &copy; 2006 All rights reserved.</div>
+				<div class="FooterText"><a href="http://www.thinwire.com">ThinWire&reg;</a> is a registered of <a href="http://www.customcreditsystems.com">Custom Credit Systems</a>&nbsp;&nbsp;Copyright &copy; 2007 All rights reserved.</div>
 				<div class="FooterButtons">
 				  <a href="http://www.opensource.org/licenses/lgpl-license.php"><img src="http://opensource.org/trademarks/open_source_button.png" width="88" height="31" alt="ThinWire_is_Open_Source_under_the_terms_of_the_LGPLv2.1"/></a>
 				  <a href="http://sourceforge.net/projects/thinwire"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=170706&amp;type=1" width="88" height="31" alt="SourceForge.net_Project_Page"/></a>
@@ -261,7 +261,7 @@
 	
 	<target name="help">
 <echo>               ThinWire(TM) RIA Ajax Framework
-         Copyright (C) 2003-2006 Custom Credit Systems
+         Copyright (C) 2003-2007 Custom Credit Systems
 
 The following build targets are available:
 
