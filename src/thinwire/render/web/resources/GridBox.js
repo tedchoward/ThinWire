@@ -424,8 +424,9 @@ var tw_GridBox = tw_Component.extend({
     _toggleHighlight: function(index, state) {
         if (this._getColumnCount() < 1 || index < 0) return;
         var content = this._content;
-        var childNodes = content.childNodes;
-    
+        var childNodes = content.childNodes;    
+        if (childNodes.item(0).childNodes.length < 1) return;
+            
         if (state) {
             var color = this._enabled ? tw_COLOR_HIGHLIGHTTEXT : tw_COLOR_INACTIVECAPTIONTEXT;
             var backgroundColor = this._enabled ? tw_COLOR_HIGHLIGHT : tw_COLOR_INACTIVECAPTION;
@@ -556,14 +557,16 @@ var tw_GridBox = tw_Component.extend({
         
                 case "Enter":                
                 case "ArrowRight":
-                    //You cannot have children and visibleCheckBoxes, otherwise if dropdown close.
-                    if (this._childGridBoxes != null && this._lastColumn().childNodes.item(this._currentIndex).tw_child != undefined) {
-                        this.setRowIndexSelected(this._currentIndex, true);
-                        this.fireAction(null, "click", "0@" + this._currentIndex);
-                        this._setChildVisible(this._currentIndex, true);
-                    } else if (keyPressCombo == "Enter") {
-                        this.setRowIndexSelected(this._currentIndex, true);
-                        this.fireAction(null, "click", "0@" + this._currentIndex);
+                    if (this._currentIndex >= 0 && this._currentIndex < this._content.firstChild.childNodes.length) {
+                        //You cannot have children and visibleCheckBoxes, otherwise if dropdown close.
+                        if (this._childGridBoxes != null && this._lastColumn().childNodes.item(this._currentIndex).tw_child != undefined) {
+                            this.setRowIndexSelected(this._currentIndex, true);
+                            this.fireAction(null, "click", "0@" + this._currentIndex);
+                            this._setChildVisible(this._currentIndex, true);
+                        } else if (keyPressCombo == "Enter") {
+                            this.setRowIndexSelected(this._currentIndex, true);
+                            this.fireAction(null, "click", "0@" + this._currentIndex);
+                        }
                     }
                     
                     break;
@@ -716,7 +719,7 @@ var tw_GridBox = tw_Component.extend({
         if (index < 0) {
             index = 0;
         } else {
-            var len = this._content.firstChild.childNodes.length;            
+            var len = this._content.firstChild.childNodes.length;
             if (index >= len) index = len - 1;
         }
         
@@ -728,19 +731,22 @@ var tw_GridBox = tw_Component.extend({
             }
         }
         
-        this._toggleHighlight(index, true);        
-        this._currentIndex = index;    
-        if (sendEvent) this.firePropertyChange("rowSelected", index);
+        if (index >= 0) {
+            this._toggleHighlight(index, true);
+            if (sendEvent) this.firePropertyChange("rowSelected", index);
+        }
+        
+        this._currentIndex = index;
     },
 
     setRowIndexCheckState: function(index, state, sendEvent) {
-        if (!this._visibleCheckBoxes || index < 0) return;
+        if (!this._visibleCheckBoxes || index < 0 || index >= this._content.firstChild.childNodes.length) return;
         var style = this._content.firstChild.childNodes.item(index).style;
         if (state == -1) state = style.backgroundImage.indexOf("gbUnchecked") >= 0;
         style.backgroundImage = "url(" + (state ? tw_IMAGE_GRIDBOX_CHECKED : tw_IMAGE_GRIDBOX_UNCHECKED) + ")";
         if (sendEvent) this.firePropertyChange("rowChecked", (state ? "t" : "f") + index, "rowChecked" + index);
     },
-
+    
     addColumn: function(index, values, name, width, alignX, sortOrder) {
         if (!(values instanceof Array)) eval("values = " + values);
         
