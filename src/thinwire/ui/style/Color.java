@@ -310,7 +310,7 @@ public final class Color {
                 this.blue = blue;
                 this.name = name;
                 rgbString = "rgb(" + this.red + "," + this.green + "," + this.blue + ")";
-                hexString = "#" + Integer.toString(this.red, 16) + Integer.toString(this.green, 16) + Integer.toString(this.blue, 16);                    
+                hexString = "#" + toHexValue(this.red) + toHexValue(this.green) + toHexValue(this.blue);
             } else {
                 this.red = this.green = this.blue = -1;
                 this.name = rgbString = hexString = name;
@@ -324,10 +324,16 @@ public final class Color {
             this.green = green;
             this.blue = blue;                    
             rgbString = "rgb(" + this.red + "," + this.green + "," + this.blue + ")";
-            hexString = "#" + Integer.toString(this.red, 16) + Integer.toString(this.green, 16) + Integer.toString(this.blue, 16);
+            hexString = "#" + toHexValue(this.red) + toHexValue(this.green) + toHexValue(this.blue);
         } else {
             throw new IllegalArgumentException("either a name, RGB pair or Hex number must be specified");
         }                
+    }
+    
+    private String toHexValue(int value) {
+        String s = Integer.toString(value, 16);
+        if (s.length() == 1) s = "0" + s;
+        return s;
     }
 
     public int getRed() {
