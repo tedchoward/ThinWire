@@ -715,8 +715,6 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
                                 } else {
                                     GridBox.this.selectedRow = null;
                                 }
-                            } else if (rowIndex <= GridBox.this.selectedRow.getIndex()) {
-                                if (GridBox.this.selectedRow.getIndex() - 1 >= 0) rows.get(GridBox.this.selectedRow.getIndex() - 1).setSelected(true);
                             }
                             
                             if (oldRow == GridBox.this.priorSelectedRow) GridBox.this.priorSelectedRow = null;
@@ -730,18 +728,7 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
                         
                         if (newRow.isChecked()) GridBox.this.checkedRows.add(newRow);
                         
-                        if (newRow.isSelected()) {
-                            newRow.setSelected(true);
-                        } else if (size == 1) {
-                            if (GridBox.this.getColumns().size() > 0) {
-                                newRow.setSelected(true);
-                            } else {
-                                //TODO: We should allow this state to occur
-                                rows.get(0).setSelected(true);
-                            }
-                        } else if (rowIndex <= GridBox.this.selectedRow.getIndex()) {
-                            if (GridBox.this.selectedRow.getIndex() + 1 < size) rows.get(GridBox.this.selectedRow.getIndex() + 1).setSelected(true);
-                        }
+                        if (size == 1) newRow.setSelected(true);
                         
                         if (GridBox.this.sortedColumn != null) GridBox.this.sortedColumn.setSortOrder(GridBox.Column.SortOrder.NONE);
                     } else if (type == ItemChangeEvent.Type.SET) {
