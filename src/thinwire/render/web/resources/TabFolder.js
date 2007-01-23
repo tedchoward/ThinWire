@@ -165,6 +165,7 @@ var tw_TabFolder = tw_BaseContainer.extend({
         if (index < 0 || index >= cl.length) return;
         var sheet = this._children[index];
         sheet.setActiveStyle(active);
+        sheet._container.style.display = active ? "block" : "none";
         
         if (active) {
             this._focusBox = sheet._tab;
