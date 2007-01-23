@@ -592,30 +592,31 @@ public abstract class Application {
     public Style getDefaultStyle(Class<? extends Component> clazz) {
         if (clazz == null) throw new IllegalArgumentException("clazz == null");
         Style style = compTypeToStyle.get(clazz);
-        Class<? extends Component> findClazz = clazz; 
         
         if (style == null) {
             List<Class<? extends Component>> lst = new ArrayList<Class<? extends Component>>();
+            lst.add(clazz);
             
             do {                                        
-                Class sc = findClazz.getSuperclass();
-                if (sc != null && Component.class.isAssignableFrom(sc)) lst.add(sc);
-                
-                for (Class i : findClazz.getInterfaces()) {
-                    if (Component.class.isAssignableFrom(i)) lst.add(i);
-                }
-                
-                findClazz = lst.remove(0);
+                Class<? extends Component> findClazz = lst.remove(0);
                 style = compTypeToStyle.get(findClazz);
                 
-                if (style != null) {
-                    compTypeToStyle.put(clazz, style);                    
+                if (style == null) {
+                    Class sc = findClazz.getSuperclass();
+                    if (Component.class.isAssignableFrom(sc)) lst.add(sc);
+                    
+                    for (Class i : findClazz.getInterfaces()) {
+                        if (Component.class.isAssignableFrom(i)) lst.add(i);
+                    }
+                } else {
                     break;
                 }
             } while (lst.size() > 0);
+
+            if (style == null) style = compTypeToStyle.get(null);
+            compTypeToStyle.put(clazz, style);
         }
 
-        if (style == null) compTypeToStyle.put(clazz, compTypeToStyle.get(null));
         return style;
     }
     

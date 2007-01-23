@@ -585,7 +585,7 @@ public final class WebApplication extends Application {
             List<Class> lst = new ArrayList<Class>();
             lst.add(compClass);
             
-            while (lst.size() > 0) {
+            do {
                 compClass = lst.remove(0);
                 className = compClass.getName();
                 String qualClassName = PACKAGE_NAME + '.' + className.substring(className.lastIndexOf('.') + 1) + "Renderer";
@@ -604,7 +604,7 @@ public final class WebApplication extends Application {
                 for (Class i : compClass.getInterfaces()) {
                     if (Component.class.isAssignableFrom(i)) lst.add(i);
                 }
-            }                
+            } while (lst.size() > 0);
         }
         
         if (renderClazz != null) {
