@@ -80,10 +80,10 @@ abstract class AbstractComponent implements Component {
     AbstractComponent(EventListenerImpl.SubTypeValidator actionValidator) {
         this.visible = true;
         app = Application.current();
-        pcei = new EventListenerImpl<PropertyChangeListener>(this, null, app.getGloalPropertyChangeListenerImpl());
-        aei = new EventListenerImpl<ActionListener>(this, actionValidator);
-        dei = new EventListenerImpl<DropListener>(this);
-        kpei = new EventListenerImpl<KeyPressListener>(this, EventListenerImpl.KEY_PRESS_VALIDATOR);
+        pcei = new EventListenerImpl<PropertyChangeListener>(this, PropertyChangeListener.class, null, app.getGloalPropertyChangeListenerImpl());
+        aei = new EventListenerImpl<ActionListener>(this, ActionListener.class, actionValidator);
+        dei = new EventListenerImpl<DropListener>(this, DropListener.class);
+        kpei = new EventListenerImpl<KeyPressListener>(this, KeyPressListener.class, EventListenerImpl.KEY_PRESS_VALIDATOR);
             
         this.style = new Style(app.getDefaultStyle(this.getClass()), this) {
             protected void firePropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {

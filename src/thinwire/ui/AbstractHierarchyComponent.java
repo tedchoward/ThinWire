@@ -195,7 +195,7 @@ abstract class AbstractHierarchyComponent<HI extends AbstractHierarchyComponent.
     }
 
     private HI rootItem;    
-    private EventListenerImpl<ItemChangeListener> icei = new EventListenerImpl<ItemChangeListener>(this);
+    private EventListenerImpl<ItemChangeListener> icei = new EventListenerImpl<ItemChangeListener>(this, ItemChangeListener.class);
     
     AbstractHierarchyComponent(HI rootItem, EventListenerImpl.SubTypeValidator actionValidator) {
         super(actionValidator);

@@ -48,6 +48,7 @@ import thinwire.ui.event.*;
  */
 class EventListenerImpl<E extends EventListener> {
     private Map<E, Set<Object>> specificListeners;
+    private Class<E> type;
     private Renderer renderer;
     private Component comp;
     private SubTypeValidator subTypeValidator;
@@ -92,16 +93,17 @@ class EventListenerImpl<E extends EventListener> {
         return clazz;
     }
     
-    EventListenerImpl(Component comp) {
-        this(comp, null, null);
+    EventListenerImpl(Component comp, Class<E> type) {
+        this(comp, type, null, null);
     }
 
-    EventListenerImpl(Component comp, SubTypeValidator subTypeValidator) {
-        this(comp, subTypeValidator, null);
+    EventListenerImpl(Component comp, Class<E> type, SubTypeValidator subTypeValidator) {
+        this(comp, type, subTypeValidator, null);
     }
 
-    EventListenerImpl(Component comp, SubTypeValidator subTypeValidator, EventListenerImpl<E> copy) {
+    EventListenerImpl(Component comp, Class<E> type, SubTypeValidator subTypeValidator, EventListenerImpl<E> copy) {
         this.subTypeValidator = subTypeValidator == null ? DEFAULT_VALIDATOR : subTypeValidator;
+        this.type = type;
         
         if (copy != null && copy.hasListeners()) {
             for (Map.Entry<E, Set<Object>> e : copy.specificListeners.entrySet()) {
@@ -131,14 +133,12 @@ class EventListenerImpl<E extends EventListener> {
         
         if (specificListeners != null && renderer != null) {
             Set<Object> allSubTypes = new HashSet<Object>();
-            Class<? extends EventListener> clazz = null;
             
             for (Map.Entry<E, Set<Object>> e : specificListeners.entrySet()) {
                 EventListener listener = e.getKey();
                 
                 //Do not process the renderer's listener
                 if (listener != r) { 
-                    if (clazz == null) clazz = listener.getClass();
                     Set<Object> subTypes = e.getValue();
                     
                     if (subTypes == null) {
@@ -150,7 +150,7 @@ class EventListenerImpl<E extends EventListener> {
                 }
             }
             
-            if (allSubTypes.size() > 0) renderer.eventSubTypeListenerInit(clazz, allSubTypes);
+            if (allSubTypes.size() > 0) renderer.eventSubTypeListenerInit(type, allSubTypes);
         }
     }
     
@@ -200,11 +200,11 @@ class EventListenerImpl<E extends EventListener> {
             if (eventSubType instanceof Object[]) {
                 for (Object subType : (Object[])eventSubType) {
                    subTypes.add(subType);
-                   if (renderer != null) renderer.eventSubTypeListenerAdded(listener.getClass(), subType);
+                   if (renderer != null) renderer.eventSubTypeListenerAdded(type, subType);
                 }
             } else {
                 subTypes.add(eventSubType);
-                if (renderer != null) renderer.eventSubTypeListenerAdded(listener.getClass(), eventSubType);
+                if (renderer != null) renderer.eventSubTypeListenerAdded(type, eventSubType);
             }
         }
     }
@@ -222,7 +222,7 @@ class EventListenerImpl<E extends EventListener> {
                     if (subTypes.contains(subType)) continue outer;  
                 }
                 
-                renderer.eventSubTypeListenerRemoved(listener.getClass(), subType);
+                renderer.eventSubTypeListenerRemoved(type, subType);
             }
         }
     }

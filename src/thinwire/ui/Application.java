@@ -302,7 +302,7 @@ public abstract class Application {
     
     protected Application() {
         exceptionListeners = new ArrayList<ExceptionListener>();
-        gpcei = new EventListenerImpl<PropertyChangeListener>(null);        
+        gpcei = new EventListenerImpl<PropertyChangeListener>(null, PropertyChangeListener.class);        
     }   
     
     /**
