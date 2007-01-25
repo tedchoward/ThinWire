@@ -52,4 +52,8 @@ public final class WebComponentEvent extends EventObject {
 	public Object getValue() {
 		return value;
 	}
+    
+    public String toString() {
+        return "WebComponentEvent{source:" + source + ",name:" + name + ",value:" + value + "}";
+    }
 }

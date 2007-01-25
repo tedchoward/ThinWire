@@ -30,6 +30,8 @@
 */
 package thinwire.ui;
 
+import java.util.List;
+
 /**
  * A Dialog is a window with a title that is usually associated to a Frame.
  * <p>
@@ -102,12 +104,14 @@ public class Dialog extends AbstractWindow {
     public static final String PROPERTY_RESIZE_ALLOWED = "resizeAllowed";
     public static final String PROPERTY_REPOSITION_ALLOWED = "repositionAllowed";
     public static final String PROPERTY_MODAL = "modal";
+    public static final String PROPERTY_WAIT_FOR_WINDOW = "waitForWindow";
     
     private static final int TITLE_BAR_HEIGHT = 18 + 1;
         
     private boolean resizeAllowed;
     private boolean repositionAllowed = true;
     private boolean modal = true;
+    boolean waitForWindow;
     
     /**
      * Constructs a new Dialog with no title. 
@@ -163,5 +167,45 @@ public class Dialog extends AbstractWindow {
     public int getInnerHeight() {
         int innerHeight = super.getInnerHeight() - TITLE_BAR_HEIGHT - (getMenu() == null ? 0 : MENU_BAR_HEIGHT);
         return innerHeight < 0 ? 0 : innerHeight;
+    }
+    
+    public boolean isWaitForWindow() {
+        return this.waitForWindow;
+    }   
+    
+    /**
+     * Sets whether setting the visible property to true will cause this thread to block.
+     * @param waitForWindow (Default = false)
+     */
+    public void setWaitForWindow(boolean waitForWindow) {
+        if (this.waitForWindow == waitForWindow) return;                
+        boolean oldWaitForWindow = this.waitForWindow;
+        this.waitForWindow = waitForWindow;
+        firePropertyChange(this, PROPERTY_WAIT_FOR_WINDOW, oldWaitForWindow, waitForWindow);
+
+        if (isVisible()) {
+            if (oldWaitForWindow)
+                Application.current().releaseThread();
+            else
+                Application.current().captureThread();
+        }       
+    }
+    
+    public void setVisible(boolean visible) {
+        if (isVisible() != visible) {
+            Application app = Application.current();
+            Frame f = app.getFrame();
+            f.dialogVisibilityChanged(this, visible);            
+            
+            if (visible) {
+                app.showWindow(this);
+                super.setVisible(visible);
+                if (waitForWindow) app.captureThread();
+            } else {
+                app.hideWindow(this);
+                super.setVisible(false);
+                if (waitForWindow) app.releaseThread();
+            }
+        }
     }
 }

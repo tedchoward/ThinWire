@@ -40,7 +40,6 @@ abstract class AbstractWindow extends AbstractContainer<Component> implements Wi
     
     String title = "";
     Menu menu;
-    boolean waitForWindow;
 
     AbstractWindow() {
         super.setVisible(false);
@@ -68,49 +67,4 @@ abstract class AbstractWindow extends AbstractContainer<Component> implements Wi
         if (menu != null) menu.setParent(this);
         firePropertyChange(this, PROPERTY_MENU, oldMenu, menu);
     }
-
-    public void setVisible(boolean visible) {
-        if (isVisible() != visible) {
-            Application app = Application.current();
-            Frame f = app.getFrame();
-            if (this != f && !f.isVisible()) f.setVisible(true);
-            if (this instanceof Dialog) f.dialogVisibilityChanged((Dialog)this, visible);            
-            
-            if (visible) {
-                app.showWindow(this);
-                super.setVisible(visible);
-                if (waitForWindow) app.captureThread();
-            } else {
-                if (this == f) {
-                    List<Dialog> dialogs = f.getDialogs();
-                    
-                    for (Dialog d : dialogs.toArray(new Dialog[dialogs.size()])) {
-                        d.setVisible(false);
-                    }
-                }
-                
-                app.hideWindow(this);
-                super.setVisible(visible);
-                if (waitForWindow) app.releaseThread();
-            }
-        }
-    }
-        
-    public boolean isWaitForWindow() {
-        return this.waitForWindow;
-    }   
-    
-    public void setWaitForWindow(boolean waitForWindow) {
-        if (this.waitForWindow == waitForWindow) return;                
-        boolean oldWaitForWindow = this.waitForWindow;
-        this.waitForWindow = waitForWindow;
-        firePropertyChange(this, PROPERTY_WAIT_FOR_WINDOW, oldWaitForWindow, waitForWindow);
-
-        if (isVisible()) {
-            if (oldWaitForWindow)
-                Application.current().releaseThread();
-            else
-                Application.current().captureThread();
-        }       
-    }   
 }

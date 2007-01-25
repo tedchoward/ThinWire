@@ -44,6 +44,7 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 
 import thinwire.ui.FileChooser;
+import thinwire.render.web.WebApplication.ApplicationEventManager;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
@@ -123,7 +124,7 @@ public final class WebServlet extends HttpServlet {
         //around.  Clean it up.
         if (app != null) {
             log.log(Level.FINER, "Initiating Application instance SHUTDOWN");
-            app.queueWebComponentEvent(new WebComponentEvent(WebApplication.APPEVENT_ID, WebApplication.APPEVENT_SHUTDOWN, null));
+            app.eventProcessor.queue(ApplicationEventManager.newShutdownEvent());
         }
 
         response.setContentType("text/html");        
@@ -190,7 +191,7 @@ public final class WebServlet extends HttpServlet {
             sb.setLength(0);
         }
         
-        app = new WebApplication(this, httpSession, getInitParameter(InitParam.MAIN_CLASS.mixedCaseName()), getInitParameter(InitParam.STYLE_SHEET.mixedCaseName()), args.toArray(new String[args.size()]));
+        app = new WebApplication(httpSession, this.getServletContext().getRealPath(""), getInitParameter(InitParam.MAIN_CLASS.mixedCaseName()), getInitParameter(InitParam.STYLE_SHEET.mixedCaseName()), args.toArray(new String[args.size()]));
         httpSession.setAttribute("instance", app);        
     }    
     
@@ -248,8 +249,7 @@ public final class WebServlet extends HttpServlet {
                             readComplexValue(sb, car);
                             String value = sb.toString();                       
                             if (log.isLoggable(Level.FINEST)) log.finest("EVENT_WEB_COMPONENT:source=" + source + ",name=" + name + ",value=" + value);
-                            WebComponentEvent wce = new WebComponentEvent(source, name, value);
-                            app.queueWebComponentEvent(wce);
+                            app.eventProcessor.queue(new WebComponentEvent(source, name, value));
                         }
                         
                         break;                  
@@ -268,7 +268,7 @@ public final class WebServlet extends HttpServlet {
                     case EVENT_RUN_TIMER: {
                         readSimpleValue(sb, car);
                         String timerId = sb.toString();
-                        app.queueWebComponentEvent(new WebComponentEvent(WebApplication.APPEVENT_ID, WebApplication.APPEVENT_RUN_TIMER, timerId));
+                        app.eventProcessor.queue(ApplicationEventManager.newRunTimerEvent(timerId));
                         break;
                     }
                 }            
@@ -276,8 +276,14 @@ public final class WebServlet extends HttpServlet {
         } catch (SocketTimeoutException e) {
             log.log(Level.WARNING, "Invalid action event format received from client", e);
         }
-        
+
         String events = app.getClientEvents();
+        
+        if (app.startupInfo != null && events == null) {
+            app.eventProcessor.queue(ApplicationEventManager.newStartEvent(app));
+            events = app.getClientEvents();
+        }
+        
         if (log.isLoggable(Level.FINEST)) log.finest("handleGetEvents:" + (events != null ? events.length() : 0) + ":" + events);
         
         if (events != null) {

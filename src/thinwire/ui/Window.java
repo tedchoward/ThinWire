@@ -36,7 +36,6 @@ package thinwire.ui;
 public interface Window extends Container<Component> {
     public static final String PROPERTY_MENU = "menu";
     public static final String PROPERTY_TITLE = "title";
-    public static final String PROPERTY_WAIT_FOR_WINDOW = "waitForWindow";
 
     /**
      * Gets the title of the window.
@@ -63,13 +62,4 @@ public interface Window extends Container<Component> {
      * @param visible (Default = false)
      */
     void setVisible(boolean visible);
-
-    boolean isWaitForWindow();
-
-    /**
-     * Sets whether the script execution pauses until the window is closed or not.
-     * @param waitForWindow (Default = true)
-     */
-    void setWaitForWindow(boolean waitForWindow);
-
 }

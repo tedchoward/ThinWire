@@ -437,9 +437,9 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
             
             if (styleProp.equals(FX.PROPERTY_FX_COLOR_CHANGE)) {
                 Color prev = (Color)oldValue;
-                if (prev.isSystemColor()) prev = wr.ai.systemColors.get(prev.toString());
+                if (prev.isSystemColor()) prev = wr.ai.getSystemColor(prev.toString());
                 Color next = (Color)newValue;
-                if (next.isSystemColor()) next = wr.ai.systemColors.get(next.toString());
+                if (next.isSystemColor()) next = wr.ai.getSystemColor(next.toString());
                 
                 if (prev == null || next == null) {
                     postClientEvent(standardMethod, newValue);

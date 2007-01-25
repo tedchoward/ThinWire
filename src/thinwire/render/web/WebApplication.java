@@ -38,6 +38,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -53,6 +54,8 @@ import thinwire.render.RenderStateEvent;
 import thinwire.render.RenderStateListener;
 import thinwire.ui.*;
 import thinwire.ui.FileChooser.FileInfo;
+import thinwire.ui.event.PropertyChangeEvent;
+import thinwire.ui.event.PropertyChangeListener;
 import thinwire.ui.layout.SplitLayout;
 import thinwire.ui.style.*;
 import thinwire.util.Grid;
@@ -63,14 +66,15 @@ import thinwire.util.XOD;
  * @author Joshua J. Gertzen
  */
 public final class WebApplication extends Application {
-    private static final String SHUTDOWN_INSTANCE = "tw_shutdownInstance";
     private static final String CLASS_NAME = WebApplication.class.getName();
     private static final String PACKAGE_NAME = WebApplication.class.getPackage().getName();
     private static final Pattern REGEX_DOUBLE_SLASH = Pattern.compile("\\\\");
     private static final Pattern REGEX_DOUBLE_QUOTE = Pattern.compile("\"");
     private static final Pattern REGEX_CRLF = Pattern.compile("\\r?\\n");
     private static final String EOL = System.getProperty("line.separator");
+
     static final Logger log = Logger.getLogger(CLASS_NAME);
+    
     private static String[] BUILT_IN_RESOURCES = {
         "Main.js",
         "Class.js",
@@ -162,153 +166,265 @@ public final class WebApplication extends Application {
         }
     }
     
-    private final String id;
+    private static class Timer {
+        private Runnable task;
+        private long timeout;
+        private boolean repeat;
+    }
+    
+    static class EventProcessor extends AppThread {
+        private List<WebComponentEvent> queue = new LinkedList<WebComponentEvent>();
+        private boolean active;
+        private int captureCount;
+        private boolean threadCaptured;
+        
+        EventProcessor(WebApplication app) {
+            super(app, app.httpSession.getId());
+        }
 
-    Map<String, Color> systemColors;
+        public void run() {
+            if (log.isLoggable(Level.FINE)) log.fine("entering thread#" + getId() + ":" + getName());
+            active = true;
+            
+            try {
+                while (true) {
+                    processEvent();
+                }
+            } catch (InterruptedException e) { /* purposefully do nothing */ }
+            
+            if (log.isLoggable(Level.FINE)) log.fine("exiting thread#" + getId() + ": " + getName());
+        }
+        
+        public void capture() {
+            int currentCaptureCount = ++captureCount;
+            if (log.isLoggable(Level.FINE)) log.fine("capture thread#" + getId() + ":" + getName() + " captureCount:" + captureCount);
+            threadCaptured = true;
 
+            while (threadCaptured) {
+                try {
+                    processEvent();
+                    if (currentCaptureCount == captureCount) threadCaptured = true;
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+        
+        public void release() {
+            threadCaptured = false;
+            captureCount--;
+            if (log.isLoggable(Level.FINE)) log.fine("release thread#" + getId() + ":" + getName() + " captureCount:" + captureCount);
+        }
+        
+        public boolean isActive() {
+            synchronized (queue) {
+                return active;
+            }
+        }
+
+        public void queue(WebComponentEvent wce) {
+            synchronized (queue) {
+                if (log.isLoggable(Level.FINEST)) log.finest("queue user action event:" + wce);
+                queue.add(wce);
+                queue.notify();
+            }
+        }
+        
+        private void processEvent() throws InterruptedException {
+            WebApplication wapp = (WebApplication)app;
+            WebComponentEvent event;
+
+            synchronized (queue) {
+                if (queue.size() > 0) {
+                    event = queue.remove(0);
+                    if (log.isLoggable(Level.FINEST)) log.finest("process user action event:" + event);
+                    if (wapp.userActionListener != null) wapp.notifyUserActionReceived(event);
+
+                    if (wapp.playBackOn && !wapp.playBackEventReceived) {
+                        wapp.playBackEventReceived = true;
+                        wapp.playBackStart = new Date().getTime();
+                    }
+                } else {
+                    active = false;
+                    queue.wait();
+                    active = true;
+                    event = null;
+                }
+            }
+
+            if (event != null) {
+                if (wapp.playBackOn) {
+                    wapp.flushClientEvents();
+                    if (ApplicationEventManager.SHUTDOWN.equals(event.getName())) wapp.setPlayBackOn(false);
+                }
+                
+                try {
+                    WebComponentListener wcl = wapp.getWebComponentListener((Integer) event.getSource());
+                    if (wcl != null) wcl.componentChange(event);
+                } catch (Exception e) {
+                    app.reportException(null, e);
+                }
+            }
+        }
+    }
+    
+    static class ApplicationEventManager implements WebComponentListener {
+        static final Integer ID = new Integer(Integer.MAX_VALUE);
+        private static final String SHUTDOWN_INSTANCE = "tw_shutdownInstance";
+        private static final String INIT = "INIT";
+        private static final String STARTUP = "STARTUP";
+        private static final String SHUTDOWN = "SHUTDOWN";
+        private static final String RUN_TIMER = "RUN_TIMER";
+        
+        static final class StartupInfo {
+            String mainClass;
+            String[] args;
+            
+            StartupInfo(String mainClass, String[] args) {
+                this.mainClass = mainClass;
+                this.args = args;
+            }
+        }
+        
+        static final WebComponentEvent newRunTimerEvent(String timerId) {
+            return new WebComponentEvent(ID, RUN_TIMER, timerId);
+        }
+
+        static final WebComponentEvent newInitEvent() {
+            return new WebComponentEvent(ID, INIT, null);
+        }
+        
+        static final WebComponentEvent newStartEvent(WebApplication app) {
+            StartupInfo info = app.startupInfo;
+            app.startupInfo = null;
+            return new WebComponentEvent(ID, STARTUP, info);
+        }
+        
+        static final WebComponentEvent newShutdownEvent() {
+            return new WebComponentEvent(ID, SHUTDOWN, null);
+        }
+        
+        private WebApplication app;
+        
+        ApplicationEventManager(WebApplication app) {
+            this.app = app;
+        }
+
+        public void componentChange(WebComponentEvent event) {
+            String name = event.getName();
+
+            if (INIT.equals(name)) {
+                app.sendStyleInitInfo();
+                Frame f = app.getFrame();
+                f.setVisible(true);
+
+                //When the frame is set to non-visible, fire a shutdown event
+                f.addPropertyChangeListener(Frame.PROPERTY_VISIBLE, new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent pce) {
+                        if (pce.getNewValue() == Boolean.FALSE) app.eventProcessor.queue(ApplicationEventManager.newShutdownEvent());
+                    }
+                });
+            } else if (STARTUP.equals(name)) {
+                StartupInfo info = (StartupInfo)event.getValue();
+
+                try {
+                    Class clazz = Class.forName(info.mainClass);
+                    clazz.getMethod("main", new Class[] { String[].class }).invoke(clazz, new Object[] { info.args });
+                } catch (Exception e) {
+                    if (!(e instanceof RuntimeException)) e = new RuntimeException(e);
+                    throw (RuntimeException)e;
+                }                    
+            } else if (SHUTDOWN.equals(name)) {
+                if (app.getFrame().isVisible()) {
+                    app.getFrame().setVisible(false);
+                } else {
+                    log.entering(CLASS_NAME, "exit");
+                    app.eventProcessor.interrupt();
+                    //app.releaseThread(); // ?? The hideWindow does this, doesn't it?
+
+                    // Call the client-side shutdown instance
+                    app.clientSideFunctionCall(SHUTDOWN_INSTANCE, 
+                            "The application instance has shutdown. Press F5 to restart the application or close the browser to end your session.");
+
+                    if (app.userActionListener != null) app.userActionListener.stop();
+
+                    // Set the execution thread to null,
+                    // so that this application instance can get
+                    // garbage collected.
+                    app.eventProcessor = null;
+                    
+                    if (app.httpSession.getAttribute("instance") == app) app.httpSession.setAttribute("instance", null);                    
+                    log.exiting(CLASS_NAME, "exit");                    
+                }
+            } else if (RUN_TIMER.equals(name)) {
+                String timerId = (String)event.getValue();
+                Timer timer = app.timerMap.get(timerId);
+                if (timer != null) {
+                    timer.task.run();
+                    
+                    if (timer.repeat) {
+                        app.resetTimerTask(timer.task);                            
+                    } else {
+                        app.removeTimerTask(timer.task);
+                    }
+                }
+            }
+        }
+    }
+    
+    private HttpSession httpSession;
+    private String baseFolder;
+    private String styleSheet;
     private StringBuilder sbClientEvents;
-    private List<WebComponentEvent> eventQueue;
     private Map<String, Timer> timerMap;
     private Map<String, Class<ComponentRenderer>> nameToRenderer;
     private Map<Window, WindowRenderer> windowToRenderer;
     private Map<Integer, WebComponentListener> webComponentListeners;
     private Set<String> clientSideIncludes;
     private Map<Component, Object> renderStateListeners;
-    Map<Style, String> styleToStyleClass;
     private String[] syncCallResponse = new String[1];
-    private boolean threadCaptured;
-    private boolean threadWaiting;
     private boolean processClientEvents;
     private int nextCompId;
-    private int captureCount;
-    private AppThread appThread;
     
+    //Stress Test Variables.
+    private UserActionListener userActionListener;    
+    private boolean playBackOn = false;
+    private long playBackStart = -1;
+    private long playBackDuration = -1;
+    private long recordDuration = -1;
+    private boolean playBackEventReceived = false;
+    //end Stress Test.
+    
+    EventProcessor eventProcessor;
+    ApplicationEventManager.StartupInfo startupInfo;
+    Map<Style, String> styleToStyleClass = new HashMap<Style, String>();
     FileInfo[] fileList = new FileInfo[1];
-	
-	//Stress Test Variables.
-	private UserActionListener userActionListener;    
-	private boolean playBackOn = false;
-	private long playBackStart = -1;
-	private long playBackDuration = -1;
-	private long recordDuration = -1;
-	private boolean playBackEventReceived = false;
-	//end Stress Test.
-
-    static public final Integer APPEVENT_ID = new Integer(Integer.MAX_VALUE);
-    static public final String APPEVENT_SHUTDOWN = "SHUTDOWN";
-    static final String APPEVENT_FILEUPLOAD_COMPLETE = "FILEUPLOAD_COMPLETE";
-    static final String APPEVENT_RUN_TIMER = "RUN_TIMER";
     
-    private static class Timer {
-        private Runnable task;
-        private long timeout;
-        private boolean repeat;
-    }
-
-    private static final String DEFAULT_STYLE_SHEET = "class:///" + Application.class.getName() + "/resources/DefaultStyle.zip";
-    
-    WebApplication(final WebServlet servlet, final HttpSession httpSession, final String mainClass, String styleSheet, final String[] args) {
+    WebApplication(HttpSession httpSession, String baseFolder, String mainClass, String styleSheet, String[] args) {
+        this.httpSession = httpSession;
+        this.baseFolder = baseFolder;
+        this.styleSheet = styleSheet;
         nameToRenderer = new HashMap<String, Class<ComponentRenderer>>();
         windowToRenderer = new HashMap<Window, WindowRenderer>();
-        eventQueue = new ArrayList<WebComponentEvent>();
         timerMap = new HashMap<String, Timer>();
         sbClientEvents = new StringBuilder(4096);
         sbClientEvents.append('[');
-        webComponentListeners = new HashMap<Integer, WebComponentListener>();        
-        id = httpSession.getId();
-        setBaseFolder(servlet.getServletContext().getRealPath(""));
+        webComponentListeners = new HashMap<Integer, WebComponentListener>();
         
-        setWebComponentListener(APPEVENT_ID, new WebComponentListener() {
-            public void componentChange(WebComponentEvent event) {
-                String name = event.getName();
-
-                if (APPEVENT_SHUTDOWN.equals(name)) {
-                    getFrame().setVisible(false);
-                } else if (APPEVENT_RUN_TIMER.equals(name)) {
-                    String timerId = (String)event.getValue();
-                    Timer timer = timerMap.get(timerId);
-                    if (timer != null) {
-                        timer.task.run();
-                        
-                        if (timer.repeat) {
-                            resetTimerTask(timer.task);                            
-                        } else {
-                            removeTimerTask(timer.task);
-                        }
-                    }
-                }
-            }
-        });
-        
-        appThread = new AppThread(this, id) {
-            public void run() {
-                try {
-                    //set the frame to visible and then wait for the 
-                    //frame size information and any other initial state
-                    //events to return from the client.  The process those
-                    //events and call the entry point for the application. 
-                    synchronized (eventQueue) {
-                        getFrame().setVisible(true);
-                        
-                        do {
-                            eventQueue.wait();
-                            WebComponentEvent event = eventQueue.remove(0);
-                            
-                            if (event != null) {
-                                WebComponentListener wcl = getWebComponentListener((Integer) event.getSource());
-                                if (wcl != null) wcl.componentChange(event);
-                            }                            
-                        } while (eventQueue.size() > 0);
-                    }
-                    
-                    try {
-                        Class clazz = Class.forName(mainClass);
-                        clazz.getMethod("main", new Class[] { String[].class }).invoke(clazz, new Object[] { args });
-                    } catch (Exception e) {
-                        if (!(e instanceof RuntimeException)) e = new RuntimeException(e);
-                        throw (RuntimeException)e;
-                    }                    
-                    
-                    //If the main method terminates but the frame is still visible, then wait for it to be closed.
-                    while (getFrame().isVisible()) {
-                        getFrame().setWaitForWindow(true);
-                    }                                       
-                                        
-                    log.entering(WebApplication.class.getName(), "exit");
-                    releaseThread(); // ?? The hideWindow does this, doesn't it?
-
-                    // Call the client-side shutdown instance
-                    clientSideFunctionCall(SHUTDOWN_INSTANCE, 
-                            "The application instance has shutdown. Press F5 to restart the application or close the browser to end your session.");
-
-                    if (userActionListener != null){
-                    	userActionListener.stop();
-                    }                    
-
-                    // Set the execution thread to null,
-                    // so that this application instance can get
-                    // garbage collected.
-                    WebApplication.this.appThread = null;
-                    
-                    if (httpSession.getAttribute("instance") == WebApplication.this) httpSession.setAttribute("instance", null);                    
-                    log.exiting(WebApplication.class.getName(), "exit");                    
-                } catch (Exception e) {
-                    reportException(null, e);
-                }
-            }
-        };
-
+        setWebComponentListener(ApplicationEventManager.ID, new ApplicationEventManager(this));
+        eventProcessor = new EventProcessor(this);
+        startupInfo = new ApplicationEventManager.StartupInfo(mainClass, args);
+        eventProcessor.queue(ApplicationEventManager.newInitEvent());
+        eventProcessor.start();
+    }
+    
+    void sendStyleInitInfo() {
         try {
-            XOD styleDef = new XOD();
-            String sheet = styleSheet == null ? DEFAULT_STYLE_SHEET : styleSheet;
-            if (!sheet.endsWith(".xml")) sheet += "/Style.xml";
-            styleDef.execute(getSystemFile(sheet));
-            loadStyleSheet(styleDef);
-            systemColors = getSystemColors();
+            loadStyleSheet(styleSheet);
             StringBuilder sb = new StringBuilder();
             sb.append('{');
             
-            for (Map.Entry<String, Color> e : systemColors.entrySet()) {
+            for (Map.Entry<String, Color> e : getSystemColors().entrySet()) {
                 sb.append(e.getKey()).append(":\"").append(e.getValue()).append("\",");
             }
             
@@ -330,22 +446,10 @@ public final class WebApplication extends Application {
             if (e instanceof RuntimeException) throw (RuntimeException)e;
             throw new RuntimeException(e);
         }
-        
-        appThread.start();
     }
     
-    private String getSystemFile(String value) throws Exception {
-        if (!value.matches("^\\w{3,}://.*")) {
-            if (value != null && !value.matches("^\\w?:?[\\\\|/].*")) value = getBaseFolder() + File.separator + value;   
-            value = new File(value).getCanonicalPath();
-        }
-        
-        return value;
-    }
-    
-    Integer getNextComponentId() {
-        nextCompId = nextCompId == Integer.MAX_VALUE ? 1 : nextCompId + 1;
-        return new Integer(nextCompId);
+    Color getSystemColor(String name) {
+        return getSystemColors().get(name);
     }
     
     StringBuilder getStyleValue(ComponentRenderer cr, StringBuilder sb, String propertyName, Object value) {
@@ -370,7 +474,7 @@ public final class WebApplication extends Application {
             
             if (value instanceof Color) {
                 Color color = (Color)value;
-                if (color.isSystemColor()) color = systemColors.get(color.toString());
+                if (color.isSystemColor()) color = getSystemColors().get(color.toString());
                 sb.append(color.toRGBString());
             } else if (value instanceof Background.Repeat) {
                 switch ((Background.Repeat)value) {
@@ -480,6 +584,11 @@ public final class WebApplication extends Application {
         return sb;
     }
     
+    Integer getNextComponentId() {
+        nextCompId = nextCompId == Integer.MAX_VALUE ? 1 : nextCompId + 1;
+        return new Integer(nextCompId);
+    }
+
     ComponentRenderer getRenderer(Component comp) {
         Class compClass = comp.getClass();        
         String className = compClass.getName();
@@ -773,12 +882,7 @@ public final class WebApplication extends Application {
             try {
                 while (true) {
                     if (processClientEvents) {
-                        synchronized (eventQueue) {
-                            if (!threadWaiting) {
-                                sbClientEvents.insert(1, "{m:\"sendGetEvents\",n:tw_em,a:[]},");
-                            }
-                        }
-
+                        if (eventProcessor.isActive()) sbClientEvents.insert(1, "{m:\"sendGetEvents\",n:tw_em,a:[]},");
                         int length = sbClientEvents.length();
 
                         if (length > 1) {
@@ -818,62 +922,16 @@ public final class WebApplication extends Application {
         }
     }
 
-    public void queueWebComponentEvent(WebComponentEvent wce) {
-        synchronized (eventQueue) {
-            eventQueue.add(wce);
-            eventQueue.notify();
-        }
+    public String getBaseFolder() {
+        return baseFolder;
     }
-
+    
     protected void captureThread() {
-        int currentCaptureCount = ++captureCount;
-        log.fine("increase captureCount:" + captureCount);
-        threadCaptured = true;
-
-        while (threadCaptured) {
-            WebComponentEvent event;
-
-            synchronized (eventQueue) {
-                if (eventQueue.size() > 0) {
-                    event = eventQueue.remove(0);
-                    if (this.userActionListener != null){
-                 	   this.notifyUserActionReceived(event);
-                    }
-                    if (this.playBackOn && !this.playBackEventReceived){
-                    	this.playBackEventReceived = true;
-                    	this.playBackStart = new Date().getTime();
-                    }
-                } else {
-                    try {
-                        threadWaiting = true;
-                        eventQueue.wait();
-                        threadWaiting = false;
-                    } catch (InterruptedException e) {
-                        log.log(Level.SEVERE, null, e);
-                    }
-
-                    event = null;
-                }
-            }
-
-            if (event != null) {
-                if (this.playBackOn){
-                	this.flushClientEvents();
-                	if (WebApplication.APPEVENT_SHUTDOWN.equals(event.getName())){
-                		this.setPlayBackOn(false);
-                	}
-                }            	
-                WebComponentListener wcl = getWebComponentListener((Integer) event.getSource());
-                if (wcl != null) wcl.componentChange(event);
-                if (currentCaptureCount == captureCount) threadCaptured = true;
-            }
-        }
+        eventProcessor.capture();
     }
 
     protected void releaseThread() {
-        threadCaptured = false;
-        captureCount--;
-        log.fine("decrease captureCount:" + captureCount);
+        eventProcessor.release();
     }
 
     protected void showWindow(Window w) {
@@ -882,8 +940,9 @@ public final class WebApplication extends Application {
         windowToRenderer.put(w, wr = (WindowRenderer) getRenderer(w));
         wr.ai = this;
         
-        if (wr instanceof FrameRenderer) {
-            styleToStyleClass = new HashMap<Style, String>();
+        if (wr instanceof DialogRenderer) {
+            wr.render(wr, w, windowToRenderer.get(getFrame()));
+        } else {
             StringBuilder sb = new StringBuilder();
             sb.append("{");
             
@@ -902,31 +961,15 @@ public final class WebApplication extends Application {
             
             sb.setCharAt(sb.length() - 1, '}');
             clientSideMethodCall("tw_Component", "setDefaultStyles", sb);
+            wr.render(wr, w, null);
         }
-        
-        wr.render(wr, w, w instanceof Dialog ? windowToRenderer.get(getFrame()) : null);
-        log.fine("Showing window with id:" + wr.id);
     }
 
     protected void hideWindow(Window w) {
         WindowRenderer wr = (WindowRenderer) windowToRenderer.remove(w);
         if (wr == null) throw new IllegalStateException("Cannot close a window that has not been set to visible");
-        log.fine("Closing window with id:" + wr.id);
+        if (log.isLoggable(Level.FINE)) log.fine("closing window with id:" + wr.id);
         wr.destroy();
-        Frame f = getFrame(); 
-        
-        if (f.isWaitForWindow()) {
-            boolean unwaitFrame = true;
-
-            for (Dialog d : f.getDialogs()) {
-                if (d.isWaitForWindow()) {
-                    unwaitFrame = false;
-                    break;
-                }
-            }
-
-            if (unwaitFrame) f.setWaitForWindow(false);
-        }        
     }
 
     WindowRenderer getWindowRenderer(Window w) {
@@ -993,7 +1036,7 @@ public final class WebApplication extends Application {
 	}
     
     protected void finalize() {
-        log.log(Level.FINER, "finalizing app " + this.id);
+        log.log(Level.FINER, "finalizing app " + this.httpSession.getId());
     }
 
 	public void setPlayBackOn(boolean playBackOn){

@@ -61,7 +61,8 @@ import thinwire.util.XOD;
  * @author Joshua J. Gertzen
  */
 public abstract class Application {
-	private static final Logger log = Logger.getLogger(Application.class.getName());	
+	private static final Logger log = Logger.getLogger(Application.class.getName());
+    private static final String DEFAULT_STYLE_SHEET = "class:///" + Application.class.getName() + "/resources/DefaultStyle.zip";
     
     private static final Map<String, String> versionInfo;
     static {
@@ -84,11 +85,13 @@ public abstract class Application {
     }            
     
     protected static abstract class AppThread extends Thread {
-        private Application app;
+        protected Application app;
+        protected String id;
         
         public AppThread(Application app, String id) {
             super("ThinWire AppThread-" + id);
             this.app = app;
+            this.id = id;
         }
     }
     
@@ -287,7 +290,6 @@ public abstract class Application {
         }
     }
 
-    private String baseFolder;
     private List<ExceptionListener> exceptionListeners;
     private EventListenerImpl<PropertyChangeListener> gpcei;
     private WeakReference<Component> priorFocus;
@@ -530,8 +532,13 @@ public abstract class Application {
     public Component getPriorFocus() {
         return priorFocus.get();
     }
-    
-    protected void loadStyleSheet(XOD props) {
+        
+    protected void loadStyleSheet(String styleSheet) {
+        XOD props = new XOD();
+        String sheet = styleSheet == null ? DEFAULT_STYLE_SHEET : styleSheet;
+        if (!sheet.endsWith(".xml")) sheet += "/Style.xml";
+        props.execute(getSystemFile(sheet));
+        
         compTypeToStyle = new HashMap<Class<? extends Component>, Style>();
         systemColors = new HashMap<String, Color>();
         systemImages = new HashMap<String, String>();
@@ -575,6 +582,20 @@ public abstract class Application {
                 systemImages.put(key, e.getValue());
             }
         }
+    }
+    
+    protected String getSystemFile(String value) {        
+        if (!value.matches("^\\w{3,}://.*")) {
+            if (value != null && !value.matches("^\\w?:?[\\\\|/].*")) value = getBaseFolder() + File.separator + value;
+            
+            try {
+                value = new File(value).getCanonicalPath();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        
+        return value;
     }
     
     protected Map<Class<? extends Component>, Style> getDefaultStyles() {
@@ -627,14 +648,8 @@ public abstract class Application {
 	/**
 	 * @return the base folder of the system
 	 */
-	public final String getBaseFolder() {
-	    return baseFolder;
-	}
+	public abstract String getBaseFolder();
     
-    protected final void setBaseFolder(String baseFolder) {
-        this.baseFolder = baseFolder;
-    }
-        
     //#IFDEF V1_1_COMPAT    
     /**
      * @return

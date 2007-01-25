@@ -64,6 +64,7 @@ class WindowRenderer extends ContainerRenderer {
         super.render(wr, c, container);
         Menu m = w.getMenu();
         if (m != null) (mr = (MenuRenderer)ai.getRenderer(m)).render(wr, m, this);
+        log.fine("Showing window with id:" + id);
     }
     
     void destroy() {

@@ -155,4 +155,22 @@ public final class Frame extends AbstractWindow {
             throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_HEIGHT, false));
         }
     }
+    
+    public void setVisible(boolean visible) {
+        if (isVisible() != visible) {
+            if (visible) {
+                app.showWindow(this);
+            } else {
+                List<Dialog> dialogs = getDialogs();
+                
+                for (Dialog d : dialogs.toArray(new Dialog[dialogs.size()])) {
+                    d.setVisible(false);
+                }
+                
+                app.hideWindow(this);
+            }
+        
+            super.setVisible(false);
+        }
+    }
 }
