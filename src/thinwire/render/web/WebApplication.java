@@ -65,18 +65,12 @@ import thinwire.util.XOD;
 public final class WebApplication extends Application {
     private static final String SHUTDOWN_INSTANCE = "tw_shutdownInstance";
     private static final String CLASS_NAME = WebApplication.class.getName();
-    static final Logger log = Logger.getLogger(CLASS_NAME);
     private static final String PACKAGE_NAME = WebApplication.class.getPackage().getName();
     private static final Pattern REGEX_DOUBLE_SLASH = Pattern.compile("\\\\");
     private static final Pattern REGEX_DOUBLE_QUOTE = Pattern.compile("\"");
     private static final Pattern REGEX_CRLF = Pattern.compile("\\r?\\n");
     private static final String EOL = System.getProperty("line.separator");
-    private static final long MINUTE = 60 * 1000;
-    private static final long INSTANCE_TIMEOUT = 10 * MINUTE;
-    private static final long INSTANCE_KEEP_ALIVE_CYCLE = INSTANCE_TIMEOUT - MINUTE;
-    private static final long INSTANCE_MONITOR_THREAD_CYCLE = INSTANCE_TIMEOUT / 2;
-    private static final Set<WebApplication> allApps = new HashSet<WebApplication>();
-    private static Thread instanceMonitorThread;
+    static final Logger log = Logger.getLogger(CLASS_NAME);
     private static String[] BUILT_IN_RESOURCES = {
         "Main.js",
         "Class.js",
@@ -147,7 +141,9 @@ public final class WebApplication extends Application {
     private static String loadJSLibrary(String resURL) {
         try {
             //Write out the library JS
-            String twPrefix = "ThinWire_v" + Application.getPlatformVersionInfo().get("productVersion");
+            String twPrefix = Application.getPlatformVersionInfo().get("productVersion");
+            log.info("Loading ThinWire(R) RIA Ajax Framework v" + twPrefix);
+            twPrefix = "ThinWire_v" + twPrefix;
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             GZIPOutputStream os = new GZIPOutputStream(baos);
             
@@ -165,61 +161,6 @@ public final class WebApplication extends Application {
             throw (RuntimeException)e;
         }
     }
-        
-    private static final Runnable instanceMonitorRunnable = new Runnable() {
-        public void run() {
-            log.fine("Starting instance monitoring thread");
-            WebApplication[] apps;
-            
-            synchronized (allApps) {
-                apps = allApps.toArray(new WebApplication[allApps.size()]);
-            }
-
-            do {
-                try {
-                    Thread.sleep(INSTANCE_MONITOR_THREAD_CYCLE);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);                    
-                }
-                
-                for (WebApplication twapp : apps) {
-                    long currentTime = System.currentTimeMillis();
-                    
-                    //If more than two minutes have passed shutdown app
-                    if (currentTime - twapp.lastClientRequestTime.longValue() > INSTANCE_TIMEOUT) {
-                        log.fine("Shutting down application instance " + twapp.id + " due to inactivity");
-                        twapp.queueWebComponentEvent(new WebComponentEvent(WebApplication.APPEVENT_ID, WebApplication.APPEVENT_SHUTDOWN, null));
-                        
-                        try {
-                            //Attempt to join thread for 10 seconds, if this fails, forcefully kill the thread.
-                            if (twapp.appThread != null) {                                
-                                twapp.appThread.join(10000);
-                                
-                                if (twapp.appThread.isAlive()) {
-                                    log.fine("Forcefully stopping application instance " + twapp.id + ", thread did not respond to join");
-                                    twapp.appThread.stop();
-                                    
-                                    synchronized (allApps) {
-                                        allApps.remove(twapp);
-                                    }
-                                    
-                                    twapp.appThread = null;
-                                }                                
-                            }
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                }
-                
-                synchronized (allApps) {
-                    apps = allApps.toArray(new WebApplication[allApps.size()]);
-                }
-            } while (apps.length > 0);
-            
-            log.fine("Finishing instance monitoring thread");
-        }
-    };
     
     private final String id;
 
@@ -240,7 +181,6 @@ public final class WebApplication extends Application {
     private boolean processClientEvents;
     private int nextCompId;
     private int captureCount;
-    private Long lastClientRequestTime;
     private AppThread appThread;
     
     FileInfo[] fileList = new FileInfo[1];
@@ -258,12 +198,6 @@ public final class WebApplication extends Application {
     static public final String APPEVENT_SHUTDOWN = "SHUTDOWN";
     static final String APPEVENT_FILEUPLOAD_COMPLETE = "FILEUPLOAD_COMPLETE";
     static final String APPEVENT_RUN_TIMER = "RUN_TIMER";
-
-    private static class ClientSideScriptException extends RuntimeException {
-        private ClientSideScriptException(String message) {
-            super(message);
-        }
-    }
     
     private static class Timer {
         private Runnable task;
@@ -283,7 +217,7 @@ public final class WebApplication extends Application {
         webComponentListeners = new HashMap<Integer, WebComponentListener>();        
         id = httpSession.getId();
         setBaseFolder(servlet.getServletContext().getRealPath(""));
-
+        
         setWebComponentListener(APPEVENT_ID, new WebComponentListener() {
             public void componentChange(WebComponentEvent event) {
                 String name = event.getName();
@@ -354,11 +288,6 @@ public final class WebApplication extends Application {
                     // Set the execution thread to null,
                     // so that this application instance can get
                     // garbage collected.
-                    
-                    synchronized (allApps) {
-                        allApps.remove(WebApplication.this);
-                    }
-                    
                     WebApplication.this.appThread = null;
                     
                     if (httpSession.getAttribute("instance") == WebApplication.this) httpSession.setAttribute("instance", null);                    
@@ -368,29 +297,6 @@ public final class WebApplication extends Application {
                 }
             }
         };
-        
-        synchronized (allApps) {
-            allApps.add(this);
-        }
-        
-        //Guarantee communication back and forth to the client every 60 seconds.  This causes an update
-        //to the lastClientRequestTime and therefore prevents the app instance from being shutdown.
-        //TODO: Make this feature and it's time configurable.
-        this.addTimerTask(new Runnable() {
-            public void run() {
-                lastClientRequestTime = new Long(System.currentTimeMillis());
-            }
-        }, INSTANCE_KEEP_ALIVE_CYCLE, true);
-
-        lastClientRequestTime = new Long(System.currentTimeMillis());
-        
-        synchronized (instanceMonitorRunnable) {
-            if (instanceMonitorThread == null || !instanceMonitorThread.isAlive()) {
-                instanceMonitorThread = new Thread(instanceMonitorRunnable, "ThinWire Instance Monitor Thread");
-                instanceMonitorThread.setPriority(Thread.MIN_PRIORITY);
-                instanceMonitorThread.start();
-            }
-        }
 
         try {
             XOD styleDef = new XOD();
