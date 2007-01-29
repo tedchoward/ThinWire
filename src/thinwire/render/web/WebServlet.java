@@ -44,7 +44,6 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 
 import thinwire.ui.FileChooser;
-import thinwire.render.web.WebApplication.ApplicationEventManager;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
@@ -53,11 +52,6 @@ import javax.servlet.http.*;
  * @author Joshua J. Gertzen
  */
 public final class WebServlet extends HttpServlet {    
-    private static final int EVENT_WEB_COMPONENT = 0;
-    private static final int EVENT_GET_EVENTS = 1;
-    private static final int EVENT_SYNC_CALL = 2;
-    private static final int EVENT_RUN_TIMER = 3;
-    
     private static enum InitParam {
         MAIN_CLASS, EXTRA_ARGUMENTS, STYLE_SHEET;
 
@@ -122,10 +116,7 @@ public final class WebServlet extends HttpServlet {
         
         //In the case of a refresh, there may be an old Application instance hanging
         //around.  Clean it up.
-        if (app != null) {
-            log.log(Level.FINER, "Initiating Application instance SHUTDOWN");
-            app.eventProcessor.queue(ApplicationEventManager.newShutdownEvent());
-        }
+        if (app != null) app.shutdown();
 
         response.setContentType("text/html");        
         response.getOutputStream().write(WebApplication.MAIN_PAGE);        
@@ -226,90 +217,10 @@ public final class WebServlet extends HttpServlet {
     private void handlePostEvent(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         HttpSession httpSession = request.getSession();        
         WebApplication app = (WebApplication)httpSession.getAttribute("instance");
+        response.setContentType("text/plain; charset=utf-8");
+        response.setHeader("Cache-Control", "no-store");
         if (app == null) return;
-        BufferedReader r = request.getReader();
-        StringBuilder sb = new StringBuilder();
-        
-        try {
-            do {
-                readSimpleValue(sb, r);
-                int eventType = Integer.parseInt(sb.toString());
-                readComplexValue(sb, r);
-                CharArrayReader car = new CharArrayReader(sb.toString().toCharArray());
-                
-                switch (eventType) {                
-                    case EVENT_WEB_COMPONENT: {
-                        readSimpleValue(sb, car);
-                        Integer source = Integer.valueOf(sb.toString());
-                        WebComponentListener wcl = app.getWebComponentListener(source);
-                        
-                        if (wcl != null) {
-                            readSimpleValue(sb, car);
-                            String name = sb.toString();
-                            readComplexValue(sb, car);
-                            String value = sb.toString();                       
-                            if (log.isLoggable(Level.FINEST)) log.finest("EVENT_WEB_COMPONENT:source=" + source + ",name=" + name + ",value=" + value);
-                            app.eventProcessor.queue(new WebComponentEvent(source, name, value));
-                        }
-                        
-                        break;                  
-                    }
-                    
-                    case EVENT_GET_EVENTS: break;
-                    
-                    case EVENT_SYNC_CALL: {
-                        readComplexValue(sb, car);
-                        String value = sb.toString();
-                        app.notifySyncCallResponse(value);
-                        if (log.isLoggable(Level.FINEST)) log.finest("EVENT_SYNC_CALL:response=" + value);
-                        break;
-                    }
-                    
-                    case EVENT_RUN_TIMER: {
-                        readSimpleValue(sb, car);
-                        String timerId = sb.toString();
-                        app.eventProcessor.queue(ApplicationEventManager.newRunTimerEvent(timerId));
-                        break;
-                    }
-                }            
-            } while (r.read() == ':');
-        } catch (SocketTimeoutException e) {
-            log.log(Level.WARNING, "Invalid action event format received from client", e);
-        }
-
-        String events = app.getClientEvents();
-        
-        if (app.startupInfo != null && events == null) {
-            app.eventProcessor.queue(ApplicationEventManager.newStartEvent(app));
-            events = app.getClientEvents();
-        }
-        
-        if (log.isLoggable(Level.FINEST)) log.finest("handleGetEvents:" + (events != null ? events.length() : 0) + ":" + events);
-        
-        if (events != null) {
-            response.setContentType("text/plain; charset=utf-8");
-            response.setHeader("Cache-Control", "no-store");
-            response.getWriter().print(events);
-        }
-    }
-    
-    private void readSimpleValue(StringBuilder sb, Reader r) throws IOException, ServletException {
-        sb.setLength(0);
-        int ch;
-        
-        while ((ch = r.read()) != ':') {
-            if (ch == -1) throw new ServletException("premature end of post event encountered[" + sb.toString() + "]");
-            sb.append((char)ch);
-        }        
-    }
-    
-    private void readComplexValue(StringBuilder sb, Reader r) throws IOException, ServletException {
-        readSimpleValue(sb, r);
-        int length = Integer.parseInt(sb.toString()) - 1;
-        sb.setLength(0);        
-
-        for (; length >= 0; length--)
-            sb.append((char)r.read());
+        app.processActionEvents(request.getReader(), response.getWriter());
     }
     
     private void handleUserUpload(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {

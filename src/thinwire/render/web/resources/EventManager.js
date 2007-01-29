@@ -145,14 +145,8 @@ var tw_EventManager = Class.extend({
     
     _queueOutboundEvent: function(type, value) {
         this._outboundEvents.push(type);
-        
-        if (value == null) {
-            this._outboundEvents.push(0);
-            this._outboundEvents.push("");
-        } else {
-            this._outboundEvents.push(value.length);
-            this._outboundEvents.push(value);
-        }
+        if (value == null) value = "";        
+        this._outboundEvents.push(value);
     },
         
     manualSyncResponse: function() {
@@ -175,8 +169,7 @@ var tw_EventManager = Class.extend({
         if (order != undefined) {
             delete this._vsEventOrder[key];
             this._outboundEvents[order - 1] = this._EVENT_GET_EVENTS;
-            this._outboundEvents[order] = 0;
-            this._outboundEvents[order + 1] = "";
+            this._outboundEvents[order] = "";
         }
     },
     
@@ -187,10 +180,9 @@ var tw_EventManager = Class.extend({
                                         
         if (order == undefined) {            
             this._queueOutboundEvent(this._EVENT_WEB_COMPONENT, value);
-            this._vsEventOrder[key] = this._outboundEvents.length - 2;            
+            this._vsEventOrder[key] = this._outboundEvents.length - 1;            
         } else {
-            this._outboundEvents[order] = value.length;
-            this._outboundEvents[order + 1] = value;
+            this._outboundEvents[order] = value;
         }                            
     },
         

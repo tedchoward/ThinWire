@@ -84,17 +84,6 @@ public abstract class Application {
         }
     }            
     
-    protected static abstract class AppThread extends Thread {
-        protected Application app;
-        protected String id;
-        
-        public AppThread(Application app, String id) {
-            super("ThinWire AppThread-" + id);
-            this.app = app;
-            this.id = id;
-        }
-    }
-    
     private Map<Local, Object> appLocal = new WeakHashMap<Local, Object>();
     
     public static class Local<T> {
@@ -180,13 +169,7 @@ public abstract class Application {
      * @return the current instance of the application, or null if called from a thread other than the UI thread.
      */
 	public static Application current() {
-        Thread t = Thread.currentThread();
-        
-        if (t instanceof AppThread) {
-            return ((AppThread)t).app;
-        } else {
-            return null;
-        }
+        return thinwire.render.web.WebApplication.current();
 	}
     
     /**
