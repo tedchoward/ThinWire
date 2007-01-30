@@ -31,7 +31,6 @@
 package thinwire.render.web;
 
 import java.io.*;
-import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -116,7 +115,7 @@ public final class WebServlet extends HttpServlet {
         
         //In the case of a refresh, there may be an old Application instance hanging
         //around.  Clean it up.
-        if (app != null) app.shutdown();
+        if (app != null) app.shutdown(null);
 
         response.setContentType("text/html");        
         response.getOutputStream().write(WebApplication.MAIN_PAGE);        

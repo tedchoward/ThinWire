@@ -3,6 +3,7 @@
   */
 package thinwire.render.web;
 
+import java.io.IOException;
 import java.util.logging.Logger;
 
 import thinwire.render.web.WebApplication.Timer;
@@ -63,7 +64,13 @@ class ApplicationEventListener implements WebComponentListener {
             //When the frame is set to non-visible, fire a shutdown event
             f.addPropertyChangeListener(Frame.PROPERTY_VISIBLE, new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent pce) {
-                    if (pce.getNewValue() == Boolean.FALSE) app.shutdown();
+                    if (pce.getNewValue() == Boolean.FALSE) {
+                        try {
+                            app.shutdown(null);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
                 }
             });
         } else if (STARTUP.equals(name)) {

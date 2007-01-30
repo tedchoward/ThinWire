@@ -218,7 +218,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     
     void addInitProperty(String name, Object value) {
         initProps.append(name).append(':');
-        WebApplication.encodeObject(initProps, value);
+        initProps.append(WebApplication.stringValueOf(value));        
         initProps.append(',');
     }
     

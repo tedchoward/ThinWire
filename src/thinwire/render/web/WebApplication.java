@@ -31,9 +31,11 @@
 package thinwire.render.web;
 
 import java.io.ByteArrayOutputStream;
+import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -164,7 +166,7 @@ public final class WebApplication extends Application {
     
     public static Application current() {
         Thread t = Thread.currentThread();
-        return t instanceof UserActionProcessor ? ((UserActionProcessor)t).app : null;
+        return t instanceof EventProcessor ? ((EventProcessor)t).app : null;
     }
     
     static class Timer {
@@ -175,15 +177,13 @@ public final class WebApplication extends Application {
     
     private String baseFolder;
     private String styleSheet;
-    private StringBuilder sbClientEvents;
     private Map<String, Class<ComponentRenderer>> nameToRenderer;
     private Map<Window, WindowRenderer> windowToRenderer;
     private Map<Integer, WebComponentListener> webComponentListeners;
     private Set<String> clientSideIncludes;
     private Map<Component, Object> renderStateListeners;
-    private boolean processClientEvents;
     private int nextCompId;
-    private UserActionProcessor eventProcessor;
+    private EventProcessor eventProcessor;
     
     HttpSession httpSession;
     Map<String, Timer> timerMap;
@@ -200,27 +200,25 @@ public final class WebApplication extends Application {
     boolean playBackEventReceived = false;
     //end Stress Test.
     
-    WebApplication(HttpSession httpSession, String baseFolder, String mainClass, String styleSheet, String[] args) {
+    WebApplication(HttpSession httpSession, String baseFolder, String mainClass, String styleSheet, String[] args) throws IOException {
         this.httpSession = httpSession;
         this.baseFolder = baseFolder;
         this.styleSheet = styleSheet;
         nameToRenderer = new HashMap<String, Class<ComponentRenderer>>();
         windowToRenderer = new HashMap<Window, WindowRenderer>();
         timerMap = new HashMap<String, Timer>();
-        sbClientEvents = new StringBuilder(4096);
-        sbClientEvents.append('[');
         webComponentListeners = new HashMap<Integer, WebComponentListener>();
         
         setWebComponentListener(ApplicationEventListener.ID, new ApplicationEventListener(this));
-        eventProcessor = new UserActionProcessor(this);
-        startupEvent = ApplicationEventListener.newStartEvent(mainClass, args);
-        eventProcessor.queue(ApplicationEventListener.newInitEvent());
+        eventProcessor = new EventProcessor(this);
         eventProcessor.start();
+        startupEvent = ApplicationEventListener.newStartEvent(mainClass, args);
+        eventProcessor.handleRequest(ApplicationEventListener.newInitEvent(), null);
     }
     
-    void shutdown() {
+    void shutdown(Writer w) throws IOException {
         log.log(Level.FINER, "Initiating Application instance SHUTDOWN");
-        eventProcessor.queue(ApplicationEventListener.newShutdownEvent());
+        eventProcessor.handleRequest(ApplicationEventListener.newShutdownEvent(), w);
 
         // Set the execution thread to null,
         // so that this application instance can get
@@ -229,18 +227,13 @@ public final class WebApplication extends Application {
     }
     
     void processActionEvents(Reader r, PrintWriter w) throws IOException {
-        eventProcessor.queue(r);
-        String events = getClientEvents();
+        int count = eventProcessor.handleRequest(r, w);
         
-        if (startupEvent != null && events == null) {
+        if (startupEvent != null && count == 0) {
             WebComponentEvent startupEvent = this.startupEvent;
             this.startupEvent = null;
-            eventProcessor.queue(startupEvent);
-            events = getClientEvents();
+            eventProcessor.handleRequest(startupEvent, w);
         }
-        
-        if (log.isLoggable(Level.FINEST)) log.finest("update events: " + (events != null ? events.length() : 0) + ":" + events);
-        if (events != null) w.print(events);
     }
     
     void sendStyleInitInfo() {
@@ -497,6 +490,11 @@ public final class WebApplication extends Application {
         return clientSideCallImpl(true, componentId, methodName, args);   
     }
     
+    private String clientSideCallImpl(boolean sync, Object objectId, String name, Object[] args) {
+        if (eventProcessor == null) throw new IllegalStateException("No event processor allocated to this application. This is likely caused by making UI calls from a non-UI thread");
+        return eventProcessor.postUpdateEvent(sync, objectId, name, args);
+    }
+    
     public void addRenderStateListener(Component comp, RenderStateListener r) {
         Integer id = getComponentId(comp);
 
@@ -549,88 +547,29 @@ public final class WebApplication extends Application {
         }
     }
     
-    static void encodeObject(StringBuilder sb, Object o) {
+    static String stringValueOf(Object o) {
+        String ret;
+        
         if (o == null) {
-            sb.append("null");
+            ret = "null";
         } else if (o instanceof Integer) {
-            sb.append(String.valueOf(((Integer) o).intValue()));
+            ret = String.valueOf(((Integer) o).intValue());
         } else if (o instanceof Number) {
-            sb.append(String.valueOf(((Number) o).doubleValue()));
+            ret = String.valueOf(((Number) o).doubleValue());
         } else if (o instanceof Boolean) {
-            sb.append(String.valueOf(((Boolean) o).booleanValue()));
+            ret = String.valueOf(((Boolean) o).booleanValue());
         } else if (o instanceof StringBuilder) {
-            sb.append(o.toString());
+            ret = o.toString();
         } else {
-            String s = o.toString();
-            s = REGEX_DOUBLE_SLASH.matcher(s).replaceAll("\\\\\\\\");
-            s = REGEX_DOUBLE_QUOTE.matcher(s).replaceAll("\\\\\"");
-            s = REGEX_CRLF.matcher(s).replaceAll("\\\\r\\\\n");
-            sb.append('\"').append(s).append('\"');
-        }        
-    }
-    
-    private String clientSideCallImpl(boolean sync, Object objectId, String name, Object[] args) {
-        StringBuilder sb = sbClientEvents;
-        String ret = null;
-
-        synchronized (sb) {
-            processClientEvents = true;
-            sb.append("{m:\"").append(name).append('\"');            
-            
-            if (objectId != null) {
-                if (objectId instanceof Integer) {
-                    sb.append(",i:").append(objectId);
-                } else {
-                    sb.append(",n:").append((String)objectId);
-                }
-            }
-
-            if (args != null && args.length > 0) {
-                sb.append(",a:[");
-
-                for (int i = 0, cnt = args.length; i < cnt; i++) {
-                    encodeObject(sb, args[i]);
-                    sb.append(',');
-                }
-
-                sb.setCharAt(sb.length() - 1, ']');
-            } else
-                sb.append(",a:[]");
-
-            if (sync) {
-                sb.append(",s:1},");
-                processClientEvents = true;
-                sb.notify();
-            } else {
-                sb.append("},");
-
-                if (sb.length() >= 1024) {
-                    /*
-                    //Slow things down if the buffer gets this big.
-                    if (sb.length() >= 32768) {
-                        int count = 50;
-                        
-                        while (--count >= 0 && sb.length() >= 1024) {
-                            try {
-                                sb.wait(100);
-                            } catch (InterruptedException e) { }
-                        }
-                    }
-                    */
-                    processClientEvents = true;
-                    sb.notify();
-                } else {
-                    processClientEvents = false;
-                }
-
-                ret = null;
-            }
+            ret = o.toString();
+            ret = REGEX_DOUBLE_SLASH.matcher(ret).replaceAll("\\\\\\\\");
+            ret = REGEX_DOUBLE_QUOTE.matcher(ret).replaceAll("\\\\\"");
+            ret = REGEX_CRLF.matcher(ret).replaceAll("\\\\r\\\\n");
+            ret = '"' + ret + '"';
         }
-
-        if (sync) ret = eventProcessor.getSyncCallResponse();
+        
         return ret;
     }
-        
     
     public Integer getComponentId(Component comp) {
         Object w = comp;
@@ -653,38 +592,6 @@ public final class WebApplication extends Application {
     
     public Component getComponentFromId(Integer id) {
         return ((ComponentRenderer)getWebComponentListener(id)).comp;
-    }
-
-    String getClientEvents() {
-        String s = null;
-
-        synchronized (sbClientEvents) {
-            try {
-                while (true) {
-                    if (processClientEvents) {
-                        if (eventProcessor.isActive()) sbClientEvents.insert(1, "{m:\"sendGetEvents\",n:tw_em,a:[]},");
-                        int length = sbClientEvents.length();
-
-                        if (length > 1) {
-                            sbClientEvents.setCharAt(length - 1, ']');
-                            s = sbClientEvents.substring(0, length);
-                            sbClientEvents.setLength(0);
-                            sbClientEvents.append('[');
-                        }
-
-                        processClientEvents = false;
-                        break;
-                    } else {
-                        processClientEvents = true;
-                        sbClientEvents.wait(100);
-                    }
-                }
-            } catch (InterruptedException e) {
-                log.log(Level.SEVERE, null, e);
-            }
-        }
-
-        return s;
     }
 
     void setWebComponentListener(Integer compId, WebComponentListener listener) {
@@ -823,13 +730,6 @@ public final class WebApplication extends Application {
 		this.playBackOn = playBackOn;
 		if (!this.playBackOn){
 			this.endPlayBack();
-		}
-	}
-	
-	void flushClientEvents() {
-		synchronized (sbClientEvents) {
-			sbClientEvents.setLength(0);
-			sbClientEvents.append('[');
 		}
 	}
 	

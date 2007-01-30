@@ -3,8 +3,10 @@
   */
 package thinwire.render.web;
 
+import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.io.Reader;
+import java.io.Writer;
 import java.net.SocketTimeoutException;
 import java.util.Date;
 import java.util.LinkedList;
@@ -13,25 +15,28 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
-class UserActionProcessor extends Thread {
+class EventProcessor extends Thread {
     private static final char EVENT_WEB_COMPONENT = '0';
     private static final char EVENT_GET_EVENTS = '1';
     private static final char EVENT_SYNC_CALL = '2';
     private static final char EVENT_RUN_TIMER = '3';
-    private static Logger log = Logger.getLogger(UserActionProcessor.class.getName()); 
+    private static Logger log = Logger.getLogger(EventProcessor.class.getName()); 
     private String[] syncCallResponse = new String[1];
     private List<WebComponentEvent> queue = new LinkedList<WebComponentEvent>();
     private StringBuilder sbParseUserAction = new StringBuilder(1024);
     private char[] complexValueBuffer = new char[256];
+    private CharArrayWriter response;
+    private boolean processClientEvents;
     private boolean active;
     private int captureCount;
     private boolean threadCaptured;
     
     WebApplication app;
     
-    UserActionProcessor(WebApplication app) {
+    EventProcessor(WebApplication app) {
         super("ThinWire AppThread-" + app.httpSession.getId());
         this.app = app;
+        response = new CharArrayWriter(4096);
     }
 
     public void run() {
@@ -40,7 +45,7 @@ class UserActionProcessor extends Thread {
         
         try {
             while (true) {
-                processEvent();
+                processUserActionEvent();
             }
         } catch (InterruptedException e) { /* purposefully do nothing */ }
         
@@ -54,7 +59,7 @@ class UserActionProcessor extends Thread {
 
         while (threadCaptured) {
             try {
-                processEvent();
+                processUserActionEvent();
                 if (currentCaptureCount == captureCount) threadCaptured = true;
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
@@ -74,38 +79,19 @@ class UserActionProcessor extends Thread {
         }
     }
     
-    String getSyncCallResponse() {
-        synchronized (syncCallResponse) {
-            String ret;
-            
-            if (syncCallResponse[0] == null) {
-                try {
-                    syncCallResponse.wait(120000);
-                    ret = syncCallResponse[0];
-                    if (ret == null) log.warning("sendClientEvent did not respond within 120 seconds, returning null");
-                } catch (InterruptedException e) {
-                    log.fine("thread interrupted while waiting for synchronized client response");
-                    ret = null;
-                }
-            } else {
-                ret = syncCallResponse[0];
-            }
-            
-            syncCallResponse[0] = null;
-            return ret;
-        }
-    }
-    
-    void queue(WebComponentEvent wce) {
+    //This method is called by the servers request handler thread, not this thread.
+    int handleRequest(WebComponentEvent ev, Writer w) throws IOException {
         synchronized (queue) {
-            if (log.isLoggable(Level.FINEST)) log.finest("queue user action event:" + wce);
-            queue.add(wce);
+            if (log.isLoggable(Level.FINEST)) log.finest("queue user action event:" + ev);
+            queue.add(ev);
             queue.notify();
         }
+        
+        return writeUpdateEvents(w);
     }
     
     //This method is called by the servers request handler thread, not this thread.
-    void queue(Reader r) throws IOException {
+    int handleRequest(Reader r, Writer w) throws IOException {
         synchronized (queue) {
             StringBuilder sb = sbParseUserAction;
             boolean notify = false;
@@ -168,8 +154,10 @@ class UserActionProcessor extends Thread {
                 if (notify) queue.notify();
             }
         }
-    }
 
+        return writeUpdateEvents(w);
+    }
+    
     private void readSimpleValue(StringBuilder sb, Reader r) throws IOException {
         sb.setLength(0);
         int ch;
@@ -200,7 +188,7 @@ class UserActionProcessor extends Thread {
         }
     }
     
-    private void processEvent() throws InterruptedException {
+    private void processUserActionEvent() throws InterruptedException {
         WebApplication wapp = (WebApplication)app;
         WebComponentEvent event;
 
@@ -224,7 +212,10 @@ class UserActionProcessor extends Thread {
 
         if (event != null) {
             if (wapp.playBackOn) {
-                wapp.flushClientEvents();
+                synchronized (response) {
+                    response.reset();
+                }
+                
                 if (ApplicationEventListener.SHUTDOWN.equals(event.getName())) wapp.setPlayBackOn(false);
             }
             
@@ -235,5 +226,129 @@ class UserActionProcessor extends Thread {
                 app.reportException(null, e);
             }
         }
+    }
+    
+    String postUpdateEvent(boolean sync, Object objectId, String name, Object[] args) {
+        synchronized (response) {
+            try {
+                processClientEvents = true;
+                response.write(response.size() == 0 ? '[' : ',');
+                response.write("{m:\"");
+                response.write(name);
+                response.write('\"');            
+                
+                if (objectId != null) {
+                    if (objectId instanceof Integer) {
+                        response.write(",i:");
+                        response.write(objectId.toString());
+                    } else {
+                        response.write(",n:");
+                        response.write((String)objectId);
+                    }
+                }
+    
+                if (args != null && args.length > 0) {
+                    response.write(",a:[");
+    
+                    for (int i = 0, cnt = args.length - 1; i < cnt; i++) {
+                        response.write(WebApplication.stringValueOf(args[i]));
+                        response.write(',');
+                    }
+    
+                    response.write(WebApplication.stringValueOf(args[args.length - 1]));
+                    response.write(']');
+                } else
+                    response.write(",a:[]");
+    
+                if (sync) {
+                    response.write(",s:1}");
+                    processClientEvents = true;
+                    response.notify();
+                } else {
+                    response.write("}");
+    
+                    if (response.size() >= 1024) {
+                        /*
+                        //Slow things down if the buffer gets this big.
+                        if (sb.length() >= 32768) {
+                            int count = 50;
+                            
+                            while (--count >= 0 && sb.length() >= 1024) {
+                                try {
+                                    sb.wait(100);
+                                } catch (InterruptedException e) { }
+                            }
+                        }
+                        */
+                        processClientEvents = true;
+                        response.notify();
+                    } else {
+                        processClientEvents = false;
+                    }
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return sync ? getSyncCallResponse() : null;
+    }
+    
+    private String getSyncCallResponse() {
+        synchronized (syncCallResponse) {
+            String ret;
+            
+            if (syncCallResponse[0] == null) {
+                try {
+                    syncCallResponse.wait(120000);
+                    ret = syncCallResponse[0];
+                    if (ret == null) log.warning("sendClientEvent did not respond within 120 seconds, returning null");
+                } catch (InterruptedException e) {
+                    log.fine("thread interrupted while waiting for synchronized client response");
+                    ret = null;
+                }
+            } else {
+                ret = syncCallResponse[0];
+            }
+            
+            syncCallResponse[0] = null;
+            return ret;
+        }
+    }
+    
+    private int writeUpdateEvents(Writer w) throws IOException {
+        if (w == null) return 0;
+
+        int count;
+        
+        synchronized (response) {
+            try {
+                while (true) {
+                    if (processClientEvents) {
+                        if (isActive()) postUpdateEvent(false, "tw_em", "sendGetEvents", null);
+                        count = response.size(); 
+                        
+                        if (count > 0) {
+                            response.write(']');
+                            count++;
+                            response.writeTo(w);
+                            if (log.isLoggable(Level.FINEST)) log.finest("RESPONSE:" + response.toString());
+                            response.reset();
+                        }
+                        
+                        processClientEvents = false;
+                        break;
+                    } else {
+                        processClientEvents = true;
+                        response.wait(100);
+                    }
+                }
+            } catch (InterruptedException e) {
+                log.log(Level.SEVERE, null, e);
+                count = 0;
+            }
+        }
+        
+        return count;
     }
 }
