@@ -50,7 +50,9 @@ import javax.servlet.http.*;
 /**
  * @author Joshua J. Gertzen
  */
-public final class WebServlet extends HttpServlet {    
+public final class WebServlet extends HttpServlet {
+    private static final Logger log = Logger.getLogger(WebServlet.class.getName());
+    
     private static enum InitParam {
         MAIN_CLASS, EXTRA_ARGUMENTS, STYLE_SHEET;
 
@@ -80,8 +82,24 @@ public final class WebServlet extends HttpServlet {
             return valueOf(mixedCaseName);
         }
     }
+    
+    private static class ApplicationHolder implements HttpSessionBindingListener {
+        WebApplication app;
         
-	private static final Logger log = Logger.getLogger(WebServlet.class.getName());
+        public void valueBound(HttpSessionBindingEvent event) {
+            
+        }
+        
+        public void valueUnbound(HttpSessionBindingEvent event) {
+            log.finer("Unbinding application instance " + event.getSession().getId());
+            
+            try {
+                app.shutdown(null);
+            } catch (Exception e) {
+                log.log(Level.WARNING, "error while unbinding application instance", e);
+            }
+        }
+    }
 
     public void service(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         String method = request.getMethod();
@@ -110,12 +128,13 @@ public final class WebServlet extends HttpServlet {
     private void handleStart(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         HttpSession httpSession = request.getSession();
         String id = httpSession.getId(); 
-        WebApplication app = (WebApplication)httpSession.getAttribute("instance");
-        if (log.isLoggable(Level.FINEST)) log.finest("start id=" + id + ",old instance is null=" + (app == null));
+        
+        ApplicationHolder holder = (ApplicationHolder)httpSession.getAttribute("instance");
+        if (log.isLoggable(Level.FINEST)) log.finest("start id=" + id + ",old instance is null=" + (holder == null));
         
         //In the case of a refresh, there may be an old Application instance hanging
         //around.  Clean it up.
-        if (app != null) app.shutdown(null);
+        if (holder != null) httpSession.removeAttribute("instance");
 
         response.setContentType("text/html");        
         response.getOutputStream().write(WebApplication.MAIN_PAGE);        
@@ -181,8 +200,9 @@ public final class WebServlet extends HttpServlet {
             sb.setLength(0);
         }
         
-        app = new WebApplication(httpSession, this.getServletContext().getRealPath(""), getInitParameter(InitParam.MAIN_CLASS.mixedCaseName()), getInitParameter(InitParam.STYLE_SHEET.mixedCaseName()), args.toArray(new String[args.size()]));
-        httpSession.setAttribute("instance", app);        
+        holder = new ApplicationHolder();
+        holder.app = new WebApplication(this.getServletContext().getRealPath(""), getInitParameter(InitParam.MAIN_CLASS.mixedCaseName()), getInitParameter(InitParam.STYLE_SHEET.mixedCaseName()), args.toArray(new String[args.size()]));
+        httpSession.setAttribute("instance", holder);        
     }    
     
     private void handleResource(HttpServletRequest request, HttpServletResponse response, String resourceName) throws IOException, ServletException {        
@@ -215,36 +235,40 @@ public final class WebServlet extends HttpServlet {
     
     private void handlePostEvent(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         HttpSession httpSession = request.getSession();        
-        WebApplication app = (WebApplication)httpSession.getAttribute("instance");
+        ApplicationHolder holder = (ApplicationHolder)httpSession.getAttribute("instance");
         response.setContentType("text/plain; charset=utf-8");
         response.setHeader("Cache-Control", "no-store");
-        if (app == null) return;
-        app.processActionEvents(request.getReader(), response.getWriter());
+        if (holder == null) return;
+        holder.app.processActionEvents(request.getReader(), response.getWriter());
     }
     
     private void handleUserUpload(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         HttpSession httpSession = request.getSession();
-        WebApplication app = (WebApplication)httpSession.getAttribute("instance");        
-        if (app != null) {
+        ApplicationHolder holder = (ApplicationHolder)httpSession.getAttribute("instance");
+        
+        if (holder.app != null) {
             try {
                 DiskFileUpload upload = new DiskFileUpload();
                 upload.setSizeThreshold(1000000);
                 upload.setSizeMax(25000000);
                 upload.setRepositoryPath("C:\\");
                 List<FileItem> items = upload.parseRequest(request);
+
                 if (items.size() > 0) {
                     FileChooser.FileInfo f = null;
-                    synchronized(app.fileList) {
+
+                    synchronized(holder.app.fileList) {
                         for (FileItem fi : items) {
                             if (!fi.isFormField() && fi.getSize() > 0) {
                                 f = new FileChooser.FileInfo();
                                 f.setName(fi.getName());
                                 f.setInputStream(fi.getInputStream());
                                 f.setDescription("");
-                                app.fileList[0] = f;
+                                holder.app.fileList[0] = f;
                             }
                         }
-                        app.fileList.notify();
+                            
+                            holder.app.fileList.notify();
                     }
                 }
             } catch (FileUploadException e) {

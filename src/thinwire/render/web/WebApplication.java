@@ -31,7 +31,6 @@
 package thinwire.render.web;
 
 import java.io.ByteArrayOutputStream;
-import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.PrintWriter;
@@ -49,8 +48,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
-
-import javax.servlet.http.HttpSession;
 
 import thinwire.render.RenderStateEvent;
 import thinwire.render.RenderStateListener;
@@ -175,17 +172,19 @@ public final class WebApplication extends Application {
         boolean repeat;
     }
     
+    private static enum State {INIT, STARTUP, RUNNING, SHUTDOWN}
+    
     private String baseFolder;
     private String styleSheet;
+    private int nextCompId;
+    private State state;
     private Map<String, Class<ComponentRenderer>> nameToRenderer;
     private Map<Window, WindowRenderer> windowToRenderer;
     private Map<Integer, WebComponentListener> webComponentListeners;
     private Set<String> clientSideIncludes;
     private Map<Component, Object> renderStateListeners;
-    private int nextCompId;
-    private EventProcessor eventProcessor;
+    private EventProcessor proc;
     
-    HttpSession httpSession;
     Map<String, Timer> timerMap;
     WebComponentEvent startupEvent;
     Map<Style, String> styleToStyleClass = new HashMap<Style, String>();
@@ -200,39 +199,82 @@ public final class WebApplication extends Application {
     boolean playBackEventReceived = false;
     //end Stress Test.
     
-    WebApplication(HttpSession httpSession, String baseFolder, String mainClass, String styleSheet, String[] args) throws IOException {
-        this.httpSession = httpSession;
+    WebApplication(String baseFolder, String mainClass, String styleSheet, String[] args) throws IOException {
         this.baseFolder = baseFolder;
         this.styleSheet = styleSheet;
         nameToRenderer = new HashMap<String, Class<ComponentRenderer>>();
         windowToRenderer = new HashMap<Window, WindowRenderer>();
         timerMap = new HashMap<String, Timer>();
         webComponentListeners = new HashMap<Integer, WebComponentListener>();
-        
+     
         setWebComponentListener(ApplicationEventListener.ID, new ApplicationEventListener(this));
-        eventProcessor = new EventProcessor(this);
-        eventProcessor.start();
         startupEvent = ApplicationEventListener.newStartEvent(mainClass, args);
-        eventProcessor.handleRequest(ApplicationEventListener.newInitEvent(), null);
+        state = State.INIT;
     }
     
     void shutdown(Writer w) throws IOException {
+        if (state == State.SHUTDOWN) return;
         log.log(Level.FINER, "Initiating Application instance SHUTDOWN");
-        eventProcessor.handleRequest(ApplicationEventListener.newShutdownEvent(), w);
+        state = State.SHUTDOWN;
+        /*boolean isNull = proc == null;
+        
+        try {
+            if (isNull) proc = EventProcessorPool.INSTANCE.getProcessor(this);
+            proc.handleRequest(ApplicationEventListener.newShutdownEvent(), w);
+        } finally {
+            if (isNull && proc != null) {
+                EventProcessorPool.INSTANCE.returnToPool(proc);
+                proc = null;
+            }
+        }*/
+        
+        if (nameToRenderer != null) nameToRenderer.clear();
+        if (windowToRenderer != null) windowToRenderer.clear();
+        if (webComponentListeners != null) webComponentListeners.clear();
+        if (clientSideIncludes != null) clientSideIncludes.clear();
+        if (renderStateListeners != null) renderStateListeners.clear();
+        if (timerMap != null) timerMap.clear();
+        if (styleToStyleClass != null) styleToStyleClass.clear();
+        if (userActionListener != null) userActionListener.stop();
+        
+        nameToRenderer = null;
+        windowToRenderer = null;
+        webComponentListeners = null;
+        clientSideIncludes = null;
+        renderStateListeners = null;
+        timerMap = null;
+        styleToStyleClass = null;
+        fileList = null;
+        userActionListener = null;
+        
+        
+        //app.clientSideFunctionCall(SHUTDOWN_INSTANCE, 
+          //      "The application instance has shutdown. Press F5 to restart the application or close the browser to end your session.");
 
-        // Set the execution thread to null,
-        // so that this application instance can get
-        // garbage collected.
-        eventProcessor = null;
+        //if (app.httpSession.getAttribute("instance") == app) app.httpSession.setAttribute("instance", null);                    
     }
     
     void processActionEvents(Reader r, PrintWriter w) throws IOException {
-        int count = eventProcessor.handleRequest(r, w);
+        if (proc != null) throw new IllegalStateException("There is already an EventProcessor allocated to this application!");
         
-        if (startupEvent != null && count == 0) {
-            WebComponentEvent startupEvent = this.startupEvent;
-            this.startupEvent = null;
-            eventProcessor.handleRequest(startupEvent, w);
+        try {
+            proc = EventProcessorPool.INSTANCE.getProcessor(this);
+            proc.handleRequest(r, w);
+     
+            if (state != State.RUNNING) {
+                if (state == State.INIT) {
+                    proc.handleRequest(ApplicationEventListener.newInitEvent(), w);
+                    state = State.STARTUP;
+                } else if (state == State.STARTUP && (getFrame().getWidth() > 0 || getFrame().getHeight() > 0)) { 
+                    WebComponentEvent startupEvent = this.startupEvent;
+                    this.startupEvent = null;
+                    proc.handleRequest(startupEvent, w);
+                    state = State.RUNNING;
+                }
+            }
+        } finally {
+            EventProcessorPool.INSTANCE.returnToPool(proc);
+            proc = null;
         }
     }
     
@@ -491,8 +533,8 @@ public final class WebApplication extends Application {
     }
     
     private String clientSideCallImpl(boolean sync, Object objectId, String name, Object[] args) {
-        if (eventProcessor == null) throw new IllegalStateException("No event processor allocated to this application. This is likely caused by making UI calls from a non-UI thread");
-        return eventProcessor.postUpdateEvent(sync, objectId, name, args);
+        if (proc == null) throw new IllegalStateException("No event processor allocated to this application. This is likely caused by making UI calls from a non-UI thread");
+        return proc.postUpdateEvent(sync, objectId, name, args);
     }
     
     public void addRenderStateListener(Component comp, RenderStateListener r) {
@@ -614,11 +656,13 @@ public final class WebApplication extends Application {
     }
     
     protected void captureThread() {
-        eventProcessor.capture();
+        if (proc == null) throw new IllegalStateException("No event processor allocated to this application. This is likely caused by making UI calls from a non-UI thread");
+        proc.captureThread();
     }
 
     protected void releaseThread() {
-        eventProcessor.release();
+        if (proc == null) throw new IllegalStateException("No event processor allocated to this application. This is likely caused by making UI calls from a non-UI thread");
+        proc.releaseThread();
     }
 
     protected void showWindow(Window w) {
@@ -723,7 +767,7 @@ public final class WebApplication extends Application {
 	}
     
     protected void finalize() {
-        log.log(Level.FINER, "finalizing app " + this.httpSession.getId());
+        log.log(Level.FINER, "finalizing app");
     }
 
 	public void setPlayBackOn(boolean playBackOn){

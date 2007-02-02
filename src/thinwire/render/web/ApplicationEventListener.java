@@ -1,9 +1,37 @@
 /*
- * Created on Jan 29, 2007
-  */
+#IFNDEF ALT_LICENSE
+                           ThinWire(R) RIA Ajax Framework
+                 Copyright (C) 2003-2007 Custom Credit Systems
+
+  This library is free software; you can redistribute it and/or modify it under
+  the terms of the GNU Lesser General Public License as published by the Free
+  Software Foundation; either version 2.1 of the License, or (at your option) any
+  later version.
+
+  This library is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+  PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public License along
+  with this library; if not, write to the Free Software Foundation, Inc., 59
+  Temple Place, Suite 330, Boston, MA 02111-1307 USA
+
+  Users who would rather have a commercial license, warranty or support should
+  contact the following company who invented, built and supports the technology:
+  
+                Custom Credit Systems, Richardson, TX 75081, USA.
+                email: info@thinwire.com    ph: +1 (888) 644-6405
+                            http://www.thinwire.com
+#ENDIF
+#IFDEF ALT_LICENSE
+#LICENSE_HEADER#
+#ENDIF
+#VERSION_HEADER#
+*/
 package thinwire.render.web;
 
 import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import thinwire.render.web.WebApplication.Timer;
@@ -13,6 +41,8 @@ import thinwire.ui.event.PropertyChangeListener;
 
 class ApplicationEventListener implements WebComponentListener {
     private static final Logger log = Logger.getLogger(ApplicationEventListener.class.getName());
+    private static final Level LEVEL = Level.FINER;
+    
     static final Integer ID = new Integer(Integer.MAX_VALUE);
     private static final String SHUTDOWN_INSTANCE = "tw_shutdownInstance";
     private static final String INIT = "INIT";
@@ -60,6 +90,9 @@ class ApplicationEventListener implements WebComponentListener {
             app.sendStyleInitInfo();
             Frame f = app.getFrame();
             f.setVisible(true);
+            if (log.isLoggable(LEVEL)) log.log(LEVEL, Thread.currentThread().getName() + ": Testing synchornized client-side call by retrieving client time");
+            String time = app.clientSideFunctionCallWaitForReturn("tw_getTime");
+            if (log.isLoggable(LEVEL)) log.log(LEVEL, Thread.currentThread().getName() + ": Client time in milliseconds is " + time);
 
             //When the frame is set to non-visible, fire a shutdown event
             f.addPropertyChangeListener(Frame.PROPERTY_VISIBLE, new PropertyChangeListener() {
@@ -84,19 +117,7 @@ class ApplicationEventListener implements WebComponentListener {
                 throw (RuntimeException)e;
             }                    
         } else if (SHUTDOWN.equals(name)) {
-            if (app.getFrame().isVisible()) {
-                app.getFrame().setVisible(false);
-            } else {
-                //app.eventProcessor.interrupt();
-
-                // Call the client-side shutdown instance
-                app.clientSideFunctionCall(SHUTDOWN_INSTANCE, 
-                        "The application instance has shutdown. Press F5 to restart the application or close the browser to end your session.");
-
-                if (app.userActionListener != null) app.userActionListener.stop();
-
-                if (app.httpSession.getAttribute("instance") == app) app.httpSession.setAttribute("instance", null);                    
-            }
+            if (app.getFrame().isVisible()) app.getFrame().setVisible(false);
         } else if (RUN_TIMER.equals(name)) {
             String timerId = (String)event.getValue();
             Timer timer = app.timerMap.get(timerId);
