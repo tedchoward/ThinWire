@@ -46,6 +46,7 @@ var tw_GridBox = tw_Component.extend({
     _parentCell: null,
     _lastIndex: null,
     _clickTime: null,
+    _sortAllowed: null,
     
     construct: function(id, containerId, props) {
         arguments.callee.$.call(this, "div", "gridBox", id, containerId);
@@ -56,12 +57,14 @@ var tw_GridBox = tw_Component.extend({
         var selectedRow = props.selectedRow;
         var checkedRows = props.checkedRows;
         var parentIndex = props.parentIndex;
+        this._sortAllowed = props.sortAllowed;
         
         delete props.visibleCheckBoxes;        
         delete props.columnData;
         delete props.selectedRow;
         delete props.checkedRows;
         delete props.parentIndex;
+        delete props.sortAllowed;
         
         var header = this._header = document.createElement("div");
         header.className = "gridBoxHeader";
@@ -251,7 +254,7 @@ var tw_GridBox = tw_Component.extend({
     },
 
     _columnClickListener: function(event) {
-        if (!this._enabled || this._hresize.column != null) return;
+        if (!this._enabled || !this._sortAllowed || this._hresize.column != null) return;
         var columnHeader = tw_getEventTarget(event, "gridBoxColumnHeader");
         var cn = this._header.childNodes;        
         for (var index = cn.length; --index >= 0;) if (cn.item(index) === columnHeader) break;
@@ -670,6 +673,10 @@ var tw_GridBox = tw_Component.extend({
 
     setFullRowCheckBox: function(fullRowCheckBox) {
         this._fullRowCheckBox = fullRowCheckBox;
+    },
+    
+    setSortAllowed: function(sortAllowed) {
+        this._sortAllowed = sortAllowed;
     },
 
     setColumnName: function(index, name) {

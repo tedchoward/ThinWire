@@ -72,6 +72,7 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
     private static final String SET_COLUMN = "setColumn";
     private static final String REMOVE_COLUMN = "removeColumn";
     private static final String VIEW_STATE_COLUMN_SORT = "columnSort";
+    private static final String SET_SORT_ALLOWED = "setSortAllowed";
 
     private Set<Integer> rowState = new HashSet<Integer>();
     private Set<Integer> columnState = new HashSet<Integer>();
@@ -147,6 +148,7 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
         addInitProperty(GridBox.PROPERTY_VISIBLE_HEADER, gb.isVisibleHeader());
         addInitProperty(GridBox.PROPERTY_VISIBLE_CHECK_BOXES, gb.isVisibleCheckBoxes());
         addInitProperty(GridBox.PROPERTY_FULL_ROW_CHECK_BOX, gb.isFullRowCheckBox());
+        addInitProperty(GridBox.PROPERTY_SORT_ALLOWED, gb.isSortAllowed());
         addInitProperty("parentIndex", parentIndex);
         Row sr = gb.getSelectedRow();
         addInitProperty("selectedRow", sr == null || colDefs.length() == 2 ? -1 : sr.getIndex());
@@ -230,6 +232,8 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
             } else if (name.equals(Component.PROPERTY_HEIGHT)) {
                 Integer height = (Integer)newValue;
                 setPropertyWithEffect(Component.PROPERTY_HEIGHT, height, pce.getOldValue(), SET_HEIGHT, FX.PROPERTY_FX_SIZE_CHANGE);
+            } else if (name.equals(GridBox.PROPERTY_SORT_ALLOWED)) {
+            	postClientEvent(SET_SORT_ALLOWED, newValue);
             } else {
                 super.propertyChange(pce);
             }

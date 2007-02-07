@@ -659,6 +659,7 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
     public static final String PROPERTY_VISIBLE_HEADER = "visibleHeader";
     public static final String PROPERTY_VISIBLE_CHECK_BOXES = "visibleCheckBoxes";
     public static final String PROPERTY_FULL_ROW_CHECK_BOX = "fullRowCheckBox";
+    public static final String PROPERTY_SORT_ALLOWED = "sortAllowed";
     
     private static final String[] STYLE_PROPERTIES = {Font.PROPERTY_FONT_BOLD, Font.PROPERTY_FONT_COLOR, Font.PROPERTY_FONT_FAMILY,
         Font.PROPERTY_FONT_ITALIC, Font.PROPERTY_FONT_SIZE, Font.PROPERTY_FONT_UNDERLINE, Font.PROPERTY_FONT_STRIKE,
@@ -670,6 +671,7 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
     private boolean visibleHeader;
     private boolean visibleCheckBoxes;
     private boolean fullRowCheckBox;
+    private boolean sortAllowed = true;
     //#IFDEF V1_1_COMPAT
     private boolean compatModeOn;
     //#ENDIF
@@ -689,7 +691,7 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
 	 * Constructs a new GridBox.
 	 */
 	public GridBox() {
-		this.grid = new ArrayGrid<GridBox.Row, GridBox.Column>(this, GridBox.Row.class, GridBox.Column.class) {		    
+		this.grid = new ArrayGrid<GridBox.Row, GridBox.Column>(this, GridBox.Row.class, GridBox.Column.class) {
 		    protected void fireItemChange(Type type, int rowIndex, int columnIndex, Object oldValue, Object newValue) {
                 if (rowIndex >= 0 && columnIndex == -1) {
                     List<GridBox.Row> rows = GridBox.this.getRows();
@@ -785,7 +787,7 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
         checkedRows = new TreeSet<Row>(indexOrder);
         roCheckedRows = Collections.unmodifiableSortedSet(checkedRows);
         rowsWithChildren = new TreeSet<Row>(indexOrder);
-        roRowsWithChildren = Collections.unmodifiableSortedSet(rowsWithChildren);        
+        roRowsWithChildren = Collections.unmodifiableSortedSet(rowsWithChildren);
         //#IFDEF V1_1_COMPAT
         compatModeOn = isCompatModeOn();
         //#ENDIF
@@ -849,10 +851,10 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
 	}
 	
 	/**
-   * Returns a boolean indicating if this GridBox's column
-   * headers are visible.
-	 * @return true if this GridBox's column headers are
-   *    visible.
+	 * Returns a boolean indicating if this GridBox's column headers are
+	 * visible.
+	 * 
+	 * @return true if this GridBox's column headers are visible.
 	 */
 	public boolean isVisibleHeader() {
 	    return visibleHeader;
@@ -869,8 +871,9 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
 	}
 	
 	/**
-   * Returns a boolean indicating whether this GridBox's
-   * rows have visible CheckBoxes.
+	 * Returns a boolean indicating whether this GridBox's rows have visible
+	 * CheckBoxes.
+	 * 
 	 * @return true if there are visible CheckBoxes on the rows.
 	 */
 	public boolean isVisibleCheckBoxes() {
@@ -889,10 +892,11 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
 	}
 
 	/**
-   * Get a boolean indicating whether clicking anywhere on a row
-   * in this GridBox will check the row's CheckBox.
-	 * @return true if clicking anywhere on this GridBox's rows
-   *    will check the row's CheckBox.
+	 * Get a boolean indicating whether clicking anywhere on a row in this
+	 * GridBox will check the row's CheckBox.
+	 * 
+	 * @return true if clicking anywhere on this GridBox's rows will check the
+	 *         row's CheckBox.
 	 */
 	public boolean isFullRowCheckBox() {
         return fullRowCheckBox;
@@ -907,6 +911,27 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
 	    boolean oldFullRowCheckBox = this.fullRowCheckBox;
 	    this.fullRowCheckBox = fullRowCheckBox;
 		firePropertyChange(this, PROPERTY_FULL_ROW_CHECK_BOX, oldFullRowCheckBox, fullRowCheckBox);
+	}
+	
+	/**
+	 * Get a boolean indicating whether this GridBox can be sorted by clicking
+	 * on Column headers
+	 * 
+	 * @return true if the GridBox can be sorted
+	 */
+	public boolean isSortAllowed() {
+		return sortAllowed;
+	}
+	
+	/**
+	 * Sets whether the GridBox can be sorted by clicking on Column headers.
+	 * 
+	 * @param sortAllowed Default: true
+	 */
+	public void setSortAllowed(boolean sortAllowed) {
+		boolean oldSortAllowed = this.sortAllowed;
+		this.sortAllowed = sortAllowed;
+		firePropertyChange(this, PROPERTY_SORT_ALLOWED, oldSortAllowed, sortAllowed);
 	}
 	
 	/**
