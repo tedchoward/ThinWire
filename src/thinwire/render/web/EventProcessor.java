@@ -205,13 +205,13 @@ class EventProcessor extends Thread {
                         case EVENT_WEB_COMPONENT: {
                             readSimpleValue(sb, r);
                             Integer source = Integer.valueOf(sb.toString());
+                            readSimpleValue(sb, r);
+                            String name = sb.toString();
+                            readComplexValue(sb, r);
+                            String value = sb.toString();
                             WebComponentListener wcl = app.getWebComponentListener(source);
                             
                             if (wcl != null) {
-                                readSimpleValue(sb, r);
-                                String name = sb.toString();
-                                readComplexValue(sb, r);
-                                String value = sb.toString();
                                 WebComponentEvent ev = new WebComponentEvent(source, name, value);
                                 if (log.isLoggable(LEVEL)) log.log(LEVEL, getName() + ": queue user action event:" + ev);
                                 queue.add(ev);
