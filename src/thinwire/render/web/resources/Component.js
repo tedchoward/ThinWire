@@ -681,7 +681,8 @@ tw_Component.expandUrl = function(url, wrapInUrl) {
 //NOTE: This function is defined here so it can be shared by the unrelated classes: Image, Hyperlink, Label & BaseCheckRadio.
 tw_Component.keyPressNotifySpaceFireAction = function(keyPressCombo) {
     if (keyPressCombo == "Space") {
-        this._clickListener();
+        var ev = {type:"click"};
+        this._clickListener(ev);
         return false;
     } else {
         return arguments.callee.$.call(this, keyPressCombo);
