@@ -41,7 +41,7 @@
 		<property name="path.binary" value="${path.temp}_bin"/>
 		
 		<!-- Preprocessor Defines -->
-		<property name="PREPROCESSOR_DEFINES" value=""/>
+		<property name="PREPROCESSOR_DEFINES" value="|V1_1_COMPAT"/>
 		
 		<!-- Delete working folders -->
 		<delete dir="${path.temp}"/>

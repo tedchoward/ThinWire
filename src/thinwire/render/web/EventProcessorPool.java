@@ -33,6 +33,9 @@ package thinwire.render.web;
 import java.util.*;
 import java.util.logging.*;
 
+/**
+ * @author Joshua J. Gertzen
+ */
 class EventProcessorPool {
     private static final Logger log = Logger.getLogger(EventProcessorPool.class.getName());
     private static final Level LEVEL = Level.FINER;

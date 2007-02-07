@@ -263,7 +263,6 @@ var tw_Component = Class.extend({
                     this._borderImage = null;
                     if (this._borderBox === this._box) this._box = bi._box;
                     this._borderBox = bi._box;
-                    bi.setBox(null);
                     bi.destroy();
                 } else if (value.length > 0) {
                     if (bi == null) {

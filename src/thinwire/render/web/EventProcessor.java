@@ -40,7 +40,9 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
+/**
+ * @author Joshua J. Gertzen
+ */
 class EventProcessor extends Thread {
     private static final char EVENT_WEB_COMPONENT = '0';
     private static final char EVENT_GET_EVENTS = '1';

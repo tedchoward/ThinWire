@@ -191,6 +191,7 @@ var tw_BorderImage = Class.extend({
     },
     
     destroy: function() {
+        this.setBox(null);
         this._box = this._e = this._c = this._t = this._b = this._l = this._r = this._lt = this._lb = this._rt = this._rb = null;
     }
 });
