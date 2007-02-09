@@ -316,7 +316,7 @@ var tw_Dialog = tw_BaseContainer.extend({
         if (this._moveDrag != null) this._moveDrag.destroy();
         if (this._resizeDrag != null) this._resizeDrag.destroy();
         this._menu = this._standardButton = this._moveDrag = this._resizeDrag = this._closeButton = null;                
-        tw_Frame.active.setModalLayerVisible(false);
+        tw_Frame.active.setModalLayerVisible(false, this);
         document.body.removeChild(this._box);
         arguments.callee.$.call(this);
     }

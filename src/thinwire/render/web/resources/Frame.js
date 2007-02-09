@@ -152,7 +152,12 @@ var tw_Frame = tw_BaseContainer.extend({
             this._modalLayer.style.zIndex = ++tw_Component.zIndex;
             this._modalDialogIds.push(dialog);
         } else {
-            this._modalDialogIds.pop();
+            for (var i = 0, cnt = this._modalDialogIds.length; i < cnt; i++) {
+                if (this._modalDialogIds[i] === dialog) {
+                    this._modalDialogIds.splice(i, 1);
+                    break;
+                }
+            }
             
             if (this._modalDialogIds.length == 0) {
                 this._modalLayer.style.display = "none";
