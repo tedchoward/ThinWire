@@ -71,9 +71,10 @@ var tw_Tree = tw_Component.extend({
         var item = tw_getEventTarget(event, "treeRow");
         this.setFocus(true);
         this._select(item, true);
-        var action = this._getClickAction(event.type, item);
+        var index = this._fullIndex(item);
+        var action = this._getClickAction(event.type, index);
         if (action == null) return;
-        this.fireAction(event, action, this._fullIndex(item));
+        this.fireAction(event, action, index);
     },
     
     _getClickAction: tw_Component.getClickAction,
