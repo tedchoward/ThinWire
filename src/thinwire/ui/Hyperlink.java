@@ -66,7 +66,7 @@ import thinwire.render.web.WebApplication;
  * @author Joshua J. Gertzen
  */
 public class Hyperlink extends AbstractTextComponent {    
-    private static ThreadLocal<Integer> targetId = new ThreadLocal<Integer>() {
+    private static Application.Local<Integer> targetId = new Application.Local<Integer>() {
         protected synchronized Integer initialValue() {
             return 0;
         }
