@@ -75,13 +75,13 @@ class EventProcessorPool {
         synchronized (appToProcessor) {
             if (proc.app == null) throw new IllegalStateException("Cannot release an EventProcessor thread that has not bee allocated to an application!");
             
-            if (!proc.isCaptured()) {
+            if (!proc.isInUse()) {
                 if (log.isLoggable(LEVEL)) log.log(LEVEL, "Returning " + proc.getName() + " to pool");
                 appToProcessor.remove(proc.app);
                 proc.app = null;
                 pool.add(proc);
             } else {
-                if (log.isLoggable(LEVEL)) log.log(LEVEL, "Cannot return " + proc.getName() + " because thread is captured");
+                if (log.isLoggable(LEVEL)) log.log(LEVEL, "Cannot return " + proc.getName() + " because thread is waiting in unreturnable call");
             }
         }
     }

@@ -673,6 +673,9 @@ public final class WebApplication extends Application {
         
         if (wr instanceof DialogRenderer) {
             wr.render(wr, w, windowToRenderer.get(getFrame()));
+            
+            //Force events to be sent to client because dialog show's must be immediate!
+            proc.flush();
         } else {
             StringBuilder sb = new StringBuilder();
             sb.append("{");
@@ -701,6 +704,9 @@ public final class WebApplication extends Application {
         if (wr == null) throw new IllegalStateException("Cannot close a window that has not been set to visible");
         if (log.isLoggable(Level.FINE)) log.fine("closing window with id:" + wr.id);
         wr.destroy();
+
+        //Force events to be sent to client because dialog hide's must be immediate!
+        if (wr instanceof DialogRenderer) proc.flush();
     }
 
     WindowRenderer getWindowRenderer(Window w) {

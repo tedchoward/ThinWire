@@ -73,8 +73,8 @@ class EventProcessor extends Thread {
         this.pool = pool;
     }
     
-    boolean isCaptured() {
-        return threadCaptured;
+    boolean isInUse() {
+        return threadCaptured || active;
     }
 
     public void run() {
@@ -357,19 +357,7 @@ class EventProcessor extends Thread {
             }
             
             if (waitToRespond && (sync || updateEventsSize >= 16384)) {
-                waitToRespond = false;
-                queue.notify();
-
-                try {
-                    while (!waitToRespond) {
-                        queue.wait();
-                    }
-                } catch (InterruptedException e) {
-                    //Must throw an exception so the stack unrolls properly.
-                    throw new RuntimeException(e);
-                }
-                
-                updateEventsSize = 0;
+                flush();
             } else {
                 updateEventsSize += size;
             }
@@ -378,5 +366,21 @@ class EventProcessor extends Thread {
         }
 
         return sync ? syncCallResponse : null;
+    }
+    
+    void flush() {
+        waitToRespond = false;
+        queue.notify();
+
+        try {
+            while (!waitToRespond) {
+                queue.wait();
+            }
+        } catch (InterruptedException e) {
+            //Must throw an exception so the stack unrolls properly.
+            throw new RuntimeException(e);
+        }
+        
+        updateEventsSize = 0;
     }
 }
