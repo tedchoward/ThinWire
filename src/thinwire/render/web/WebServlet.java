@@ -267,8 +267,8 @@ public final class WebServlet extends HttpServlet {
                                 holder.app.fileList[0] = f;
                             }
                         }
-                            
-                            holder.app.fileList.notify();
+                        
+                        holder.app.fileList.notify();
                     }
                 }
             } catch (FileUploadException e) {

@@ -180,17 +180,17 @@ class EventProcessor extends Thread {
     }
     
     //This method is called by the servers request handler thread, not this thread.
-    int handleRequest(WebComponentEvent ev, Writer w) throws IOException {
+    void handleRequest(WebComponentEvent ev, Writer w) throws IOException {
         synchronized (queue) {
             if (log.isLoggable(LEVEL)) log.log(LEVEL, getName() + ": queue user action event:" + ev);
             queue.add(ev);
             queue.notify();
-            return writeUpdateEvents(w);
+            writeUpdateEvents(w);
         }
     }
     
     //This method is called by the servers request handler thread, not this thread.
-    int handleRequest(Reader r, Writer w) throws IOException {
+    void handleRequest(Reader r, Writer w) throws IOException {
         synchronized (queue) {
             StringBuilder sb = sbParseUserAction;
             
@@ -244,13 +244,13 @@ class EventProcessor extends Thread {
             }
             
             queue.notify();
-            return writeUpdateEvents(w);
+            writeUpdateEvents(w);
         }
     }
     
     //Must only be called by one of the handleRequest methods!
-    private int writeUpdateEvents(Writer w) throws IOException {
-        if (w == null) return 0;
+    private void writeUpdateEvents(Writer w) throws IOException {
+        if (w == null) return;
         
         try {
             response = w;
@@ -263,15 +263,19 @@ class EventProcessor extends Thread {
             }
 
             if (log.isLoggable(LEVEL)) log.log(LEVEL, getName() + ": finishing up update events, active=" + active + ", updateEventsSize=" + updateEventsSize);
-            if (active) postUpdateEvent(false, "tw_em", "sendGetEvents", null);
-            return updateEventsSize; 
+            if (active) {
+            	w.write(updateEventsSize == 0 ? "[{m:\"" : ",{m:\"");
+            	w.write("sendGetEvents\",a:[],s:1,n:tw_em}");
+            	updateEventsSize += 36;
+            }
+            
         } catch (InterruptedException e) {
             //Only occurs if the request handler thread is interrupted, in which case we should
             //try and gracefully exit;
-            return updateEventsSize; 
         } finally {
             if (updateEventsSize > 0) response.write(']');
             response = null;
+            updateEventsSize = 0;
         }
     }
     
@@ -356,11 +360,10 @@ class EventProcessor extends Thread {
                 size += 1;
             }
             
-            if (waitToRespond && (sync || updateEventsSize >= 16384)) {
-                flush();
-            } else {
-                updateEventsSize += size;
-            }
+            updateEventsSize += size;
+            
+            if (waitToRespond && (sync || updateEventsSize >= 16384)) flush();
+            
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -380,7 +383,5 @@ class EventProcessor extends Thread {
             //Must throw an exception so the stack unrolls properly.
             throw new RuntimeException(e);
         }
-        
-        updateEventsSize = 0;
     }
 }

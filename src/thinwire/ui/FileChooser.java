@@ -239,7 +239,7 @@ public class FileChooser extends Panel {
      */
     public FileInfo getFileInfo() {
         if (fileName.getText().length() == 0) return null;
-        app.clientSideMethodCall("tw_FileChooser", "submit", app.getComponentId(fileName));
+        app.clientSideMethodCallWaitForReturn("tw_FileChooser", "submit", app.getComponentId(fileName));
         FileInfo fi = ((Application) app).getFileInfo();
         return fi;
     }   
