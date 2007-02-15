@@ -39,6 +39,7 @@ import java.util.TreeSet;
 import java.util.logging.Logger;
 
 import thinwire.ui.Component;
+import thinwire.ui.Container;
 import thinwire.ui.event.ItemChangeEvent;
 import thinwire.ui.event.ItemChangeEvent.Type;
 import thinwire.util.ArrayGrid;
@@ -704,7 +705,7 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
     
     public void apply() {
         if (container == null) return;
-        int[] absoluteWidths = getAbsoluteSizes(container.getInnerWidth(), getVisibleColumns());
+        int[] absoluteWidths = getAbsoluteSizes(calculateInnerWidth(), getVisibleColumns());
         int[] absoluteHeights = getAbsoluteSizes(container.getInnerHeight(), getVisibleRows());
 
         for (Component c : container.getChildren()) {
@@ -780,5 +781,24 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
     
     public String toString() {
         return "TableLayout@" + System.identityHashCode(this) + "{columns.size=" + grid.getColumns().size() + ",rows.size=" + grid.getRows().size() + "}";
+    }
+    
+    private int calculateInnerWidth() {
+    	if (container.getScrollType() != Container.ScrollType.NONE) {
+	    	int totalHeight = 0;
+	    	SortedSet<Row> visibleRows = getVisibleRows();
+	        for (Row r : visibleRows) {
+	        	double height = r.getHeight();
+	        	if (height >= 1) totalHeight += height;
+	        }
+	        totalHeight += spacing * visibleRows.size();
+	        totalHeight += margin * 2;
+	        int innerHeight = container.getInnerHeight();
+	        int innerWidth = container.getInnerWidth();
+	        if (innerHeight < totalHeight) innerWidth -= 20;
+	        return innerWidth;
+    	} else {
+    		return container.getInnerWidth();
+    	}
     }
 }
