@@ -30,10 +30,13 @@
 */
 package thinwire.ui.layout;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Logger;
@@ -258,32 +261,13 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
             if (this.visible) layout.visibleRows.remove(this); 
             this.visible = visible;
             if (this.visible) layout.visibleRows.add(this);
-            List<Component> kids = layout.getContainer().getChildren();
-            
-            if (!visible) {
-                for (Component c : kids) {
-                    Range range = (Range) c.getLimit();
-                    if (range.getRowIndex() == getIndex()) {
-                        c.setVisible(false);
-                    } else if (getIndex() < range.getRowIndex()) {
-                        range.rowIndex--;
-                    } else if (getIndex() < (range.getRowIndex() + range.getRowSpan())) {
-                        range.rowSpan--;
-                    }
-                }
-            } else {
-                for (Component c : kids) {
-                    Range range = (Range) c.getLimit();
-                    if (getIndex() < range.getRowIndex() || (getIndex() == range.getRowIndex() && c.isVisible())){
-                        range.rowIndex++;
-                    } else if (range.getRowIndex() == getIndex() && !c.isVisible()) {
-                        c.setVisible(true);
-                    } else if (getIndex() < (range.getRowIndex() + range.getRowSpan())) {
-                        range.rowSpan++;
-                    }
-                }
-            }
-            
+
+        	for (Object o : this) {
+        		if (o instanceof Component) {
+        			((Component) o).setVisible(this.visible);
+        		}
+        	}
+        	
             if (layout.isAutoApply()) layout.apply();
         }
     }
@@ -318,32 +302,13 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
             if (this.visible) layout.visibleColumns.remove(this); 
             this.visible = visible;
             if (this.visible) layout.visibleColumns.add(this);
-            List<Component> kids = layout.getContainer().getChildren();
-            
-            if (!visible) {
-                for (Component c : kids) {
-                    Range range = (Range) c.getLimit();
-                    if (range.getColumnIndex() == getIndex()) {
-                        c.setVisible(false);
-                    } else if (getIndex() < range.getColumnIndex()) {
-                        range.columnIndex--;
-                    } else if (getIndex() < (range.getColumnIndex() + range.getColumnSpan())) {
-                        range.columnSpan--;
-                    }
-                }
-            } else {
-                for (Component c : kids) {
-                    Range range = (Range) c.getLimit();
-                    if (getIndex() < range.getColumnIndex() || (getIndex() == range.getColumnIndex() && c.isVisible())){
-                        range.columnIndex++;
-                    } else if (range.getColumnIndex() == getIndex() && !c.isVisible()) {
-                        c.setVisible(true);
-                    } else if (getIndex() < (range.getColumnIndex() + range.getColumnSpan())) {
-                        range.columnSpan++;
-                    }
-                }
-            }
-            
+
+        	for (Object o : this) {
+        		if (o instanceof Component) {
+        			((Component) o).setVisible(this.visible);
+        		}
+        	}
+
             if (layout.isAutoApply()) layout.apply();
         }
     }
@@ -705,61 +670,93 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
     
     public void apply() {
         if (container == null) return;
-        int[] absoluteWidths = getAbsoluteSizes(calculateInnerWidth(), getVisibleColumns());
-        int[] absoluteHeights = getAbsoluteSizes(container.getInnerHeight(), getVisibleRows());
-
-        for (Component c : container.getChildren()) {
-            Range limit = (Range)c.getLimit();
-            Justify just = limit.getJustify();
-            int x = margin, y = margin, width = 0, height = 0;
-            
-            for (int i = 0, cnt = limit.columnSpan, column = limit.columnIndex; i < cnt; i++) {
-                int index = i + column;
-                if (index >= absoluteWidths.length) throw new IllegalStateException("limit=" + limit + " exceeds layout=" + this + " for component " + c);
-                width += absoluteWidths[index] + spacing;
-            }
-            
-            width -= spacing;
-            
-            if (just != Justify.FULL && c.getWidth() < width) width = c.getWidth();
-            
-            for (int i = 0, cnt = limit.rowSpan, row = limit.rowIndex; i < cnt; i++) {
-                int index = i + row;
-                if (index >= absoluteHeights.length) throw new IllegalStateException("limit=" + limit + " exceeds layout=" + this + " for component " + c);
-                height += absoluteHeights[index] + spacing;
-            }
-            
-            height -= spacing;
-            
-            if (just != Justify.FULL && c.getHeight() < height) height = c.getHeight();
-            
-            for (int i = 0, cnt = limit.columnIndex; i < cnt; i++) {
-                x += absoluteWidths[i] + spacing;
-            }
-            
-            if (width == c.getWidth()) {
-                if (just.name().indexOf("RIGHT") > -1) {
-                    x += absoluteWidths[limit.columnIndex] - width;
-                } else if (just == Justify.CENTER || just == Justify.CENTER_BOTTOM || just == Justify.CENTER_FULL 
-                    || just == Justify.CENTER_TOP) {
-                    x += (absoluteWidths[limit.columnIndex] / 2) - (width / 2);
-                }
-            }
-            
-            for (int i = 0, cnt = limit.rowIndex; i < cnt; i++) {
-                y += absoluteHeights[i] + spacing;
-            }
-            
-            if (height == c.getHeight()) {
-                if (just.name().indexOf("BOTTOM") > -1) {
-                    y += absoluteHeights[limit.rowIndex] - height;
-                } else if (just == Justify.CENTER || just == Justify.FULL_CENTER || just == Justify.LEFT_CENTER 
-                    || just == Justify.RIGHT_CENTER) {
-                    y += (absoluteHeights[limit.rowIndex] / 2) - (height / 2);
-                }
-            }
-            
-            if (width >= 0 && height >= 0) c.setBounds(x, y, width, height);
+        
+        SortedSet<Row> visibleRows = getVisibleRows();
+        SortedSet<Column> visibleColumns = getVisibleColumns();
+        int[] absoluteWidths = getAbsoluteSizes(calculateInnerWidth(), visibleColumns);
+        int[] absoluteHeights = getAbsoluteSizes(container.getInnerHeight(), visibleRows);
+        
+        Column[] columnArray = visibleColumns.toArray(new Column[0]);
+        Map<Integer, List<Component>> rowComponents = new HashMap<Integer, List<Component>>();
+        Map<Integer, List<Component>> colComponents = new HashMap<Integer, List<Component>>();
+        
+        int rowIndex = 0;
+        for (Row r : visibleRows) {
+        	for (int i = 0, cnt = columnArray.length; i < cnt; i++) {
+        		Object o = r.get(columnArray[i].getIndex());
+        		if (o instanceof Component) {
+        			Component c = (Component) o;
+        			Range limit = (Range) c.getLimit();
+        			Justify just = limit.getJustify();
+        			int x = margin, y = margin, width = 0, height = 0;
+        			
+        			if (rowComponents.get(rowIndex) == null) rowComponents.put(rowIndex, new ArrayList<Component>());
+        			if (colComponents.get(i) == null) colComponents.put(i, new ArrayList<Component>());
+        			
+        			if (rowComponents.get(rowIndex).contains(c)) {
+        				width = c.getWidth();
+    					height = c.getHeight();
+        				x = c.getX();
+        				y = c.getY();
+        				
+        				if (!colComponents.get(i).contains(c)) {
+	        				colComponents.get(i).add(c);
+	        				width += spacing + absoluteWidths[i];
+        				}
+        			} else if (colComponents.get(i).contains(c)) {
+        				width = c.getWidth();
+        				height = c.getHeight();
+        				x = c.getX();
+        				y = c.getY();
+        				
+        				if (!rowComponents.get(rowIndex).contains(c)) {
+        					rowComponents.get(rowIndex).add(c);
+            				height += spacing + absoluteHeights[rowIndex];
+        				}
+        			} else {
+        				rowComponents.get(rowIndex).add(c);
+        				colComponents.get(i).add(c);
+        				
+        				for (int j = 0; j < i; j++) {
+        	                x += absoluteWidths[j] + spacing;
+        	            }
+        				
+        				for (int j = 0; j < rowIndex; j++) {
+        	                y += absoluteHeights[j] + spacing;
+        	            }
+        				
+        				width += absoluteWidths[i];
+            			
+            			if (just != Justify.FULL && c.getWidth() < width) width = c.getWidth();
+            			
+            			height += absoluteHeights[rowIndex];
+            			
+            			if (just != Justify.FULL && c.getHeight() < height) height = c.getHeight();
+            			
+            			if (width == c.getWidth()) {
+                            if (just.name().indexOf("RIGHT") > -1) {
+                                x += absoluteWidths[i] - width;
+                            } else if (just == Justify.CENTER || just == Justify.CENTER_BOTTOM || just == Justify.CENTER_FULL 
+                                || just == Justify.CENTER_TOP) {
+                                x += (absoluteWidths[i] / 2) - (width / 2);
+                            }
+                        }
+            			
+            			if (height == c.getHeight()) {
+                            if (just.name().indexOf("BOTTOM") > -1) {
+                                y += absoluteHeights[rowIndex] - height;
+                            } else if (just == Justify.CENTER || just == Justify.FULL_CENTER || just == Justify.LEFT_CENTER 
+                                || just == Justify.RIGHT_CENTER) {
+                                y += (absoluteHeights[rowIndex] / 2) - (height / 2);
+                            }
+                        }
+        			}
+        			
+        			if (width >= 0 && height >= 0) c.setBounds(x, y, width, height);
+        		}
+        	}
+        	
+        	rowIndex++;
         }
     }
 
