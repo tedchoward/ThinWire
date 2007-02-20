@@ -48,12 +48,34 @@ public class FX {
     private Motion visibleChange;
     private Motion opacityChange;
     private Motion colorChange;
+    private String stringValue;
     
     FX(Style parent) {
         this.parent = parent;
         if (parent.defaultStyle != null) copy(parent.defaultStyle.getFX());        
     }    
         
+    private void clearStringValue() {
+        this.stringValue = stringValue;
+        if (parent != null) parent.stringValue = null;
+    }
+
+    public String toString() {
+        if (stringValue == null) stringValue = "FX{colorChange:" + getColorChange() + ",opacityChange:" + getOpacityChange() +
+            ",positionChange:" + getPositionChange() + ",sizeChange:" + getSizeChange() + ",visibleChange:" + getVisibleChange() + "}";
+        return stringValue;
+    }
+    
+    public int hashCode() {
+        return toString().hashCode();
+    }
+    
+    public boolean equals(Object o) {
+        if (!(o instanceof FX)) return false;
+        if (this == o) return true;
+        return this.toString().equals(o.toString());
+    }
+    
     public void copy(FX fx) {
         copy(fx, false);
     }
@@ -125,6 +147,7 @@ public class FX {
         if (positionChange == null && parent.defaultStyle != null) positionChange = parent.defaultStyle.getFX().getPositionChange();
         if (positionChange == null) throw new IllegalArgumentException("positionChange == null");
         Motion oldPositionChange = this.positionChange;
+        this.clearStringValue();
         this.positionChange = positionChange;
         if (parent != null) parent.firePropertyChange(this, PROPERTY_FX_POSITION_CHANGE, oldPositionChange, this.positionChange);        
     }
@@ -138,6 +161,7 @@ public class FX {
         if (sizeChange == null && parent.defaultStyle != null) sizeChange = parent.defaultStyle.getFX().getSizeChange();
         if (sizeChange == null) throw new IllegalArgumentException("sizeChange == null");
         Motion oldSizeChange = this.sizeChange;
+        this.clearStringValue();
         this.sizeChange = sizeChange;
         if (parent != null) parent.firePropertyChange(this, PROPERTY_FX_SIZE_CHANGE, oldSizeChange, this.sizeChange);
     }
@@ -151,6 +175,7 @@ public class FX {
         if (visibleChange == null && parent.defaultStyle != null) visibleChange = parent.defaultStyle.getFX().getVisibleChange();
         if (visibleChange == null) throw new IllegalArgumentException("visibleChange == null");
         Motion oldVisibleChange = this.visibleChange;
+        this.clearStringValue();
         this.visibleChange = visibleChange;
         if (parent != null) parent.firePropertyChange(this, PROPERTY_FX_VISIBLE_CHANGE, oldVisibleChange, this.visibleChange);
     }
@@ -164,6 +189,7 @@ public class FX {
         if (opacityChange == null && parent.defaultStyle != null) opacityChange = parent.defaultStyle.getFX().getOpacityChange();
         if (opacityChange == null) throw new IllegalArgumentException("opacityChange == null");
         Motion oldOpacityChange = this.opacityChange;
+        this.clearStringValue();
         this.opacityChange = opacityChange;
         if (parent != null) parent.firePropertyChange(this, PROPERTY_FX_OPACITY_CHANGE, oldOpacityChange, this.opacityChange);
     }
@@ -177,6 +203,7 @@ public class FX {
         if (colorChange == null && parent.defaultStyle != null) colorChange = parent.defaultStyle.getFX().getColorChange();
         if (colorChange == null) throw new IllegalArgumentException("colorChange == null");
         Motion oldColorChange = this.colorChange;
+        this.clearStringValue();
         this.colorChange = colorChange;
         if (parent != null) parent.firePropertyChange(this, PROPERTY_FX_COLOR_CHANGE, oldColorChange, this.colorChange);
     }

@@ -185,29 +185,38 @@ public class Font {
     private int italic = -1;
     private int underline = -1;
     private int strike = -1;
-    private String computedState;
+    private String stringValue;
     
     Font(Style parent) {
         this.parent = parent;
         if (parent.defaultStyle != null) copy(parent.defaultStyle.getFont());
     }
+
+    private void clearStringValue() {
+        this.stringValue = null;
+        if (parent != null) parent.stringValue = null;
+    }
     
-    private String getComputedState() {
-        if (computedState == null) {
-            StringBuilder sb = new StringBuilder();
-            sb.append('"').append(getFamily()).append('"').append(';');
-            sb.append(getSize()).append(';');
-            sb.append(isBold()).append(';');
-            sb.append(isItalic()).append(';');
-            sb.append(isUnderline());
-            computedState = sb.toString();
-        }
+    public String toString() {
+        if (stringValue == null) stringValue = "Font{family:" + getFamily() + ",size:" + getSize() +
+                ",color:" + getColor() + ",bold:" + isBold() + ",italic:" + isItalic() +
+                ",underline:" + isUnderline() + ",strike:" + isStrike() + "}";
         
-        return computedState;
+        return stringValue;
+    }
+    
+    public int hashCode() {
+        return toString().hashCode();
+    }
+    
+    public boolean equals(Object o) {
+        if (!(o instanceof Font)) return false;
+        if (this == o) return true;
+        return this.toString().equals(o.toString());
     }
     
     private Metrics getMetrics() {
-        String computedState = getComputedState();
+        String computedState = toString();
         Map<String, Metrics> map = fontMetrics.get(); 
         Metrics fm = map.get(computedState);        
         
@@ -273,7 +282,6 @@ public class Font {
         }
     }
     
-    
     public void setProperty(String name, Object value) {
         if (name.equals(Font.PROPERTY_FONT_FAMILY)) {
             setFamily((Font.Family)value); 
@@ -330,7 +338,7 @@ public class Font {
         if (family == null && parent.defaultStyle != null) family = parent.defaultStyle.getFont().getFamily();
         if (family == null) throw new IllegalArgumentException("family == null && defaultStyle.getFont().getFamily() == null");
         Family oldFamily = this.family;
-        this.computedState = null;
+        this.clearStringValue();
         this.family = family;
         if (parent != null) parent.firePropertyChange(this, PROPERTY_FONT_FAMILY, oldFamily, family);
     }
@@ -344,6 +352,7 @@ public class Font {
         if (color == null && parent.defaultStyle != null) color = parent.defaultStyle.getFont().getColor();        
         if (color == null) throw new IllegalArgumentException("color == null && defaultStyle.getFont().getColor() == null");
         Color oldColor = this.color;
+        this.clearStringValue();        
         this.color = color;        
         if (parent != null) parent.firePropertyChange(this, PROPERTY_FONT_COLOR, oldColor, this.color);
     }    
@@ -358,7 +367,7 @@ public class Font {
         if (size <= 0 || size > 128) throw new IllegalArgumentException("size <= 0 || size > 128");
         size = Math.floor(size * 10) / 10;
         double oldSize = this.size;
-        this.computedState = null;        
+        this.clearStringValue();        
         this.size = size;
         if (parent != null) parent.firePropertyChange(this, PROPERTY_FONT_SIZE, oldSize, size);
     }
@@ -370,7 +379,7 @@ public class Font {
     
     public void setBold(boolean bold) {       
         boolean oldBold = this.bold == 1;
-        this.computedState = null;        
+        this.clearStringValue();        
         this.bold = bold == true ? 1 : 0;
         if (parent != null) parent.firePropertyChange(this, PROPERTY_FONT_BOLD, oldBold, bold);
     }
@@ -382,7 +391,7 @@ public class Font {
     
     public void setItalic(boolean italic) {
         boolean oldItalic = this.italic == 1;
-        this.computedState = null;        
+        this.clearStringValue();        
         this.italic = italic == true ? 1 : 0;
         if (parent != null) parent.firePropertyChange(this, PROPERTY_FONT_ITALIC, oldItalic, italic);
     }
@@ -394,7 +403,7 @@ public class Font {
     
     public void setUnderline(boolean underline) {
         boolean oldUnderline = this.underline == 1;
-        this.computedState = null;        
+        this.clearStringValue();        
         this.underline = underline == true ? 1 : 0;
         if (parent != null) parent.firePropertyChange(this, PROPERTY_FONT_UNDERLINE, oldUnderline, underline);        
     }
@@ -406,7 +415,7 @@ public class Font {
     
     public void setStrike(boolean strike) {
         boolean oldStrike = this.strike == 1;
-        this.computedState = null;        
+        this.clearStringValue();        
         this.strike = strike == true ? 1 : 0;
         if (parent != null) parent.firePropertyChange(this, PROPERTY_FONT_STRIKE, oldStrike, strike);        
     }

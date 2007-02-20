@@ -181,10 +181,32 @@ public class Background {
     private ImageInfo imageInfo = new ImageInfo(null);
     private Repeat repeat;
     private Position position;
+    private String stringValue;
 
     Background(Style parent) {
         this.parent = parent;
         if (parent.defaultStyle != null) copy(parent.defaultStyle.getBackground());
+    }
+    
+    private void clearStringValue() {
+        this.stringValue = null;
+        if (parent != null) parent.stringValue = null;
+    }
+    
+    public String toString() {
+        if (stringValue == null) stringValue = "Background{color:" + getColor() + ",image:" + getImage() +
+            ",position:" + getPosition() + ",repeat:" + getRepeat() + "}";
+        return stringValue;
+    }
+    
+    public int hashCode() {
+        return toString().hashCode();
+    }
+    
+    public boolean equals(Object o) {
+        if (!(o instanceof Background)) return false;
+        if (this == o) return true;
+        return this.toString().equals(o.toString());
     }
     
     public void copy(Background background) {
@@ -208,7 +230,7 @@ public class Background {
         }
     }
     
-    public void setStyleProperty(String name, Object value) {
+    public void setProperty(String name, Object value) {
         if (name.equals(Background.PROPERTY_BACKGROUND_COLOR)) {
             setColor((Color)value);
         } else if (name.equals(Background.PROPERTY_BACKGROUND_IMAGE)) {
@@ -222,7 +244,7 @@ public class Background {
         }
     }
     
-    public Object getStyleProperty(String name) {
+    public Object getProperty(String name) {
         Object ret;
         
         if (name.equals(Background.PROPERTY_BACKGROUND_COLOR)) {
@@ -253,6 +275,7 @@ public class Background {
         if (color == null && parent.defaultStyle != null) color = parent.defaultStyle.getBackground().getColor();        
         if (color == null) throw new IllegalArgumentException("color == null && defaultStyle.getBackground().getColor() == null");
         Color oldColor = this.color;
+        this.clearStringValue();        
         this.color = color;        
         if (parent != null) parent.firePropertyChange(this, PROPERTY_BACKGROUND_COLOR, oldColor, this.color);
     }
@@ -265,6 +288,7 @@ public class Background {
         if (image == null && parent.defaultStyle != null) image = parent.defaultStyle.getBackground().getImage();
         if (image == null) throw new IllegalArgumentException("image == null && defaultStyle.getBackground().getImage() == null");
         String oldImage = imageInfo.getName();        
+        this.clearStringValue();
         imageInfo = new ImageInfo(image);
         if (parent != null) parent.firePropertyChange(this, PROPERTY_BACKGROUND_IMAGE, oldImage, imageInfo.getName());
     }
@@ -277,6 +301,7 @@ public class Background {
         if (repeat == null && parent.defaultStyle != null) repeat = parent.defaultStyle.getBackground().getRepeat();
         if (repeat == null) throw new IllegalArgumentException("repeat == null && defaultStyle.getBackground().getRepeat() == null");
         Repeat oldRepeat = this.repeat;
+        this.clearStringValue();        
         this.repeat = repeat;
         if (parent != null) parent.firePropertyChange(this, PROPERTY_BACKGROUND_REPEAT, oldRepeat, repeat);
     }
@@ -290,6 +315,7 @@ public class Background {
         if (position == null && parent.defaultStyle != null) position = parent.defaultStyle.getBackground().getPosition();
         if (position == null) throw new IllegalArgumentException("position == null && defaultStyle.getBackground().getPosition() == null");
         Position oldPosition = this.position;
+        this.clearStringValue();        
         this.position = position;
         if (parent != null) parent.firePropertyChange(this, PROPERTY_BACKGROUND_POSITION, oldPosition, position);
     }

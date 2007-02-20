@@ -79,6 +79,7 @@ public class Style {
     private Background background;
     private Border border;
     private FX fx;
+    String stringValue;
     Style defaultStyle;
     
     public Style() {
@@ -110,7 +111,23 @@ public class Style {
     protected void firePropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
         
     }
-        
+      
+    public String toString() {
+        if (stringValue == null) stringValue = "Style{background:" + getBackground() + ",border:" + getBorder() +
+            ",font:" + getFont() + ",fX:" + getFX() + "}";
+        return stringValue;
+    }
+    
+    public int hashCode() {
+        return toString().hashCode();
+    }
+    
+    public boolean equals(Object o) {
+        if (!(o instanceof Style)) return false;
+        if (this == o) return true;
+        return this.toString().equals(o.toString());
+    }
+    
     public void copy(Style style) {
         copy(style, false);
     }
@@ -134,7 +151,7 @@ public class Style {
         if (name.equals(PROPERTY_OPACITY)) {
             setOpacity((Integer)value);
         } else if (name.startsWith("background")) {
-            getBackground().setStyleProperty(name, value);
+            getBackground().setProperty(name, value);
         } else if (name.startsWith("border")) {
             getBorder().setProperty(name, value);
         } else if (name.startsWith("font")) {
@@ -152,7 +169,7 @@ public class Style {
         if (name.equals(PROPERTY_OPACITY)) {
             ret = getOpacity();
         } else if (name.startsWith("background")) {
-            ret = getBackground().getStyleProperty(name);
+            ret = getBackground().getProperty(name);
         } else if (name.startsWith("border")) {
             ret = getBorder().getProperty(name);
         } else if (name.startsWith("font")) {

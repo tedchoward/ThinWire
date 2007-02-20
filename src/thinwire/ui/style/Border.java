@@ -55,10 +55,32 @@ public class Border {
     private Color color;
     private ImageInfo imageInfo = new ImageInfo(null);
     private Type imageType;
+    private String stringValue;
     
     Border(Style parent) {
         this.parent = parent;
         if (parent.defaultStyle != null) copy(parent.defaultStyle.getBorder());
+    }
+    
+    private void clearStringValue() {
+        this.stringValue = null;
+        if (parent != null) parent.stringValue = null;
+    }
+
+    public String toString() {
+        if (stringValue == null) stringValue = "Border{color:" + getColor() + ",image:" + getImage() + 
+            ",size:" + getSize() + ",type:" + getType() + "}";
+        return stringValue;
+    }
+    
+    public int hashCode() {
+        return toString().hashCode();
+    }
+    
+    public boolean equals(Object o) {
+        if (!(o instanceof Border)) return false;
+        if (this == o) return true;
+        return this.toString().equals(o.toString());
     }
             
     public void copy(Border border) {
@@ -131,6 +153,7 @@ public class Border {
         if (type == null) throw new IllegalArgumentException("type == null");
         if (type == Type.IMAGE && getImage().length() == 0) throw new IllegalStateException("type == Type.IMAGE && getImage().length() == 0");
         Type oldType = this.type; 
+        this.clearStringValue();
         this.type = type;
         if (oldType == Type.IMAGE && type != Type.IMAGE) setImage("");
         if (parent != null) parent.firePropertyChange(this, PROPERTY_BORDER_TYPE, oldType, this.type);
@@ -145,6 +168,7 @@ public class Border {
         if (size < 0 && parent.defaultStyle != null) size = parent.defaultStyle.getBorder().getSize();
         if (size < 0 || size > 128) throw new IllegalArgumentException("size < 0 || size > 128");
         int oldSize = this.size;
+        this.clearStringValue();
         this.size = size;
         if (parent != null) parent.firePropertyChange(this, PROPERTY_BORDER_SIZE, oldSize, size);
     }
@@ -158,6 +182,7 @@ public class Border {
         if (color == null && parent.defaultStyle != null) color = parent.defaultStyle.getBorder().getColor();        
         if (color == null) throw new IllegalArgumentException("color == null");
         Color oldColor = this.color;
+        this.clearStringValue();
         this.color = color;        
         if (parent != null) parent.firePropertyChange(this, PROPERTY_BORDER_COLOR, oldColor, this.color);
     }
@@ -170,6 +195,7 @@ public class Border {
         if (image == null && parent.defaultStyle != null) image = parent.defaultStyle.getBorder().getImage();
         if (image == null) throw new IllegalArgumentException("image == null && defaultStyle.getBorder().getImage() == null");
         String oldImage = imageInfo.getName();
+        this.clearStringValue();
         imageInfo = new ImageInfo(image);
         if (parent != null) parent.firePropertyChange(this, PROPERTY_BORDER_IMAGE, oldImage, imageInfo.getName());
         
