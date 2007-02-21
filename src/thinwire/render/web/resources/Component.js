@@ -717,10 +717,14 @@ tw_Component.setText = function(text) {
 tw_Component.setRichText = function(text) {
     if (!(text instanceof Array)) return document.createTextNode(text);
     var span = document.createElement("span");
+    span.style.verticalAlign = "middle";
+    
     for (n in text) {
         var node = text[n];
         if (node instanceof Object) {
             var element = document.createElement(node.t);
+            element.style.verticalAlign = "middle";
+            
             if (node.s != undefined) {
                 for (sty in node.s) {
                     if (sty == "backgroundImage") {
@@ -747,6 +751,7 @@ tw_Component.setRichText = function(text) {
             span.appendChild(document.createTextNode(node));
         }
     }
+    
     return span;
 }
 

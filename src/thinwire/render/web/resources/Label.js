@@ -35,7 +35,6 @@ var tw_Label = tw_Component.extend({
         this._box.appendChild(document.createTextNode(""));
 
         var s = this._box.style;
-        s.verticalAlign = "middle";
         s.whiteSpace = "nowrap";        
         tw_addEventListener(this._box, ["click", "dblclick"], this._clickListener.bind(this));
         this.init(-1, props);
