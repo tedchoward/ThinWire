@@ -172,6 +172,7 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
             rangeCheck("row", row);
             rangeCheck("columnSpan", columnSpan);
             rangeCheck("rowSpan", rowSpan);
+            this.layout = layout;
             this.columnIndex = column;
             this.rowIndex = row;
             this.columnSpan = columnSpan;
