@@ -558,7 +558,18 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
         for (int i = row, cnt = l.getRowSpan() + row; i < cnt; i++) {
             Row curRow = rows.get(i);
             for (int j = col, cnt2 = l.getColumnSpan() + col; j < cnt2; j++) {
-                curRow.set(j, comp);
+            	Object o = curRow.get(j);
+            	if (o == null) {
+            		curRow.set(j, comp);
+            	} else if (o instanceof List) {
+            		((List<Component>) o).add(comp);
+            	} else {
+            		List<Component> list = new ArrayList<Component>();
+            		list.add((Component) o);
+            		list.add(comp);
+            		curRow.set(j, list);
+            	}
+                
             }
         }
         ignoreSet = false;
@@ -574,7 +585,12 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
         for (int i = row, cnt = r.getRowSpan() + row; i < cnt; i++) {
             Row curRow = rows.get(i);
             for (int j = col, cnt2 = r.getColumnSpan() + col; j < cnt2; j++) {
-                curRow.set(j, null);
+            	Object o = curRow.get(j);
+            	if (o.equals(comp)) {
+            		curRow.set(j, null);
+            	} else if (o instanceof List) {
+            		((List) o).remove(comp);
+            	}
             }
         }
         ignoreSet = false;
@@ -685,80 +701,89 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
         for (Row r : visibleRows) {
         	for (int i = 0, cnt = columnArray.length; i < cnt; i++) {
         		Object o = r.get(columnArray[i].getIndex());
-        		if (o instanceof Component) {
-        			Component c = (Component) o;
-        			Range limit = (Range) c.getLimit();
-        			Justify just = limit.getJustify();
-        			int x = margin, y = margin, width = 0, height = 0;
-        			
-        			if (rowComponents.get(rowIndex) == null) rowComponents.put(rowIndex, new ArrayList<Component>());
-        			if (colComponents.get(i) == null) colComponents.put(i, new ArrayList<Component>());
-        			
-        			if (rowComponents.get(rowIndex).contains(c)) {
-        				width = c.getWidth();
-    					height = c.getHeight();
-        				x = c.getX();
-        				y = c.getY();
-        				
-        				if (!colComponents.get(i).contains(c)) {
-	        				colComponents.get(i).add(c);
-	        				width += spacing + absoluteWidths[i];
-        				}
-        			} else if (colComponents.get(i).contains(c)) {
-        				width = c.getWidth();
-        				height = c.getHeight();
-        				x = c.getX();
-        				y = c.getY();
-        				
-        				if (!rowComponents.get(rowIndex).contains(c)) {
-        					rowComponents.get(rowIndex).add(c);
-            				height += spacing + absoluteHeights[rowIndex];
-        				}
-        			} else {
-        				rowComponents.get(rowIndex).add(c);
-        				colComponents.get(i).add(c);
-        				
-        				for (int j = 0; j < i; j++) {
-        	                x += absoluteWidths[j] + spacing;
-        	            }
-        				
-        				for (int j = 0; j < rowIndex; j++) {
-        	                y += absoluteHeights[j] + spacing;
-        	            }
-        				
-        				width += absoluteWidths[i];
-            			
-            			if (just != Justify.FULL && c.getWidth() < width) width = c.getWidth();
-            			
-            			height += absoluteHeights[rowIndex];
-            			
-            			if (just != Justify.FULL && c.getHeight() < height) height = c.getHeight();
-            			
-            			if (width == c.getWidth()) {
-                            if (just.name().indexOf("RIGHT") > -1) {
-                                x += absoluteWidths[i] - width;
-                            } else if (just == Justify.CENTER || just == Justify.CENTER_BOTTOM || just == Justify.CENTER_FULL 
-                                || just == Justify.CENTER_TOP) {
-                                x += (absoluteWidths[i] / 2) - (width / 2);
-                            }
-                        }
-            			
-            			if (height == c.getHeight()) {
-                            if (just.name().indexOf("BOTTOM") > -1) {
-                                y += absoluteHeights[rowIndex] - height;
-                            } else if (just == Justify.CENTER || just == Justify.FULL_CENTER || just == Justify.LEFT_CENTER 
-                                || just == Justify.RIGHT_CENTER) {
-                                y += (absoluteHeights[rowIndex] / 2) - (height / 2);
-                            }
-                        }
+        		if (o instanceof List) {
+        			List<Component> compList = (List<Component>) o;
+        			for (Component c : compList) {
+        				processComponent(c, rowComponents, colComponents, rowIndex, i, absoluteWidths, absoluteHeights);
         			}
-        			
-        			if (width >= 0 && height >= 0) c.setBounds(x, y, width, height);
+        		} else if (o instanceof Component) {
+        			Component c = (Component) o;
+        			processComponent(c, rowComponents, colComponents, rowIndex, i, absoluteWidths, absoluteHeights);
         		}
         	}
         	
         	rowIndex++;
         }
+    }
+    
+    private void processComponent(Component c, Map<Integer, List<Component>> rowComponents, Map<Integer, List<Component>> colComponents, int rowIndex, int i, int[] absoluteWidths, int[] absoluteHeights) {
+    	Range limit = (Range) c.getLimit();
+		Justify just = limit.getJustify();
+		int x = margin, y = margin, width = 0, height = 0;
+		
+		if (rowComponents.get(rowIndex) == null) rowComponents.put(rowIndex, new ArrayList<Component>());
+		if (colComponents.get(i) == null) colComponents.put(i, new ArrayList<Component>());
+		
+		if (rowComponents.get(rowIndex).contains(c)) {
+			width = c.getWidth();
+			height = c.getHeight();
+			x = c.getX();
+			y = c.getY();
+			
+			if (!colComponents.get(i).contains(c)) {
+				colComponents.get(i).add(c);
+				width += spacing + absoluteWidths[i];
+			}
+		} else if (colComponents.get(i).contains(c)) {
+			width = c.getWidth();
+			height = c.getHeight();
+			x = c.getX();
+			y = c.getY();
+			
+			if (!rowComponents.get(rowIndex).contains(c)) {
+				rowComponents.get(rowIndex).add(c);
+				height += spacing + absoluteHeights[rowIndex];
+			}
+		} else {
+			rowComponents.get(rowIndex).add(c);
+			colComponents.get(i).add(c);
+			
+			for (int j = 0; j < i; j++) {
+                x += absoluteWidths[j] + spacing;
+            }
+			
+			for (int j = 0; j < rowIndex; j++) {
+                y += absoluteHeights[j] + spacing;
+            }
+			
+			width += absoluteWidths[i];
+			
+			if (just != Justify.FULL && c.getWidth() < width) width = c.getWidth();
+			
+			height += absoluteHeights[rowIndex];
+			
+			if (just != Justify.FULL && c.getHeight() < height) height = c.getHeight();
+			
+			if (width == c.getWidth()) {
+                if (just.name().indexOf("RIGHT") > -1) {
+                    x += absoluteWidths[i] - width;
+                } else if (just == Justify.CENTER || just == Justify.CENTER_BOTTOM || just == Justify.CENTER_FULL 
+                    || just == Justify.CENTER_TOP) {
+                    x += (absoluteWidths[i] / 2) - (width / 2);
+                }
+            }
+			
+			if (height == c.getHeight()) {
+                if (just.name().indexOf("BOTTOM") > -1) {
+                    y += absoluteHeights[rowIndex] - height;
+                } else if (just == Justify.CENTER || just == Justify.FULL_CENTER || just == Justify.LEFT_CENTER 
+                    || just == Justify.RIGHT_CENTER) {
+                    y += (absoluteHeights[rowIndex] / 2) - (height / 2);
+                }
+            }
+		}
+		
+		if (width >= 0 && height >= 0) c.setBounds(x, y, width, height);
     }
 
     public List<Column> getColumns() {
