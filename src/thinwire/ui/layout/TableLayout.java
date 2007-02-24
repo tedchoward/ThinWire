@@ -378,7 +378,7 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
                                 Component c = (Component) newRow.get(i);
                                 
                                 if (c != null) {
-                                    c.setLimit(new Range(TableLayout.this, i, rowIndex));
+                                	if (c.getLimit() == null) c.setLimit(new Range(TableLayout.this, i, rowIndex));
                                     kids.add(c);
                                 }
                             }
@@ -418,7 +418,7 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
                         
                         for (int i = 0, cnt = newRow.size(); i < cnt; i++) {
                             Component c = (Component) newRow.get(i);
-                            c.setLimit(new Range(TableLayout.this, i, rowIndex));
+                            if (c.getLimit() == null) c.setLimit(new Range(TableLayout.this, i, rowIndex));
                             kids.add(c);
                         }
                     }
@@ -444,7 +444,7 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
                             for (int i = 0, cnt = newColumn.size(); i < cnt; i++) {
                                 Component c = (Component) newColumn.get(i);
                                 if (c != null) {
-                                    c.setLimit(new Range(TableLayout.this, columnIndex, i));
+                                    if (c.getLimit() == null) c.setLimit(new Range(TableLayout.this, columnIndex, i));
                                     kids.add(c);
                                 }
                             }
@@ -479,7 +479,7 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
                         
                         for (int i = 0, cnt = newColumn.size(); i < cnt; i++) {
                             Component c = (Component) newColumn.get(i);
-                            c.setLimit(new Range(TableLayout.this, columnIndex, i));
+                            if (c.getLimit() == null) c.setLimit(new Range(TableLayout.this, columnIndex, i));
                             if (kids != null) kids.add(c);
                         }
                     }
@@ -494,7 +494,9 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
                         }
                         
                         Component newComp = (Component) newValue;
-                        newComp.setLimit(new Range(TableLayout.this, columnIndex, rowIndex));
+                        if (newComp.getLimit() == null) {
+                        	newComp.setLimit(new Range(TableLayout.this, columnIndex, rowIndex));
+                        }
                         if (kids != null) kids.add(newComp);
                     }
                 }
@@ -586,7 +588,7 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
             Row curRow = rows.get(i);
             for (int j = col, cnt2 = r.getColumnSpan() + col; j < cnt2; j++) {
             	Object o = curRow.get(j);
-            	if (o.equals(comp)) {
+            	if (o instanceof Component) {
             		curRow.set(j, null);
             	} else if (o instanceof List) {
             		((List) o).remove(comp);
