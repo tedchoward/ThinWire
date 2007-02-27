@@ -269,7 +269,8 @@ import thinwire.ui.Application;
  * @author Joshua J. Gertzen
  */
 public final class XOD {
-    private static final Logger log = Logger.getLogger(XOD.class.getName());   
+    private static final Logger log = Logger.getLogger(XOD.class.getName());
+    private static final Level LEVEL = Level.FINEST;
     
     private static File getRelativeFile(String uri) {
         Application app = Application.current();
@@ -279,10 +280,11 @@ public final class XOD {
     private static File getRelativeFile(String parent, String child) {
         Application app = Application.current();
         return app == null ? new File(parent, child) : app.getRelativeFile(parent, child);
-    }    
+    }
     
     private Map<String, Object> objectMap;
     private Map<Object, String> idMap;
+    private List<Object> rootObjects;
     private List<Object> objects;
     private Map<String, Class> aliases;
     private Map<String, String> properties;
@@ -302,6 +304,7 @@ public final class XOD {
      * @param uri the name of the XML Object Document file to execute.
      */
     public XOD(String uri) {
+        rootObjects = new ArrayList<Object>();
         objectMap = new HashMap<String, Object>();
         objects = new ArrayList<Object>();
         aliases = new HashMap<String, Class>();
@@ -331,6 +334,10 @@ public final class XOD {
     public List<Object> getObjects() {
         return Collections.unmodifiableList(objects);
     }
+    
+    public List<Object> getRootObjects() {
+        return Collections.unmodifiableList(rootObjects);
+    }
         
     /**
      * Gets the id that is associated to the specified object.
@@ -339,6 +346,10 @@ public final class XOD {
      * @return the id associated to the object, or null if the object is not in the object map.
      */
     public String getObjectId(Object o) {
+        return getIdMap().get(o);
+    }
+    
+    private Map<Object, String> getIdMap() {
         if (idMap == null) {
             idMap = new HashMap<Object, String>();
 
@@ -347,7 +358,7 @@ public final class XOD {
             }
         }
         
-        return idMap.get(o);
+        return idMap;
     }
     
     /**
@@ -439,7 +450,7 @@ public final class XOD {
         if (name.equals("xod")) {
             if (n.getChildNodes().getLength() == 0) throw new DOMException(DOMException.NOT_SUPPORTED_ERR, name + ":n.getChildNodes().getLength() == 0");
             if (level != 0 && !processingInclude) throw new DOMException(DOMException.INVALID_STATE_ERR, "level != 0");            
-            if (log.isLoggable(Level.FINEST)) log.finest("xod");
+            if (log.isLoggable(LEVEL)) log.log(LEVEL, "xod");
             processBranch(parent, n.getChildNodes(), level + 1);
         } else if (name.equals("property") && parent == null) {
             if (n.getAttributes().getLength() != 2) throw new DOMException(DOMException.NOT_SUPPORTED_ERR, name + ":n.getAttributes().getLength() != 2");
@@ -447,7 +458,7 @@ public final class XOD {
             String value = (String)n.getAttributes().getNamedItem("value").getNodeValue();
             value = this.replaceProperties(value);
             properties.put(key, value);
-            if (log.isLoggable(Level.FINEST)) log.finest("property[name:" + key + ",value:" + value + "]");
+            if (log.isLoggable(LEVEL)) log.log(LEVEL, "property[name:" + key + ",value:" + value + "]");
         } else if (name.equals("alias")) {
             if (n.getAttributes().getLength() != 2) throw new DOMException(DOMException.NOT_SUPPORTED_ERR, name + ":n.getAttributes().getLength() != 2");
             //if (n.getChildNodes().getLength() != 0) throw new DOMException(DOMException.NOT_SUPPORTED_ERR, name + ":n.getChildNodes().getLength() != 0");
@@ -455,7 +466,7 @@ public final class XOD {
             String className = (String)n.getAttributes().getNamedItem("class").getNodeValue();
             Class clazz = getClassForName(aliasName, className);
             if (n.hasChildNodes()) processBranch(clazz, n.getChildNodes(), level + 1);            
-            if (log.isLoggable(Level.FINEST)) log.finest("alias[name:" + aliasName + ",class:" + className + "]");
+            if (log.isLoggable(LEVEL)) log.log(LEVEL, "alias[name:" + aliasName + ",class:" + className + "]");
         } else if (name.equals("property") && parent instanceof Class) {
             if (n.getAttributes().getLength() != 2 && n.getAttributes().getLength() != 3) throw new DOMException(DOMException.NOT_SUPPORTED_ERR, name + ":n.getAttributes().getLength() != 2 && n.getAttributes().getLength() != 3");
             String propName = (String)n.getAttributes().getNamedItem("name").getNodeValue();
@@ -489,16 +500,16 @@ public final class XOD {
             processingInclude = true;
             processFile(parent, fileUri, level + 1);
             processingInclude = false;
-            if (log.isLoggable(Level.FINEST)) log.finest("include[file:" + fileUri + "]");
+            if (log.isLoggable(LEVEL)) log.log(LEVEL, "include[file:" + fileUri + "]");
         } else if (name.equals("ref")) {
             if (n.getAttributes().getLength() != 1) throw new DOMException(DOMException.NOT_SUPPORTED_ERR, name + ":n.getAttributes().getLength() != 1");
             if (n.getChildNodes().getLength() != 0) throw new DOMException(DOMException.NOT_SUPPORTED_ERR, name + ":n.getChildNodes().getLength() != 0");
             String id = (String)n.getAttributes().getNamedItem("id").getNodeValue();
             ret = objectMap.get(id);            
-            if (log.isLoggable(Level.FINEST)) log.finest("ref[id:" + id + "]");
+            if (log.isLoggable(LEVEL)) log.log(LEVEL, "ref[id:" + id + "]");
             
             if (parent != null && parent instanceof Collection) {
-                if (log.isLoggable(Level.FINEST)) log.finest("adding ref child to collection");
+                if (log.isLoggable(LEVEL)) log.log(LEVEL, "adding ref child to collection");
                 ((Collection)parent).add(ret);
             }
         } else {            
@@ -548,7 +559,7 @@ public final class XOD {
                             NodeList propNodes = n.getChildNodes();
                             Node node = null;
                             
-                            if (propNodes.getLength() == 1)
+                            if (propNodes.getLength() == 1) 
                                 node = propNodes.item(0);
                             else {
                                 for (int i = propNodes.getLength() - 1; i >= 0; i--) {
@@ -561,30 +572,33 @@ public final class XOD {
                                 }                                                    
                             }
                             
-                            short nodeType = node.getNodeType();
-                            Class paramClass = propertyAlias != null ? (Class)propertyAlias[1] : params[0];
-                            Object value;
-                            
-                            //If there is only one property then this is a simple value assignment
-                            //Else if there is three then there is a tag being set as the value
-                            if (nodeType == Node.TEXT_NODE) {                            
-                                value = getObjectForTypeFromString(paramClass, (String)node.getNodeValue(), true);
-                            } else if (nodeType == Node.ELEMENT_NODE) {
-                                value = evaluateNode(null, node, level + 1);
-                                Class valueClass = value.getClass();
+                            if (node != null) {
+                                short nodeType = node.getNodeType();
+                                Class paramClass = propertyAlias != null ? (Class)propertyAlias[1] : params[0];
+                                Object value;
                                 
-                                if (!paramClass.isAssignableFrom(valueClass)) {
-                                    value = getObjectForTypeFromString(paramClass, value.toString(), false);
-                                    if (value == null) throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "no conversion from " + valueClass + " to " + paramClass + " is known");
+                                //If there is only one property then this is a simple value assignment
+                                //Else if there is three then there is a tag being set as the value
+                                if (nodeType == Node.TEXT_NODE) {                            
+                                    value = getObjectForTypeFromString(paramClass, (String)node.getNodeValue(), true);
+                                } else if (nodeType == Node.ELEMENT_NODE) {
+                                    value = evaluateNode(null, node, level + 1);
+                                    Class valueClass = value.getClass();
+                                    
+                                    if (!paramClass.isAssignableFrom(valueClass)) {
+                                        value = getObjectForTypeFromString(paramClass, value.toString(), false);
+                                        if (value == null) throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "no conversion from " + valueClass + " to " + paramClass + " is known");
+                                    }
+                                } else {
+                                    throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "a property tag can only contain a value or a single tag");
                                 }
-                            } else {
-                                throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "a property tag can only contain a value or a single tag");
+                                
+                                if (value == null) throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "the property tag's value resolved to null which is not valid");
+                                
+                                invoke(parent, setMethod, value);                        
+                                if (log.isLoggable(LEVEL)) log.log(LEVEL, "set property " + name + " = " + value);
                             }
                             
-                            if (value == null) throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "the property tag's value resolved to null which is not valid");
-                            
-                            invoke(parent, setMethod, value);                        
-                            if (log.isLoggable(Level.FINEST)) log.finest("set property " + name + " = " + value);
                             property = true;
                         }
                     }
@@ -626,10 +640,10 @@ public final class XOD {
                                             ret = invoke(null, m, arg);
                                             
                                             if (!c.isInstance(ret)) {
-                                                if (log.isLoggable(Level.FINEST)) log.finest("invoked static id=" + id + ":" + c.getName() + "." + methodName + "('" + attrValue + "')");
+                                                if (log.isLoggable(LEVEL)) log.log(LEVEL, "invoked static id=" + id + ":" + c.getName() + "." + methodName + "('" + attrValue + "')");
                                                 ret = null;
                                             } else {
-                                                if (log.isLoggable(Level.FINEST)) log.finest("static factory new id=" + id + ":" + c.getName() + "." + methodName + "('" + attrValue + "')");
+                                                if (log.isLoggable(LEVEL)) log.log(LEVEL, "static factory new id=" + id + ":" + c.getName() + "." + methodName + "('" + attrValue + "')");
                                             }
                                         } else {
                                             if (nonStatic == null) nonStatic = new ArrayList<Object[]>(3);
@@ -648,13 +662,13 @@ public final class XOD {
 
                     if (ret == null) {
                         ret = c.newInstance();
-                        if (log.isLoggable(Level.FINEST)) log.finest("new " + c.getName());
+                        if (log.isLoggable(LEVEL)) log.log(LEVEL, "new " + c.getName());
                     }
                     
                     if (nonStatic != null) {
                         for (Object[] callMeth : nonStatic) {
                             invoke(ret, (Method)callMeth[0], callMeth[1]);
-                            if (log.isLoggable(Level.FINEST)) log.finest("invoked id=" + id + ":" + c.getName() + "." + ((Method)callMeth[0]).getName() + "(" + callMeth[1] + ")");
+                            if (log.isLoggable(LEVEL)) log.log(LEVEL, "invoked id=" + id + ":" + c.getName() + "." + ((Method)callMeth[0]).getName() + "(" + callMeth[1] + ")");
                         }
                     }
 
@@ -680,9 +694,10 @@ public final class XOD {
                     
                     if (id != null) objectMap.put(id, ret);
                     objects.add(ret);
+                    if (level == 1) rootObjects.add(ret);
                     
                     if (parent != null && parent instanceof Collection) {
-                        if (log.isLoggable(Level.FINEST)) log.finest("adding child to collection");
+                        if (log.isLoggable(LEVEL)) log.log(LEVEL, "adding child to collection");
                         ((Collection)parent).add(ret);
                     }
                     
@@ -701,7 +716,7 @@ public final class XOD {
     private static final Pattern REGEX_PROPERTY = Pattern.compile("(.*?)[$][{]([\\w.]+)[}](.*?)", Pattern.DOTALL);
     
     private String replaceProperties(String value) {
-        if (log.isLoggable(Level.FINEST)) log.finest("before replaceProperties:" + value);
+        if (log.isLoggable(LEVEL)) log.log(LEVEL, "before replaceProperties:" + value);
         if (value != null && value.indexOf("${") >= 0) {
             StringBuffer sb = new StringBuffer();
             Matcher m = REGEX_PROPERTY.matcher(value);
@@ -717,7 +732,7 @@ public final class XOD {
             value = sb.toString();
         }
         
-        if (log.isLoggable(Level.FINEST)) log.finest("after replaceProperties:" + value);
+        if (log.isLoggable(LEVEL)) log.log(LEVEL, "after replaceProperties:" + value);
         return value;
     }
     
