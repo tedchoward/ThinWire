@@ -188,14 +188,23 @@ var tw_Tree = tw_Component.extend({
         if (node.tw_isLeaf || node.tw_expanded == state) return;
         node.tw_expanded = state;
         
-        if (state) {
-            node.imageNode.src = node == node.parentNode.lastChild ? tw_IMAGE_TREE_EXPANDBOTTOM : tw_IMAGE_TREE_EXPAND;
+        if (this._rootItem !== node) {
+            if (state) {
+                node.imageNode.src = node == node.parentNode.lastChild ? tw_IMAGE_TREE_EXPANDBOTTOM : tw_IMAGE_TREE_EXPAND;
+            } else {
+                node.imageNode.src = node == node.parentNode.lastChild ? tw_IMAGE_TREE_UNEXPANDBOTTOM : tw_IMAGE_TREE_UNEXPAND;
+            }
+
+            node.subNodes.style.display = state ? "block" : "none";            
         } else {
-            node.imageNode.src = node == node.parentNode.lastChild ? tw_IMAGE_TREE_UNEXPANDBOTTOM : tw_IMAGE_TREE_UNEXPAND;
+            var walk = node;
+            
+            while ((walk = walk.nextSibling) != null) {
+                walk.style.display = state ? "block" : "none";
+            }
         }
 
-        node.subNodes.style.display = state ? "block" : "none";            
-        if (this._treeTop.firstChild == node) this._makeTopImage();
+        if (this._treeTop.firstChild === node) this._makeTopImage();
         
         if (sendEvent) {
             var fullIndex = this._fullIndex(node);
