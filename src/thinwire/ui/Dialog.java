@@ -119,7 +119,7 @@ public class Dialog extends AbstractWindow {
     public Dialog() {
         this(null);
         //#IFDEF V1_1_COMPAT                    
-        this.waitForWindow = true;
+        if (isCompatModeOn()) this.waitForWindow = true;
         //#ENDIF
     }
     
