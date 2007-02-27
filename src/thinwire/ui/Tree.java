@@ -30,6 +30,8 @@
 */
 package thinwire.ui;
 
+import java.util.List;
+
 import thinwire.ui.event.ActionEvent;
 
 /**
@@ -227,6 +229,26 @@ public class Tree extends AbstractHierarchyComponent<Tree.Item> {
         selectedItem.setExpanded(true);
     }
 
+    void removingItem(Tree.Item item) {
+        if (priorSelectedItem == item) priorSelectedItem = null;
+        
+        if (selectedItem == item) {
+            if (selectedItem.getParent() instanceof Tree.Item) {
+                Tree.Item parent = (Tree.Item)selectedItem.getParent();
+                List<Tree.Item> kids = parent.getChildren(); 
+                int index = kids.indexOf(selectedItem);
+                
+                if ((index - 1) >= 0) {
+                    kids.get(index - 1).setSelected(true);
+                } else if ((index + 1) < parent.getChildren().size()) {
+                    kids.get(index + 1).setSelected(true);
+                } else {
+                    parent.setSelected(true);
+                }
+            }
+        }
+    }
+    
     /**
      * Get the rootItemVisible state of the Tree.
      * @return true if the root item is visible, false otherwise.

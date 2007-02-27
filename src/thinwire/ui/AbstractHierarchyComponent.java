@@ -67,19 +67,23 @@ abstract class AbstractHierarchyComponent<HI extends AbstractHierarchyComponent.
 
         public I set(int index, I item) {
             if (item.parent != null) throw new IllegalStateException("item.getParent() != null");
-            I ret = l.set(index, item);
+            AbstractHierarchyComponent hier = parent.getHierarchy();
+            I ret = l.get(index);
+            hier.removingItem(ret);
+            l.set(index, item);
             ret.setParent(null);
             item.setParent(parent);
-            AbstractHierarchyComponent hier = parent.getHierarchy();
             if (hier != null) hier.icei.fireItemChange(parent, Type.SET, index, ret, item);
             return ret;
         }
 
         public I remove(int index) {
             modCount++;
-            I item = l.remove(index);
-            item.setParent(null);
             AbstractHierarchyComponent hier = parent.getHierarchy();
+            I item = l.get(index);
+            hier.removingItem(item);
+            l.remove(index);
+            item.setParent(null);
             if (hier != null) hier.icei.fireItemChange(parent, Type.REMOVE, index, item, null);
             return item;
         }
@@ -201,6 +205,10 @@ abstract class AbstractHierarchyComponent<HI extends AbstractHierarchyComponent.
         super(actionValidator);
         this.rootItem = rootItem;
         rootItem.setParent(this);
+    }
+    
+    void removingItem(HI item) {
+        
     }
     
     public HI getRootItem() {
