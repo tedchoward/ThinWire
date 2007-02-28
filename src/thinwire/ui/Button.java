@@ -138,10 +138,9 @@ public class Button extends AbstractTextComponent implements ImageComponent {
 	
 	/**
 	 * Sets whether this button is the standard button.
-	 * 
-	 * If this button is a
 	 * There can only be a single standard button per <code>Window</code>,
-	 * therefore setting the standard flag on this button will is the button in a window that will be 
+     * therefore setting this property to true will result in
+     * the 'standard' property of the current standard button to be set to false. 
 	 * @param standard true to make this the standard button, false otherwise.
 	 * @throws UnsupportedOperationException if this Button's parent is not a Container.
 	 */
