@@ -50,7 +50,8 @@ class EventProcessor extends Thread {
     private static final char EVENT_RUN_TIMER = '3';
     private static final int FIVE_MINUTES = 1000 * 60 * 5;
     private static final Level LEVEL = Level.FINER;
-    private static final Logger log = Logger.getLogger(EventProcessor.class.getName()); 
+    private static final Logger log = Logger.getLogger(EventProcessor.class.getName());
+    private static int nextId = 0;
     
     private EventProcessorPool pool;
     private List<WebComponentEvent> queue = new LinkedList<WebComponentEvent>();
@@ -69,7 +70,7 @@ class EventProcessor extends Thread {
     
     EventProcessor(EventProcessorPool pool) {
         if (pool == null) throw new IllegalArgumentException("pool == null");
-        setName("ThinWire-EventProcessorThread-" + this.getId());
+        setName("ThinWire-EventProcessorThread-" + (nextId++) + "-" + this.hashCode());
         this.pool = pool;
     }
     
