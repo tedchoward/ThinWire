@@ -308,8 +308,10 @@ public class FileChooser extends Panel {
                 for (Component[] c : files) {
                     FileChooser fc = (FileChooser) c[0];
                     FileInfo fi = fc.getFileInfo();
-                    if (c.length == 2) fi.setDescription(((TextField) c[1]).getText());
-                    fileInfoList.add(fi);
+                    if (fi != null) {
+                    	if (c.length == 2) fi.setDescription(((TextField) c[1]).getText());
+                    	fileInfoList.add(fi);
+                    }
                 }
                 dlg.setVisible(false);
             }
