@@ -565,7 +565,7 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
             		curRow.set(j, comp);
             	} else if (o instanceof List) {
             		((List<Component>) o).add(comp);
-            	} else {
+            	} else if (!o.equals(comp)) {
             		List<Component> list = new ArrayList<Component>();
             		list.add((Component) o);
             		list.add(comp);
