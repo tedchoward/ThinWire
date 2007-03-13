@@ -266,7 +266,7 @@ class EventProcessor extends Thread {
             if (log.isLoggable(LEVEL)) log.log(LEVEL, getName() + ": finishing up update events, active=" + active + ", updateEventsSize=" + updateEventsSize);
             if (active) {
             	w.write(updateEventsSize == 0 ? "[{m:\"" : ",{m:\"");
-            	w.write("sendGetEvents\",a:[],s:1,n:tw_em}");
+            	w.write("sendGetEvents\",a:[],n:tw_em}");
             	updateEventsSize += 36;
             }
             
