@@ -172,18 +172,20 @@ class RichTextParser {
     private class NumberValidator extends Validator {
         int min;
         int max;
+        String units;
         
-        NumberValidator(String jsPropName, int min, int max) {
+        NumberValidator(String jsPropName, int min, int max, String units) {
             super(jsPropName);
             this.min = min;
             this.max = max;
+            this.units = units;
         }
         
         @Override
         String getValue(String value) {
             int size = Integer.parseInt(value);
             if (size <= min || size > max) throw new RuntimeException(jsPropName + " <= " + min + " || " + jsPropName + " > " + max);
-            return String.valueOf(size) + "px";
+            return String.valueOf(size) + units;
         }
     }
     
@@ -192,30 +194,30 @@ class RichTextParser {
         fontAtts.put("family", fontFamilyValidator);
         fontAtts.put("face", fontFamilyValidator);
         fontAtts.put("color", new EnumValidator(Color.class, "color"));
-        fontAtts.put("size", new NumberValidator("fontSize", 0, 128));
+        fontAtts.put("size", new NumberValidator("fontSize", 0, 128, "pt"));
         fontAtts.put("bold", new BooleanValidator("fontWeight", "bold", "normal"));
         fontAtts.put("underline", new BooleanValidator("textDecoration", "underline", "none"));
         fontAtts.put("strike", new BooleanValidator("textDecoration", "line-through", "none"));
         fontAtts.put("italic", new BooleanValidator("fontStyle", "italic", "normal"));
         
         borderAtts.put("type", new EnumValidator(Border.Type.class, "borderStyle"));
-        borderAtts.put("size", new NumberValidator("borderWidth", 0, 32));
+        borderAtts.put("size", new NumberValidator("borderWidth", 0, 32, "px"));
         borderAtts.put("color", new EnumValidator(Color.class, "borderColor"));
         
         borderLeftAtts.put("type", new EnumValidator(Border.Type.class, "borderLeftStyle"));
-        borderLeftAtts.put("size", new NumberValidator("borderLeftWidth", 0, 32));
+        borderLeftAtts.put("size", new NumberValidator("borderLeftWidth", 0, 32, "px"));
         borderLeftAtts.put("color", new EnumValidator(Color.class, "borderLeftColor"));
         
         borderRightAtts.put("type", new EnumValidator(Border.Type.class, "borderRightStyle"));
-        borderRightAtts.put("size", new NumberValidator("borderRightWidth", 0, 32));
+        borderRightAtts.put("size", new NumberValidator("borderRightWidth", 0, 32, "px"));
         borderRightAtts.put("color", new EnumValidator(Color.class, "borderRightColor"));
         
         borderTopAtts.put("type", new EnumValidator(Border.Type.class, "borderTopStyle"));
-        borderTopAtts.put("size", new NumberValidator("borderTopWidth", 0, 32));
+        borderTopAtts.put("size", new NumberValidator("borderTopWidth", 0, 32, "px"));
         borderTopAtts.put("color", new EnumValidator(Color.class, "borderTopColor"));
         
         borderBottomAtts.put("type", new EnumValidator(Border.Type.class, "borderBottomStyle"));
-        borderBottomAtts.put("size", new NumberValidator("borderBottomWidth", 0, 32));
+        borderBottomAtts.put("size", new NumberValidator("borderBottomWidth", 0, 32, "px"));
         borderBottomAtts.put("color", new EnumValidator(Color.class, "borderBottomColor"));
         
         borderIgnoreAtts.put("edge", null);
@@ -230,8 +232,8 @@ class RichTextParser {
         
         imgAtts.put("src", new URLValidator("src"));
         
-        imgStyleAtts.put("width", new NumberValidator("width", 0, Short.MAX_VALUE));
-        imgStyleAtts.put("height", new NumberValidator("height", 0, Short.MAX_VALUE));
+        imgStyleAtts.put("width", new NumberValidator("width", 0, Short.MAX_VALUE, "px"));
+        imgStyleAtts.put("height", new NumberValidator("height", 0, Short.MAX_VALUE, "px"));
     }
     
     public Object parseRichText(Object textValue, ComponentRenderer cr) {
