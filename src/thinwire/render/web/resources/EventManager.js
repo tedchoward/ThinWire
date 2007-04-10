@@ -64,7 +64,7 @@ var tw_EventManager = Class.extend({
                 this._resetTimer(0);
             } catch (e) {
                 alert("SYNTAX ERROR WITH eval(calls): " + calls);
-            }
+            } 
         }        
         
         this._setActivityIndVisible(false);
@@ -98,7 +98,7 @@ var tw_EventManager = Class.extend({
     },
         
     _eventLoop: function() {
-        if (this._comm != null) {
+        if (this._comm != null && this._autoSyncResponse) {
             var timerTime = 100;
             
             if (this._postOutboundEvents && this._comm.isReady()) {
@@ -118,7 +118,6 @@ var tw_EventManager = Class.extend({
                 var obj = call.i == undefined ? (call.n == undefined ? window : call.n) : tw_Component.instances[call.i];                    
                 
                 if (obj != null) {
-                    if (call.s) this._autoSyncResponse = true;
                     var ret = obj[call.m].apply(obj, call.a);            
                     
                     if (call.s && this._autoSyncResponse) {
@@ -197,6 +196,8 @@ var tw_EventManager = Class.extend({
         } else {
             this._sendOutboundEvent(this._EVENT_SYNC_CALL, value);
         }
+        
+        this._autoSyncResponse = true;
     },
     
     start: function() {
