@@ -101,7 +101,11 @@ abstract class AbstractContainer<T extends Component> extends AbstractComponent 
         public T set(int index, T o) {
             if (o == null) throw new IllegalArgumentException("o == null");
             if (o == AbstractContainer.this) throw new IllegalArgumentException("cannot add component to itself");
-            if (o.getParent() != null) throw new IllegalArgumentException("cannot add component to multiple containers or twice to the same container");
+            if (o.getParent() != null) {
+                if (o == l.get(index)) return o;
+                throw new IllegalArgumentException("cannot add component to multiple containers or twice to the same container");
+            }
+            
             T ret = l.set(index, o);
             processRemove(ret);
             processAdd(o);
