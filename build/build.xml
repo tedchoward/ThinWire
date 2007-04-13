@@ -88,8 +88,8 @@
 		
 		<javac srcdir="${path.source}" destdir="${path.temp}" target="1.5" source="1.5" debug="yes">
 			<classpath>
-				<fileset dir="./" includes="*/**"/>
-				<fileset dir="${path.library}" includes="*/**"/>
+				<fileset dir="./" includes="**/*.jar"/>
+				<fileset dir="${path.library}" includes="**/*.jar"/>
 			</classpath>
 	    </javac>
 
