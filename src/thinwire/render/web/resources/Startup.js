@@ -185,7 +185,7 @@ function tw_getEventOffsetY(event, className) {
         y = event.layerY;
        if (source.className != className) y -= source.offsetTop;
     } else {
-        y = event.offsetX;
+        y = event.offsetY;
     }
 
     if (className != null) {
