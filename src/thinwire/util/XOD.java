@@ -68,7 +68,7 @@ import thinwire.ui.Application;
  * <pre>
  * &lt;?xml version="1.0"?&gt;
  * &lt;xod&gt;
- *     &lt;include name="classes.xml"&gt;
+ *     &lt;include file="classes.xml"/&gt;
  *     &lt;Dialog id="dialog"&gt;
  *         &lt;title&gt;XOD Demo File&lt;/title&gt;
  *         &lt;width&gt;300&lt;/width&gt;
