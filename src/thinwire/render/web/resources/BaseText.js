@@ -394,20 +394,21 @@ var tw_BaseText = tw_Component.extend({
     
                     break;
     
+                //From: http://unicode.org/charts/PDF/U0080.pdf
                 case 'a':
                     reCh = "[A-Za-z ]|[\u00c0-\u00d6]|[\u00d8-\u00f6]|[\u00f8-\u00ff]";
                     break;
     
                 case 'A':
-                    reCh = "[A-Z ]|[\u00c0-\u00d6]|[\u00d8-\u00df]";
+                    reCh = "[A-Z ]|[\u00c0-\u00d6]|[\u00d8-\u00de]";
                     break;
                     
                 case 'x':
-                    reCh = "[\u0020-\u00ff]";
+                    reCh = "[ -~]|[\u00a1-\u00ff]";
                     break;
                     
                 case 'X':
-                    reCh = "[\u0020-`]|[{-\u00df]|\u00f7";
+                    reCh = "[\u0020-`]|[{-~]|[\u00a1-\u00de]|\u00f7";
                     break;
                     
                 case '9': case '#':
@@ -569,8 +570,8 @@ var tw_BaseText = tw_Component.extend({
                             if (mch == "A" || mch == "X") {                                                                        
                                 var charCode = newValue.charCodeAt(i);
                                 
-                                if (charCode >= "a".charCodeAt(0) && charCode <= "z".charCodeAt(0)) {
-                                    newValue = newValue.substring(0, i) + String.fromCharCode(charCode).toUpperCase() + newValue.substring(i + 1);
+                                if ((charCode >= 0x61 && charCode <= 0x7A) || (charCode >= 0xE0 && charCode <= 0xFE && charCode != 0xF7)) {
+                                    newValue = newValue.substring(0, i) + String.fromCharCode(charCode - 32) + newValue.substring(i + 1);
                                     i--;
                                 } else {
                                     valid = false;
