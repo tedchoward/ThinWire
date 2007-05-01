@@ -395,19 +395,19 @@ var tw_BaseText = tw_Component.extend({
                     break;
     
                 case 'a':
-                    reCh = "[A-Za-z ]";
+                    reCh = "[A-Za-z ]|[\u00c0-\u00d6]|[\u00d8-\u00f6]|[\u00f8-\u00ff]";
                     break;
     
                 case 'A':
-                    reCh = "[A-Z ]";
+                    reCh = "[A-Z ]|[\u00c0-\u00d6]|[\u00d8-\u00df]";
                     break;
                     
                 case 'x':
-                    reCh = "[ -~]";
+                    reCh = "[\u0020-\u00ff]";
                     break;
                     
                 case 'X':
-                    reCh = "[ -`]|[{-~]";
+                    reCh = "[\u0020-`]|[{-\u00df]|\u00f7";
                     break;
                     
                 case '9': case '#':
