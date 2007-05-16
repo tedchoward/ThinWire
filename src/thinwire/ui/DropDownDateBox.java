@@ -152,11 +152,7 @@ public class DropDownDateBox extends DropDown<DateBox> {
         super(new DefaultView(), new DateBox());
         ((DefaultView)getView()).init(this, this.getComponent());
         setEditMask("MM/dd/yyyy");
-        if (text != null) {
-            setText(text);
-        } else {
-            setText(getView().getValue().toString());
-        }
+        if (text != null) setText(text);
     }
     
     /**
