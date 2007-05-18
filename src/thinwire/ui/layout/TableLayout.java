@@ -314,8 +314,6 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
         }
     }
 
-    private int margin;
-    private int spacing;
     private ArrayGrid<Row, Column> grid;
     private SortedSet<Row> visibleRows;
     private SortedSet<Row> roVisibleRows;
@@ -665,26 +663,6 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
         }
         
         return absoluteSizes;
-    }
-    
-    public int getMargin() {
-        return margin;
-    }
-    
-    public void setMargin(int margin) {
-        if (margin < 0 || margin >= Short.MAX_VALUE) throw new IllegalArgumentException("margin < 0 || margin >= " + Short.MAX_VALUE);
-        this.margin = margin;
-        if (autoLayout) apply();
-    }
-    
-    public int getSpacing() {
-        return spacing;
-    }
-    
-    public void setSpacing(int spacing) {
-        if (spacing < 0 || spacing >= Short.MAX_VALUE) throw new IllegalArgumentException("spacing < 0 || spacing >= " + Short.MAX_VALUE);
-        this.spacing = spacing;
-        if (autoLayout) apply();
     }
     
     public void apply() {

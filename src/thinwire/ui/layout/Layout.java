@@ -42,4 +42,8 @@ public interface Layout {
     boolean isAutoApply();
     void setAutoApply(boolean autoApply);
     void apply();
+    int getMargin();
+    void setMargin(int margin);
+    int getSpacing();
+    void setSpacing(int spacing);
 }

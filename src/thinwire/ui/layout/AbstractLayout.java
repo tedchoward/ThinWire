@@ -51,6 +51,8 @@ abstract class AbstractLayout implements Layout {
     protected String[] autoLayoutProps;
     protected boolean autoLayout;
     protected boolean limitLayout;
+    protected int margin;
+    protected int spacing;
 
     private final PropertyChangeListener pclContainer = new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent pce) {
@@ -185,4 +187,24 @@ abstract class AbstractLayout implements Layout {
         this.autoLayout = autoLayout;
         if (autoLayout) apply();
     }
+
+	public int getMargin() {
+		return margin;
+	}
+
+	public void setMargin(int margin) {
+		if (margin < 0 || margin >= Short.MAX_VALUE) throw new IllegalArgumentException("margin < 0 || margin >= " + Short.MAX_VALUE);
+		this.margin = margin;
+		if (autoLayout) apply();
+	}
+
+	public int getSpacing() {
+		return spacing;
+	}
+
+	public void setSpacing(int spacing) {
+		if (spacing < 0 || spacing >= Short.MAX_VALUE) throw new IllegalArgumentException("spacing < 0 || spacing >= " + Short.MAX_VALUE);
+		this.spacing = spacing;
+		if (autoLayout) apply();
+	}
 }
