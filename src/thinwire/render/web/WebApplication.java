@@ -729,11 +729,11 @@ public final class WebApplication extends Application {
     }
     
     protected String getQualifiedURL(String location) {
-    	return getRenderer(getFrame()).getQualifiedURL(location);
+    	return windowToRenderer.get(getFrame()).getQualifiedURL(location);
     }
     
     protected void removeFileFromMap(String location) {
-    	getRenderer(getFrame()).removeFileFromMap(location);
+    	windowToRenderer.get(getFrame()).removeFileFromMap(location);
     }
 
     public void addTimerTask(Runnable task, long timeout) {
