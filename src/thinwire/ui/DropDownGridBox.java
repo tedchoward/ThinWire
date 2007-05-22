@@ -124,6 +124,8 @@ public class DropDownGridBox extends DropDown<GridBox> {
     public static class DefaultView extends DropDown.AbstractView<GridBox> {
         
         private static final int MIN_SIZE = 25;
+        private static final int DEFAULT_MAX_WIDTH = 640 / 2 - 10;
+        private static final int DEFAULT_MAX_HEIGHT = 480 / 2 - 20;
         
         private int columnIndex;
         private String delimiter;
@@ -376,7 +378,8 @@ public class DropDownGridBox extends DropDown<GridBox> {
                 if (ddWidth > width) width = ddWidth;
             }
             
-            int maxWidth = Application.current().getFrame().getInnerWidth() / 2 - 10;
+            Application app = Application.current();
+            int maxWidth = app != null ? app.getFrame().getInnerWidth() / 2 - 10 : DEFAULT_MAX_WIDTH;
             if (width > maxWidth) width = maxWidth;
             if (width < MIN_SIZE) width = MIN_SIZE;
             return width;
@@ -388,7 +391,9 @@ public class DropDownGridBox extends DropDown<GridBox> {
             height *= 14; //TODO: Hardcoded row height        
             height += 10; //TODO: Hardcoded fudge factor for border        
             if (ddc.isVisibleHeader()) height += 16; //TODO: Hardcoded column header size
-            int maxHeight = Application.current().getFrame().getInnerHeight() / 2 - 20;
+            
+            Application app = Application.current();
+            int maxHeight = app != null ? app.getFrame().getInnerHeight() / 2 - 20 : DEFAULT_MAX_HEIGHT;
             if (ddc.getParent() instanceof DropDownGridBox) maxHeight -= ((DropDownGridBox)ddc.getParent()).getHeight();
             if (height > maxHeight) height = maxHeight;
             if (height < MIN_SIZE) height = MIN_SIZE; 

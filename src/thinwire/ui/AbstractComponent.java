@@ -80,12 +80,13 @@ abstract class AbstractComponent implements Component {
     AbstractComponent(EventListenerImpl.SubTypeValidator actionValidator) {
         this.visible = true;
         app = Application.current();
-        pcei = new EventListenerImpl<PropertyChangeListener>(this, PropertyChangeListener.class, null, app.getGloalPropertyChangeListenerImpl());
+        EventListenerImpl gpcei = app != null ? app.getGloalPropertyChangeListenerImpl() : null;
+        pcei = new EventListenerImpl<PropertyChangeListener>(this, PropertyChangeListener.class, null, gpcei);
         aei = new EventListenerImpl<ActionListener>(this, ActionListener.class, actionValidator);
         dei = new EventListenerImpl<DropListener>(this, DropListener.class);
         kpei = new EventListenerImpl<KeyPressListener>(this, KeyPressListener.class, EventListenerImpl.KEY_PRESS_VALIDATOR);
             
-        this.style = new Style(app.getDefaultStyle(this.getClass()), this) {
+        this.style = new Style(Application.getDefaultStyle(this.getClass()), this) {
             protected void firePropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
                 AbstractComponent.this.firePropertyChange(source, propertyName, oldValue, newValue);
             }
@@ -358,7 +359,7 @@ abstract class AbstractComponent implements Component {
                     container.setFocus(true);
     		    }
             } else {
-                app.setPriorFocus(this);
+                if (app != null) app.setPriorFocus(this);
                 
                 if (this instanceof Container) {
                     Component childWithFocus = ((Container)this).getChildWithFocus();                      

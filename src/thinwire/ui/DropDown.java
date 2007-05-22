@@ -67,7 +67,7 @@ public class DropDown<T extends Component> extends AbstractMaskEditorComponent {
         Style cs = child.getStyle();
         Style ps = parent.getStyle();
         Border csb = cs.getBorder();
-        Border dcsb = Application.current().getDefaultStyle(child.getClass()).getBorder();
+        Border dcsb = Application.getDefaultStyle(child.getClass()).getBorder();
         if (csb.getColor().equals(dcsb.getColor())) csb.setColor(Color.WINDOWFRAME);
         if (csb.getType().equals(dcsb.getType())) csb.setType(Border.Type.SOLID);
         if (csb.getSize() == dcsb.getSize()) csb.setSize(1);
@@ -101,12 +101,16 @@ public class DropDown<T extends Component> extends AbstractMaskEditorComponent {
     	
     	protected void addCloseComponent(final Component comp) {
             if (dd == null) throw new IllegalStateException("dd == null");
+            
             final WebApplication app = (WebApplication) Application.current();
-            app.addRenderStateListener(comp, new RenderStateListener() {
-                public void renderStateChange(RenderStateEvent ev) {
-                    app.clientSideMethodCall(app.getComponentId(dd), "addCloseComponent", app.getComponentId(comp));
-                }
-            });
+            
+            if (app != null) {
+	            app.addRenderStateListener(comp, new RenderStateListener() {
+	                public void renderStateChange(RenderStateEvent ev) {
+	                    app.clientSideMethodCall(app.getComponentId(dd), "addCloseComponent", app.getComponentId(comp));
+	                }
+	            });
+            }
     	}
     	
     	public int getOptimalWidth() {

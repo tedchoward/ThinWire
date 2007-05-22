@@ -85,7 +85,11 @@ public class Hyperlink extends AbstractTextComponent {
             target = "olhl" + id;
         }
         
-        ((WebApplication)WebApplication.current()).clientSideMethodCall("tw_Hyperlink", "openLocation", location, target);
+        location = Application.current().getQualifiedURL(location);
+        
+        ((WebApplication)WebApplication.current()).clientSideMethodCallWaitForReturn("tw_Hyperlink", "openLocation", location, target);
+        
+        Application.current().removeFileFromMap(location);
     }
     
     private String location = "";

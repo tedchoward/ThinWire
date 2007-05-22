@@ -65,6 +65,8 @@ public abstract class Application {
     private static final String DEFAULT_STYLE_SHEET = "class:///" + Application.class.getName() + "/resources/DefaultStyle.zip";
     
     private static final Map<String, String> versionInfo;
+    private static final Map<Class<? extends Component>, Style> defaultStyleMap = buildStyleMap(DEFAULT_STYLE_SHEET + "/Style.xml");
+    
     static {
         Properties props = new Properties();
         Map<String, String> vi = new HashMap<String, String>();
@@ -271,6 +273,69 @@ public abstract class Application {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+    
+    public static Style getDefaultStyle(Class<? extends Component> clazz) {
+        if (clazz == null) throw new IllegalArgumentException("clazz == null");
+        Map<Class<? extends Component>, Style> map = current() != null ? current().compTypeToStyle : defaultStyleMap;
+        
+        Style style = map.get(clazz);
+        
+        if (style == null) {
+            List<Class<? extends Component>> lst = new ArrayList<Class<? extends Component>>();
+            lst.add(clazz);
+            
+            do {                                        
+                Class<? extends Component> findClazz = lst.remove(0);
+                style = map.get(findClazz);
+                
+                if (style == null) {
+                    Class sc = findClazz.getSuperclass();
+                    if (Component.class.isAssignableFrom(sc)) lst.add(sc);
+                    
+                    for (Class i : findClazz.getInterfaces()) {
+                        if (Component.class.isAssignableFrom(i)) lst.add(i);
+                    }
+                } else {
+                    break;
+                }
+            } while (lst.size() > 0);
+
+            if (style == null) style = map.get(null);
+            map.put(clazz, style);
+        }
+
+        return style;
+    }
+    
+    private static Map<Class<? extends Component>, Style> buildStyleMap(String styleSheet) {
+    	XOD props = new XOD();
+    	if (!styleSheet.endsWith(".xml")) styleSheet += "/Style.xml";
+    	props.execute(styleSheet);
+    	
+    	Map<Class<? extends Component>, Style> styleMap = new HashMap<Class<? extends Component>, Style>();
+    	
+    	for (Map.Entry<String, Object> e : props.getObjectMap().entrySet()) {
+    		String name = e.getKey();
+            Object value = e.getValue();
+            
+            if (value instanceof Style) {
+                if (name.startsWith("default")) {
+                    if (name.equals("default")) styleMap.put(null, (Style)value);
+                } else if (name.matches(".*?[A-Z].*?")){
+                    if (Character.isUpperCase(name.charAt(0)) && name.indexOf('.') == -1) name = "thinwire.ui." + name;
+                    
+                    try {
+                        Class clazz = Class.forName(name);
+                        if (clazz.getMethod("getStyle") != null) styleMap.put((Class<? extends Component>)clazz, (Style)value);
+                    } catch (Exception ex) { /*purposely fall through*/ }
+                }
+            } else if (!(value instanceof Color)) {
+                throw new UnsupportedOperationException("Unsupported object type in style sheet:" + value.getClass());
+            }
+    	}
+    	
+    	return styleMap;
     }
 
     private List<ExceptionListener> exceptionListeners;
@@ -515,6 +580,7 @@ public abstract class Application {
     public Component getPriorFocus() {
         return priorFocus.get();
     }
+    
         
     protected void loadStyleSheet(String styleSheet) {
         XOD props = new XOD();
@@ -522,7 +588,7 @@ public abstract class Application {
         if (!sheet.endsWith(".xml")) sheet += "/Style.xml";
         props.execute(getSystemFile(sheet));
         
-        compTypeToStyle = new HashMap<Class<? extends Component>, Style>();
+        compTypeToStyle = buildStyleMap(sheet);
         systemColors = new HashMap<String, Color>();
         systemImages = new HashMap<String, String>();
 
@@ -534,18 +600,7 @@ public abstract class Application {
                 Color color = Color.valueOf(name); //Just verify that the specified systemColor is valid;
                 if (!color.isSystemColor()) throw new UnsupportedOperationException("You can only override system colors in the style sheet: " + name);
                 systemColors.put(color.toString(), (Color)value);
-            } else if (value instanceof Style) {
-                if (name.startsWith("default")) {
-                    if (name.equals("default")) compTypeToStyle.put(null, (Style)value);
-                } else if (name.matches(".*?[A-Z].*?")){
-                    if (Character.isUpperCase(name.charAt(0)) && name.indexOf('.') == -1) name = "thinwire.ui." + name;
-                    
-                    try {
-                        Class clazz = Class.forName(name);
-                        if (clazz.getMethod("getStyle") != null) compTypeToStyle.put((Class<? extends Component>)clazz, (Style)value);
-                    } catch (Exception ex) { /*purposely fall through*/ }
-                }
-            } else {
+            } else if (!(value instanceof Style)) {
                 throw new UnsupportedOperationException("Unsupported object type in style sheet:" + value.getClass());
             }
         }
@@ -591,37 +646,6 @@ public abstract class Application {
 
     protected Map<String, String> getSystemImages() {
         return systemImages;
-    }
-
-    public Style getDefaultStyle(Class<? extends Component> clazz) {
-        if (clazz == null) throw new IllegalArgumentException("clazz == null");
-        Style style = compTypeToStyle.get(clazz);
-        
-        if (style == null) {
-            List<Class<? extends Component>> lst = new ArrayList<Class<? extends Component>>();
-            lst.add(clazz);
-            
-            do {                                        
-                Class<? extends Component> findClazz = lst.remove(0);
-                style = compTypeToStyle.get(findClazz);
-                
-                if (style == null) {
-                    Class sc = findClazz.getSuperclass();
-                    if (Component.class.isAssignableFrom(sc)) lst.add(sc);
-                    
-                    for (Class i : findClazz.getInterfaces()) {
-                        if (Component.class.isAssignableFrom(i)) lst.add(i);
-                    }
-                } else {
-                    break;
-                }
-            } while (lst.size() > 0);
-
-            if (style == null) style = compTypeToStyle.get(null);
-            compTypeToStyle.put(clazz, style);
-        }
-
-        return style;
     }
     
     void setPriorFocus(Component comp) {
@@ -724,6 +748,8 @@ public abstract class Application {
     protected abstract void showWindow(Window w);
     protected abstract void hideWindow(Window w);
     protected abstract FileChooser.FileInfo getFileInfo();
+    protected abstract String getQualifiedURL(String location);
+    protected abstract void removeFileFromMap(String location);
     
     /**
      * 

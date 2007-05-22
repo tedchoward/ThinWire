@@ -727,6 +727,14 @@ public final class WebApplication extends Application {
             return fileInfo;
         }
     }
+    
+    protected String getQualifiedURL(String location) {
+    	return getRenderer(getFrame()).getQualifiedURL(location);
+    }
+    
+    protected void removeFileFromMap(String location) {
+    	getRenderer(getFrame()).removeFileFromMap(location);
+    }
 
     public void addTimerTask(Runnable task, long timeout) {
         addTimerTask(task, timeout, false);

@@ -593,7 +593,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         return o;
     }
     
-    final String getQualifiedURL(String location) {        
+    final String getQualifiedURL(String location) {
         if (location.trim().length() > 0) {
             URI uri;
             WindowRenderer wr = this instanceof WindowRenderer ? (WindowRenderer)this : this.wr;
@@ -614,5 +614,18 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         }
 
         return location;
-    }    
+    }
+    
+    void removeFileFromMap(String location) {
+    	
+    	location = location.replaceAll("%SYSROOT%(.*)", "$1");
+    	
+    	try {
+    		RemoteFileMap.INSTANCE.remove(location);
+    	} catch (IOException e) {
+    		log.log(Level.WARNING, "Local file no longer exists", e);
+    	}
+    	
+    	remoteFiles.remove(location);
+    }
 }
