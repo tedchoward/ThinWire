@@ -30,8 +30,6 @@
 */
 package thinwire.ui;
 
-import java.util.List;
-
 /**
  * A Dialog is a window with a title that is usually associated to a Frame.
  * <p>

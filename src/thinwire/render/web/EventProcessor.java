@@ -48,10 +48,12 @@ class EventProcessor extends Thread {
     private static final char EVENT_GET_EVENTS = '1';
     private static final char EVENT_SYNC_CALL = '2';
     private static final char EVENT_RUN_TIMER = '3';
-    private static final int FIVE_MINUTES = 1000 * 60 * 5;
+    private static final int TIMEOUT = 1000 * 60 * 5;//5 minutes
     private static final Level LEVEL = Level.FINER;
     private static final Logger log = Logger.getLogger(EventProcessor.class.getName());
     private static int nextId = 0;
+    
+    static class GracefulShutdown extends Error { }
     
     private EventProcessorPool pool;
     private List<WebComponentEvent> queue = new LinkedList<WebComponentEvent>();
@@ -87,7 +89,9 @@ class EventProcessor extends Thread {
                 while (true) {
                     processUserActionEvent();
                 }
-            } catch (InterruptedException e) { 
+            } catch (GracefulShutdown e) {
+                if (log.isLoggable(LEVEL)) log.log(LEVEL, getName() + ": exiting thread run method gracefully");
+            } finally {
                 //allow for graceful exit
                 pool.removeFromPool(this);
 
@@ -95,7 +99,7 @@ class EventProcessor extends Thread {
                 queue.clear();
                 queue = null;
                 sbParseUserAction = null;
-                response = null;    
+                response = null;
                 pool = null;
                 syncCallResponse = null;
                 complexValueBuffer = null;
@@ -110,39 +114,34 @@ class EventProcessor extends Thread {
         if (log.isLoggable(LEVEL)) log.log(LEVEL, getName() + ": capture count:" + captureCount);
         threadCaptured = true;
 
-        try {
-            while (threadCaptured) {
-                processUserActionEvent();
-                if (currentCaptureCount == captureCount) threadCaptured = true;
-            }
-        } catch (InterruptedException e) {
-            //Must throw an actual exception so the stack unrolls
-            throw new RuntimeException(e);
+        while (threadCaptured) {
+            processUserActionEvent();
+            if (currentCaptureCount == captureCount) threadCaptured = true;
         }
     }
     
     //Must only be called by the main run loop or the capture method!
-    private void processUserActionEvent() throws InterruptedException {
-        lastActivityTime = System.currentTimeMillis();
-
+    private void processUserActionEvent() {
         if (queue.size() > 0) {
+            lastActivityTime = System.currentTimeMillis();
+
             WebComponentEvent event = queue.remove(0);
             if (log.isLoggable(LEVEL)) log.log(LEVEL, getName() + ": process user action event:" + event);
             if (app.userActionListener != null) app.notifyUserActionReceived(event);
 
-            if (app.playBackOn && !app.playBackEventReceived) {
-                app.playBackEventReceived = true;
-                app.playBackStart = new Date().getTime();
-            }
+            //if (app.playBackOn && !app.playBackEventReceived) {
+            //    app.playBackEventReceived = true;
+            //    app.playBackStart = new Date().getTime();
+            //}
             
-            if (app.playBackOn) {
+            //if (app.playBackOn) {
                 //TODO figure out what makes sense here
                 //synchronized (response) {
                     //response.reset();
                 //}
                 
-                if (ApplicationEventListener.SHUTDOWN.equals(event.getName())) app.setPlayBackOn(false);
-            }
+                //if (ApplicationEventListener.SHUTDOWN.equals(event.getName())) app.setPlayBackOn(false);
+            //}
             
             try {
                 WebComponentListener wcl = app.getWebComponentListener((Integer) event.getSource());
@@ -156,18 +155,27 @@ class EventProcessor extends Thread {
             queue.notify();
             if (log.isLoggable(LEVEL)) log.log(LEVEL, getName() + ": Notified request handler thread so it returns if it is currently blocking");
 
-            if (threadCaptured) {
-                if (log.isLoggable(LEVEL)) log.log(LEVEL, getName() + ": Waiting for this captured thread to receive new user action events");
-                queue.wait();
-            } else {
-                if (log.isLoggable(LEVEL)) log.log(LEVEL, getName() + ": Waiting " + FIVE_MINUTES + " to be given new user action events, otherwise it will be shutdown");
-                queue.wait(FIVE_MINUTES);
-                
-                //Bring the thread down if it's been idle for five minutes.
-                if (app == null && queue.size() == 0 && (System.currentTimeMillis() - lastActivityTime) >= FIVE_MINUTES) {
-                    if (log.isLoggable(LEVEL)) log.log(LEVEL, getName() + ": Triggering thread interrupt to shutdown");
-                    interrupt();
+            try {
+                if (threadCaptured) {
+                    if (log.isLoggable(LEVEL)) log.log(LEVEL, getName() + ": Waiting for this captured thread to receive new user action events");
+                    //This wait has the potential to deadlock if the client fails to make a request back to the server.
+                    //To prevent this, a session timeout should be set in web.xml
+                    queue.wait();
+                } else {
+                    if (log.isLoggable(LEVEL)) log.log(LEVEL, getName() + ": Waiting " + TIMEOUT + " to be given new user action events, otherwise it will be shutdown");
+                    queue.wait(TIMEOUT);
+                    
+                    long timePassed = System.currentTimeMillis() - lastActivityTime;
+                    if (log.isLoggable(LEVEL)) log.log(LEVEL, getName() + ": time passed during wait=" + timePassed + ", timeout=" + TIMEOUT);
+                    
+                    //Bring the thread down if it's been idle for five minutes.
+                    if (app == null && queue.size() == 0 && timePassed >= TIMEOUT) {
+                        if (log.isLoggable(LEVEL)) log.log(LEVEL, getName() + ": triggering thread graceful shutdown");
+                        throw new GracefulShutdown();
+                    }
                 }
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
             }
             
             active = true;
@@ -184,7 +192,8 @@ class EventProcessor extends Thread {
     void handleRequest(WebComponentEvent ev, Writer w) throws IOException {
         synchronized (queue) {
             if (log.isLoggable(LEVEL)) log.log(LEVEL, getName() + ": queue user action event:" + ev);
-            queue.add(ev);
+            //ev would be null if this is called from shutdown() in an attempt to continue a dialog flush()           
+            if (ev != null) queue.add(ev);
             queue.notify();
             writeUpdateEvents(w);
         }
@@ -264,6 +273,7 @@ class EventProcessor extends Thread {
             }
 
             if (log.isLoggable(LEVEL)) log.log(LEVEL, getName() + ": finishing up update events, active=" + active + ", updateEventsSize=" + updateEventsSize);
+            
             if (active) {
             	w.write(updateEventsSize == 0 ? "[{m:\"" : ",{m:\"");
             	w.write("sendGetEvents\",a:[],n:tw_em}");
@@ -378,6 +388,8 @@ class EventProcessor extends Thread {
 
         try {
             while (!waitToRespond) {
+                //This wait has the potential to deadlock if the client fails to make a request back to the server.
+                //To prevent this, a session timeout should be set in web.xml
                 queue.wait();
             }
         } catch (InterruptedException e) {

@@ -73,7 +73,7 @@ class EventProcessorPool {
     
     void returnToPool(EventProcessor proc) {
         synchronized (appToProcessor) {
-            if (proc.app == null) throw new IllegalStateException("Cannot release an EventProcessor thread that has not bee allocated to an application!");
+            if (proc.app == null) throw new IllegalStateException("Cannot release an EventProcessor thread that has not been allocated to an application!");
             
             if (!proc.isInUse()) {
                 if (log.isLoggable(LEVEL)) log.log(LEVEL, "Returning " + proc.getName() + " to pool");

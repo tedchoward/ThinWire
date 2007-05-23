@@ -328,7 +328,7 @@ class EventListenerImpl<E extends EventListener> {
                     else
                         throw new IllegalStateException("EventListener " + el.getClass().getName() + " is unsupported");
                 }
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 Application app = Application.current();
                 
                 if (app == null) {

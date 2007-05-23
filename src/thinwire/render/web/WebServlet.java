@@ -91,13 +91,8 @@ public final class WebServlet extends HttpServlet {
         }
         
         public void valueUnbound(HttpSessionBindingEvent event) {
-            log.finer("Unbinding application instance " + event.getSession().getId());
-            
-            try {
-                app.shutdown(null);
-            } catch (Exception e) {
-                log.log(Level.WARNING, "error while unbinding application instance", e);
-            }
+            log.finer("Unbinding application instance " + event.getSession().getId());            
+            app.shutdown();
         }
     }
 

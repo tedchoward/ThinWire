@@ -31,10 +31,10 @@
 package thinwire.render.web;
 
 import java.io.ByteArrayOutputStream;
+import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.PrintWriter;
-import java.io.Writer;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -69,6 +69,7 @@ public final class WebApplication extends Application {
     private static final Pattern REGEX_CRLF = Pattern.compile("\\r?\\n");
     private static final String EOL = System.getProperty("line.separator");
     private static final Logger log = Logger.getLogger(CLASS_NAME);
+    private static final Level LEVEL = Level.FINER;
     
     private static String[] BUILT_IN_RESOURCES = {
         "Main.js",
@@ -172,7 +173,7 @@ public final class WebApplication extends Application {
         boolean repeat;
     }
     
-    private static enum State {INIT, STARTUP, RUNNING, SHUTDOWN}
+    private static enum State {INIT, STARTUP, RUNNING, SHUTDOWN, TERMINATED}
     
     private String baseFolder;
     private String styleSheet;
@@ -211,49 +212,71 @@ public final class WebApplication extends Application {
         startupEvent = ApplicationEventListener.newStartEvent(mainClass, args);
         state = State.INIT;
     }
-    
-    void shutdown(Writer w) throws IOException {
-        if (state == State.SHUTDOWN) return;
-        log.log(Level.FINER, "Initiating Application instance SHUTDOWN");
-        state = State.SHUTDOWN;
-        /*boolean isNull = proc == null;
-        
-        try {
-            if (isNull) proc = EventProcessorPool.INSTANCE.getProcessor(this);
-            proc.handleRequest(ApplicationEventListener.newShutdownEvent(), w);
-        } finally {
-            if (isNull && proc != null) {
-                EventProcessorPool.INSTANCE.returnToPool(proc);
-                proc = null;
-            }
-        }*/
-        
-        if (nameToRenderer != null) nameToRenderer.clear();
-        if (windowToRenderer != null) windowToRenderer.clear();
-        if (webComponentListeners != null) webComponentListeners.clear();
-        if (clientSideIncludes != null) clientSideIncludes.clear();
-        if (renderStateListeners != null) renderStateListeners.clear();
-        if (timerMap != null) timerMap.clear();
-        if (styleToStyleClass != null) styleToStyleClass.clear();
-        if (userActionListener != null) userActionListener.stop();
-        
-        nameToRenderer = null;
-        windowToRenderer = null;
-        webComponentListeners = null;
-        clientSideIncludes = null;
-        renderStateListeners = null;
-        timerMap = null;
-        styleToStyleClass = null;
-        fileList = null;
-        userActionListener = null;
-        
-        
-        //app.clientSideFunctionCall(SHUTDOWN_INSTANCE, 
-          //      "The application instance has shutdown. Press F5 to restart the application or close the browser to end your session.");
 
-        //if (app.httpSession.getAttribute("instance") == app) app.httpSession.setAttribute("instance", null);                    
+    void signalShutdown() {
+        if (state == State.SHUTDOWN || state == State.TERMINATED) return;
+        if (log.isLoggable(LEVEL)) log.log(LEVEL, Thread.currentThread().getName() + ": initiating application instance shutdown");        
+        state = State.SHUTDOWN;
     }
     
+    void shutdown() {
+        if (state == State.TERMINATED) return;
+        if (state != State.SHUTDOWN) signalShutdown();
+        
+        try {
+            proc = EventProcessorPool.INSTANCE.getProcessor(this);            
+            WebComponentEvent wce = ApplicationEventListener.newShutdownEvent();
+            
+            try {
+                proc.handleRequest(wce, new CharArrayWriter());
+
+                while (proc.isInUse()) {
+                    if (log.isLoggable(LEVEL)) log.log(LEVEL, Thread.currentThread().getName() + ": processor returned, probably from flush(), sending null event");
+                    proc.handleRequest((WebComponentEvent)null, new CharArrayWriter());                    
+                }
+
+                if (log.isLoggable(LEVEL)) log.log(LEVEL, Thread.currentThread().getName() + ": shutdown has completed");
+            } catch (IOException e) {
+                log.log(Level.SEVERE, "handleRequest generated IOException during shutdown", e);
+            }
+        } finally { 
+            if (!proc.isInUse()) {
+                if (log.isLoggable(LEVEL)) log.log(LEVEL, Thread.currentThread().getName() + ": returning to pool after shutdown");
+                EventProcessorPool.INSTANCE.returnToPool(proc);
+            } else {
+                //This state should only occur if during the shutdown process another 'waitForWindow' Dialog is
+                //presented for some reason.
+                EventProcessorPool.INSTANCE.removeFromPool(proc);
+                if (log.isLoggable(Level.WARNING)) log.log(Level.WARNING, Thread.currentThread().getName() + ": thread still active!");
+            }
+            
+            proc = null;
+            if (nameToRenderer != null) nameToRenderer.clear();
+            if (windowToRenderer != null) windowToRenderer.clear();
+            if (webComponentListeners != null) webComponentListeners.clear();
+            if (clientSideIncludes != null) clientSideIncludes.clear();
+            if (renderStateListeners != null) renderStateListeners.clear();
+            if (timerMap != null) timerMap.clear();
+            if (styleToStyleClass != null) styleToStyleClass.clear();
+            if (userActionListener != null) userActionListener.stop();
+            
+            nameToRenderer = null;
+            windowToRenderer = null;
+            webComponentListeners = null;
+            clientSideIncludes = null;
+            renderStateListeners = null;
+            timerMap = null;
+            styleToStyleClass = null;
+            fileList = null;
+            userActionListener = null;
+            
+            //app.clientSideFunctionCall(SHUTDOWN_INSTANCE, 
+            //      "The application instance has shutdown. Press F5 to restart the application or close the browser to end your session.");
+            
+            state = State.TERMINATED;            
+        }
+    }
+        
     void processActionEvents(Reader r, PrintWriter w) throws IOException {
         if (proc != null) throw new IllegalStateException("There is already an EventProcessor allocated to this application!");
         
@@ -265,6 +288,8 @@ public final class WebApplication extends Application {
                 if (state == State.INIT) {
                     proc.handleRequest(ApplicationEventListener.newInitEvent(), w);
                     state = State.STARTUP;
+                } else if (state == State.SHUTDOWN) {
+                    shutdown();
                 } else if (state == State.STARTUP && (getFrame().getWidth() > 0 || getFrame().getHeight() > 0)) { 
                     WebComponentEvent startupEvent = this.startupEvent;
                     this.startupEvent = null;
@@ -273,8 +298,10 @@ public final class WebApplication extends Application {
                 }
             }
         } finally {
-            EventProcessorPool.INSTANCE.returnToPool(proc);
-            proc = null;
+            if (proc != null) {
+                EventProcessorPool.INSTANCE.returnToPool(proc);
+                proc = null;
+            }
         }
     }
     
@@ -702,7 +729,7 @@ public final class WebApplication extends Application {
     protected void hideWindow(Window w) {
         WindowRenderer wr = (WindowRenderer) windowToRenderer.remove(w);
         if (wr == null) throw new IllegalStateException("Cannot close a window that has not been set to visible");
-        if (log.isLoggable(Level.FINE)) log.fine("closing window with id:" + wr.id);
+        if (log.isLoggable(LEVEL)) log.log(LEVEL, Thread.currentThread().getName() + ": closing window with id:" + wr.id);
         wr.destroy();
 
         //Force events to be sent to client because dialog hide's must be immediate!
@@ -781,7 +808,7 @@ public final class WebApplication extends Application {
 	}
     
     protected void finalize() {
-        log.log(Level.FINER, "finalizing app");
+        if (log.isLoggable(LEVEL)) log.log(LEVEL, Thread.currentThread().getName() + ": finalizing app");
     }
 
 	public void setPlayBackOn(boolean playBackOn){

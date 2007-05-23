@@ -163,7 +163,7 @@ public final class Frame extends AbstractWindow {
             } else {
                 List<Dialog> dialogs = getDialogs();
                 
-                for (Dialog d : dialogs.toArray(new Dialog[dialogs.size()])) {
+                for (Dialog d : dialogs.toArray(new Dialog[dialogs.size()])) {                    
                     d.setVisible(false);
                 }
                 
