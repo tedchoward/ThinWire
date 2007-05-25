@@ -44,7 +44,7 @@ import thinwire.ui.event.ItemChangeEvent.Type;
 /**
  * @author Joshua J. Gertzen
  */
-abstract class AbstractLayout implements Layout {
+public abstract class AbstractLayout implements Layout {
     private static final Logger log = Logger.getLogger(AbstractLayout.class.getName());
     
     protected Container<Component> container;
