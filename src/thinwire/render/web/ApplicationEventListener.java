@@ -118,9 +118,8 @@ class ApplicationEventListener implements WebComponentListener {
                 
                 if (th instanceof EventProcessor.GracefulShutdown) {
                     if (log.isLoggable(LEVEL)) log.log(LEVEL, Thread.currentThread().getName() + ": graceful shutdown from entry point main: " + info.mainClass);                    
-                } else if (!(e instanceof RuntimeException)) {
-                    e = new RuntimeException(e);
                 } else {
+                	if (!(e instanceof RuntimeException)) e = new RuntimeException(e);
                     throw (RuntimeException)e;
                 }
             }                    
