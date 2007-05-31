@@ -131,30 +131,61 @@ public class Dialog extends AbstractWindow {
         setHeight(240);        
     }
 
+    /**
+	 * Returns whether the Dialog can be resized by dragging the bottom-right
+	 * corner.
+	 * 
+	 * @return true if the Dialog can be resized
+	 */
     public boolean isResizeAllowed() {
         return resizeAllowed;
     }
 
+    /**
+	 * Set whether the Dialog can be resized by dragin the bottom-right corner.
+	 * 
+	 * @param resizeAllowed (Default = false)
+	 */
     public void setResizeAllowed(boolean resizeAllowed) {
         boolean oldResizeAllowed = this.resizeAllowed;
         this.resizeAllowed = resizeAllowed;
         firePropertyChange(this, PROPERTY_RESIZE_ALLOWED, oldResizeAllowed, this.resizeAllowed);
     }
 
+    /**
+	 * Returns whether the Dialog can be drug around the frame
+	 * 
+	 * @return true is the Diagog is draggable
+	 */
     public boolean isRepositionAllowed() {
         return repositionAllowed;
     }
 
+    /**
+	 * Set whether the Dialog can be drug around the screen.
+	 * 
+	 * @param repositionAllowed (Default = true)
+	 */
     public void setRepositionAllowed(boolean repositionAllowed) {
         boolean oldRepositionAllowed = this.repositionAllowed;
         this.repositionAllowed = repositionAllowed;
         firePropertyChange(this, PROPERTY_REPOSITION_ALLOWED, oldRepositionAllowed, this.repositionAllowed);
     }
     
+    /**
+     * Returns whether the Dialog is modal.
+     * @return true if the Dialog is modal
+     */
     public boolean isModal() {
         return modal;
     }
     
+    /**
+	 * Set whether the Dialog is modal. If the Dialog is modal, when it is
+	 * visible, all other components are prevented from receiving actions.
+	 * 
+	 * @param modal (Default = true)
+	 */
     public void setModal(boolean modal) {
         if (this.isVisible()) throw new IllegalStateException("You cannot change the modal state of a visible Dialog");
         boolean oldModal = this.modal;
@@ -167,6 +198,11 @@ public class Dialog extends AbstractWindow {
         return innerHeight < 0 ? 0 : innerHeight;
     }
     
+    /**
+	 * Returns whether the Dialog will block execution when visible.
+	 * 
+	 * @return
+	 */
     public boolean isWaitForWindow() {
         return this.waitForWindow;
     }   
@@ -182,13 +218,19 @@ public class Dialog extends AbstractWindow {
         firePropertyChange(this, PROPERTY_WAIT_FOR_WINDOW, oldWaitForWindow, waitForWindow);
 
         if (isVisible()) {
-            if (oldWaitForWindow)
+            if (oldWaitForWindow) {
                 Application.current().releaseThread();
-            else
+            } else {
                 Application.current().captureThread();
+            }
         }       
     }
     
+    /**
+     * Makes the Dialog visible.
+     * @see thinwire.ui.Component#setVisible(boolean)
+     * @param visible (Default = false)
+     */
     public void setVisible(boolean visible) {
         if (isVisible() != visible) {
             Application app = Application.current();

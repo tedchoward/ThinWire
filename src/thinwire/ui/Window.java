@@ -49,17 +49,15 @@ public interface Window extends Container<Component> {
      */
     void setTitle(String title);
 
+    /**
+     * Gets the main menubar for the window.
+     * @return the main menubar for the window.
+     */
     Menu getMenu();
 
     /**
-     * Sets the main menubar for the window.
-     * @param menu
-     */
+	 * Sets the main menubar for the window. If null, there will be no menubar.
+	 * @param menu
+	 */
     void setMenu(Menu menu);
-
-    /**
-     * Makes the window visible.
-     * @param visible (Default = false)
-     */
-    void setVisible(boolean visible);
 }

@@ -35,7 +35,9 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * A Frame is a top-level window with a title.
+ * A Frame is the browser window. It is created by the Application instance and
+ * automatically toggled to visible. When visible is set to false, the session
+ * is closed.
  * <p>
  * <b>Example:</b> <br>
  * <img src="doc-files/Frame-1.png"> <br>
@@ -54,7 +56,6 @@ import java.util.List;
  * 	frm.getChildren().add(dlg);
  * }
  * 
- * frm.setVisible(true);
  * </pre>
  * 
  * </p>
@@ -118,26 +119,41 @@ public final class Frame extends AbstractWindow {
         }
     }
     
+    /**
+     * @throws UnsupportedOperationException
+     */
     @Override
     public int getX() {
         throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_X, true));        
     }
     
+    /**
+     * @throws UnsupportedOperationException
+     */
     @Override
     public void setX(int x) {
         throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_X, false));
     }
 
+    /**
+     * @throws UnsupportedOperationException
+     */
     @Override
     public int getY() {
         throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_Y, true));        
     }
 
+    /**
+     * @throws UnsupportedOperationException
+     */
     @Override
     public void setY(int y) {
         throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_Y, false));
     }
     
+    /**
+     * @throws UnsupportedOperationException
+     */
     @Override
     public void setWidth(int width) {
         if (allowSizeChange) {
@@ -147,6 +163,9 @@ public final class Frame extends AbstractWindow {
         }
     }
 
+    /**
+     * @throws UnsupportedOperationException
+     */
     @Override
     public void setHeight(int height) {
         if (allowSizeChange) {
@@ -156,6 +175,14 @@ public final class Frame extends AbstractWindow {
         }
     }
     
+    /**
+	 * Although tecnhically visible is false for a Window by default, the
+	 * Application instance automatically sets visible to true when the app is
+	 * started. Setting visible to false will cause the app instance to close
+	 * and terminate the session.
+	 * 
+	 * @see thinwire.ui.Component#setVisible(boolean)
+	 */
     public void setVisible(boolean visible) {
         if (isVisible() != visible) {
             if (visible) {
