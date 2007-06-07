@@ -190,8 +190,8 @@ public interface Component {
     //#ENDIF
     
     /**
-     * Adds a <code>PropertyChangeListener</code> that will be notified when the specified property changes. Adding a property
-     * listener to a component allows your code to react to a state change within the component. <br>
+     * Adds a <code>PropertyChangeListener</code> to this componetn that will be notified when the specified property changes.
+     * Adding a property listener to a component allows your code to react to a state change within the component. <br>
      * <b>Example:</b>
      * 
      * <pre>
@@ -220,7 +220,7 @@ public interface Component {
     void addPropertyChangeListener(String propertyName, PropertyChangeListener listener);
 
     /**
-     * Adds a <code>PropertyChangeListener</code> to the component that will be notified when any of the specified properties
+     * Adds a <code>PropertyChangeListener</code> to this component that will be notified when any of the specified properties
      * change. This method is equivalent to calling {@link #addPropertyChangeListener(String, PropertyChangeListener)} once
      * for each property you want to listen to.
      * @param propertyNames a string array of property names that the listener will receive change events for.
@@ -245,22 +245,22 @@ public interface Component {
     void removePropertyChangeListener(PropertyChangeListener listener);
 
     /**
-     * Add an actionListener which associates an action (ex: "click") with some method call.
-     * @param action the action to specficially be notified of
-     * @param listener the listener to add
+     * Adds a <code>ActionListener</code> to this component that will be notified when the specified action occurs.
+     * @param action the action to specficially be notified of.
+     * @param listener the event listener that will receive notification.
      */
     void addActionListener(String action, ActionListener listener);
 
     /**
-     * Add an actionListener which associates an action (ex: "click") with some method call.
-     * @param actions the actions to specficially be notified of
-     * @param listener the listener to add
+     * Adds a <code>ActionListener</code> to this component that will be notified when any of the specified actions occur.
+     * @param actions the actions to specficially be notified of.
+     * @param listener the event listener that will receive notification.
      */
     void addActionListener(String[] actions, ActionListener listener);
     
     /**
-     * Unregister an ActionListener from action occurred notifications.
-     * @param listener the listener that should no longer receive action occurred notifications.
+     * Unregister an <code>ActionListener</code> from all action event notifications from this component.
+     * @param listener the listener that should no longer receive action event notifications.
      */
     void removeActionListener(ActionListener listener);
     

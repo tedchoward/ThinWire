@@ -41,6 +41,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.Properties;
 import java.util.WeakHashMap;
+import java.util.EventListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.*;
@@ -48,8 +49,11 @@ import java.util.zip.*;
 import thinwire.render.Renderer;
 import thinwire.ui.event.ActionEvent;
 import thinwire.ui.event.ActionListener;
+import thinwire.ui.event.DropListener;
 import thinwire.ui.event.ExceptionEvent;
 import thinwire.ui.event.ExceptionListener;
+import thinwire.ui.event.ItemChangeListener;
+import thinwire.ui.event.KeyPressListener;
 import thinwire.ui.event.PropertyChangeEvent;
 import thinwire.ui.event.PropertyChangeListener;
 import thinwire.ui.style.*;
@@ -339,7 +343,7 @@ public abstract class Application {
     }
 
     private List<ExceptionListener> exceptionListeners;
-    private EventListenerImpl<PropertyChangeListener> gpcei;
+    private Map<Class, EventListenerImpl> globalListeners;
     private WeakReference<Component> priorFocus;
     private Frame frame;
     
@@ -352,15 +356,28 @@ public abstract class Application {
     
     protected Application() {
         exceptionListeners = new ArrayList<ExceptionListener>();
-        gpcei = new EventListenerImpl<PropertyChangeListener>(null, PropertyChangeListener.class);        
     }   
+        
+    <T extends EventListener> EventListenerImpl<T> getGlobalListenerSet(Class<T> type, boolean createIfNull) {
+    	if (globalListeners == null) {
+    		if (createIfNull) {
+    			globalListeners = new HashMap<Class, EventListenerImpl>();
+    		} else {
+    			return null;
+    		}
+    	}
+    	
+        EventListenerImpl<T> set = globalListeners.get(type);
+    	if (set == null && createIfNull) globalListeners.put(type, set = new EventListenerImpl<T>(null, type));
+    	return set;
+    }
     
     /**
      * Adds a <code>PropertyChangeListener</code> that will be notified when the specified property of any new component changes. To
      * further clarify, a global property change listener will receive an event notification for any component that is created after
      * this global property change listener is added, for which the specified property changes.  Therefore, establishing a global
-     * property change listener is the same as addding a {@link Component#addPropertyChangeListener(String, PropertyChangeListener)}
-     * call after the creation of every new component. 
+     * property change listener is the same as invoking the {@link Component#addPropertyChangeListener(String, PropertyChangeListener)}
+     * method on every component after it's creation. 
      * <p>
      * As a general rule, you should avoid using this feature because it can cause a large volume of events to be generated. This is
      * especially true if you listen to a frequently updated property, such as <code>PROPERTY_TEXT</code>. However, there are
@@ -398,11 +415,12 @@ public abstract class Application {
      * @see thinwire.ui.event.PropertyChangeEvent
      */
     public void addGlobalPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
-        gpcei.addListener(propertyName, listener);
+    	EventListenerImpl<PropertyChangeListener> set = getGlobalListenerSet(PropertyChangeListener.class, true);
+    	set.addListener(propertyName, listener);
     }
     
     /**
-     * Adds a <code>PropertyChangeListener</code> to the component that will be notified when any of the specified properties of
+     * Adds a <code>PropertyChangeListener</code> that will be notified when any of the specified properties of
      * any new component changes. This method is equivalent to calling
      * {@link #addGlobalPropertyChangeListener(String, PropertyChangeListener)} once for each property you want to listen to.
      * @param propertyNames a string array of property names that the listener will receive change events for.
@@ -416,7 +434,8 @@ public abstract class Application {
      * @see thinwire.ui.event.PropertyChangeEvent
      */
     public void addGlobalPropertyChangeListener(String[] propertyNames, PropertyChangeListener listener) {
-        gpcei.addListener(propertyNames, listener);        
+    	EventListenerImpl<PropertyChangeListener> set = getGlobalListenerSet(PropertyChangeListener.class, true);
+    	set.addListener(propertyNames, listener);
     }    
     
     /**
@@ -428,11 +447,83 @@ public abstract class Application {
      * @see thinwire.ui.event.PropertyChangeListener
      */       
     public void removeGlobalPropertyChangeListener(PropertyChangeListener listener) {
-        gpcei.removeListener(listener);
+    	EventListenerImpl<PropertyChangeListener> set = getGlobalListenerSet(PropertyChangeListener.class, true);
+    	set.removeListener(listener);
+    }
+
+    /**
+     * Adds a <code>ActionListener</code> that will be notified when the specified action occurs on any new component. To
+     * further clarify, a global action listener will receive an event notification for any component that is created after
+     * this global action listener is added, on which the specified action occurs.  Therefore, establishing a global
+     * action listener is the same as invoking the {@link Component#addActionListener(String, ActionListener)}
+     * method on every component after it's creation. 
+     * @param action the action to specficially be notified of.
+     * @param listener the event listener that will receive notification.
+     */
+    public void addGlobalActionListener(String action, ActionListener listener) {
+    	EventListenerImpl<ActionListener> set = getGlobalListenerSet(ActionListener.class, true);
+    	set.addListener(action, listener);
+    }
+
+    /**
+     * Adds a <code>ActionListener</code> that will be notified when any of the specified actions occur on
+     * any new component. This method is equivalent to calling
+     * {@link #addGlobalActionListener(String, ActionListener)} once for each action you want to receive notification for.
+     * @param actions the actions to specficially be notified of.
+     * @param listener the event listener that will receive notifications.
+     */
+    public void addGlobalActionListener(String[] actions, ActionListener listener) {
+    	EventListenerImpl<ActionListener> set = getGlobalListenerSet(ActionListener.class, true);
+    	set.addListener(actions, listener);    	
     }
     
-    EventListenerImpl<PropertyChangeListener> getGloalPropertyChangeListenerImpl() {
-        return gpcei;
+    /**
+     * Unregister an <code>ActionListener</code> from all action event notifications from any component.
+     * @param listener the listener that should no longer receive action event notifications.
+     */
+    public void removeGlobalActionListener(ActionListener listener) {
+    	EventListenerImpl<ActionListener> set = getGlobalListenerSet(ActionListener.class, true);
+    	set.removeListener(listener);    	
+    }
+
+    public void addGlobalDropListener(Component dragSource, DropListener listener) {
+    	EventListenerImpl<DropListener> set = getGlobalListenerSet(DropListener.class, true);
+    	set.addListener(dragSource, listener);
+    }
+    
+    public void addGlobalDropListener(Component[] dragSources, DropListener listener) {
+    	EventListenerImpl<DropListener> set = getGlobalListenerSet(DropListener.class, true);
+    	set.addListener(dragSources, listener);    	
+    }
+    
+    public void removeGlobalDropListener(DropListener listener) {
+    	EventListenerImpl<DropListener> set = getGlobalListenerSet(DropListener.class, true);
+    	set.removeListener(listener);    	
+    }
+    
+    public void addGlobalKeyPressListener(String keyPressCombo, KeyPressListener listener) {
+    	EventListenerImpl<KeyPressListener> set = getGlobalListenerSet(KeyPressListener.class, true);
+    	set.addListener(keyPressCombo, listener);    	
+    }
+    
+    public void addGlobalKeyPressListener(String[] keyPressCombos, KeyPressListener listener) {
+    	EventListenerImpl<KeyPressListener> set = getGlobalListenerSet(KeyPressListener.class, true);
+    	set.addListener(keyPressCombos, listener);    	
+    }
+    
+    public void removeGlobalKeyPressListener(KeyPressListener listener) {
+    	EventListenerImpl<KeyPressListener> set = getGlobalListenerSet(KeyPressListener.class, true);
+    	set.removeListener(listener);    	
+    }
+    
+    public void addGlobalItemChangeListener(ItemChangeListener listener) {
+    	EventListenerImpl<ItemChangeListener> set = getGlobalListenerSet(ItemChangeListener.class, true);
+    	set.addListener(listener);    	    	
+    }
+    
+    public void removeGlobalItemChangeListener(ItemChangeListener listener) {
+    	EventListenerImpl<ItemChangeListener> set = getGlobalListenerSet(ItemChangeListener.class, true);
+    	set.removeListener(listener);    	
     }
     
     /**

@@ -680,7 +680,7 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
     private Column sortedColumn;
     private Column.SortOrder sortedColumnOrder = GridBox.Column.SortOrder.NONE; 
     
-    private EventListenerImpl<ItemChangeListener> icei = new EventListenerImpl<ItemChangeListener>(this, ItemChangeListener.class);
+    private EventListenerImpl<ItemChangeListener> icei;
     private ArrayGrid<Row, Column> grid;
     private SortedSet<Row> checkedRows;
     private SortedSet<Row> roCheckedRows;
@@ -691,6 +691,9 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
 	 * Constructs a new GridBox.
 	 */
 	public GridBox() {
+    	EventListenerImpl<ItemChangeListener> gicei = app == null ? null : app.getGlobalListenerSet(ItemChangeListener.class, false);
+    	icei = new EventListenerImpl<ItemChangeListener>(this, ItemChangeListener.class, null, gicei);
+		
 		this.grid = new ArrayGrid<GridBox.Row, GridBox.Column>(this, GridBox.Row.class, GridBox.Column.class) {
 		    protected void fireItemChange(Type type, int rowIndex, int columnIndex, Object oldValue, Object newValue) {
                 if (rowIndex >= 0 && columnIndex == -1) {

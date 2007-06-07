@@ -118,7 +118,7 @@ abstract class AbstractContainer<T extends Component> extends AbstractComponent 
         }
     }
 
-    private EventListenerImpl<ItemChangeListener> icei = new EventListenerImpl<ItemChangeListener>(this, ItemChangeListener.class);
+    private EventListenerImpl<ItemChangeListener> icei;
     private List<T> children;
     private ScrollType scroll = ScrollType.NONE;
     private Layout layout;
@@ -126,6 +126,8 @@ abstract class AbstractContainer<T extends Component> extends AbstractComponent 
     private Button standardButton;
     
     AbstractContainer() {
+    	EventListenerImpl<ItemChangeListener> gicei = app == null ? null : app.getGlobalListenerSet(ItemChangeListener.class, false);
+    	icei = new EventListenerImpl<ItemChangeListener>(this, ItemChangeListener.class, null, gicei);
         children = new ChildList();
     }
 

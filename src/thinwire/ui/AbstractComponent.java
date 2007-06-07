@@ -80,11 +80,28 @@ abstract class AbstractComponent implements Component {
     AbstractComponent(EventListenerImpl.SubTypeValidator actionValidator) {
         this.visible = true;
         app = Application.current();
-        EventListenerImpl gpcei = app != null ? app.getGloalPropertyChangeListenerImpl() : null;
+        
+        EventListenerImpl<PropertyChangeListener> gpcei;
+        EventListenerImpl<ActionListener> gaei;
+        EventListenerImpl<DropListener> gdei;
+        EventListenerImpl<KeyPressListener> gkpei;
+        
+        if (app == null) {
+        	gpcei = null;
+        	gaei = null;
+        	gdei = null;
+        	gkpei = null;
+        } else {
+        	gpcei = app.getGlobalListenerSet(PropertyChangeListener.class, false);
+        	gaei = app.getGlobalListenerSet(ActionListener.class, false);
+        	gdei = app.getGlobalListenerSet(DropListener.class, false);
+        	gkpei = app.getGlobalListenerSet(KeyPressListener.class, false);
+        }
+        
         pcei = new EventListenerImpl<PropertyChangeListener>(this, PropertyChangeListener.class, null, gpcei);
-        aei = new EventListenerImpl<ActionListener>(this, ActionListener.class, actionValidator);
-        dei = new EventListenerImpl<DropListener>(this, DropListener.class);
-        kpei = new EventListenerImpl<KeyPressListener>(this, KeyPressListener.class, EventListenerImpl.KEY_PRESS_VALIDATOR);
+        aei = new EventListenerImpl<ActionListener>(this, ActionListener.class, actionValidator, gaei);
+        dei = new EventListenerImpl<DropListener>(this, DropListener.class, null, gdei);
+        kpei = new EventListenerImpl<KeyPressListener>(this, KeyPressListener.class, EventListenerImpl.KEY_PRESS_VALIDATOR, gkpei);
             
         this.style = new Style(Application.getDefaultStyle(this.getClass()), this) {
             protected void firePropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
