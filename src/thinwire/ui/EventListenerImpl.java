@@ -328,14 +328,17 @@ class EventListenerImpl<E extends EventListener> {
                     else
                         throw new IllegalStateException("EventListener " + el.getClass().getName() + " is unsupported");
                 }
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 Application app = Application.current();
+                boolean gracefulShutdown = e.getClass().getName().equals("thinwire.render.web.EventProcessor$GracefulShutdown");
                 
-                if (app == null) {
-                    if (e instanceof RuntimeException) {                    
-                        throw (RuntimeException)e;
+                if (app == null || gracefulShutdown) {
+                    if (e instanceof RuntimeException) {
+                    	throw (RuntimeException)e;
+                    } else if (e instanceof Error) {
+                    	throw (Error)e;
                     } else {
-                        throw new RuntimeException(e);
+                    	throw new RuntimeException(e);
                     }
                 } else {
                     app.reportException(app, e);
