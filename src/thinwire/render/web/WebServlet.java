@@ -31,10 +31,11 @@
 package thinwire.render.web;
 
 import java.io.*;
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -134,7 +135,7 @@ public final class WebServlet extends HttpServlet {
         response.setContentType("text/html");        
         response.getOutputStream().write(WebApplication.MAIN_PAGE);        
 
-        List<String> args = new ArrayList<String>();
+        Set<String> args = new TreeSet<String>();
         StringBuilder sb = new StringBuilder();        
         
         for (Map.Entry<String, String[]> e : ((Map<String, String[]>)request.getParameterMap()).entrySet()) {
@@ -156,6 +157,17 @@ public final class WebServlet extends HttpServlet {
         String extraArguments = getInitParameter(InitParam.EXTRA_ARGUMENTS.mixedCaseName());
         if (extraArguments == null) extraArguments = "";
         extraArguments = "," + extraArguments + ",";
+        
+        if (extraArguments.indexOf(",contextParam,") >= 0) {
+            ServletContext sc = getServletContext();
+            
+            for (Enumeration<String> ipn = sc.getInitParameterNames(); ipn.hasMoreElements();) {
+                String name = ipn.nextElement();                            
+                sb.append("CONTEXT_PARAM_").append(name).append('=').append(sc.getInitParameter(name));                
+                args.add(sb.toString());
+                sb.setLength(0);
+            }
+        }
         
         if (extraArguments.indexOf(",initParam,") >= 0) {
             InitParam[] initParams = InitParam.values();
