@@ -245,7 +245,6 @@ function tw_getFontMetrics(family, size, bold, italic, underline) {
     s.top = "0px";
     s.left = "0px";
     if (!tw_isIE) s.overflow = "auto";
-    if (tw_isOpera) s.lineHeight = "0px";
     s.whiteSpace = "nowrap";
     s.backgroundColor = tw_COLOR_TRANSPARENT;
     s.color = tw_COLOR_TRANSPARENT;    
@@ -254,18 +253,34 @@ function tw_getFontMetrics(family, size, bold, italic, underline) {
     s.fontWeight = bold ? "bold" : "normal";
     s.fontStyle = italic ? "italic" : "normal";
     s.textDecoration = underline ? "underline" : "none";
-    document.body.appendChild(comp);    
+    document.body.appendChild(comp);
     
-    var metrics = [0];
+    var metrics = [];
+    var maxHeight = 0;
+    var miscalc = [];
     
-    for (var i = 0, cnt = tw_fontChars.length; i < cnt; i++) {
+    for (var i in tw_fontChars) {
         var text = document.createTextNode(tw_fontChars[i]);
         comp.appendChild(text);
-        if (i == 65) metrics[0] = comp.scrollHeight;
-        metrics.push(comp.scrollWidth);
+        var width = comp.scrollWidth;
+        if (width < 2) miscalc.push(i);
+        metrics.push(width);
+        if (comp.scrollHeight > maxHeight) maxHeight = comp.scrollHeight;
+        comp.removeChild(text);
+    }
+
+    for (var i in miscalc) {
+        var idx = miscalc[i];
+        var text = document.createTextNode(tw_fontChars[1] + tw_fontChars[idx] + tw_fontChars[1]);
+        comp.appendChild(text);
+        metrics[idx] = comp.scrollWidth - (metrics[1] * 2);
         comp.removeChild(text);
     }
     
+    //Completely arbritrary value, but Opera seems to be off by exactly that amount
+    //If we set lineHeight=0px before doing calcs, then the scrollHeight always reports 17px.
+    if (tw_isOpera) maxHeight -= 17;
+    metrics.unshift(maxHeight);    
     document.body.removeChild(comp);
     return metrics.join(",");
 }
