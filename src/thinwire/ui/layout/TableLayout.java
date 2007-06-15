@@ -392,7 +392,8 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
                                 Component c = i.next();
                                 Range r = (Range) c.getLimit();
                                 if (rowIndex == r.getRowIndex()) {
-                                    i.remove();
+                                	r.rowIndex = -1;
+                                	i.remove();
                                 } else if (rowIndex < r.getRowIndex()) {
                                     r.rowIndex--;
                                 } else if (rowIndex < (r.getRowIndex() + r.getRowSpan())) {
@@ -455,6 +456,7 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
                                 Component c = i.next();
                                 Range r = (Range) c.getLimit();
                                 if (columnIndex == r.getColumnIndex()) {
+                                	r.columnIndex = -1;
                                     i.remove();
                                 } else if (columnIndex < r.getColumnIndex()) {
                                     r.columnIndex--;
@@ -491,11 +493,11 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
                             kids.remove(oldValue);
                         }
                         
-                        Component newComp = (Component) newValue;
-                        if (newComp.getLimit() == null) {
-                        	newComp.setLimit(new Range(TableLayout.this, columnIndex, rowIndex));
+                        if (newValue != null) {
+	                        Component newComp = (Component) newValue;
+	                        if (newComp.getLimit() == null) newComp.setLimit(new Range(TableLayout.this, columnIndex, rowIndex));
+	                        if (kids != null) kids.add(newComp);
                         }
-                        if (kids != null) kids.add(newComp);
                     }
                 }
             }
@@ -579,21 +581,26 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
     protected void removeComponent(Component comp) {
         List<Row> rows = getRows();
         Range r = (Range) comp.getLimit();
+        
         int row = r.getRowIndex();
         int col = r.getColumnIndex();
-        ignoreSet = true;
-        for (int i = row, cnt = r.getRowSpan() + row; i < cnt; i++) {
-            Row curRow = rows.get(i);
-            for (int j = col, cnt2 = r.getColumnSpan() + col; j < cnt2; j++) {
-            	Object o = curRow.get(j);
-            	if (o instanceof Component) {
-            		curRow.set(j, null);
-            	} else if (o instanceof List) {
-            		((List) o).remove(comp);
-            	}
-            }
+        
+        if (row >= 0 && col >= 0) {
+	        ignoreSet = true;
+	        for (int i = row, cnt = r.getRowSpan() + row; i < cnt; i++) {
+	            Row curRow = rows.get(i);
+	            for (int j = col, cnt2 = r.getColumnSpan() + col; j < cnt2; j++) {
+	            	Object o = curRow.get(j);
+	            	if (o instanceof Component) {
+	            		curRow.set(j, null);
+	            	} else if (o instanceof List) {
+	            		((List) o).remove(comp);
+	            	}
+	            }
+	        }
+	        
+	        ignoreSet = false;
         }
-        ignoreSet = false;
     }
 
     @Override
