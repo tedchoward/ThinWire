@@ -280,7 +280,7 @@ public final class Color {
                 throw new IllegalArgumentException("colorId '" + colorId + "' has an unrecognized hex format");
             }
         } else {
-            Color named = NAMED_COLORS.get(colorId);
+            Color named = NAMED_COLORS.get(colorId.toLowerCase());
             if (named == null) throw new IllegalArgumentException("specified named color is unknown");
             return named;
         }
