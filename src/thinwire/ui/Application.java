@@ -66,7 +66,7 @@ import thinwire.util.XOD;
  */
 public abstract class Application {
 	private static final Logger log = Logger.getLogger(Application.class.getName());
-    private static final String DEFAULT_STYLE_SHEET = "class:///" + Application.class.getName() + "/resources/DefaultStyle.zip";
+    private static final String DEFAULT_STYLE_SHEET = "class:///" + Application.class.getName() + "/resources/CorporateStyle.zip";
     
     private static final Map<String, String> versionInfo;
     private static final Map<Class<? extends Component>, Style> defaultStyleMap = buildStyleMap(DEFAULT_STYLE_SHEET + "/Style.xml");
