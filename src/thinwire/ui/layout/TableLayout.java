@@ -113,6 +113,18 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
         private Justify justify;
         
         public Range(TableLayout layout, String range) {
+        	this(layout, range, (Range)null);
+        }
+        
+        public Range(TableLayout layout, String range, Component relativeTo) {
+        	this(layout, range, (Range)layout.getFormalLimit(relativeTo));
+        }
+        
+        public Range(TableLayout layout, String range, String relativeTo) {
+        	this(layout, range, new Range(layout, relativeTo));
+        }
+        
+        public Range(TableLayout layout, String range, Range relativeTo) {
             if (layout == null) throw new IllegalArgumentException("layout == null");
             String[] values = ((String)range).split("\\s*,\\s*");
             Justify just = Justify.FULL;
@@ -149,9 +161,32 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
                 
             }
             
-            init(layout, values.length >= 1 ? Integer.parseInt(values[0]) : 0,
-                 values.length >= 2 ? Integer.parseInt(values[1]) : 0,
+            int relColumn;
+            int relRow;
+            
+            if (relativeTo == null) {
+            	relColumn = relRow = -1;
+            } else {
+            	relColumn = relativeTo.getColumnIndex() + relativeTo.getColumnSpan() - 1;
+            	relRow = relativeTo.getRowIndex() + relativeTo.getRowSpan() - 1;
+            }
+            
+            init(layout, values.length >= 1 ? getRelativeCoord(values[0], relColumn) : 0,
+                 values.length >= 2 ? getRelativeCoord(values[1], relRow) : 0,
                  width, height, just);
+        }
+        
+        private int getRelativeCoord(String coord, int relativeTo) {
+        	if (relativeTo == -1) return Integer.parseInt(coord);
+    		char op = coord.charAt(0);
+    		
+    		if (op == '-') {
+    			return relativeTo - Integer.parseInt(coord.substring(1));	
+    		} else if (op == '+'){
+    			return relativeTo + Integer.parseInt(coord.substring(1));		
+    		} else {
+    			return Integer.parseInt(coord);
+    		}
         }
 
         public Range(TableLayout layout, int column, int row) {
@@ -503,8 +538,6 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
             }
         };
         
-        
-        
         Comparator<Row> rowIndexOrder = new Comparator<Row>() {
             public int compare(Row r1, Row r2) {
                 int index1 = r1.getIndex();
@@ -609,7 +642,20 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
         Range r;
         
         if (oLimit instanceof String) {
-            r =  new Range(this, (String)oLimit);
+        	String sLimit = (String)oLimit;
+        	
+        	if (sLimit.indexOf('+') >= 0 || sLimit.indexOf('-') >= 0) {
+        		List<Component> kids = comp.getContainer().getChildren();
+        		int index = kids.indexOf(comp);
+        		
+        		if (index > 0) {
+        			r = new Range(this, sLimit, kids.get(index - 1));
+        		} else {
+        			r = new Range(this, sLimit, new Range(this, 0, 0));
+        		}
+        	} else {        	
+        		r =  new Range(this, sLimit);
+        	}
         } else if (oLimit instanceof Range) {
             r = (Range)oLimit;
             if (r.layout != this) r = new Range(this, r.getColumnIndex(), r.getRowIndex(),
