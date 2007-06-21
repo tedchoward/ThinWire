@@ -387,9 +387,7 @@ public final class XOD {
             is.close();
             ret = processBranch(parent, doc.getChildNodes(), level);
         } catch (Exception e) {
-            e.printStackTrace();
-            if (!(e instanceof RuntimeException)) e = new RuntimeException(e);
-            throw (RuntimeException)e;
+            throw new RuntimeException("processing file '" + uri + "'", e);
         } finally {
             uriStack.remove(uriStack.size() - 1);
             
@@ -463,20 +461,20 @@ public final class XOD {
             if (n.getAttributes().getLength() != 2) throw new DOMException(DOMException.NOT_SUPPORTED_ERR, name + ":n.getAttributes().getLength() != 2");
             //if (n.getChildNodes().getLength() != 0) throw new DOMException(DOMException.NOT_SUPPORTED_ERR, name + ":n.getChildNodes().getLength() != 0");
             String aliasName = (String)n.getAttributes().getNamedItem("name").getNodeValue();
-            String className = (String)n.getAttributes().getNamedItem("class").getNodeValue();
+            String className = this.replaceProperties((String)n.getAttributes().getNamedItem("class").getNodeValue());
             Class clazz = getClassForName(aliasName, className);
             if (n.hasChildNodes()) processBranch(clazz, n.getChildNodes(), level + 1);            
             if (log.isLoggable(LEVEL)) log.log(LEVEL, "alias[name:" + aliasName + ",class:" + className + "]");
         } else if (name.equals("property") && parent instanceof Class) {
             if (n.getAttributes().getLength() != 2 && n.getAttributes().getLength() != 3) throw new DOMException(DOMException.NOT_SUPPORTED_ERR, name + ":n.getAttributes().getLength() != 2 && n.getAttributes().getLength() != 3");
-            String propName = (String)n.getAttributes().getNamedItem("name").getNodeValue();
-            String aliasName = (String)n.getAttributes().getNamedItem("alias").getNodeValue();
-            String className = (String)n.getAttributes().getNamedItem("class").getNodeValue();
+            String propName = this.replaceProperties((String)n.getAttributes().getNamedItem("name").getNodeValue());
+            String aliasName = this.replaceProperties((String)n.getAttributes().getNamedItem("alias").getNodeValue());
+            String className = this.replaceProperties((String)n.getAttributes().getNamedItem("class").getNodeValue());
             setPropertyAlias((Class)parent, propName, aliasName, getClassForName(null, className));
         } else if (name.equals("include")) {
             if (n.getAttributes().getLength() != 1) throw new DOMException(DOMException.NOT_SUPPORTED_ERR, name + ":n.getAttributes().getLength() != 1");
             if (n.getChildNodes().getLength() != 0) throw new DOMException(DOMException.NOT_SUPPORTED_ERR, name + ":n.getChildNodes().getLength() != 0");
-            String fileUri = (String)n.getAttributes().getNamedItem("file").getNodeValue();
+            String fileUri = this.replaceProperties((String)n.getAttributes().getNamedItem("file").getNodeValue());
                         
             if (!getRelativeFile(fileUri).exists()) {
                 String curFileUri = uriStack.get(0);
