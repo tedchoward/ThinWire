@@ -57,6 +57,10 @@ import thinwire.ui.style.Border;
 import thinwire.ui.style.Color;
 import thinwire.ui.style.Font;
 
+/**
+ * @author Joshua J. Gertzen
+ * @author Ted C. Howard
+ */
 class RichTextParser extends DefaultHandler {
     private static final Logger log = Logger.getLogger(RichTextParser.class.getName());
     private static final Level LEVEL = Level.FINER;
