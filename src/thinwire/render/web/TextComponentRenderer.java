@@ -42,7 +42,7 @@ abstract class TextComponentRenderer extends ComponentRenderer {
 
     void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         TextComponent tc = (TextComponent)c;
-        addInitProperty(TextComponent.PROPERTY_TEXT, RICH_TEXT_PARSER.parseRichText(tc.getText(), this));
+        addInitProperty(TextComponent.PROPERTY_TEXT, parseRichText(tc.getText()));
         super.render(wr, c, container);
     }
     
@@ -51,7 +51,7 @@ abstract class TextComponentRenderer extends ComponentRenderer {
         if (isPropertyChangeIgnored(name)) return;
 
         if (name.equals(TextComponent.PROPERTY_TEXT)) {
-            postClientEvent(SET_TEXT, RICH_TEXT_PARSER.parseRichText((String)pce.getNewValue(), this));
+            postClientEvent(SET_TEXT, parseRichText((String)pce.getNewValue()));
         } else {
             super.propertyChange(pce);
         }

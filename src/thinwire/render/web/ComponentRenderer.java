@@ -33,28 +33,14 @@ package thinwire.render.web;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.EventListener;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
-import thinwire.render.RenderStateEvent;
-import thinwire.render.RenderStateListener;
-import thinwire.render.Renderer;
+import thinwire.render.*;
 import thinwire.ui.event.*;
-import thinwire.ui.Component;
-import thinwire.ui.Container;
-import thinwire.ui.DateBox;
-import thinwire.ui.GridBox;
-import thinwire.ui.HierarchyComponent;
-import thinwire.ui.Menu;
-import thinwire.ui.Tree;
-import thinwire.ui.event.PropertyChangeEvent;
+import thinwire.ui.*;
 import thinwire.ui.style.*;
 
 /**
@@ -84,18 +70,19 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     static final String CLIENT_EVENT_DROP = "drop";
     
     static final Logger log = Logger.getLogger(ComponentRenderer.class.getName()); 
-    static final Pattern REGEX_DOUBLE_SLASH = Pattern.compile("\\\\"); 
-    static final Pattern REGEX_DOUBLE_QUOTE = Pattern.compile("\"");
-    static final Pattern REGEX_CRLF = Pattern.compile("\\r?\\n");         
     
-    static final RichTextParser RICH_TEXT_PARSER = new RichTextParser();
-    
+    private static final Pattern REGEX_DOUBLE_SLASH = Pattern.compile("\\\\"); 
+    private static final Pattern REGEX_DOUBLE_QUOTE = Pattern.compile("\"");
+    private static final Pattern REGEX_CRLF_OR_NULL = Pattern.compile("\\r?\\n|\\x00");         
+
     private static final Object NO_VALUE = new Object();
-    
+        
     private Map<String, Object> ignoredProperties = new HashMap<String, Object>(3);
     private List<String> remoteFiles;
     private StringBuilder initProps = new StringBuilder();
     private Map<String, String> clientSideProps = new HashMap<String, String>();    
+	private RichTextParser richTextParser;
+	
     String jsClass;
     Component comp;
     WindowRenderer wr;
@@ -159,7 +146,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         
         wr.ai.flushRenderCallbacks(comp, id);        
 	}
-    
+	
     private void setStyle(String propertyName, Object oldValue) {
         if (propertyName.startsWith("fx") || isPropertyChangeIgnored(propertyName)) return;
         Style s = comp.getStyle();
@@ -218,7 +205,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     
     void addInitProperty(String name, Object value) {
         initProps.append(name).append(':');
-        initProps.append(WebApplication.stringValueOf(value));        
+        initProps.append(stringValueOf(value));        
         initProps.append(',');
     }
     
@@ -564,12 +551,39 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     final boolean resetPropertyChangeIgnored(String name) {
         return resetPropertyChangeIgnored(name, NO_VALUE);
     }
-
-    static final String getEscapedText(String s) {
+    
+    static String stringValueOf(Object o) {
+        String ret;
+        
+        if (o == null) {
+            ret = "null";
+        } else if (o instanceof Integer) {
+            ret = String.valueOf(((Integer) o).intValue());
+        } else if (o instanceof Number) {
+            ret = String.valueOf(((Number) o).doubleValue());
+        } else if (o instanceof Boolean) {
+            ret = String.valueOf(((Boolean) o).booleanValue());
+        } else if (o instanceof StringBuilder) {
+            ret = o.toString();
+        } else {
+            ret = '"' + ComponentRenderer.getEscapedText(o.toString()) + '"';
+        }
+        
+        return ret;
+    }
+    
+    static String getEscapedText(String s) {
         s = REGEX_DOUBLE_SLASH.matcher(s).replaceAll("\\\\\\\\");        
         s = REGEX_DOUBLE_QUOTE.matcher(s).replaceAll("\\\\\"");
-        s = REGEX_CRLF.matcher(s).replaceAll(" ");
+        s = REGEX_CRLF_OR_NULL.matcher(s).replaceAll(" ");
         return s;
+    }
+        
+    Object parseRichText(String value) {
+        if (value == null) return "";
+    	if (this instanceof EditorComponentRenderer) return value;
+    	if (richTextParser == null) richTextParser = new RichTextParser(this);
+    	return richTextParser.parse(value);
     }
 
     static Object getEventObject(Component comp, String data) {

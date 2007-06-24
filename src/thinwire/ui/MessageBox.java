@@ -71,7 +71,7 @@ public final class MessageBox {
 	private static final int DEFAULT_COMPONENT_HEIGHT = 40;
 	private static final int DEFAULT_COMPONENT_WIDTH = 150;
     private static final Application.Local<List<MessageBox>> messageBoxStack = new Application.Local<List<MessageBox>>() {
-        protected synchronized List<MessageBox> initialValue() {            
+        protected List<MessageBox> initialValue() {            
             return new ArrayList<MessageBox>();
         }
     };   

@@ -54,11 +54,7 @@ class WindowRenderer extends ContainerRenderer {
     void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         setPropertyChangeIgnored(Component.PROPERTY_VISIBLE, true);
         Window w = (Window)c;
-        if (!(w instanceof Frame)) {
-            addInitProperty(Window.PROPERTY_TITLE, RICH_TEXT_PARSER.parseRichText(w.getTitle(), this));
-        } else {
-            addInitProperty(Window.PROPERTY_TITLE, w.getTitle());
-        }
+        addInitProperty(Window.PROPERTY_TITLE, w instanceof Frame ? w.getTitle() : parseRichText(w.getTitle()));
         compToId = new HashMap<Component, Integer>(w.getChildren().size());
         compBounds = new int[4];
         super.render(wr, c, container);

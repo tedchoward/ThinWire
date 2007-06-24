@@ -67,7 +67,7 @@ import thinwire.render.web.WebApplication;
  */
 public class Hyperlink extends AbstractTextComponent {    
     private static Application.Local<Integer> targetId = new Application.Local<Integer>() {
-        protected synchronized Integer initialValue() {
+        protected Integer initialValue() {
             return 0;
         }
     };

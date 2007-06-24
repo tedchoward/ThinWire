@@ -120,7 +120,7 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
             if (col.isVisible()) {
                 colDefs.append("{v:");
                 getValues(col, col.getDisplayFormat(), colDefs);
-                Object headerValue = RICH_TEXT_PARSER.parseRichText(col.getHeader().getText(), this);
+                Object headerValue = parseRichText(col.getHeader().getText());
                 if (headerValue instanceof String) {
                     colDefs.append(",n:\"").append(getValue(col.getHeader().getText(), null)).append("\"");
                 } else {
@@ -269,9 +269,9 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
                 }
             } else if (column.isVisible()) {   
                 if (name.equals(GridBox.Column.PROPERTY_COLUMN_NAME) && ((String)newValue).equals(column.getHeader().getText())) {
-                    postClientEvent(SET_COLUMN_NAME, getVisibleIndex(index), RICH_TEXT_PARSER.parseRichText((String) newValue, this));
+                    postClientEvent(SET_COLUMN_NAME, getVisibleIndex(index), parseRichText((String)newValue));
                 } else if (name.equals(GridBox.Header.PROPERTY_HEADER_TEXT)) {
-                    postClientEvent(SET_COLUMN_NAME, getVisibleIndex(index), RICH_TEXT_PARSER.parseRichText((String) newValue, this));                    
+                    postClientEvent(SET_COLUMN_NAME, getVisibleIndex(index), parseRichText((String)newValue));                    
                 } else if (name.equals(GridBox.Column.PROPERTY_COLUMN_WIDTH)) {
                     if ((Integer) newValue == -1) {
                         calcAutoColumnWidth();
@@ -365,13 +365,9 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
         } else { // Cell Change
             if (gb.getColumns().get(columnIndex).isVisible()) {
                 //Wrapping the outbound value in a StringBuilder is a hack to get around a second layer of back-slash escaping.
-                Object textValue = RICH_TEXT_PARSER.parseRichText(newValue, this);
-                if (textValue instanceof String) {
-                    postClientEvent(SET_CELL, getVisibleIndex(columnIndex), rowIndex,
-                        new StringBuilder("\"" + getValue(newValue, gb.getColumns().get(columnIndex).getDisplayFormat())+ "\""));
-                } else {
-                    postClientEvent(SET_CELL, getVisibleIndex(columnIndex), rowIndex, textValue);
-                }
+                Object textValue = parseRichText(getValue(newValue, gb.getColumns().get(columnIndex).getDisplayFormat()));
+                if (textValue instanceof String) textValue = new StringBuilder("\"" + textValue + "\"");
+                postClientEvent(SET_CELL, getVisibleIndex(columnIndex), rowIndex, textValue);
             }
         }
     }    
@@ -417,7 +413,7 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
         int width = c.getWidth();
         if (width == -1) width = autoColumnWidth;
         
-        Object headerValue = RICH_TEXT_PARSER.parseRichText(c.getHeader().getText(), this);
+        Object headerValue = parseRichText(c.getHeader().getText());
         if (headerValue instanceof String) headerValue = getValue(headerValue, null);
 
         postClientEvent(method, new Object[] {
@@ -472,11 +468,7 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
     static String getValue(Object o, GridBox.Column.Format format) {
         if (o == null) return "";
         if (format != null) o = format.format(o);
-        String s = o.toString(); 
-        s = REGEX_DOUBLE_SLASH.matcher(s).replaceAll("\\\\\\\\");        
-        s = REGEX_DOUBLE_QUOTE.matcher(s).replaceAll("\\\\\"");
-        s = REGEX_CRLF.matcher(s).replaceAll(" ");                                    
-        return s;
+        return getEscapedText(o.toString());
     }
 
     //TODO: I made this not static, is that okay?
@@ -502,10 +494,11 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
                     visible = false;
                 }
 
-                Object textValue = RICH_TEXT_PARSER.parseRichText(l.get(i), this);
                 if (visible) {
+                	Object textValue = parseRichText(getValue(l.get(i), format));
+                	
                     if (textValue instanceof String) {
-                        sb.append("\"").append(getValue(l.get(i), format)).append("\",");
+                        sb.append("\"").append(textValue).append("\",");
                     } else {
                         sb.append(textValue).append(",");
                     }
@@ -515,9 +508,10 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
             Column.Format format = (Column.Format)formats;
 
             for (int i = 0, cnt = l.size(); i < cnt; i++) {
-                Object textValue = RICH_TEXT_PARSER.parseRichText(l.get(i), this);
+                Object textValue = parseRichText(getValue(l.get(i), format));
+                
                 if (textValue instanceof String) {
-                    sb.append("\"").append(getValue(l.get(i), format)).append("\",");
+                    sb.append("\"").append(textValue).append("\",");
                 } else {
                     sb.append(textValue).append(",");
                 }

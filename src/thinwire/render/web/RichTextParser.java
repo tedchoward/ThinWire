@@ -34,70 +34,181 @@ import java.io.ByteArrayInputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
-import org.w3c.dom.Attr;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
+import org.xml.sax.helpers.DefaultHandler;
 
+import thinwire.ui.Application;
 import thinwire.ui.style.Background;
 import thinwire.ui.style.Border;
 import thinwire.ui.style.Color;
 import thinwire.ui.style.Font;
 
-class RichTextParser {
+class RichTextParser extends DefaultHandler {
+    private static final Logger log = Logger.getLogger(RichTextParser.class.getName());
+    private static final Level LEVEL = Level.FINER;
     
-    private static final Pattern BOLD_TAG_REGEX = Pattern.compile("<b>");
-    private static final String BOLD_TAG_REPLACEMENT = "<font bold=\"true\">";
-    private static final Pattern ITALIC_TAG_REGEX = Pattern.compile("<i>");
-    private static final String ITALIC_TAG_REPLACEMENT = "<font italic=\"true\">";
-    private static final Pattern UNDERLINE_TAG_REGEX = Pattern.compile("<u>");
-    private static final String UNDERLINE_TAG_REPLACEMENT = "<font underline=\"true\">";
-    private static final Pattern STRIKE_TAG_REGEX = Pattern.compile("<s>");
-    private static final String STRIKE_TAG_REPLACEMENT = "<font strike=\"true\">";
-    private static final Pattern CLOSING_TAG_REGEX = Pattern.compile("</[bius]>");
-    private static final String CLOSING_TAG_REPLACEMENT = "</font>";
+    private static final Map<String, Tag> TAGS;
+    private static final Pattern TAG_REGEX;
+    static {
+    	Map<String, Tag> tags = new HashMap<String, Tag>();
+        Map<String, Validator> map = new HashMap<String, Validator>();
+        map.put("family", new EnumValidator(Font.Family.class, "fontFamily"));
+        map.put("face", new EnumValidator(Font.Family.class, "fontFamily"));
+        map.put("color", new EnumValidator(Color.class, "color"));
+        map.put("size", new NumberValidator("fontSize", 0, 128, "pt"));
+        map.put("bold", new BooleanValidator("fontWeight", "bold", "normal"));
+        map.put("underline", new BooleanValidator("textDecoration", "underline", "none"));
+        map.put("strike", new BooleanValidator("textDecoration", "line-through", "none"));
+        map.put("italic", new BooleanValidator("fontStyle", "italic", "normal"));
+        tags.put("font", new Tag(map));
+    	tags.put("b", new Tag(map, "bold", "true"));
+    	tags.put("i", new Tag(map, "italic", "true"));
+    	tags.put("u", new Tag(map, "underline", "true"));
+    	tags.put("s", new Tag(map, "strike", "true"));
+    	
+        map = new HashMap<String, Validator>();
+        map.put("edge", null);
+        tags.put("border", new Tag(newBorderSet("")));
+        tags.put("border left", new Tag(newBorderSet("Left"), map));
+        tags.put("border right", new Tag(newBorderSet("Right"), map));
+        tags.put("border top", new Tag(newBorderSet("Top"), map));
+        tags.put("border bottom", new Tag(newBorderSet("Bottom"), map));
+        
+        map = new HashMap<String, Validator>();
+        map.put("color", new EnumValidator(Color.class, "backgroundColor"));
+        map.put("position", new EnumValidator(Background.Position.class, "backgroundPosition"));
+        map.put("repeat", new EnumValidator(Background.Repeat.class, "backgroundRepeat"));
+        map.put("image", new URLValidator("backgroundImage"));
+        tags.put("background", new Tag(map));
+        
+        map = new HashMap<String, Validator>();
+        map.put("href", new URLValidator("href"));
+        map.put("target", new TargetValidator());
+        tags.put("a", new Tag("a", map, true));
+        
+        map = new HashMap<String, Validator>();
+        map.put("src", new URLValidator("src"));
+        map.put("width", new NumberValidator("width", 0, Short.MAX_VALUE, null));
+        map.put("height", new NumberValidator("height", 0, Short.MAX_VALUE, null));
+        tags.put("img", new Tag("img", map, false));
+        
+        tags.put("br", new Tag("br", null, false));
+        
+        StringBuilder sb = new StringBuilder();
+        sb.append(".*<(?:");
+        
+        for (String s : tags.keySet()) {
+        	sb.append(s).append('|');
+        }
+        
+        sb.setCharAt(sb.length() - 1, ')');
+        sb.append(".*");
+        TAGS = tags;
+        TAG_REGEX = Pattern.compile(sb.toString());
+    }
     
-    private final Logger log = Logger.getLogger(RichTextParser.class.getName());
-    private final Map<String, Validator> fontAtts = new HashMap<String, Validator>();
-    private final Map<String, Validator> borderAtts = new HashMap<String, Validator>();
-    private final Map<String, Validator> borderLeftAtts = new HashMap<String, Validator>();
-    private final Map<String, Validator> borderRightAtts = new HashMap<String, Validator>();
-    private final Map<String, Validator> borderTopAtts = new HashMap<String, Validator>();
-    private final Map<String, Validator> borderBottomAtts = new HashMap<String, Validator>();
-    private final Map<String, Validator> borderIgnoreAtts = new HashMap<String, Validator>();
-    private final Map<String, Validator> anchorAtts = new HashMap<String, Validator>();
-    private final Map<String, Validator> imgAtts = new HashMap<String, Validator>();
-    private final Map<String, Validator> imgStyleAtts = new HashMap<String, Validator>();
-    private final Map<String, Validator> backgroundAtts = new HashMap<String, Validator>();
+    private static Map<String, Validator> newBorderSet(String edge) {
+    	Map<String, Validator> map = new HashMap<String, Validator>();
+        map.put("type", new EnumValidator(Border.Type.class, "border" + edge + "Style"));
+        map.put("size", new NumberValidator("border" + edge + "Width", 0, 32, "px"));
+        map.put("color", new EnumValidator(Color.class, "border" + edge + "Color"));
+        return Collections.unmodifiableMap(map);
+    }
     
-    private StringBuilder sb;
-    private Document document;
-    
-    private class Validator  {
+    private static class Tag {
+    	String name = "span";
+    	Map<String, Validator> attrMap;
+    	Map<String, Validator> attrIgnoreMap;
+    	String specificAttrName;
+    	String specificAttrValue;
+    	boolean children = true;
+    	
+    	Tag(String name, Map<String, Validator> attrMap, boolean children) {
+    		this.name = name;
+    		this.attrMap = attrMap;
+    		this.children = children;
+    	}
+
+    	Tag(Map<String, Validator> attrMap) {
+    		this.attrMap = attrMap;
+    	}
+
+    	Tag(Map<String, Validator> attrMap, Map<String, Validator> attrIgnoreMap) {
+    		this.attrMap = attrMap;
+    		this.attrIgnoreMap = attrIgnoreMap;
+    	}
+    	
+    	Tag(Map<String, Validator> attrMap, String specificAttrName, String specificAttrValue) {
+    		this.attrMap = attrMap;
+    		this.specificAttrName = specificAttrName;
+    		this.specificAttrValue = specificAttrValue;
+    	}
+    }    
+
+	private static class Depth {
+		List<Integer[]> tracker = new ArrayList<Integer[]>();
+		int size;
+		
+		void reset() {
+			tracker.clear();
+			size = 0;
+		}
+		
+		int add() {
+			if (size > 0) tracker.get(size - 1)[0]++;
+			tracker.add(new Integer[]{0,0});
+			++size;
+			return size;
+		}
+		
+		void remove() {
+			tracker.remove(--size);
+		}
+		
+		int children() {
+			return tracker.get(size - 1)[0];
+		}
+		
+		void setMark(int mark) {
+			tracker.get(size - 1)[1] = mark;			
+		}
+		
+		int getMark() {
+			return tracker.get(size - 1)[1];
+		}
+		
+		public String toString() {
+			return "Depth{size:" + size + ",children:" + children() + ",mark:" + getMark() + "}";
+		}
+	}
+
+	private static class Validator  {
         String jsPropName;
         
         Validator(String jsPropName) {
             this.jsPropName = jsPropName;
         }
         
-        Object getValue(String value) {
+        String getValue(String value) {
             return value;
         }
     }
     
-    private class EnumValidator extends Validator {
+    private static class EnumValidator extends Validator {
         Class c;
         EnumValidator(Class c, String jsPropName) {
             super(jsPropName);
@@ -105,16 +216,17 @@ class RichTextParser {
         }
         
         @Override
-        public Object getValue(String value) {
-            Object objValue = value;
+        public String getValue(String value) {
+            String objValue = value;
+            
             try {
                 Field f = c.getField(value.toUpperCase().replace('-', '_'));                        
-                objValue = f.get(null);
+                objValue = f.get(null).toString();
             } catch (NoSuchFieldException e2) {
                 try {
                     Method m = c.getMethod("valueOf", String.class);
                     if (m.getReturnType() != c) throw new NoSuchMethodException("public static " + c + " valueOf(String value)");
-                    objValue = m.invoke(null, objValue);
+                    objValue = m.invoke(null, objValue).toString();
                 } catch (NoSuchMethodException e) {
                     throw new RuntimeException(e);
                 } catch (InvocationTargetException e) {
@@ -125,11 +237,12 @@ class RichTextParser {
             } catch (IllegalAccessException e2) {
                 throw new RuntimeException(e2);
             }
+            
             return objValue;
         }
     }
     
-    private class BooleanValidator extends Validator {
+    private static class BooleanValidator extends Validator {
         String trueValueName;
         String falseValueName;
         
@@ -145,7 +258,7 @@ class RichTextParser {
         }
     }
     
-    private class URLValidator extends Validator {
+    private static class URLValidator extends Validator {
         
         URLValidator(String jsPropName) {
             super(jsPropName);
@@ -157,7 +270,7 @@ class RichTextParser {
 
     }
     
-    private class TargetValidator extends Validator {
+    private static class TargetValidator extends Validator {
         TargetValidator() {
             super("target");
         }
@@ -169,7 +282,7 @@ class RichTextParser {
         }
     }
     
-    private class NumberValidator extends Validator {
+    private static class NumberValidator extends Validator {
         int min;
         int max;
         String units;
@@ -185,220 +298,187 @@ class RichTextParser {
         String getValue(String value) {
             int size = Integer.parseInt(value);
             if (size <= min || size > max) throw new RuntimeException(jsPropName + " <= " + min + " || " + jsPropName + " > " + max);
-            return String.valueOf(size) + units;
+            return units == null ? String.valueOf(size) : size + units;
         }
     }
     
-    RichTextParser() {
-        Validator fontFamilyValidator = new EnumValidator(Font.Family.class, "fontFamily");
-        fontAtts.put("family", fontFamilyValidator);
-        fontAtts.put("face", fontFamilyValidator);
-        fontAtts.put("color", new EnumValidator(Color.class, "color"));
-        fontAtts.put("size", new NumberValidator("fontSize", 0, 128, "pt"));
-        fontAtts.put("bold", new BooleanValidator("fontWeight", "bold", "normal"));
-        fontAtts.put("underline", new BooleanValidator("textDecoration", "underline", "none"));
-        fontAtts.put("strike", new BooleanValidator("textDecoration", "line-through", "none"));
-        fontAtts.put("italic", new BooleanValidator("fontStyle", "italic", "normal"));
-        
-        borderAtts.put("type", new EnumValidator(Border.Type.class, "borderStyle"));
-        borderAtts.put("size", new NumberValidator("borderWidth", 0, 32, "px"));
-        borderAtts.put("color", new EnumValidator(Color.class, "borderColor"));
-        
-        borderLeftAtts.put("type", new EnumValidator(Border.Type.class, "borderLeftStyle"));
-        borderLeftAtts.put("size", new NumberValidator("borderLeftWidth", 0, 32, "px"));
-        borderLeftAtts.put("color", new EnumValidator(Color.class, "borderLeftColor"));
-        
-        borderRightAtts.put("type", new EnumValidator(Border.Type.class, "borderRightStyle"));
-        borderRightAtts.put("size", new NumberValidator("borderRightWidth", 0, 32, "px"));
-        borderRightAtts.put("color", new EnumValidator(Color.class, "borderRightColor"));
-        
-        borderTopAtts.put("type", new EnumValidator(Border.Type.class, "borderTopStyle"));
-        borderTopAtts.put("size", new NumberValidator("borderTopWidth", 0, 32, "px"));
-        borderTopAtts.put("color", new EnumValidator(Color.class, "borderTopColor"));
-        
-        borderBottomAtts.put("type", new EnumValidator(Border.Type.class, "borderBottomStyle"));
-        borderBottomAtts.put("size", new NumberValidator("borderBottomWidth", 0, 32, "px"));
-        borderBottomAtts.put("color", new EnumValidator(Color.class, "borderBottomColor"));
-        
-        borderIgnoreAtts.put("edge", null);
-        
-        backgroundAtts.put("color", new EnumValidator(Color.class, "backgroundColor"));
-        backgroundAtts.put("position", new EnumValidator(Background.Position.class, "backgroundPosition"));
-        backgroundAtts.put("repeat", new EnumValidator(Background.Repeat.class, "backgroundRepeat"));
-        backgroundAtts.put("image", new URLValidator("backgroundImage"));
-        
-        anchorAtts.put("href", new URLValidator("href"));
-        anchorAtts.put("target", new TargetValidator());
-        
-        imgAtts.put("src", new URLValidator("src"));
-        
-        imgStyleAtts.put("width", new NumberValidator("width", 0, Short.MAX_VALUE, "px"));
-        imgStyleAtts.put("height", new NumberValidator("height", 0, Short.MAX_VALUE, "px"));
+    private static final Application.Local<SAXParser> INSTANCE = new Application.Local<SAXParser>() {
+    	public SAXParser initialValue() {
+        	try {
+        		return SAXParserFactory.newInstance().newSAXParser();
+        	} catch (Exception e) {
+        		if (e instanceof RuntimeException) throw (RuntimeException)e;
+        		throw new RuntimeException(e);
+        	}
+    	}
+    };
+
+    private SAXParser parser;
+    private Depth depth;
+    private ComponentRenderer renderer;
+    private StringBuilder sb;
+    
+    RichTextParser(ComponentRenderer cr) {
+    	parser = INSTANCE.get();
+    	depth = new Depth();
+    	renderer = cr;
     }
     
-    public Object parseRichText(Object textValue, ComponentRenderer cr) {
-        if (cr instanceof EditorComponentRenderer) return textValue;
-        if (textValue == null) return "";
-        String richText = textValue.toString();
-        
-        if (richText.indexOf('<') >= 0) {
+    Object parse(String richText) {        
+        if (richText.indexOf('<') >= 0 && richText.indexOf('>') > 0 & TAG_REGEX.matcher(richText).matches()) {
             try {
-                String tmpText = richText;
-                tmpText = BOLD_TAG_REGEX.matcher(tmpText).replaceAll(BOLD_TAG_REPLACEMENT);
-                tmpText = ITALIC_TAG_REGEX.matcher(tmpText).replaceAll(ITALIC_TAG_REPLACEMENT);
-                tmpText = UNDERLINE_TAG_REGEX.matcher(tmpText).replaceAll(UNDERLINE_TAG_REPLACEMENT);
-                tmpText = STRIKE_TAG_REGEX.matcher(tmpText).replaceAll(STRIKE_TAG_REPLACEMENT);
-                tmpText = CLOSING_TAG_REGEX.matcher(tmpText).replaceAll(CLOSING_TAG_REPLACEMENT);
                 sb = new StringBuilder();
-                DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-                document = db.parse(new ByteArrayInputStream(("<richText>" + tmpText + "</richText>").getBytes()));
-                sb.append("[");
-                processNode(document.getFirstChild(), cr);
-                sb.setCharAt(sb.length() - 1, ']');
-                log.fine("RICH TEXT: " + sb.toString());
+            	depth.reset();
+            	parser.parse(new ByteArrayInputStream(("<richText>" + richText + "</richText>").getBytes()), this);
+            	if (log.isLoggable(LEVEL)) log.log(LEVEL, "RICH TEXT: " + sb.toString());
                 return sb;
             } catch (Exception e) {
-                if (log.isLoggable(Level.FINE)) log.log(Level.FINE, "Exception Caught While Parsing Rich Text", e);
-                return richText;
+                if (log.isLoggable(LEVEL)) log.log(LEVEL, "unable to parse rich text:" + richText, e);
+            	return richText;
             }
         } else {
             return richText;
         }
     }
-    
-    void processNode(Node curNode, ComponentRenderer cr) {
-        if (curNode instanceof Text) {
-            sb.append("\"").append(curNode.getNodeValue()).append("\",");
-        } else if (curNode instanceof Element) {
-            String name = curNode.getNodeName();
-            if (name.equals("richText")) {
-                if (curNode.hasChildNodes()) {
-                    NodeList childNodes = curNode.getChildNodes();
-                    for (int i = 0, cnt = childNodes.getLength(); i < cnt; i++) {
-                        processNode(childNodes.item(i), cr);
-                    }
-                }
-            } else if (name.equals("font")) {
-                sb.append("{t:\"span\",");
-                processAttributes(curNode, "s", fontAtts, null, cr);
-                processChildren(curNode, cr);
-                closeObject();
-            } else if (name.equals("border")) {
-                sb.append("{t:\"span\",");
-                if (curNode.hasAttributes()) {
-                    Node edgeNode = curNode.getAttributes().getNamedItem("edge");
-                    if (edgeNode != null) {
-                        String[] edges = edgeNode.getNodeValue().split(",");
-                        boolean first = true;
-                        for (String curEdge : edges) {
-                            if (curEdge.equals("left")) {
-                                processAttributes(curNode, first ? "s" : null, borderLeftAtts, borderIgnoreAtts, cr);
-                            } else if (curEdge.equals("right")) {
-                                processAttributes(curNode, first ? "s" : null, borderRightAtts, borderIgnoreAtts, cr);
-                            } else if (curEdge.equals("top")) {
-                                processAttributes(curNode, first ? "s" : null, borderTopAtts, borderIgnoreAtts, cr);
-                            } else if (curEdge.equals("bottom")) {
-                                processAttributes(curNode, first ? "s" : null, borderBottomAtts, borderIgnoreAtts, cr);
-                            } else {
-                                throw new RuntimeException("Invalid Border Edge Specified");
-                            }
-                            first = false;
-                        }
-                    } else {
-                        processAttributes(curNode, "s", borderAtts, null, cr);
-                    }
-                }
-                processChildren(curNode, cr);
-                closeObject();
-            } else if (name.equals("a")) {
-                sb.append("{t:\"a\",");
-                if (curNode.hasAttributes()) {
-                    Node target = curNode.getAttributes().getNamedItem("target");
-                    if (target == null) {
-                        target = document.createAttribute("target");
-                        target.setNodeValue("a" + System.identityHashCode(cr));
-                        curNode.getAttributes().setNamedItem(target);
-                    }
-                }
-                processAttributes(curNode, "a", anchorAtts, null, cr);
-                processChildren(curNode, cr);
-                closeObject();
-            } else if (name.equals("img")) {
-                sb.append("{t:\"img\",");
-                processAttributes(curNode, "s", imgStyleAtts, imgAtts, cr);
-                processAttributes(curNode, "a", imgAtts, imgStyleAtts, cr);
-                closeObject();
-            } else if (name.equals("background")) {
-                sb.append("{t:\"span\",");
-                processAttributes(curNode, "s", backgroundAtts, null, cr);
-                processChildren(curNode, cr);
-                closeObject();
-            } else if (name.equals("br") && cr instanceof LabelRenderer) {
-                sb.append("{t:\"br\",");
-                closeObject();
-            } else {
-                throw new RuntimeException("Invalid tag: " + name);
-            }
-        }
-        
-    }
-    
-    private void closeObject() {
-        if (sb.charAt(sb.length() - 1) == ',') {
-            sb.insert(sb.length() - 1, "}");
-        } else {
-            sb.append("},");
-        }
-    }
-    
-    private void processChildren(Node curNode, ComponentRenderer cr) {
-        if (curNode.hasChildNodes()) {
-            sb.append("c:");
-            NodeList childNodes = curNode.getChildNodes();
+
+    @Override
+	public void startDocument() throws SAXException {
+		sb.append("[");
+	}
+
+	@Override
+	public void startElement(String uri, String localName, String qName, Attributes attr) throws SAXException {
+		int attrLen = attr.getLength();
+		int depthSize = depth.add();
+		if (log.isLoggable(LEVEL)) log.log(LEVEL, "depth=" + depth + ",uri=" + uri + ",localName=" + localName + ",qName=" + qName + ",attributes.getLength()=" + attrLen);
+
+		if (qName.equals("richText")) {
+			if (depthSize > 1) throw new SAXException("duplicate top-level element <" + qName + ">");
+		} else {
+			if (depthSize == 1) throw new SAXException("top-level element <richText> not found");
+			Tag tag = TAGS.get(qName);
+			if (tag == null) throw new SAXException("invalid start of element <" + qName + ">");
+			
+			if (tag.specificAttrName != null) {
+				if (attrLen != 0) throw new SAXException("attributes specified for <" + qName + ">");
+				attr = new AttributesImpl();
+				((AttributesImpl)attr).addAttribute("", tag.specificAttrName, tag.specificAttrName, "CDATA", tag.specificAttrValue);
+				attrLen++;
+			}
+			
+			if (attrLen == 0 && tag.attrMap != null) throw new SAXException("no attributes specified for <" + qName + ">");
+			if (attrLen != 0 && tag.attrMap == null) throw new SAXException("attributes specified for <" + qName + ">");
+			
+			if (qName.equals("border") && attr.getValue("edge") != null) {
+				if (attrLen < 2) throw new SAXException("no attributes specified for <" + qName + " edge='" + attr.getValue("edge") + "'>");
+				sb.append("{t:\"").append(tag.name).append("\",s:{");
+                String[] edges = attr.getValue("edge").split(",");
             
-            if (childNodes.getLength() == 1 && childNodes.item(0) instanceof Text) {
-                processNode(childNodes.item(0), cr);
-            } else {
-                sb.append("[");
-                for (int i = 0, cnt = childNodes.getLength(); i < cnt; i++) {
-                    processNode(childNodes.item(i), cr);
+                for (String s : edges) {
+                	tag = TAGS.get(qName + " " + s);
+                	if (tag == null) throw new SAXException("invalid <border edge=''> attribute '" + s + "' specified");
+                	writeAttributes(attr, tag.attrMap, tag.attrIgnoreMap);
                 }
-                int sbLength = sb.length();
-                if (sb.charAt(sbLength - 1) == ',') {
-                    sb.replace(sbLength - 1, sbLength, "]");
-                } else {
-                    sb.append("]");
-                }
-            }
-        }
-    }
-  
-    private void processAttributes(Node curNode, String attrSet, Map<String, Validator> attMap, Map<String, Validator> ignoreMap, ComponentRenderer cr) {
-        if (attrSet != null) {
-            sb.append(attrSet).append(":{");
-        } else {
-            sb.deleteCharAt(sb.lastIndexOf("}"));
-        }
-        NamedNodeMap attributes = curNode.getAttributes();
+
+                //Close object
+                int len = sb.length();
+            	sb.setCharAt(len - 1, '}');
+            	sb.append(',');
+                depth.setMark(len + 1);
+			} else {
+				if (qName.equals("a") && attr.getValue("target") == null) {
+	            	if (!(attr instanceof AttributesImpl)) attr = new AttributesImpl(attr);
+	            	((AttributesImpl)attr).addAttribute("", "target", "target", "CDATA", "a" + System.identityHashCode(renderer));
+				}
+				
+				sb.append("{t:\"").append(tag.name).append("\",").append(tag.equals("span") ? "s" : "a").append(":{");
+				if (tag.attrMap != null) writeAttributes(attr, tag.attrMap, null);
+		    	int index = sb.length() - 1;
+
+		    	if (sb.charAt(index) == ',') {
+		    		sb.setCharAt(index, '}');
+		    		sb.append(',');
+		        } else {
+		            sb.append("},");
+		        }
+
+				depth.setMark(sb.length());
+			}
+		}
+	}
+	
+	@Override
+	public void characters(char[] ch, int start, int length) throws SAXException {
+		depth.add();
+		if (log.isLoggable(LEVEL)) log.log(LEVEL, "depth=" + depth + ",characters=" + new String(ch, start, length));
+		sb.append("\"").append(ch, start, length).append("\",");
+		depth.remove();
+	}
+
+	@Override
+	public void endElement(String uri, String localName, String qName) throws SAXException {		
+		if (log.isLoggable(LEVEL)) log.log(LEVEL, "depth=" + depth + ",uri=" + uri + ",localName=" + localName + ",qName=" + qName);
+
+		if (qName.equals("richText")) {
+			//if (depth.size > 1) throw new SAXException("duplicate top-level element <" + qName + ">");
+		} else {
+			Tag tag = TAGS.get(qName);			
+			if (tag == null) throw new SAXException("invalid end element </" + qName + ">");
+			int children = depth.children();
+			
+			if (tag.children) {
+				//XXX is it an error if there were no children?
+				if (children > 0) {			
+					if (children > 1) {
+						sb.insert(depth.getMark(), "c:[");
+						sb.setCharAt(sb.length() - 1, ']');
+					} else {
+						sb.insert(depth.getMark(), "c:");
+					}
+				} else {
+					//XXX Remove entire entry? Or is this an error?
+				}
+			} else if (children > 0) {
+				throw new SAXException("no children allowed for <" + qName + "> tag");
+			}
+			
+	    	int index = sb.length() - 1;
+
+	    	if (sb.charAt(index) == ',') {
+	    		sb.setCharAt(index, '}');
+	    		sb.append(',');
+	        } else {
+	            sb.append("},");
+	        }
+		}
+		
+		depth.remove();
+	}
+
+	@Override
+	public void endDocument() throws SAXException {
+        sb.setCharAt(sb.length() - 1, ']');
+	}
+
+	private void writeAttributes(Attributes attributes, Map<String, Validator> attMap, Map<String, Validator> ignoreMap) throws SAXException {
         for (int i = 0, cnt = attributes.getLength(); i < cnt; i++) {
-            Node attr = (Attr) attributes.item(i);
-            String attrName = attr.getNodeName();
+            String attrName = attributes.getQName(i);
             
             if (attMap.containsKey(attrName)) {
-                Validator v = attMap.get(attrName);
-                Object value;
+            	Validator v = attMap.get(attrName);
+            	String value = attributes.getValue(i);
+            	
                 if (v instanceof URLValidator) {
-                    value = ((URLValidator) v).getValue(attr.getNodeValue(), cr);
+                    value = ((URLValidator) v).getValue(value, renderer);
                 } else {
-                    value = v.getValue(attr.getNodeValue());
+                    value = v.getValue(value);
                 }
+                
                 sb.append(v.jsPropName).append(":");
                 sb.append("\"").append(value).append("\",");
             } else if (ignoreMap == null || !ignoreMap.containsKey(attrName)) {
-                throw new RuntimeException("Invalid Attribute Specified: '" + attrName + "' on tag: " + curNode.getNodeName());
+                throw new SAXException("invalid attribute '" + attrName + "' specified");
             }
         }
-        
-        closeObject();
-    }
+	}
 }

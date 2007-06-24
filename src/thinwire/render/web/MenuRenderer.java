@@ -193,7 +193,7 @@ final class MenuRenderer extends ComponentRenderer implements ItemChangeListener
 	private void buildMenuInit(Menu.Item item, int index, boolean isRoot) {
 		sb.append('{');
 		sb.append("en:").append(item.isEnabled());
-        Object textValue = RICH_TEXT_PARSER.parseRichText(convertAmpToUnderline(item.getText()), this);
+        Object textValue = parseRichText(convertAmpToUnderline(item.getText()));
         if (textValue instanceof String) {
     		String text = getEscapedText(item.getText());		
     		if (text.length() > 0) sb.append(",t:\"").append(text.replaceAll("\"", "\\\"")).append('"');

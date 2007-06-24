@@ -64,9 +64,6 @@ import thinwire.util.ImageInfo;
 public final class WebApplication extends Application {
     private static final String CLASS_NAME = WebApplication.class.getName();
     private static final String PACKAGE_NAME = WebApplication.class.getPackage().getName();
-    private static final Pattern REGEX_DOUBLE_SLASH = Pattern.compile("\\\\");
-    private static final Pattern REGEX_DOUBLE_QUOTE = Pattern.compile("\"");
-    private static final Pattern REGEX_CRLF = Pattern.compile("\\r?\\n");
     private static final String EOL = System.getProperty("line.separator");
     private static final Logger log = Logger.getLogger(CLASS_NAME);
     private static final Level LEVEL = Level.FINER;
@@ -614,30 +611,6 @@ public final class WebApplication extends Application {
                 r.renderStateChange(ev);
             }
         }
-    }
-    
-    static String stringValueOf(Object o) {
-        String ret;
-        
-        if (o == null) {
-            ret = "null";
-        } else if (o instanceof Integer) {
-            ret = String.valueOf(((Integer) o).intValue());
-        } else if (o instanceof Number) {
-            ret = String.valueOf(((Number) o).doubleValue());
-        } else if (o instanceof Boolean) {
-            ret = String.valueOf(((Boolean) o).booleanValue());
-        } else if (o instanceof StringBuilder) {
-            ret = o.toString();
-        } else {
-            ret = o.toString();
-            ret = REGEX_DOUBLE_SLASH.matcher(ret).replaceAll("\\\\\\\\");
-            ret = REGEX_DOUBLE_QUOTE.matcher(ret).replaceAll("\\\\\"");
-            ret = REGEX_CRLF.matcher(ret).replaceAll("\\\\r\\\\n");
-            ret = '"' + ret + '"';
-        }
-        
-        return ret;
     }
     
     public Integer getComponentId(Component comp) {

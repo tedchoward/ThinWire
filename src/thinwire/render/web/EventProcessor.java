@@ -348,13 +348,13 @@ class EventProcessor extends Thread {
                 size += 4;
 
                 for (int i = 0, cnt = args.length - 1; i < cnt; i++) {
-                    String value = WebApplication.stringValueOf(args[i]);
+                    String value = ComponentRenderer.stringValueOf(args[i]);
                     response.write(value);
                     response.write(',');
                     size += value.length() + 1;
                 }
 
-                String value = WebApplication.stringValueOf(args[args.length - 1]);
+                String value = ComponentRenderer.stringValueOf(args[args.length - 1]);
                 response.write(value);
                 response.write(']');
                 size += value.length() + 1;
