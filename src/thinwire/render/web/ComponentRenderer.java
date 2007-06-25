@@ -158,6 +158,8 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
             value = s.getBorder().getColor();
         } else if (propertyName.equals(Border.PROPERTY_BORDER_IMAGE)) {
             value = s.getBorder().getImageInfo();
+        } else if (propertyName.equals(Font.PROPERTY_FONT_UNDERLINE) || propertyName.equals(Font.PROPERTY_FONT_STRIKE)) {
+        	value = new Boolean[]{s.getFont().isUnderline(), s.getFont().isStrike()};
         } else {
             value = s.getProperty(propertyName);
         }
@@ -449,7 +451,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
                         seq.append("\"rgb(").append(rSize).append(',').append(gSize).append(',').append(bSize).append(")\"").append(',');
                     }
                     
-                    seq.append('"').append(next.toRGBString()).append('"').append(']');
+                    seq.append('"').append(next.toHexString()).append('"').append(']');
                     wr.ai.clientSideMethodCall(id, SET_PROPERTY_WITH_EFFECT, propertyName, time, seq);
                 }
             } else {

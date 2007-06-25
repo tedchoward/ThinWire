@@ -212,7 +212,7 @@ var tw_Component = Class.extend({
     
     setStyles: function(styles) {
         for (var name in styles) {
-            this.setStyle(name, styles[name]); 
+            this.setStyle(tw_Component.rtStyleMap[name], styles[name]); 
         }
     },
     
@@ -522,6 +522,10 @@ var tw_Component = Class.extend({
         if (styleProps != undefined) {
             delete props.styleProps;
             
+            for (var name in styleProps) {
+                styleProps[tw_Component.rtStyleMap[name]] = styleProps[name];
+            }
+            
             for (var name in style) {
                 if (styleProps[name] == undefined) styleProps[name] = style[name]; 
             }
@@ -529,7 +533,7 @@ var tw_Component = Class.extend({
             style = styleProps;
         }
         
-        this.setStyle("backgroundColor", style["backgroundColor"]);
+        this.setStyle("backgroundColor", style["backgroundColor"])
         this.setStyle("backgroundImage", style["backgroundImage"]);
         this.setStyle("backgroundRepeat", style["backgroundRepeat"]);
         this.setStyle("backgroundPosition", style["backgroundPosition"]);
@@ -549,7 +553,6 @@ var tw_Component = Class.extend({
             this.setStyle("fontStyle", style["fontStyle"]);
             this.setStyle("fontWeight", style["fontWeight"]);
             this.setStyle("textDecoration", style["textDecoration"]);
-            //this.setStyle("fontStrike", style["fontStrike"]);
         }
         
         if (props.insertAtIndex != undefined) {
@@ -605,6 +608,15 @@ tw_Component.priorFocus = null;
 tw_Component.currentFocus = null;
 tw_Component.defaultStyles = null;
 tw_Component.setDefaultStyles = function(defaultStyles) {
+    for (var clazz in defaultStyles) {
+        clazz = defaultStyles[clazz];
+        
+        for (var style in clazz) {
+            clazz[tw_Component.rtStyleMap[style]] = clazz[style];
+            delete clazz[style];
+        }
+    }
+    
     tw_Component.defaultStyles = defaultStyles;
 };
 
@@ -714,37 +726,71 @@ tw_Component.setText = function(text) {
     this._box.replaceChild(tw_Component.setRichText(text), this._box.firstChild);
 }
 
+tw_Component.rtStyleMap = {
+    ff: "fontFamily",
+    fc: "color",
+    fs: "fontSize",
+    fw: "fontWeight",
+    fd: "textDecoration",
+    ft: "fontStyle",
+    dt: "borderStyle",
+    dw: "borderWidth",
+    dc: "borderColor",
+    di: "borderImage",
+    dtl: "borderLeftStyle",
+    dwl: "borderLeftWidth",
+    dcl: "borderLeftColor",
+    dtr: "borderRightStyle",
+    dwr: "borderRightWidth",
+    dcr: "borderRightColor",
+    dtt: "borderTopStyle",
+    dwt: "borderTopWidth",
+    dct: "borderTopColor",
+    dtb: "borderBottomStyle",
+    dwb: "borderBottomWidth",
+    dcb: "borderBottomColor",
+    bc: "backgroundColor",
+    bp: "backgroundPosition",
+    br: "backgroundRepeat",
+    bi: "backgroundImage"
+};
+
+tw_Component.rtAttrMap = {
+    h: "href",
+    t: "target",
+    s: "src",
+    w: "width",
+    h: "height"
+};
+
 tw_Component.setRichText = function(text) {
     if (!(text instanceof Array)) return document.createTextNode(text);
     var span = document.createElement("span");
-    span.style.verticalAlign = "middle";
     
-    for (n in text) {
+    for (var n in text) {
         var node = text[n];
+        
         if (node instanceof Object) {
             var element = document.createElement(node.t);
-            element.style.verticalAlign = "middle";
             
             if (node.s != undefined) {
-                for (sty in node.s) {
-                    if (sty == "backgroundImage") {
-                        element.style.backgroundImage = tw_Component.expandUrl(node.s[sty], true);
-                    } else {
-                        element.style[sty] = node.s[sty];
-                    }
+                for (var sty in node.s) {
+                    var val = node.s[sty];
+                    if (sty == "bi") val = tw_Component.expandUrl(val, true);
+                    sty = tw_Component.rtStyleMap[sty];
+                    element.style[sty] = val;
                 }
             }
+            
             if (node.a != undefined) {
-                for (atr in node.a) {
-                    if (atr == "src") {
-                        element.src = tw_Component.expandUrl(node.a[atr]);
-                    } else if (atr == "href") {
-                        element.href = tw_Component.expandUrl(node.a[atr]);
-                    } else {
-                        element[atr] = node.a[atr];
-                    }
+                for (var atr in node.a) {
+                    var val = node.a[atr];
+                    if (atr == "s" || atr == "h") val = tw_Component.expandUrl(val);
+                    atr = tw_Component.rtAttrMap[atr];
+                    element[atr] = val;
                 }
             }
+            
             if (node.c != undefined) element.appendChild(tw_Component.setRichText(node.c));
             span.appendChild(element);
         } else {

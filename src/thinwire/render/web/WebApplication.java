@@ -309,7 +309,7 @@ public final class WebApplication extends Application {
             sb.append('{');
             
             for (Map.Entry<String, Color> e : getSystemColors().entrySet()) {
-                sb.append(e.getKey()).append(":\"").append(e.getValue()).append("\",");
+                sb.append(e.getKey()).append(":\"").append(e.getValue().toHexString()).append("\",");
             }
             
             sb.setCharAt(sb.length() - 1, '}');
@@ -338,50 +338,76 @@ public final class WebApplication extends Application {
     
     StringBuilder getStyleValue(ComponentRenderer cr, StringBuilder sb, String propertyName, Object value) {
         if (propertyName.equals(Border.PROPERTY_BORDER_SIZE)) {
-            sb.append("borderWidth").append(":\"").append(value).append("px");
-        } else if (propertyName.equals(Border.PROPERTY_BORDER_TYPE)) {
-            sb.append("borderStyle").append(":\"").append(value);
-        } else if (propertyName.equals(Font.PROPERTY_FONT_COLOR)) {
-            sb.append("color").append(":\"").append(value);
-        } else if (propertyName.equals(Font.PROPERTY_FONT_UNDERLINE)) {
-            sb.append("textDecoration").append(":\"").append(value == Boolean.TRUE ? "underline" : "none");
-        } else if (propertyName.equals(Font.PROPERTY_FONT_ITALIC)) {
-            sb.append("fontStyle").append(":\"").append(value == Boolean.TRUE ? "italic" : "normal");
-        } else if (propertyName.equals(Font.PROPERTY_FONT_BOLD)) {
-            sb.append("fontWeight").append(":\"").append(value == Boolean.TRUE ? "bold" : "normal");
+            sb.append(RichTextParser.STYLE_BORDER_WIDTH).append(":\"").append(value).append("px");
         } else if (propertyName.equals(Font.PROPERTY_FONT_SIZE)) {
-            sb.append(propertyName).append(":\"").append(value).append("pt");
-        } else if (propertyName.equals(Background.PROPERTY_BACKGROUND_IMAGE)) {
-            sb.append(propertyName).append(":\"").append(cr.getQualifiedURL((String)value));
-        } else {
-            sb.append(propertyName).append(":\"");
+            sb.append(RichTextParser.STYLE_FONT_SIZE).append(":\"").append(value).append("pt");
+    	} else if (propertyName.equals(Border.PROPERTY_BORDER_IMAGE)) {
+    		sb.append(RichTextParser.STYLE_BORDER_IMAGE).append(":\"");
+    		ImageInfo ii = (ImageInfo)value;
+            String name = ii.getName();
             
-            if (value instanceof Color) {
-                Color color = (Color)value;
-                if (color.isSystemColor()) color = getSystemColors().get(color.toString());
-                sb.append(color.toRGBString());
-            } else if (value instanceof Background.Repeat) {
-                switch ((Background.Repeat)value) {
-                    case BOTH: sb.append("repeat"); break;
-                    case X: sb.append("repeat-x"); break;
-                    case Y: sb.append("repeat-y"); break;
-                    default: sb.append("no-repeat"); break;
-                }
-            } else if (value instanceof ImageInfo) {
-                ImageInfo ii = (ImageInfo)value;
-                String name = ii.getName();
-                
-                if (name.length() > 0) {
-                    sb.append(cr.getQualifiedURL(name));
-    
-                    if (propertyName.equals(Border.PROPERTY_BORDER_IMAGE)) {
-                        sb.append(',').append(ii.getWidth()).append(',').append(ii.getHeight());
-                    }
-                }
-            } else {
-                sb.append(value);
+            if (name.length() > 0) {
+                sb.append(cr.getQualifiedURL(name));
+                sb.append(',').append(ii.getWidth()).append(',').append(ii.getHeight());
             }
-        }
+    	} else {
+	        if (propertyName.equals(Border.PROPERTY_BORDER_TYPE)) {
+	            sb.append(RichTextParser.STYLE_BORDER_STYLE);
+	    	} else if (propertyName.equals(Font.PROPERTY_FONT_FAMILY)) {
+	    		sb.append(RichTextParser.STYLE_FONT_FAMILY);
+	    	} else if (propertyName.equals(Background.PROPERTY_BACKGROUND_POSITION)) {
+	    		sb.append(RichTextParser.STYLE_BACKGROUND_POSITION);
+	        } else if (propertyName.equals(Font.PROPERTY_FONT_ITALIC)) {
+	            sb.append(RichTextParser.STYLE_FONT_STYLE);
+	            value = value == Boolean.TRUE ? "italic" : "normal";
+	        } else if (propertyName.equals(Font.PROPERTY_FONT_BOLD)) {
+	            sb.append(RichTextParser.STYLE_FONT_WEIGHT);
+	            value = value == Boolean.TRUE ? "bold" : "normal";
+	        } else if (propertyName.equals(Background.PROPERTY_BACKGROUND_IMAGE)) {
+	            sb.append(RichTextParser.STYLE_BACKGROUND_IMAGE);
+	            value = cr.getQualifiedURL((String)value);
+	        } else if (value instanceof Color) {
+	        	if (propertyName.equals(Font.PROPERTY_FONT_COLOR)) {
+	        		sb.append(RichTextParser.STYLE_COLOR);
+	        	} else if (propertyName.equals(Background.PROPERTY_BACKGROUND_COLOR)) {
+	        		sb.append(RichTextParser.STYLE_BACKGROUND_COLOR);
+	        	} else if (propertyName.equals(Border.PROPERTY_BORDER_COLOR)) {
+	        		sb.append(RichTextParser.STYLE_BORDER_COLOR);
+	        	} else {
+	        		throw new IllegalArgumentException("unknown style property '" + propertyName + "' with value '" + value + "'");
+	        	}
+	        		
+	            Color color = (Color)value;
+	            if (color.isSystemColor()) color = getSystemColors().get(color.toString());
+	            value = color.toHexString();
+	        } else if (propertyName.equals(Font.PROPERTY_FONT_UNDERLINE) || propertyName.equals(Font.PROPERTY_FONT_STRIKE)) {        	
+	            sb.append(RichTextParser.STYLE_TEXT_DECORATION);
+	            Boolean[] bool = (Boolean[])value;
+	            
+	        	if (bool[0] == Boolean.TRUE && bool[1] == Boolean.TRUE) {
+	        		value = "underline line-through";
+	        	} else if (bool[0] == Boolean.TRUE) {
+	        		value = "underline";
+	        	} else if (bool[1] == Boolean.TRUE) {
+	        		value = "line-through";
+	        	} else {
+	        		value = "none";
+	        	}
+	    	} else if (propertyName.equals(Background.PROPERTY_BACKGROUND_REPEAT)) {
+	    		sb.append(RichTextParser.STYLE_BACKGROUND_REPEAT);
+
+	    		switch ((Background.Repeat)value) {
+	                case BOTH: value = "repeat"; break;
+	                case X: value = "repeat-x"; break;
+	                case Y: value = "repeat-y"; break;
+	                default: value = "no-repeat"; break;
+	            }
+        	} else {
+        		throw new IllegalArgumentException("unknown style property '" + propertyName + "' with value '" + value + "'");
+        	}
+	        
+	        sb.append(":\"").append(value);
+    	}
         
         sb.append("\",");
         return sb;
@@ -423,11 +449,12 @@ public final class WebApplication extends Application {
             if (borderImage.equals(border.getImage())) borderImage = null;
             
             font = ds.getFont();
-            if (fontFamily.equals(font.getFamily()))
+            if (fontFamily.equals(font.getFamily())) fontFamily = null;
             if (fontSize.equals(font.getSize())) fontSize = null;
             if (fontColor.equals(font.getColor())) fontColor = null;
             if (fontBold.equals(font.isBold())) fontBold = null;
             if (fontItalic.equals(font.isItalic())) fontItalic = null;
+            if (fontUnderline.equals(font.isUnderline())) fontUnderline = null;
             if (fontStrike.equals(font.isStrike())) fontStrike = null;
         }
         
@@ -450,14 +477,12 @@ public final class WebApplication extends Application {
         if (borderImage != null) getStyleValue(cr, sb, Border.PROPERTY_BORDER_IMAGE, s.getBorder().getImageInfo());
         if (borderColor != null) getStyleValue(cr, sb, Border.PROPERTY_BORDER_COLOR, borderColor);
         if (borderSize != null) getStyleValue(cr, sb, Border.PROPERTY_BORDER_SIZE, borderSize);
-
         if (fontFamily != null) getStyleValue(cr, sb, Font.PROPERTY_FONT_FAMILY, fontFamily);
         if (fontSize != null) getStyleValue(cr, sb, Font.PROPERTY_FONT_SIZE, fontSize);
         if (fontColor != null) getStyleValue(cr, sb, Font.PROPERTY_FONT_COLOR, fontColor);
         if (fontBold != null) getStyleValue(cr, sb, Font.PROPERTY_FONT_BOLD, fontBold); 
         if (fontItalic != null) getStyleValue(cr, sb, Font.PROPERTY_FONT_ITALIC, fontItalic); 
-        if (fontUnderline != null) getStyleValue(cr, sb, Font.PROPERTY_FONT_UNDERLINE, fontUnderline); 
-        if (fontStrike != null) getStyleValue(cr, sb, Font.PROPERTY_FONT_STRIKE, fontStrike); 
+        if (fontUnderline != null || fontStrike != null) getStyleValue(cr, sb, Font.PROPERTY_FONT_UNDERLINE, new Boolean[]{fontUnderline, fontStrike}); 
         
         if (sb.length() > 1) {
             sb.setCharAt(sb.length() - 1, '}');

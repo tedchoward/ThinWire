@@ -65,19 +65,40 @@ class RichTextParser extends DefaultHandler {
     private static final Logger log = Logger.getLogger(RichTextParser.class.getName());
     private static final Level LEVEL = Level.FINER;
     
+    static final String STYLE_FONT_FAMILY = "ff";
+    static final String STYLE_COLOR = "fc";
+    static final String STYLE_FONT_SIZE = "fs";
+    static final String STYLE_FONT_WEIGHT = "fw";
+    static final String STYLE_TEXT_DECORATION = "fd";
+    static final String STYLE_FONT_STYLE = "ft";
+    static final String STYLE_BORDER_STYLE = "dt";
+    static final String STYLE_BORDER_WIDTH = "dw";
+    static final String STYLE_BORDER_COLOR = "dc";
+    static final String STYLE_BORDER_IMAGE = "di";
+    static final String STYLE_BACKGROUND_COLOR = "bc";
+    static final String STYLE_BACKGROUND_POSITION = "bp";
+    static final String STYLE_BACKGROUND_REPEAT = "br";
+    static final String STYLE_BACKGROUND_IMAGE = "bi";
+    
+    private static final String ATTR_HREF = "h";
+    private static final String ATTR_TARGET = "t";
+    private static final String ATTR_SRC = "s";
+    private static final String ATTR_WIDTH = "w";
+    private static final String ATTR_HEIGHT = "h";
+    
     private static final Map<String, Tag> TAGS;
     private static final Pattern TAG_REGEX;
     static {
     	Map<String, Tag> tags = new HashMap<String, Tag>();
         Map<String, Validator> map = new HashMap<String, Validator>();
-        map.put("family", new EnumValidator(Font.Family.class, "fontFamily"));
-        map.put("face", new EnumValidator(Font.Family.class, "fontFamily"));
-        map.put("color", new EnumValidator(Color.class, "color"));
-        map.put("size", new NumberValidator("fontSize", 0, 128, "pt"));
-        map.put("bold", new BooleanValidator("fontWeight", "bold", "normal"));
-        map.put("underline", new BooleanValidator("textDecoration", "underline", "none"));
-        map.put("strike", new BooleanValidator("textDecoration", "line-through", "none"));
-        map.put("italic", new BooleanValidator("fontStyle", "italic", "normal"));
+        map.put("family", new EnumValidator(Font.Family.class, STYLE_FONT_FAMILY));
+        map.put("face", new EnumValidator(Font.Family.class, STYLE_FONT_FAMILY));
+        map.put("color", new EnumValidator(Color.class, STYLE_COLOR));
+        map.put("size", new NumberValidator(STYLE_FONT_SIZE, 0, 128, "pt"));
+        map.put("bold", new BooleanValidator(STYLE_FONT_WEIGHT, "bold", "normal"));
+        map.put("underline", new BooleanValidator(STYLE_TEXT_DECORATION, "underline", "none"));
+        map.put("strike", new BooleanValidator(STYLE_TEXT_DECORATION, "line-through", "none"));
+        map.put("italic", new BooleanValidator(STYLE_FONT_STYLE, "italic", "normal"));
         tags.put("font", new Tag(map));
     	tags.put("b", new Tag(map, "bold", "true"));
     	tags.put("i", new Tag(map, "italic", "true"));
@@ -93,21 +114,21 @@ class RichTextParser extends DefaultHandler {
         tags.put("border bottom", new Tag(newBorderSet("Bottom"), map));
         
         map = new HashMap<String, Validator>();
-        map.put("color", new EnumValidator(Color.class, "backgroundColor"));
-        map.put("position", new EnumValidator(Background.Position.class, "backgroundPosition"));
-        map.put("repeat", new EnumValidator(Background.Repeat.class, "backgroundRepeat"));
-        map.put("image", new URLValidator("backgroundImage"));
+        map.put("color", new EnumValidator(Color.class, STYLE_BACKGROUND_COLOR));
+        map.put("position", new EnumValidator(Background.Position.class, STYLE_BACKGROUND_POSITION));
+        map.put("repeat", new EnumValidator(Background.Repeat.class, STYLE_BACKGROUND_REPEAT));
+        map.put("image", new URLValidator(STYLE_BACKGROUND_IMAGE));
         tags.put("background", new Tag(map));
-        
+
         map = new HashMap<String, Validator>();
-        map.put("href", new URLValidator("href"));
-        map.put("target", new TargetValidator());
+        map.put("href", new URLValidator(ATTR_HREF));
+        map.put("target", new TargetValidator(ATTR_TARGET));
         tags.put("a", new Tag("a", map, true));
         
         map = new HashMap<String, Validator>();
-        map.put("src", new URLValidator("src"));
-        map.put("width", new NumberValidator("width", 0, Short.MAX_VALUE, null));
-        map.put("height", new NumberValidator("height", 0, Short.MAX_VALUE, null));
+        map.put("src", new URLValidator(ATTR_SRC));
+        map.put("width", new NumberValidator(ATTR_WIDTH, 0, Short.MAX_VALUE, null));
+        map.put("height", new NumberValidator(ATTR_HEIGHT, 0, Short.MAX_VALUE, null));
         tags.put("img", new Tag("img", map, false));
         
         tags.put("br", new Tag("br", null, false));
@@ -127,9 +148,10 @@ class RichTextParser extends DefaultHandler {
     
     private static Map<String, Validator> newBorderSet(String edge) {
     	Map<String, Validator> map = new HashMap<String, Validator>();
-        map.put("type", new EnumValidator(Border.Type.class, "border" + edge + "Style"));
-        map.put("size", new NumberValidator("border" + edge + "Width", 0, 32, "px"));
-        map.put("color", new EnumValidator(Color.class, "border" + edge + "Color"));
+        String side = edge.length() == 0 ? "" : String.valueOf(edge.charAt(0));
+        map.put("type", new EnumValidator(Border.Type.class, STYLE_BORDER_STYLE + side));
+        map.put("size", new NumberValidator(STYLE_BORDER_WIDTH + side, 0, 32, "px"));
+        map.put("color", new EnumValidator(Color.class, STYLE_BORDER_COLOR + side));
         return Collections.unmodifiableMap(map);
     }
     
@@ -275,8 +297,8 @@ class RichTextParser extends DefaultHandler {
     }
     
     private static class TargetValidator extends Validator {
-        TargetValidator() {
-            super("target");
+        TargetValidator(String jsPropName) {
+            super(jsPropName);
         }
         
         @Override
@@ -316,7 +338,7 @@ class RichTextParser extends DefaultHandler {
         	}
     	}
     };
-
+    
     private SAXParser parser;
     private Depth depth;
     private ComponentRenderer renderer;
@@ -395,7 +417,7 @@ class RichTextParser extends DefaultHandler {
 	            	((AttributesImpl)attr).addAttribute("", "target", "target", "CDATA", "a" + System.identityHashCode(renderer));
 				}
 				
-				sb.append("{t:\"").append(tag.name).append("\",").append(tag.equals("span") ? "s" : "a").append(":{");
+				sb.append("{t:\"").append(tag.name).append("\",").append(tag.name.equals("span") ? "s" : "a").append(":{");
 				if (tag.attrMap != null) writeAttributes(attr, tag.attrMap, null);
 		    	int index = sb.length() - 1;
 

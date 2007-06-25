@@ -248,7 +248,7 @@ final class MenuRenderer extends ComponentRenderer implements ItemChangeListener
 		sb.append('}');
 	}
     
-    private String convertAmpToUnderline(String text) {
+    static String convertAmpToUnderline(String text) {
         int index = -2;
         do {
             index = text.indexOf("&", index + 2);
