@@ -608,16 +608,18 @@ tw_Component.priorFocus = null;
 tw_Component.currentFocus = null;
 tw_Component.defaultStyles = null;
 tw_Component.setDefaultStyles = function(defaultStyles) {
-    for (var clazz in defaultStyles) {
-        clazz = defaultStyles[clazz];
+    var styles = {};
+    
+    for (var key in defaultStyles) {
+        var nStyle = styles[key] = {};
+        var oStyle = defaultStyles[key];
         
-        for (var style in clazz) {
-            clazz[tw_Component.rtStyleMap[style]] = clazz[style];
-            delete clazz[style];
+        for (var key in oStyle) {
+            nStyle[tw_Component.rtStyleMap[key]] = oStyle[key];
         }
     }
     
-    tw_Component.defaultStyles = defaultStyles;
+    tw_Component.defaultStyles = styles;
 };
 
 tw_Component.styleScrollBars = function(box) {
