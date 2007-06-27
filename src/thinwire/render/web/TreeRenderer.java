@@ -85,8 +85,7 @@ final class TreeRenderer extends ComponentRenderer implements ItemChangeListener
             if (name.equals(Tree.Item.PROPERTY_ITEM_EXPANDED)) {
                 if (((Tree.Item) source).hasChildren()) postClientEvent(ITEM_EXPAND, fullIndex, newValue);
             } else if (name.equals(HierarchyComponent.Item.PROPERTY_ITEM_IMAGE) || name.equals(HierarchyComponent.Item.PROPERTY_ITEM_TEXT)) {
-                Object newTextValue = parseRichText(((Tree.Item)source).getText());
-                if (newTextValue instanceof String) newTextValue = getEscapedText((String) newTextValue);
+            	Object newTextValue = GridBoxRenderer.getValue(this, ((Tree.Item)source).getText(), null, null);
                 postClientEvent(ITEM_CHANGE, fullIndex, newTextValue, getQualifiedURL(((Tree.Item)source).getImage()));
             } else if (name.equals(Tree.Item.PROPERTY_ITEM_SELECTED)) {
                 postClientEvent(ITEM_SELECT, fullIndex);
@@ -115,8 +114,7 @@ final class TreeRenderer extends ComponentRenderer implements ItemChangeListener
         }
         
         if (type == ItemChangeEvent.Type.ADD || type == ItemChangeEvent.Type.SET) {
-            Object newTextValue = parseRichText(newValue.getText());
-            if (newTextValue instanceof String) newTextValue = getEscapedText((String) newTextValue);
+        	Object newTextValue = GridBoxRenderer.getValue(this, newValue.getText(), null, null);
             postClientEvent(ITEM_ADD, fullIndex, newTextValue, getQualifiedURL(newValue.getImage()));
             if (newValue.hasChildren()) renderChildren(newValue);
             if (((Tree.Item)newValue.getParent()).isExpanded() && newValue.getIndex() == 0) {
@@ -131,8 +129,7 @@ final class TreeRenderer extends ComponentRenderer implements ItemChangeListener
             int index = item.getIndex();
             String fullIndex = String.valueOf(index);            
             if (parent != tree.getRootItem()) fullIndex = fullIndex(parent) + "." + index;  
-            Object newTextValue = parseRichText(item.getText());
-            if (newTextValue instanceof String) newTextValue = getEscapedText((String) newTextValue);
+            Object newTextValue = GridBoxRenderer.getValue(this, item.getText(), null, null);
             postClientEvent(ITEM_ADD, fullIndex, newTextValue, getQualifiedURL(item.getImage()));            
             if (item.getChildren().size() > 0) renderChildren(item);
         }
@@ -190,12 +187,8 @@ final class TreeRenderer extends ComponentRenderer implements ItemChangeListener
 	    sb.append("{ch:").append(tree.getHeight());
 	    sb.append(",cw:").append(tree.getWidth());
 	    sb.append(",fo:").append(tree.isFocus());
-        Object textValue = parseRichText(ri.getText());
-        if (textValue instanceof String) {
-            sb.append(",rt:\"").append(getEscapedText((String) textValue)).append("\"");
-        } else {
-            sb.append(",rt:").append(textValue);
-        }
+	    sb.append(",rt:");
+        GridBoxRenderer.getValue(this, ri.getText(), null, sb);
         sb.append(",ri:\"").append(getQualifiedURL(ri.getImage())).append('"');        
 	    sb.append(",re:").append(ri.isExpanded());
 	    sb.append(",rv:").append(tree.isRootItemVisible());
@@ -214,12 +207,8 @@ final class TreeRenderer extends ComponentRenderer implements ItemChangeListener
             if (ti != null) {
 			    sb.append("{ix:").append(i);
                 sb.append(",tm:\"").append(getQualifiedURL(ti.getImage())).append('"');
-                Object textValue = parseRichText(ti.getText());
-                if (textValue instanceof String) {
-                    sb.append(",tt:\"").append(getEscapedText((String) textValue)).append("\"");
-                } else {
-                    sb.append(",tt:").append(textValue);
-                }
+                sb.append(",tt:");
+                GridBoxRenderer.getValue(this, ti.getText(), null, sb);
 			    sb.append(",te:").append(ti.isExpanded());
                 sb.append(',');
 				prepareInitData(sb, ti);

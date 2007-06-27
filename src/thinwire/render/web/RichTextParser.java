@@ -80,7 +80,7 @@ class RichTextParser extends DefaultHandler {
     static final String STYLE_BACKGROUND_REPEAT = "br";
     static final String STYLE_BACKGROUND_IMAGE = "bi";
     
-    private static final String ATTR_HREF = "h";
+    private static final String ATTR_HREF = "r";
     private static final String ATTR_TARGET = "t";
     private static final String ATTR_SRC = "s";
     private static final String ATTR_WIDTH = "w";

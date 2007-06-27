@@ -33,6 +33,7 @@ package thinwire.render.web;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import thinwire.ui.Component;
 import thinwire.ui.Window;
@@ -50,6 +51,8 @@ import thinwire.ui.event.PropertyChangeEvent;
  * @author Tom E. Kimball
  */
 final class MenuRenderer extends ComponentRenderer implements ItemChangeListener {    
+	private static final Pattern REGEX_AMP = Pattern.compile("[&](\\w)");
+	private static final Pattern REGEX_DAMP = Pattern.compile("[&][&]");
     private static final String MENU_CLASS = "tw_Menu";
     private static final String ITEM_REMOVE = "itemRemove";
     private static final String ITEM_LOAD = "itemLoad";
@@ -193,13 +196,15 @@ final class MenuRenderer extends ComponentRenderer implements ItemChangeListener
 	private void buildMenuInit(Menu.Item item, int index, boolean isRoot) {
 		sb.append('{');
 		sb.append("en:").append(item.isEnabled());
-        Object textValue = parseRichText(convertAmpToUnderline(item.getText()));
-        if (textValue instanceof String) {
-    		String text = getEscapedText(item.getText());		
-    		if (text.length() > 0) sb.append(",t:\"").append(text.replaceAll("\"", "\\\"")).append('"');
-        } else {
-            sb.append(",t:").append(textValue);
-        }
+    	String text = item.getText();
+
+    	if (text.indexOf('&') >= 0) {
+    		text = REGEX_AMP.matcher(text).replaceFirst("<u>$1</u>");
+    		text = REGEX_DAMP.matcher(text).replaceAll("&");
+    	}
+	
+        sb.append(",t:");
+        GridBoxRenderer.getValue(this, text, null, sb);
         String keyPressCombo = item.getKeyPressCombo();
         
         if (keyPressCombo.length() > 0) {
@@ -247,23 +252,4 @@ final class MenuRenderer extends ComponentRenderer implements ItemChangeListener
 		if (index != -1) sb.append(",x:").append(index);
 		sb.append('}');
 	}
-    
-    static String convertAmpToUnderline(String text) {
-        int index = -2;
-        do {
-            index = text.indexOf("&", index + 2);
-        } while (text.charAt(index + 1) == '&');
-        
-        if (index >= 0) {
-            String first = text.substring(0, index);
-            if (first.length() > 0) first = first.replaceAll("([^&])&([^&])", "$1$2");
-            if (first.length() > 0) first = first.replaceAll("&&", "&");
-            String last = text.substring(index + 2);
-            if (last.length() > 0) last = last.replaceAll("([^&])&([^&])", "$1$2");
-            if (last.length() > 0) last = last.replaceAll("&&", "&");
-            return first + "<u>" + text.charAt(index + 1) + "</u>" + last;
-        } else {
-            return text;
-        }
-    }
 }

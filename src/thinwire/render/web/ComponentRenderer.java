@@ -73,7 +73,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     
     private static final Pattern REGEX_DOUBLE_SLASH = Pattern.compile("\\\\"); 
     private static final Pattern REGEX_DOUBLE_QUOTE = Pattern.compile("\"");
-    private static final Pattern REGEX_CRLF_OR_NULL = Pattern.compile("\\r?\\n|\\x00");         
+    private static final Pattern REGEX_CRLF = Pattern.compile("\\r?\\n");         
 
     private static final Object NO_VALUE = new Object();
         
@@ -568,16 +568,17 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         } else if (o instanceof StringBuilder) {
             ret = o.toString();
         } else {
-            ret = '"' + ComponentRenderer.getEscapedText(o.toString()) + '"';
+            ret = '"' + ComponentRenderer.getEscapedText(o.toString(), false) + '"';
         }
         
         return ret;
     }
     
-    static String getEscapedText(String s) {
+    static String getEscapedText(String s, boolean CRLFToSpace) {
+        s = s.replace('\0', ' ');
         s = REGEX_DOUBLE_SLASH.matcher(s).replaceAll("\\\\\\\\");        
         s = REGEX_DOUBLE_QUOTE.matcher(s).replaceAll("\\\\\"");
-        s = REGEX_CRLF_OR_NULL.matcher(s).replaceAll(" ");
+        s = REGEX_CRLF.matcher(s).replaceAll(CRLFToSpace ? " " : "\\\\r\\\\n");
         return s;
     }
         

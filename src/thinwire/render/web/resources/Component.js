@@ -758,48 +758,65 @@ tw_Component.rtStyleMap = {
 };
 
 tw_Component.rtAttrMap = {
-    h: "href",
+    r: "href",
     t: "target",
     s: "src",
     w: "width",
     h: "height"
 };
 
-tw_Component.setRichText = function(text) {
-    if (!(text instanceof Array)) return document.createTextNode(text);
-    var span = document.createElement("span");
-    
-    for (var n in text) {
-        var node = text[n];
+tw_Component.processRichTextNode = function(node, element) {
+    if (node instanceof Object) {
+        if (element == null) element = document.createElement(node.t);
+
+        if (node.s != undefined) {
+            for (var sty in node.s) {
+                var val = node.s[sty];
+                if (sty == "bi") val = tw_Component.expandUrl(val, true);
+                sty = tw_Component.rtStyleMap[sty];
+                element.style[sty] = val;
+            }
+        }
         
-        if (node instanceof Object) {
-            var element = document.createElement(node.t);
-            
-            if (node.s != undefined) {
-                for (var sty in node.s) {
-                    var val = node.s[sty];
-                    if (sty == "bi") val = tw_Component.expandUrl(val, true);
-                    sty = tw_Component.rtStyleMap[sty];
-                    element.style[sty] = val;
+        if (node.a != undefined) {
+            for (var atr in node.a) {
+                var val = node.a[atr];
+                if (atr == "s" || atr == "h") val = tw_Component.expandUrl(val);
+                atr = tw_Component.rtAttrMap[atr];
+                element[atr] = val;
+            }
+        }
+        
+        if (node.c != undefined) element.appendChild(tw_Component.setRichText(node.c));    
+        return element;
+    } else {
+        var textNode = document.createTextNode(node);
+        if (element != null) element.appendChild(textNode);
+        return textNode;
+    }
+}
+
+tw_Component.setRichText = function(text, element) {
+    if (typeof(text) == "string" || text instanceof String) {
+        var textNode = document.createTextNode(text);
+        if (element != null) element.appendChild(textNode);
+        element = textNode;
+    } else {
+        if (text instanceof Array) {
+            if (text.length > 1) {
+                element = tw_Component.processRichTextNode(text[0], element);
+            } else {
+                if (element == null) element = document.createElement("span");
+                
+                for (var n in text) {
+                    element.appendChild(tw_Component.processRichTextNode(text[n]));       
                 }
             }
-            
-            if (node.a != undefined) {
-                for (var atr in node.a) {
-                    var val = node.a[atr];
-                    if (atr == "s" || atr == "h") val = tw_Component.expandUrl(val);
-                    atr = tw_Component.rtAttrMap[atr];
-                    element[atr] = val;
-                }
-            }
-            
-            if (node.c != undefined) element.appendChild(tw_Component.setRichText(node.c));
-            span.appendChild(element);
         } else {
-            span.appendChild(document.createTextNode(node));
+            element = tw_Component.processRichTextNode(text, element);
         }
     }
     
-    return span;
+    return element;
 }
 
