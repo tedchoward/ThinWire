@@ -288,7 +288,7 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
         public void setHeight(double height) {
             this.height = height;
             TableLayout layout = (TableLayout) getParent();
-            if (layout.isAutoApply()) layout.apply();
+            if (layout != null && layout.isAutoApply()) layout.apply();
         }
 
         public boolean isVisible() {
@@ -298,9 +298,10 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
         public void setVisible(boolean visible) {
             if (this.visible == visible) return;
             TableLayout layout = (TableLayout) getParent();
-            if (this.visible) layout.visibleRows.remove(this); 
+            
+            if (layout != null && this.visible) layout.visibleRows.remove(this); 
             this.visible = visible;
-            if (this.visible) layout.visibleRows.add(this);
+            if (layout != null && this.visible) layout.visibleRows.add(this);
 
         	for (Object o : this) {
         		if (o instanceof Component) {
@@ -308,7 +309,7 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
         		}
         	}
         	
-            if (layout.isAutoApply()) layout.apply();
+            if (layout != null && layout.isAutoApply()) layout.apply();
         }
     }
     
@@ -333,7 +334,7 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
         public void setWidth(double width) {
             this.width = width;
             TableLayout layout = (TableLayout) getParent();
-            if (layout.isAutoApply()) layout.apply();
+            if (layout != null && layout.isAutoApply()) layout.apply();
         }
 
         public boolean isVisible() {
@@ -343,9 +344,9 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
         public void setVisible(boolean visible) {
             if (this.visible == visible) return;
             TableLayout layout = (TableLayout) getParent();
-            if (this.visible) layout.visibleColumns.remove(this); 
+            if (layout != null && this.visible) layout.visibleColumns.remove(this); 
             this.visible = visible;
-            if (this.visible) layout.visibleColumns.add(this);
+            if (layout != null && this.visible) layout.visibleColumns.add(this);
 
         	for (Object o : this) {
         		if (o instanceof Component) {
@@ -353,7 +354,7 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
         		}
         	}
 
-            if (layout.isAutoApply()) layout.apply();
+            if (layout != null && layout.isAutoApply()) layout.apply();
         }
     }
 

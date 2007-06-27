@@ -270,7 +270,7 @@ import thinwire.ui.Application;
  */
 public final class XOD {
     private static final Logger log = Logger.getLogger(XOD.class.getName());
-    private static final Level LEVEL = Level.FINEST;
+    private static final Level LEVEL = Level.FINER;
     
     private static File getRelativeFile(String uri) {
         Application app = Application.current();
@@ -537,10 +537,8 @@ public final class XOD {
                     
                     if (methodName.equals(setter)) {
                         setMethod = m;
-                        m.setAccessible(true);
                     } else if (methodName.equals(getter) || methodName.equals(istter)) {
                         getMethod = m;
-                        m.setAccessible(true);
                     }
                 }
                                 
@@ -624,14 +622,16 @@ public final class XOD {
                             id = attrValue;
                         } else {
                             String setter = "set" + Character.toUpperCase(attrName.charAt(0)) + attrName.substring(1);
+                            boolean found = false;
                             
                             for (Method m : c.getMethods()) {
                                 String methodName = m.getName();
-                                
+
                                 if (methodName.equals(attrName) || methodName.equals(setter)) {
                                     Class[] args = m.getParameterTypes();
                                     
                                     if (args.length == 1) {
+                                        found = true;
                                         Object arg = getObjectForTypeFromString(args[0], attrValue, true);
                                         
                                         if (Modifier.isStatic(m.getModifiers())) {
@@ -655,6 +655,8 @@ public final class XOD {
                                     }
                                 }
                             }
+                            
+                            if (!found) throw new DOMException(DOMException.NOT_FOUND_ERR, "no target method found id=" + id + ":" + c.getName() + "." + attrName + "('" + attrValue + "')");
                         }
                     }
 
@@ -667,26 +669,6 @@ public final class XOD {
                         for (Object[] callMeth : nonStatic) {
                             invoke(ret, (Method)callMeth[0], callMeth[1]);
                             if (log.isLoggable(LEVEL)) log.log(LEVEL, "invoked id=" + id + ":" + c.getName() + "." + ((Method)callMeth[0]).getName() + "(" + callMeth[1] + ")");
-                        }
-                    }
-
-                    for (int cnt = attrs.getLength(); --cnt >=0;) {
-                        Node attr = attrs.item(cnt);
-                        String attrName = attr.getNodeName();
-                        String attrValue = attr.getNodeValue();
-                        
-                        if (attrName.equals("id")) {
-                            id = attrValue;
-                        } else {
-                            for (Method m : c.getMethods()) {
-                                if (m.getName().equals(attrName)) {
-                                    Class[] args = m.getParameterTypes();
-                                    
-                                    if (args.length == 1) {
-                                        invoke(ret, m, getObjectForTypeFromString(args[0], attrValue, true));
-                                    }
-                                }
-                            }
                         }
                     }
                     
@@ -786,7 +768,8 @@ public final class XOD {
     }
     
     private Object invoke(Object object, Method method, Object... params) {
-        try {                            
+        try {             
+            if (!method.isAccessible()) method.setAccessible(true);
             return method.invoke(object, params);
         } catch (InvocationTargetException e) {
             throw new RuntimeException("[" + object.getClass().getName() + "." + method.getName() + "]", e);
