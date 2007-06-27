@@ -271,6 +271,10 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
         private double height;
         private boolean visible;
 
+        public Row() {
+            this(0);
+        }
+        
         public Row(double height) {
             super();
             this.height = height;
@@ -312,6 +316,10 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
         private double width;
         private boolean visible;
 
+        public Column() {
+            this(0);
+        }
+        
         public Column(double width) {
             super();
             this.width = width;
@@ -585,55 +593,73 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
     
     @Override
     protected void addComponent(Component comp) {
+        addToLayout(comp, (Range)comp.getLimit());
+    }
+    
+    private void addToLayout(Component comp, Range r) {
+        int row = r.getRowIndex();
+        int col = r.getColumnIndex();
         List<Row> rows = getRows();
-        Range l = (Range) comp.getLimit();
-        int row = l.getRowIndex();
-        int col = l.getColumnIndex();
         ignoreSet = true;
-        for (int i = row, cnt = l.getRowSpan() + row; i < cnt; i++) {
+        
+        for (int i = row, cnt = r.getRowSpan() + row; i < cnt; i++) {
             Row curRow = rows.get(i);
-            for (int j = col, cnt2 = l.getColumnSpan() + col; j < cnt2; j++) {
-            	Object o = curRow.get(j);
-            	if (o == null) {
-            		curRow.set(j, comp);
-            	} else if (o instanceof List) {
-            		((List<Component>) o).add(comp);
-            	} else if (!o.equals(comp)) {
-            		List<Component> list = new ArrayList<Component>();
-            		list.add((Component) o);
-            		list.add(comp);
-            		curRow.set(j, list);
-            	}
+            
+            for (int j = col, cnt2 = r.getColumnSpan() + col; j < cnt2; j++) {
+                Object o = curRow.get(j);
                 
+                if (o == null) {
+                    curRow.set(j, comp);
+                } else if (o instanceof List) {
+                    ((List<Component>) o).add(comp);
+                } else if (o != comp) {
+                    List<Component> list = new ArrayList<Component>();
+                    list.add((Component) o);
+                    list.add(comp);
+                    curRow.set(j, list);
+                }
             }
         }
-        ignoreSet = false;
+        
+        ignoreSet = false;        
     }
 
     @Override
     protected void removeComponent(Component comp) {
-        List<Row> rows = getRows();
-        Range r = (Range) comp.getLimit();
-        
+        removeFromLayout(comp, (Range)comp.getLimit());
+    }
+    
+    private void removeFromLayout(Component comp, Range r) {        
         int row = r.getRowIndex();
         int col = r.getColumnIndex();
         
+        //XXX JJG Why is this check necessary?
         if (row >= 0 && col >= 0) {
-	        ignoreSet = true;
-	        for (int i = row, cnt = r.getRowSpan() + row; i < cnt; i++) {
-	            Row curRow = rows.get(i);
-	            for (int j = col, cnt2 = r.getColumnSpan() + col; j < cnt2; j++) {
-	            	Object o = curRow.get(j);
-	            	if (o instanceof Component) {
-	            		curRow.set(j, null);
-	            	} else if (o instanceof List) {
-	            		((List) o).remove(comp);
-	            	}
-	            }
-	        }
-	        
-	        ignoreSet = false;
+            ignoreSet = true;            
+            List<Row> rows = getRows();        
+        
+            for (int i = row, cnt = r.getRowSpan() + row; i < cnt; i++) {
+                Row curRow = rows.get(i);
+                
+                for (int j = col, cnt2 = r.getColumnSpan() + col; j < cnt2; j++) {
+                    Object o = curRow.get(j);
+                    
+                    if (o instanceof Component) {
+                        curRow.set(j, null);
+                    } else if (o instanceof List) {
+                        ((List) o).remove(comp);
+                    }
+                }
+            }
+            
+            ignoreSet = false;
         }
+    }
+    
+    @Override
+    protected void limitChanged(Component comp, Object oldLimit) {
+        removeFromLayout(comp, (Range)oldLimit);
+        addToLayout(comp, (Range)comp.getLimit());
     }
 
     @Override
@@ -726,7 +752,7 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
         int[] absoluteWidths = getAbsoluteSizes(calculateInnerWidth(), visibleColumns);
         int[] absoluteHeights = getAbsoluteSizes(container.getInnerHeight(), visibleRows);
         
-        Column[] columnArray = visibleColumns.toArray(new Column[0]);
+        Column[] columnArray = visibleColumns.toArray(new Column[visibleColumns.size()]);
         Map<Integer, List<Component>> rowComponents = new HashMap<Integer, List<Component>>();
         Map<Integer, List<Component>> colComponents = new HashMap<Integer, List<Component>>();
         

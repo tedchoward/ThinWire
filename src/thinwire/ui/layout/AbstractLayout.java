@@ -75,6 +75,8 @@ public abstract class AbstractLayout implements Layout {
                     comp.setLimit(limit);
                     ignoreChange = false;
                 }
+                
+                limitChanged(comp, pce.getOldValue());
             }
             
             if (autoLayout) apply();
@@ -128,6 +130,10 @@ public abstract class AbstractLayout implements Layout {
     
     protected void removeComponent(Component comp) {
          
+    }
+    
+    protected void limitChanged(Component comp, Object oldLimit) {
+        
     }
     
     protected Object getFormalLimit(Component comp) {
