@@ -419,13 +419,8 @@ var tw_BaseText = tw_Component.extend({
                     if ((tmp = mask.indexOf("yyyy")) >= 0) {
                         if (tmp == fmcntr)
                             reCh = "[1-2]";
-                        else if (tmp == fmcntr - 1) {
-                            if (data.charAt(fmcntr - 1) == '1')
-                                reCh = "[9]";
-                            else
-                                reCh = "[0-1]";
-                        } else
-                            reCh = "[0-9]";
+                        else
+                        	reCh = "[0-9]";
                     } else
                         reCh = "[0-9]";
     

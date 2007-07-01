@@ -30,6 +30,8 @@
 */
 package thinwire.ui;
 
+import java.io.File;
+
 import thinwire.render.web.WebApplication;
 
 /**
@@ -92,12 +94,21 @@ public class Hyperlink extends AbstractTextComponent {
         Application.current().removeFileFromMap(location);
     }
     
+    private static String validateURL(String uri) {
+    	if (uri.startsWith("class:///") || uri.startsWith("http://")) {
+    		return uri;
+    	} else {
+    		File file = Application.current().getRelativeFile(uri);
+    		return file.exists() ? uri : null;
+    	}
+    }
+    
     private String location = "";
         
-    public Hyperlink() {}
+    public Hyperlink() {}       
     
     public Hyperlink(String text) {
-        this(text, null);
+        this(text, validateURL(text));
     }
 
     public Hyperlink(String text, String location) {

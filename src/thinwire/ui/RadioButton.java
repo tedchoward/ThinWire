@@ -34,6 +34,8 @@ import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;
 
+import thinwire.ui.event.ActionEvent;
+import thinwire.ui.event.ActionListener;
 import thinwire.ui.event.PropertyChangeListener;
 
 /**
@@ -177,7 +179,40 @@ public class RadioButton extends AbstractTextComponent implements CheckedCompone
             for (RadioButton rb : l) {
                 rb.removePropertyChangeListener(listener);
             }
-    	}        
+    	}
+    	
+    	public final void addActionListener(String action, ActionListener listener) {
+    	    for (RadioButton rb : l) {
+                rb.addActionListener(action, listener);
+            }    		
+   		
+    	}
+    	
+    	public final void addActionListener(String[] actions, ActionListener listener) {
+    	    for (RadioButton rb : l) {
+                rb.addActionListener(actions, listener);
+            }    		
+    	}
+    	
+    	public final void removeActionListener(ActionListener listener) {
+    	    if (listener == null) return;
+
+    	    for (RadioButton rb : l) {
+                rb.removeActionListener(listener);
+            }    		
+    	}
+    	
+    	public final void fireAction(ActionEvent ev) {    		
+    	    for (RadioButton rb : l) {
+                rb.fireAction(ev);
+            }    		
+    	}
+    	
+    	public final void fireAction(String action) {
+    	    for (RadioButton rb : l) {
+                rb.fireAction(action);
+            }    		
+    	}
 
         public boolean isEnabled() {
             boolean enabled = true;
