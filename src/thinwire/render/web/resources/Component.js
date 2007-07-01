@@ -804,13 +804,13 @@ tw_Component.setRichText = function(text, element) {
     } else {
         if (text instanceof Array) {
             if (text.length > 1) {
-                element = tw_Component.processRichTextNode(text[0], element);
-            } else {
                 if (element == null) element = document.createElement("span");
                 
                 for (var n in text) {
                     element.appendChild(tw_Component.processRichTextNode(text[n]));       
                 }
+            } else {
+                element = tw_Component.processRichTextNode(text[0], element);
             }
         } else {
             element = tw_Component.processRichTextNode(text, element);
