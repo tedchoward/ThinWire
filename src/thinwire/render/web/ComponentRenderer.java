@@ -73,7 +73,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     
     private static final Pattern REGEX_DOUBLE_SLASH = Pattern.compile("\\\\"); 
     private static final Pattern REGEX_DOUBLE_QUOTE = Pattern.compile("\"");
-    private static final Pattern REGEX_CRLF = Pattern.compile("\\r?\\n");         
+    private static final Pattern REGEX_CRLF = Pattern.compile("\\r?\\n|\\r");         
 
     private static final Object NO_VALUE = new Object();
         

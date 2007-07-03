@@ -52,6 +52,7 @@ import javax.servlet.http.*;
  * @author Joshua J. Gertzen
  */
 public final class WebServlet extends HttpServlet {
+	private static final Level LEVEL = Level.FINER;
     private static final Logger log = Logger.getLogger(WebServlet.class.getName());
     
     private static enum InitParam {
@@ -92,7 +93,7 @@ public final class WebServlet extends HttpServlet {
         }
         
         public void valueUnbound(HttpSessionBindingEvent event) {
-            log.finer("Unbinding application instance " + event.getSession().getId());            
+        	if (log.isLoggable(LEVEL)) log.log(LEVEL, "Unbinding application instance " + event.getSession().getId());            
             app.shutdown();
         }
     }
@@ -126,7 +127,7 @@ public final class WebServlet extends HttpServlet {
         String id = httpSession.getId(); 
         
         ApplicationHolder holder = (ApplicationHolder)httpSession.getAttribute("instance");
-        if (log.isLoggable(Level.FINEST)) log.finest("start id=" + id + ",old instance is null=" + (holder == null));
+        if (log.isLoggable(LEVEL)) log.log(LEVEL, "start id=" + id + ",old instance is null=" + (holder == null));
         
         //In the case of a refresh, there may be an old Application instance hanging
         //around.  Clean it up.
@@ -213,7 +214,7 @@ public final class WebServlet extends HttpServlet {
     }    
     
     private void handleResource(HttpServletRequest request, HttpServletResponse response, String resourceName) throws IOException, ServletException {        
-        if (log.isLoggable(Level.FINEST)) log.finest("getting resource: " + resourceName);
+        if (log.isLoggable(LEVEL)) log.log(LEVEL, "getting resource: " + resourceName);
         byte[] data = RemoteFileMap.INSTANCE.load(resourceName);
         
         if (data == null) {
