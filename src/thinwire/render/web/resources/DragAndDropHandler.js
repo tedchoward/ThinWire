@@ -20,8 +20,8 @@
   contact the following company who invented, built and supports the technology:
   
                 Custom Credit Systems, Richardson, TX 75081, USA.
-   	            email: info@thinwire.com    ph: +1 (888) 644-6405
- 	                        http://www.thinwire.com
+                email: info@thinwire.com    ph: +1 (888) 644-6405
+                            http://www.thinwire.com
 #ENDIF
 #IFDEF ALT_LICENSE
 #LICENSE_HEADER#
@@ -74,6 +74,8 @@ var tw_DragAndDropHandler = Class.extend({
     },
     
     _mouseDown: function(event) {
+        if (this._targets == null || !this._source._enabled) return;
+    
         for (t in this._targets) {
             if (tw_Component.instances[t] == undefined) {
                 this._source.removeDragTarget(t);
@@ -83,8 +85,6 @@ var tw_DragAndDropHandler = Class.extend({
                 tw_addEventListener(dropArea, "mouseout", this._mouseOut);
             }
         }
-        
-        if (this._targets == null || !this._source._enabled) return;
 
         this._cnt = 0;
         this._dragBox = this._source.getDragBox(event);
@@ -115,7 +115,7 @@ var tw_DragAndDropHandler = Class.extend({
             s.color = ss.color;
         }
 
-        var s = this._dragInd.style;             
+        var s = this._dragInd.style;
         s.zIndex = ++tw_Component.zIndex;
         s.display = "none";
         this._dragInd.src = tw_IMAGE_DRAGDROP_INVALID;

@@ -225,7 +225,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         }
     }
     
-    private RenderStateListener dragRenderListener;
+    private Map<Component, RenderStateListener> dragRenderListeners;
     
     public void eventSubTypeListenerAdded(Class<? extends EventListener> clazz, Object subType) {
         if (PropertyChangeListener.class.isAssignableFrom(clazz)) {
@@ -252,21 +252,24 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         } else if (DropListener.class.isAssignableFrom(clazz)) {
             final Component dragComponent = (Component)subType;
 
-            if (dragRenderListener == null) {
-                dragRenderListener = new RenderStateListener() {
-                    public void renderStateChange(RenderStateEvent ev) {
-                        if (wr == null) {
-                            if (dragRenderListener != null) {
-                                ((WebApplication)WebApplication.current()).removeRenderStateListener(comp, dragRenderListener);
-                                dragRenderListener = null;
-                            }
-                        } else {
-                            wr.ai.clientSideMethodCall(wr.ai.getComponentId(dragComponent), "addDragTarget", id);
-                        }
-                    }
-                };
-            }
+            if (dragRenderListeners == null) dragRenderListeners = new HashMap<Component, RenderStateListener>();
             
+            final RenderStateListener dragRenderListener = new RenderStateListener() {
+                public void renderStateChange(RenderStateEvent ev) {
+                	
+                    if (wr == null) {
+                        if (dragRenderListeners != null && dragRenderListeners.containsValue(this)) {
+                            ((WebApplication)WebApplication.current()).removeRenderStateListener(comp, this);
+                            dragRenderListeners.remove(this);
+                            if (dragRenderListeners.size() == 0) dragRenderListeners = null;
+                        }
+                    } else {
+                        wr.ai.clientSideMethodCall(wr.ai.getComponentId(dragComponent), "addDragTarget", id);
+                    }
+                }
+            };
+        
+            dragRenderListeners.put(dragComponent, dragRenderListener);
             wr.ai.addRenderStateListener(dragComponent, dragRenderListener);
         }
     }
@@ -296,7 +299,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         } else if (DropListener.class.isAssignableFrom(clazz)) {
             Integer dragComponentId = wr.ai.getComponentId((Component)subType);
             if (dragComponentId != null) wr.ai.clientSideMethodCall(dragComponentId, "removeDragTarget", id);
-            if (dragRenderListener != null) wr.ai.removeRenderStateListener((Component)subType, dragRenderListener);
+            if (dragRenderListeners != null && dragRenderListeners.get(subType) != null) wr.ai.removeRenderStateListener((Component)subType, dragRenderListeners.get(subType));
         }
     }    
     
