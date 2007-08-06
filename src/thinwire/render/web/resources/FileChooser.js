@@ -30,11 +30,12 @@
 */
 var tw_FileChooser = Class.extend({
     _tf: null,
+	_btn: null,
     _tfDestroy: null,
     _iframe: null,
     
     construct: function(buttonId, tfId) {
-        var btn = tw_Component.instances[buttonId];
+        var btn = this._btn = tw_Component.instances[buttonId];
         var tf = this._tf = tw_Component.instances[tfId];
         this._tfDestroy = tf.destroy;
         tf.destroy = this.destroy.bind(this);
@@ -62,7 +63,9 @@ var tw_FileChooser = Class.extend({
         if (input != null) {
             input.name = "file";
             input.onchange = this._onchange.bind(this);
-        }
+        } else {
+			this._iframe.src="?_twr_=FileUploadPage.html";
+		}
     },
     
     _onchange: function() {

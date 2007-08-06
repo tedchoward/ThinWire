@@ -267,7 +267,7 @@ public final class WebServlet extends HttpServlet {
 
                     synchronized(holder.app.fileList) {
                         for (FileItem fi : items) {
-                            if (!fi.isFormField() && fi.getSize() > 0) {
+                            if (!fi.isFormField()) {
                                 f = new FileChooser.FileInfo();
                                 f.setName(fi.getName());
                                 f.setInputStream(fi.getInputStream());
