@@ -20,8 +20,8 @@
   contact the following company who invented, built and supports the technology:
   
                 Custom Credit Systems, Richardson, TX 75081, USA.
-   	            email: info@thinwire.com    ph: +1 (888) 644-6405
- 	                        http://www.thinwire.com
+                email: info@thinwire.com    ph: +1 (888) 644-6405
+                            http://www.thinwire.com
 #ENDIF
 #IFDEF ALT_LICENSE
 #LICENSE_HEADER#
@@ -63,7 +63,7 @@ var tw_Hyperlink = tw_BaseBrowserLink.extend({
 
     setEnabled: function(enabled) {
         arguments.callee.$.call(this, enabled);
-        this._box.style.cursor = enabled ? "hand" : "default";
+        this._box.style.cursor = enabled ? "pointer" : "default";
     }
 });
 

@@ -20,8 +20,8 @@
   contact the following company who invented, built and supports the technology:
   
                 Custom Credit Systems, Richardson, TX 75081, USA.
-   	            email: info@thinwire.com    ph: +1 (888) 644-6405
- 	                        http://www.thinwire.com
+                email: info@thinwire.com    ph: +1 (888) 644-6405
+                            http://www.thinwire.com
 #ENDIF
 #IFDEF ALT_LICENSE
 #LICENSE_HEADER#
@@ -136,7 +136,7 @@ var tw_TabFolder = tw_BaseContainer.extend({
         var tab = sheet._tab;
         sheet.setStyle("borderColor", this._borderColor);
         sheet.setStyle("borderStyle", this._borderType);
-        sheet.setStyle("borderWidth", this._borderSize);        
+        sheet.setStyle("borderWidth", this._borderSize + "px");        
         
         if (insertAtIndex == -1 || insertAtIndex >= this._children.length) {
             this._tabs.appendChild(tab);
