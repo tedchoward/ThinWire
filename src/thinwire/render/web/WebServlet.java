@@ -283,5 +283,7 @@ public final class WebServlet extends HttpServlet {
                 log.log(Level.SEVERE, null, e);
             }            
         }
+        
+        response.sendRedirect("?_twr_=FileUploadPage.html");
     }
 }

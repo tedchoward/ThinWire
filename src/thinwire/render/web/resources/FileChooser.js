@@ -20,8 +20,8 @@
   contact the following company who invented, built and supports the technology:
   
                 Custom Credit Systems, Richardson, TX 75081, USA.
-   	            email: info@thinwire.com    ph: +1 (888) 644-6405
- 	                        http://www.thinwire.com
+                email: info@thinwire.com    ph: +1 (888) 644-6405
+                            http://www.thinwire.com
 #ENDIF
 #IFDEF ALT_LICENSE
 #LICENSE_HEADER#
@@ -30,7 +30,7 @@
 */
 var tw_FileChooser = Class.extend({
     _tf: null,
-	_btn: null,
+    _btn: null,
     _tfDestroy: null,
     _iframe: null,
     
@@ -59,13 +59,11 @@ var tw_FileChooser = Class.extend({
     _onload: function() {
         if (tw_isIE && this._iframe.readyState != "complete") return;
         var input = this._iframe.contentWindow.document.getElementsByTagName("input")[0];
-        
         if (input != null) {
             input.name = "file";
             input.onchange = this._onchange.bind(this);
-        } else {
-			this._iframe.src="?_twr_=FileUploadPage.html";
-		}
+            this._tf.setText(input.value);
+        }
     },
     
     _onchange: function() {
