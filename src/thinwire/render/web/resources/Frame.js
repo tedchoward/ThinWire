@@ -20,8 +20,8 @@
   contact the following company who invented, built and supports the technology:
   
                 Custom Credit Systems, Richardson, TX 75081, USA.
-   	            email: info@thinwire.com    ph: +1 (888) 644-6405
- 	                        http://www.thinwire.com
+                email: info@thinwire.com    ph: +1 (888) 644-6405
+                            http://www.thinwire.com
 #ENDIF
 #IFDEF ALT_LICENSE
 #LICENSE_HEADER#
@@ -78,6 +78,7 @@ var tw_Frame = tw_BaseContainer.extend({
         this._getFrameBounds = this._getFrameBounds.bind(this);        
         tw_addEventListener(this._box, "mousedown", this._mouseDownListener.bind(this));
         tw_addEventListener(window, "resize", this._windowBoundsListener.bind(this));
+        tw_addEventListener(this._box, ["click", "dblclick"], this._clickListener.bind(this));
         this.init(-1, props);
         
         var s = document.body.style;
@@ -211,6 +212,8 @@ var tw_Frame = tw_BaseContainer.extend({
     setStandardButton: function(standardButton) {
         this._standardButton = standardButton;
     },
+
+    _clickListener: tw_Component.clickListener,
 
     destroy: function() {
         if (tw_Frame.active == this) tw_Frame.active = null;                
