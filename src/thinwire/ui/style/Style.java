@@ -193,8 +193,8 @@ public class Style {
     }
     
     public void setOpacity(int opacity) {
-        if (opacity <= 0 && defaultStyle != null) opacity = defaultStyle.getOpacity();
-        if (opacity <= 0 && opacity > 100) throw new IllegalArgumentException("opacity <= 0 || opacity > 100");
+        if (opacity < 0 && defaultStyle != null) opacity = defaultStyle.getOpacity();
+        if (opacity < 0 && opacity > 100) throw new IllegalArgumentException("opacity < 0 || opacity > 100");
         int oldOpacity = this.opacity;
         this.opacity = opacity;
         if (parent != null) firePropertyChange(this, PROPERTY_OPACITY, oldOpacity, opacity);
