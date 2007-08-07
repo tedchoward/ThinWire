@@ -20,8 +20,8 @@
   contact the following company who invented, built and supports the technology:
   
                 Custom Credit Systems, Richardson, TX 75081, USA.
-   	            email: info@thinwire.com    ph: +1 (888) 644-6405
- 	                        http://www.thinwire.com
+                email: info@thinwire.com    ph: +1 (888) 644-6405
+                            http://www.thinwire.com
 #ENDIF
 #IFDEF ALT_LICENSE
 #LICENSE_HEADER#
@@ -352,32 +352,33 @@ var tw_Tree = tw_Component.extend({
         var level = this._level(parent); 
     
         if (rnode.previousSibling != null) {
-          if (rnode == parent.lastChild) {
-            this._refreshLine(rnode.previousSibling, level, false); 
-            var prevRow = rnode.previousSibling;
-            if (prevRow.tw_isLeaf)
-                prevRow.imageNode.src = tw_IMAGE_TREE_LEAFBOTTOM;
-            else if (prevRow.tw_expanded)
-                prevRow.imageNode.src = tw_IMAGE_TREE_EXPANDBOTTOM;
-            else 
-                prevRow.imageNode.src = tw_IMAGE_TREE_UNEXPANDBOTTOM;
-          }
+            if (rnode == parent.lastChild) {
+                this._refreshLine(rnode.previousSibling, level, false); 
+                var prevRow = rnode.previousSibling;
+                if (prevRow.tw_isLeaf) {
+                    prevRow.imageNode.src = tw_IMAGE_TREE_LEAFBOTTOM;
+                } else if (prevRow.tw_expanded) {
+                    prevRow.imageNode.src = tw_IMAGE_TREE_EXPANDBOTTOM;
+                } else {
+                    prevRow.imageNode.src = tw_IMAGE_TREE_UNEXPANDBOTTOM;
+                }
+            }
         }
     
         rnode.textNode = rnode.imageNode = rnode.assignedImageNode = rnode.subNodes = null;        
         parent.removeChild(rnode);
     
         if (parent.hasChildNodes()==false) {
-          if (level > 0) {
-            parent.style.display = "none";
-            parent.tw_isLeaf = true;
-            bs = parent.parentNode.imageNode;
-            if ((bs.src == tw_IMAGE_TREE_EXPAND) ||
-               (bs.src == tw_IMAGE_TREE_UNEXPAND))
-                bs.src = tw_IMAGE_TREE_LEAF;
-            else
-                bs.src = tw_IMAGE_TREE_LEAFBOTTOM;
-          }
+            if (level > 0) {
+                parent.style.display = "none";
+                parent.parentNode.tw_isLeaf = true;
+                bs = parent.parentNode.imageNode;
+                if ((bs.src == tw_IMAGE_TREE_EXPAND) || (bs.src == tw_IMAGE_TREE_UNEXPAND)) {
+                    bs.src = tw_IMAGE_TREE_LEAF;
+                } else {
+                    bs.src = tw_IMAGE_TREE_LEAFBOTTOM;
+                }
+            }
         }
         
         if (this._currentItem === rnode) this._currentItem = undefined;
