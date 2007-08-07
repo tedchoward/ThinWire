@@ -55,6 +55,11 @@ var tw_Hyperlink = tw_BaseBrowserLink.extend({
     keyPressNotify: tw_Component.keyPressNotifySpaceFireAction,
     
     setText: tw_Component.setText,
+
+    setHeight: function(height) {
+        arguments.callee.$.call(this, height);
+        this._box.style.lineHeight = this._box.style.height;
+    },
     
     setLocation: function(location) {
         this._location = location;
