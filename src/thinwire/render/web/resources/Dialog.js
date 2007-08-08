@@ -20,8 +20,8 @@
   contact the following company who invented, built and supports the technology:
   
                 Custom Credit Systems, Richardson, TX 75081, USA.
-   	            email: info@thinwire.com    ph: +1 (888) 644-6405
- 	                        http://www.thinwire.com
+                email: info@thinwire.com    ph: +1 (888) 644-6405
+                            http://www.thinwire.com
 #ENDIF
 #IFDEF ALT_LICENSE
 #LICENSE_HEADER#
@@ -99,10 +99,7 @@ var tw_Dialog = tw_BaseContainer.extend({
     },
     
     _mouseDownListener: function(ev) {
-        if (tw_Dialog.active !== this) {
-            if (tw_Dialog.active != null) tw_Dialog.active.setActive(false);
-            this.setActive(true);
-        }
+        this.setFocus(true);
     },
         
     _moveDragListener: function(ev) {
@@ -262,9 +259,12 @@ var tw_Dialog = tw_BaseContainer.extend({
     setFocus: function(focus) {
         if (tw_Frame.active.getMenu() != null) tw_Frame.active.getMenu().close(); 
     
-        if (tw_Dialog.active !== this) {     
+        if (focus && tw_Dialog.active !== this) {     
             if (tw_Dialog.active != null) tw_Dialog.active.setActive(false);            
             this.setActive(true);
+            tw_em.removeQueuedViewStateChange("focus");
+            this.firePropertyChange("focus", true, "focus");
+            if (tw_Component.priorFocus != null && tw_Component.priorFocus.hasPropertyChangeListener("focus")) tw_em.sendGetEvents();
         }
         
         return true;
