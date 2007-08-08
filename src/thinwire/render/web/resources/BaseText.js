@@ -614,6 +614,7 @@ var tw_BaseText = tw_Component.extend({
             
             return false;
         } else {
+			this._textStateChange(false, true);
             return arguments.callee.$.call(this, keyPressCombo);
         }        
     },
