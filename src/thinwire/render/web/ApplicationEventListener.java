@@ -70,6 +70,7 @@ class ApplicationEventListener implements WebComponentListener {
     }
     
     static final WebComponentEvent newStartEvent(String mainClass, String[] args) {
+    	if (mainClass == null || mainClass.length() == 0) throw new IllegalArgumentException("The init-param 'mainClass' is required and must point to your application's entry point");
         StartupInfo info = new StartupInfo(mainClass, args);
         return new WebComponentEvent(ID, STARTUP, info);
     }
