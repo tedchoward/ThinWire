@@ -20,8 +20,8 @@
   contact the following company who invented, built and supports the technology:
   
                 Custom Credit Systems, Richardson, TX 75081, USA.
-   	            email: info@thinwire.com    ph: +1 (888) 644-6405
- 	                        http://www.thinwire.com
+                email: info@thinwire.com    ph: +1 (888) 644-6405
+                            http://www.thinwire.com
 #ENDIF
 #IFDEF ALT_LICENSE
 #LICENSE_HEADER#
@@ -104,7 +104,7 @@ var tw_GridBox = tw_Component.extend({
         tw_addEventListener(header, "focus", this._focusListener);
         tw_addEventListener(body, "focus", this._focusListener);
         tw_addEventListener(content, "focus", this._focusListener);
-        tw_addEventListener(this._box, "blur", this._blurListener);	
+        tw_addEventListener(this._box, "blur", this._blurListener); 
         tw_addEventListener(header, "blur", this._blurListener);
         tw_addEventListener(body, "blur", this._blurListener);    
         tw_addEventListener(content, "blur", this._blurListener);
@@ -633,8 +633,8 @@ var tw_GridBox = tw_Component.extend({
         
         if (visibleHeader) {
             var headerHeight = tw_GridBox.rowHeight + this._headerBorderSizeSub;
-            header.style.height = headerHeight + "px";            
-            header.style.top = this._box.scrollTop + "px";
+            header.style.height = headerHeight + "px";
+            header.style.top = (this._box.scrollTop = 0) + "px";
             this.setColumnWidth();
             if (!this._visibleHeader) tw_addEventListener(this._box.childNodes.item(1), "scroll", this._scrollListener);                    
             header.style.display = "block";
