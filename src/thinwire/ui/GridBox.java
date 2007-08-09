@@ -304,7 +304,7 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
             this.selected = selected;
             GridBox gb = (GridBox)getParent();
             
-            if (gb != null) {
+            if (gb != null && !gb.sorting) {
                 if (selected && gb.selectedRow != this) {
                     if (gb.selectedRow != null) gb.firePropertyChange(gb.selectedRow, PROPERTY_ROW_SELECTED, true, false);
                     gb.priorSelectedRow = gb.selectedRow;
@@ -686,6 +686,8 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
     private SortedSet<Row> roCheckedRows;
     private SortedSet<Row> rowsWithChildren;
     private SortedSet<Row> roRowsWithChildren;
+    
+    boolean sorting = false;
             
 	/**
 	 * Constructs a new GridBox.
@@ -798,6 +800,7 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
     
     private void sort() {
         if (sortedColumnOrder == GridBox.Column.SortOrder.NONE || sortedColumn == null) return;
+        sorting = true;
         final int index = sortedColumn.getIndex();
         final Comparator<Object> sortComparator = sortedColumn.getSortComparator();
         
@@ -814,6 +817,8 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
                 }
             });                                
         }
+        
+        sorting = false;
     }       
         
 	public void addItemChangeListener(ItemChangeListener listener) {
