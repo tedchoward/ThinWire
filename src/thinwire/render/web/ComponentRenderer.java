@@ -481,7 +481,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
                 
                 seq.append(next).append(']');
                 wr.ai.clientSideMethodCall(id, SET_PROPERTY_WITH_EFFECT, propertyName, time, seq);
-            }
+            }	
         }
     }    
     
@@ -570,6 +570,8 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
             ret = String.valueOf(((Boolean) o).booleanValue());
         } else if (o instanceof StringBuilder) {
             ret = o.toString();
+        } else if (o instanceof Color) {
+        	ret = "\"" + ((Color) o).toHexString() + "\"";
         } else {
             ret = '"' + ComponentRenderer.getEscapedText(o.toString(), false) + '"';
         }

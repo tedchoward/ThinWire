@@ -159,7 +159,7 @@ var tw_Component = Class.extend({
     setFontColor: function(color) { this.setStyle("color", color); },
     
     setPropertyWithEffect: function(prop, time, seq) {
-        if (!this._inited) return;        
+        if (!this._inited) return;
         prop = prop.charAt(0).toUpperCase() + prop.substring(1);
         var set = "set" + prop;
         new tw_Animation(this, set, time, eval(seq)).start();
