@@ -35,6 +35,8 @@ import java.util.List;
 import thinwire.ui.GridBox.Row;
 import thinwire.ui.event.ActionEvent;
 import thinwire.ui.event.ActionListener;
+import thinwire.ui.event.ItemChangeEvent;
+import thinwire.ui.event.ItemChangeListener;
 import thinwire.ui.event.PropertyChangeEvent;
 import thinwire.ui.event.PropertyChangeListener;
 
@@ -136,12 +138,14 @@ public class DropDownGridBox extends DropDown<GridBox> {
                     GridBox gb = (GridBox) ev.getOldValue();
                     gb.removePropertyChangeListener(childChangePcl);
                     gb.removeActionListener(clickListener);
+                    gb.removeItemChangeListener(itemChangeListener);
                 }
                 if (ev.getNewValue() != null) {
                     GridBox gb = (GridBox) ev.getNewValue();
                     gb.addPropertyChangeListener(GridBox.Row.PROPERTY_ROW_CHILD, childChangePcl);
                     gb.addActionListener(GridBox.ACTION_CLICK, clickListener);
                     iterateRows(gb.getRows());
+                    gb.addItemChangeListener(itemChangeListener);
                 }
             }
         };
@@ -160,6 +164,26 @@ public class DropDownGridBox extends DropDown<GridBox> {
             }
         };
         
+        private ItemChangeListener itemChangeListener = new ItemChangeListener() {
+			public void itemChange(ItemChangeEvent ev) {
+				ItemChangeEvent.Type type = ev.getType();
+				GridBox.Range range = (GridBox.Range) ev.getPosition();
+				int columnIndex = range.getColumnIndex();
+				int rowIndex = range.getRowIndex();
+				
+				if ((columnIndex == -1 && rowIndex >= 0) && (type == ItemChangeEvent.Type.ADD || type == ItemChangeEvent.Type.SET)) {
+					GridBox.Row row = (GridBox.Row) ev.getNewValue();
+					GridBox child = row.getChild();
+					if (child != null) {
+						child.addPropertyChangeListener(GridBox.Row.PROPERTY_ROW_CHILD, childChangePcl);
+						child.addActionListener(GridBox.ACTION_CLICK, clickListener);
+						iterateRows(child.getRows());
+						child.addItemChangeListener(itemChangeListener);
+					}
+				}
+			}
+        };
+        
         DefaultView() {
             setColumnIndex(0);
             setDelimiter(",");
@@ -172,6 +196,7 @@ public class DropDownGridBox extends DropDown<GridBox> {
                 ddc.addPropertyChangeListener(GridBox.Row.PROPERTY_ROW_CHILD, childChangePcl);
                 ddc.addActionListener(GridBox.ACTION_CLICK, clickListener);
                 ddc.addPropertyChangeListener(GridBox.Row.PROPERTY_ROW_CHECKED, checkListener);
+                ddc.addItemChangeListener(itemChangeListener);
                 iterateRows(ddc.getRows());
             }
         }
