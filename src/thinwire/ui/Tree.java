@@ -33,6 +33,8 @@ package thinwire.ui;
 import java.util.List;
 
 import thinwire.ui.event.ActionEvent;
+import thinwire.ui.event.ItemChangeEvent;
+import thinwire.ui.event.ItemChangeListener;
 
 /**
  * A component that displays a set of hierarchical data as an outline.
@@ -132,6 +134,8 @@ public class Tree extends AbstractHierarchyComponent<Tree.Item> {
         public static final String PROPERTY_ITEM_EXPANDED = "itemExpanded";
         
         private boolean expanded;
+        private boolean selected;
+        
 
         /**
          * Constructs a new Item with no text and no image.
@@ -163,8 +167,7 @@ public class Tree extends AbstractHierarchyComponent<Tree.Item> {
          * @return true if this item is the selected item in the tree, false otherwise.
          */
         public boolean isSelected() {
-            Tree tree = getHierarchy();
-            return tree == null ? false : tree.selectedItem == this; 
+        	return selected;
         }
 
         /**
@@ -173,19 +176,26 @@ public class Tree extends AbstractHierarchyComponent<Tree.Item> {
          * @throws IllegalStateException if the item has not been added to a tree.
          */
         public void setSelected(boolean selected) {
+        	this.selected = selected;
             Tree tree = getHierarchy();
-            if (tree == null) throw new IllegalStateException("the item must be added to a Tree before it can be set to selected");
             
-            if (selected && tree.selectedItem != this) {
-                if (tree.selectedItem != null) tree.firePropertyChange(tree.selectedItem, PROPERTY_ITEM_SELECTED, true, false);
-                tree.priorSelectedItem = tree.selectedItem;
-                tree.selectedItem = this;
-                tree.firePropertyChange(this, PROPERTY_ITEM_SELECTED, false, true);
-            } else if (!selected && tree.selectedItem == this) {
-                tree.firePropertyChange(this, PROPERTY_ITEM_SELECTED, true, false);
-                tree.priorSelectedItem = this;
-                tree.selectedItem = tree.getRootItem();
-                tree.firePropertyChange(tree.selectedItem, PROPERTY_ITEM_SELECTED, false, true);
+            if (tree != null) {
+	            if (selected && tree.selectedItem != this) {
+	                if (tree.selectedItem != null) {
+	                	tree.firePropertyChange(tree.selectedItem, PROPERTY_ITEM_SELECTED, true, false);
+	                	tree.selectedItem.selected = false;
+	                }
+	                
+	                tree.priorSelectedItem = tree.selectedItem;
+	                tree.priorSelectedItem.selected = false;
+	                tree.selectedItem = this;
+	                tree.firePropertyChange(this, PROPERTY_ITEM_SELECTED, false, true);
+	            } else if (!selected && tree.selectedItem == this) {
+	                tree.firePropertyChange(this, PROPERTY_ITEM_SELECTED, true, false);
+	                tree.priorSelectedItem = this;
+	                tree.selectedItem = tree.getRootItem();
+	                tree.firePropertyChange(tree.selectedItem, PROPERTY_ITEM_SELECTED, false, true);
+	            }
             }
         }
 
@@ -227,6 +237,19 @@ public class Tree extends AbstractHierarchyComponent<Tree.Item> {
         super(new Item(), EventListenerImpl.ACTION_VALIDATOR);
         selectedItem = getRootItem();
         selectedItem.setExpanded(true);
+        
+        addItemChangeListener(new ItemChangeListener() {
+			public void itemChange(ItemChangeEvent ev) {
+				if (ev.getType() == ItemChangeEvent.Type.ADD) {
+					Tree.Item newItem = (Tree.Item) ev.getNewValue();
+					Tree tree = newItem.getHierarchy();
+					if (tree.getRootItem().getChildren().size() == 1 || newItem.isSelected()) newItem.setSelected(true);
+				} else if (ev.getType() == ItemChangeEvent.Type.SET) {
+					if (((Tree.Item) ev.getOldValue()).isSelected()) ((Tree.Item) ev.getNewValue()).setSelected(true);
+				}
+			}
+        });
+        
     }
 
     void removingItem(Tree.Item item) {
@@ -264,6 +287,14 @@ public class Tree extends AbstractHierarchyComponent<Tree.Item> {
     public void setRootItemVisible(boolean rootItemVisible) {
         boolean oldRootItemVisible = this.rootItemVisible;        
         this.rootItemVisible = rootItemVisible;
+        Tree.Item root = getRootItem();
+        
+        if (rootItemVisible && (!root.hasChildren() || root.getChildren().size() == 0)) {
+        	root.setSelected(true);
+        } else if (!rootItemVisible && (root.hasChildren() && root.getChildren().size() > 0)) {
+        	root.getChildren().get(0).setSelected(true);
+        }
+        
         firePropertyChange(this, PROPERTY_ROOT_ITEM_VISIBLE, oldRootItemVisible, rootItemVisible);
     }
     

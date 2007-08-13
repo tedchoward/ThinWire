@@ -306,7 +306,11 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
             
             if (gb != null && !gb.sorting) {
                 if (selected && gb.selectedRow != this) {
-                    if (gb.selectedRow != null) gb.firePropertyChange(gb.selectedRow, PROPERTY_ROW_SELECTED, true, false);
+                    if (gb.selectedRow != null) {
+                    	gb.firePropertyChange(gb.selectedRow, PROPERTY_ROW_SELECTED, true, false);
+                    	gb.selectedRow.selected = false;
+                    }
+                    
                     gb.priorSelectedRow = gb.selectedRow;
                     gb.selectedRow = this;
                     gb.firePropertyChange(this, PROPERTY_ROW_SELECTED, false, true);
@@ -736,7 +740,7 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
                         
                         if (newRow.isChecked()) GridBox.this.checkedRows.add(newRow);
                         
-                        if (size == 1) newRow.setSelected(true);
+                        if (size == 1 || newRow.isSelected()) newRow.setSelected(true);
                         
                         if (GridBox.this.sortedColumn != null) GridBox.this.sortedColumn.setSortOrder(GridBox.Column.SortOrder.NONE);
                     } else if (type == ItemChangeEvent.Type.SET) {
