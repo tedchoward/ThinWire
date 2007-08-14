@@ -987,6 +987,36 @@ var tw_GridBox = tw_Component.extend({
     getDropTarget: function(event) {
         return this._getCellPosition(tw_getEventTarget(event), tw_getEventOffsetX(event)).join("@");
     },
+
+	fireAction: function(ev, action, source) {
+		if (action == "click" || action == "doubleClick") {
+        	if (this._eventNotifiers != null) {
+	            var actions = this._eventNotifiers["action"];            
+            
+	            if (actions != undefined && actions[action] === true) {
+	                var x = 0, y = 0, cellX = 0, cellY = 0;
+                
+	                if (ev != null) {
+	                    x = tw_getEventOffsetX(ev, this._box.className);
+	                    y = tw_getEventOffsetY(ev, this._box.className);
+	
+						cellX = tw_getEventOffsetX(ev, "gridBoxCell");
+						cellY = tw_getEventOffsetY(ev);
+			
+	                    if (x < 0) x = 0;
+	                    if (y < 0) y = 0;
+	                    if (cellX < 0) cellX = 0;
+	                    if (cellY < 0) cellY = 0;
+	                }
+                
+	                if (source == null) source = "";
+	                tw_em.sendViewStateChanged(this._id, action, x + "," + y + "," + cellX + "," + cellY + "," + source);
+	            }
+	        }
+		} else {
+			arguments.callee.$.call(this, ev, action, source);
+		}
+    },
     
     destroy: function(keepChildColumn) {
         this._destroyChildren();

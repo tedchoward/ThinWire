@@ -320,7 +320,16 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
             String[] vals = value.split(",", -1);
             int x = getInt(vals[0]);
             int y = getInt(vals[1]);
-            value = vals[2];
+            int srcX = x;
+            int srcY = y;
+            
+            if (vals.length == 5) {
+            	srcX = getInt(vals[2]);
+            	srcY = getInt(vals[3]);
+            	value = vals[4];
+            } else {
+            	value = vals[2];
+            }
             
             if (this.comp instanceof DateBox) {
                 actionIgnoreProperty = DateBox.PROPERTY_SELECTED_DATE;
@@ -336,7 +345,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
             }
             
             if (actionIgnoreProperty != null) setPropertyChangeIgnored(actionIgnoreProperty, true);
-            comp.fireAction(new ActionEvent(name, comp, getEventObject(comp, value), x, y, x, y));
+            comp.fireAction(new ActionEvent(name, comp, getEventObject(comp, value), x, y, srcX, srcY));
             if (actionIgnoreProperty != null) setPropertyChangeIgnored(actionIgnoreProperty, false);
         } else if (event.getName().equals(CLIENT_EVENT_DROP)) {
             String[] parts = ((String)event.getValue()).split(",", -1);

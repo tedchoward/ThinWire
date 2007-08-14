@@ -733,6 +733,9 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
                         }
                     } else if (type == ItemChangeEvent.Type.ADD) {
                         GridBox.Row newRow = (GridBox.Row)newValue;
+                        
+                        if (GridBox.this.visibleCheckBoxes && newRow.getChild() != null) throw new IllegalStateException("GridBox.this.visibleCheckBoxes && newRow.getChild() != null");
+                        
                         if (newRow.getChild() != null) {
                             GridBox.this.rowsWithChildren.add(newRow);
                             DropDown.copyDropDownStyle(GridBox.this, newRow.getChild(), getParent() instanceof DropDown);
@@ -746,6 +749,9 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
                     } else if (type == ItemChangeEvent.Type.SET) {
                         GridBox.Row newRow = (GridBox.Row)newValue;
                         GridBox.Row oldRow = (GridBox.Row)oldValue;
+                        
+                        if (GridBox.this.visibleCheckBoxes && newRow.getChild() != null) throw new IllegalStateException("GridBox.this.visibleCheckBoxes && newRow.getChild() != null");
+                        
                         if (oldRow.getChild() != null) GridBox.this.rowsWithChildren.remove(oldRow);
                         if (oldRow.isChecked()) GridBox.this.checkedRows.remove(oldRow);
                         
