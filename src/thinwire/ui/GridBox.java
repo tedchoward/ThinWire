@@ -338,6 +338,7 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
         public void setChild(GridBox child) {
             GridBox gb = (GridBox)getParent();
             if (gb != null && gb.isVisibleCheckBoxes()) throw new IllegalStateException("getParent().isVisibleCheckBoxes() == true");
+            if (child != null && child.isVisibleCheckBoxes()) throw new IllegalStateException("child.isVisibleCheckBoxes() == true");
             GridBox oldChild = this.child;
             this.child = child;
             if (child != null) child.setParent(this);            
@@ -903,7 +904,8 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
 	 * @param visibleCheckBoxes Default: false
 	 */
 	public void setVisibleCheckBoxes(boolean visibleCheckBoxes) {
-        if (visibleCheckBoxes && !this.visibleCheckBoxes && rowsWithChildren.size() > 0) throw new IllegalStateException("getRowsWithChildren().size() > 0 [" + rowsWithChildren.size() + "]");       
+        if (visibleCheckBoxes && !this.visibleCheckBoxes && rowsWithChildren.size() > 0) throw new IllegalStateException("getRowsWithChildren().size() > 0 [" + rowsWithChildren.size() + "]");
+        if (getParent() instanceof GridBox.Row) throw new IllegalStateException("getParent() instanceof GridBox.Row");
 	    boolean oldVisibleCheckBoxes = this.visibleCheckBoxes;                
 		this.visibleCheckBoxes = visibleCheckBoxes;
 		firePropertyChange(this, PROPERTY_VISIBLE_CHECK_BOXES, oldVisibleCheckBoxes, visibleCheckBoxes);
