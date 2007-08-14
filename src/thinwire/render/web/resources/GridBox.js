@@ -1007,7 +1007,10 @@ var tw_GridBox = tw_Component.extend({
 	                    if (y < 0) y = 0;
 	                    if (cellX < 0) cellX = 0;
 	                    if (cellY < 0) cellY = 0;
-	                }
+	                } else {
+						var cell = this._content.childNodes.item(0).childNodes.item(this._currentIndex);
+						y = cell.offsetTop + this._scrollBox.offsetTop;
+					}
                 
 	                if (source == null) source = "";
 	                tw_em.sendViewStateChanged(this._id, action, x + "," + y + "," + cellX + "," + cellY + "," + source);
