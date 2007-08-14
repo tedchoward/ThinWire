@@ -331,7 +331,7 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
                     if (gbc != null) renderChild(rowIndex, gbc);
                 }
             } else if (type == ItemChangeEvent.Type.REMOVE) {
-                if (gb.getRows().size() == 0 && rowState.size() > 1) { //Clear was called
+                if (gb.getRows().size() == 0 && rowState.size() > 0) { //Clear was called
                     rowState.clear();
                     postClientEvent(CLEAR_ROWS);
 
