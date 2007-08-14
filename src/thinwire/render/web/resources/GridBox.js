@@ -47,6 +47,7 @@ var tw_GridBox = tw_Component.extend({
     _lastIndex: null,
     _clickTime: null,
     _sortAllowed: null,
+    _sortTimeStamp: null,
     
     construct: function(id, containerId, props) {
         arguments.callee.$.call(this, "div", "gridBox", id, containerId);
@@ -438,10 +439,16 @@ var tw_GridBox = tw_Component.extend({
             var body = content.parentNode;        
             var cellOffset = cell.offsetTop + cell.offsetHeight - body.scrollTop;        
             
-            if (cellOffset < tw_GridBox.rowHeight) {        
-                cell.scrollIntoView(true);
-            } else if (cellOffset > body.clientHeight) {
-                cell.scrollIntoView(false);            
+            if (this._sortTimeStamp != null && (new Date() - this._sortTimeStamp) <= 1000) {
+                this._sortTimeStamp = new Date();
+            } else {
+                this._sortTimeStamp = null;
+                
+                if (cellOffset < tw_GridBox.rowHeight) {        
+                    cell.scrollIntoView(true);
+                } else if (cellOffset > body.clientHeight) {
+                    cell.scrollIntoView(false);            
+                }
             }
         } else {
             var color = this._fontBox.style.color;
@@ -716,6 +723,7 @@ var tw_GridBox = tw_Component.extend({
     },
 
     setColumnSortOrder: function(index, sortOrder) {
+        this._sortTimeStamp = new Date();
         var img = "";
         if (sortOrder == 1) img = "url(" + tw_IMAGE_GRIDBOX_SORTARROWASC + ")";
         else if (sortOrder == 2) img = "url(" + tw_IMAGE_GRIDBOX_SORTARROWDESC + ")";
@@ -988,37 +996,37 @@ var tw_GridBox = tw_Component.extend({
         return this._getCellPosition(tw_getEventTarget(event), tw_getEventOffsetX(event)).join("@");
     },
 
-	fireAction: function(ev, action, source) {
-		if (action == "click" || action == "doubleClick") {
-        	if (this._eventNotifiers != null) {
-	            var actions = this._eventNotifiers["action"];            
+    fireAction: function(ev, action, source) {
+        if (action == "click" || action == "doubleClick") {
+            if (this._eventNotifiers != null) {
+                var actions = this._eventNotifiers["action"];            
             
-	            if (actions != undefined && actions[action] === true) {
-	                var x = 0, y = 0, cellX = 0, cellY = 0;
+                if (actions != undefined && actions[action] === true) {
+                    var x = 0, y = 0, cellX = 0, cellY = 0;
                 
-	                if (ev != null) {
-	                    x = tw_getEventOffsetX(ev, this._box.className);
-	                    y = tw_getEventOffsetY(ev, this._box.className);
-	
-						cellX = tw_getEventOffsetX(ev, "gridBoxCell");
-						cellY = tw_getEventOffsetY(ev);
-			
-	                    if (x < 0) x = 0;
-	                    if (y < 0) y = 0;
-	                    if (cellX < 0) cellX = 0;
-	                    if (cellY < 0) cellY = 0;
-	                } else {
-						var cell = this._content.childNodes.item(0).childNodes.item(this._currentIndex);
-						y = cell.offsetTop + this._scrollBox.offsetTop;
-					}
+                    if (ev != null) {
+                        x = tw_getEventOffsetX(ev, this._box.className);
+                        y = tw_getEventOffsetY(ev, this._box.className);
+    
+                        cellX = tw_getEventOffsetX(ev, "gridBoxCell");
+                        cellY = tw_getEventOffsetY(ev);
+            
+                        if (x < 0) x = 0;
+                        if (y < 0) y = 0;
+                        if (cellX < 0) cellX = 0;
+                        if (cellY < 0) cellY = 0;
+                    } else {
+                        var cell = this._content.childNodes.item(0).childNodes.item(this._currentIndex);
+                        y = cell.offsetTop + this._scrollBox.offsetTop;
+                    }
                 
-	                if (source == null) source = "";
-	                tw_em.sendViewStateChanged(this._id, action, x + "," + y + "," + cellX + "," + cellY + "," + source);
-	            }
-	        }
-		} else {
-			arguments.callee.$.call(this, ev, action, source);
-		}
+                    if (source == null) source = "";
+                    tw_em.sendViewStateChanged(this._id, action, x + "," + y + "," + cellX + "," + cellY + "," + source);
+                }
+            }
+        } else {
+            arguments.callee.$.call(this, ev, action, source);
+        }
     },
     
     destroy: function(keepChildColumn) {

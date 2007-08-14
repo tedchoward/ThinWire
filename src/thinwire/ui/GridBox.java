@@ -603,11 +603,12 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
             SortOrder oldSortedColumnOrder = gb.sortedColumnOrder;                      
             gb.sortedColumn = oldSortedColumn == this && sortOrder == SortOrder.NONE ? null : this;
             gb.sortedColumnOrder = sortOrder;
-            gb.sort();
-            if (selectedRow != null) selectedRow.setSelected(true);
             
             if (oldSortedColumn != null && oldSortedColumn != this) gb.firePropertyChange(oldSortedColumn, PROPERTY_COLUMN_SORT_ORDER, oldSortedColumnOrder, SortOrder.NONE);
             gb.firePropertyChange(this, PROPERTY_COLUMN_SORT_ORDER, oldSortedColumn == this ? oldSortedColumnOrder : SortOrder.NONE, sortOrder);
+            
+            gb.sort();
+            if (selectedRow != null) selectedRow.setSelected(true);
         }
         
         public String toString() {
