@@ -445,7 +445,7 @@ var tw_GridBox = tw_Component.extend({
                 this._sortTimeStamp = null;
 
                 if (cellOffset < 0) {        
-                    body.scrollTop += (cellOffset - cell.offsetHeight);
+                    body.scrollTop = cell.offsetTop;
                 } else if (cellOffset > body.clientHeight) {
                     body.scrollTop = (cell.offsetTop + cell.offsetHeight) - body.clientHeight;
                 }
