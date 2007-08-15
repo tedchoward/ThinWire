@@ -443,11 +443,11 @@ var tw_GridBox = tw_Component.extend({
                 this._sortTimeStamp = new Date();
             } else {
                 this._sortTimeStamp = null;
-                
-                if (cellOffset < tw_GridBox.rowHeight) {        
-                    cell.scrollIntoView(true);
+
+                if (cellOffset < 0) {        
+                    body.scrollTop += (cellOffset - cell.offsetHeight);
                 } else if (cellOffset > body.clientHeight) {
-                    cell.scrollIntoView(false);            
+                    body.scrollTop = (cell.offsetTop + cell.offsetHeight) - body.clientHeight;
                 }
             }
         } else {
