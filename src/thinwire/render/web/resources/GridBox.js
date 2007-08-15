@@ -28,7 +28,6 @@
 #ENDIF
 #VERSION_HEADER#
 */
-//TODO: scrollIntoView is not supported by Opera and therefore keyboard nav is somewhat unusable.
 //TODO: A column should be visible by default
 var tw_GridBox = tw_Component.extend({
     _header: null,
