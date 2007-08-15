@@ -158,11 +158,20 @@ var tw_Component = Class.extend({
     setBorderColor: function(color) { this.setStyle("borderColor", color); },
     setFontColor: function(color) { this.setStyle("color", color); },
     
-    setPropertyWithEffect: function(prop, time, seq) {
+    setPropertyWithEffect: function(prop, time, seq, value) {
         if (!this._inited) return;
+		var realSetter = null;
+		var after = null;
+		
+		if (prop == "visible") {
+			prop = "opacity";
+			realSetter = "setVisible";
+			after = !value;
+		}
+		
         prop = prop.charAt(0).toUpperCase() + prop.substring(1);
         var set = "set" + prop;
-        new tw_Animation(this, set, time, eval(seq)).start();
+        new tw_Animation(this, set, time, eval(seq), realSetter, value, after).start();
     },
     
     _focusListener: function() {

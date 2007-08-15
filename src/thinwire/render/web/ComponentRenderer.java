@@ -470,7 +470,6 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
                 int prev, next;
                 
                 if (styleProp.equals(FX.PROPERTY_FX_VISIBLE_CHANGE)) {
-                    propertyName = "opacity";
                     int opacity = comp.getStyle().getOpacity();
                     prev = ((Boolean)oldValue).booleanValue() ? opacity : 0;
                     next = ((Boolean)newValue).booleanValue() ? opacity : 0;
@@ -489,7 +488,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
                 }
                 
                 seq.append(next).append(']');
-                wr.ai.clientSideMethodCall(id, SET_PROPERTY_WITH_EFFECT, propertyName, time, seq);
+                wr.ai.clientSideMethodCall(id, SET_PROPERTY_WITH_EFFECT, propertyName, time, seq, newValue);
             }	
         }
     }    

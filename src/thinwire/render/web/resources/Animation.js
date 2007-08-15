@@ -31,13 +31,19 @@
 var tw_Animation = Class.extend({
     _obj: null,
     _setter: "",
+	_realSetter: "",
     _unitTime: 0,
     _position: 0,
     _sequence: null,
+	_value: null,
+	_after: null,
     
-    construct: function(obj, setter, time, sequence) {
+    construct: function(obj, setter, time, sequence, realSetter, value, after) {
         this._obj = obj;
         this._setter = setter;
+		this._realSetter = realSetter;
+		this._value = value;
+		this._after = after;
         this._run = this._run.bind(this);
         
         this._sequence = sequence;
@@ -52,6 +58,12 @@ var tw_Animation = Class.extend({
         if (this._obj._inited) {
             var size = this._sequence[this._position];
             this._obj[this._setter](size);
+
+			if (!this._after && this._realSetter != null) {
+				this._obj[this._realSetter](this._value);
+				this._realSetter = null;
+			}
+			
             this._position++;
             
             if (this._position < this._sequence.length) {
@@ -65,6 +77,7 @@ var tw_Animation = Class.extend({
     },
 
     destroy: function() {
+		if (this._after && this._realSetter != null) this._obj[this._realSetter](this._value);
         this._obj = this._sequence = null;
     }
 });
