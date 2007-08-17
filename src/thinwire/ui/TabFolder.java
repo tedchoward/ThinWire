@@ -101,6 +101,7 @@ public class TabFolder extends AbstractContainer<TabSheet> {
     };
     
 	private int currentIndex = -1;
+	private TabSheet currentSheet;
 	
 	public TabFolder() {
         addItemChangeListener(new ItemChangeListener() {
@@ -111,7 +112,11 @@ public class TabFolder extends AbstractContainer<TabSheet> {
                 
                 if (type == Type.REMOVE || type == Type.SET) {
                     oSheet.boundsChanged(0, 0, 0, 0);
-                    if (getChildren().size() == 0) setCurrentIndex(-1);
+                    if (getChildren().size() == 0) {
+                    	setCurrentIndex(-1);
+                    } else if (oSheet.equals(currentSheet)) {
+                    	setCurrentIndex(currentIndex - 1);
+                    }
                 }
                 
                 if (type == Type.ADD || type == Type.SET) {
@@ -158,6 +163,7 @@ public class TabFolder extends AbstractContainer<TabSheet> {
         if (currentIndex < -1 || currentIndex >= getChildren().size()) throw new IllegalArgumentException("currentIndex < 0 || currentIndex >= getChildren().size()");
 		int oldCurrentIndex = this.currentIndex;
 		this.currentIndex = currentIndex;
+		currentSheet = getChildren().get(this.currentIndex);
 	 	firePropertyChange(this, PROPERTY_CURRENT_INDEX, oldCurrentIndex, this.currentIndex);
 	}
 	
