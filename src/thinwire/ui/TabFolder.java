@@ -163,7 +163,7 @@ public class TabFolder extends AbstractContainer<TabSheet> {
         if (currentIndex < -1 || currentIndex >= getChildren().size()) throw new IllegalArgumentException("currentIndex < 0 || currentIndex >= getChildren().size()");
 		int oldCurrentIndex = this.currentIndex;
 		this.currentIndex = currentIndex;
-		currentSheet = getChildren().get(this.currentIndex);
+		currentSheet = this.currentIndex > -1 ? getChildren().get(this.currentIndex) : null;
 	 	firePropertyChange(this, PROPERTY_CURRENT_INDEX, oldCurrentIndex, this.currentIndex);
 	}
 	
