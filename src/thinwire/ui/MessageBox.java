@@ -35,6 +35,7 @@ import java.util.List;
 
 import thinwire.ui.event.ActionEvent;
 import thinwire.ui.event.ActionListener;
+import thinwire.ui.style.Font;
 
 /**
  * A <code>MessageBox</code> displays a message (or a component) and allows a
@@ -574,15 +575,15 @@ public final class MessageBox {
 		    String[] lines = text.split("\\r?\\n");
 		    
 		    int width = 0;
+		    Font f = new Label().getStyle().getFont();
 		    
 		    for (int i = 0; i < lines.length; i++) {
-		        int length = lines[i].length();
+		        int length = f.getStringWidth(lines[i]);
 		        
 		        if (length > width)
-		            width = lines[i].length();
+		            width = f.getStringWidth(lines[i]);
 		    }
 
-		    width *= TEXT_CHAR_WIDTH;
 		    int y = 0;
 		    Panel content = new Panel();
 		    List<Component> items = content.getChildren();
