@@ -206,7 +206,9 @@ public final class WebServlet extends HttpServlet {
         response.setContentType("text/html");        
         response.getOutputStream().write(WebApplication.MAIN_PAGE);
         
-        if (holder != null && getInitParameter(InitParam.RELOAD_ON_REFRESH.mixedCaseName()).toLowerCase().equals("false")) {
+        String reload = getInitParameter(InitParam.RELOAD_ON_REFRESH.mixedCaseName());
+        
+        if (holder != null && reload != null && reload.toLowerCase().equals("false")) {
             if (log.isLoggable(LEVEL)) log.log(LEVEL, "repainting frame for application id=" + id);
             holder.app.repaint();
             return;
