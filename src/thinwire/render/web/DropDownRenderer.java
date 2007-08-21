@@ -53,6 +53,8 @@ final class DropDownRenderer extends MaskEditorComponentRenderer {
         if (ddc.getWidth() == 0 || ddc.getWidth() < dd.getWidth()) ddc.setWidth(dd.getView().getOptimalWidth());
         if (ddc.getHeight() == 0 || ddc.getHeight() < MIN_SIZE) ddc.setHeight(dd.getView().getOptimalHeight());
         ddc.setVisible(false);
+ 
+        //TODO REFRESH Is this ok in a refresh scenario?
         ddcr = wr.ai.getRenderer(ddc);
         ddcr.setPropertyChangeIgnored(Component.PROPERTY_FOCUS, true);
         ddcr.setPropertyChangeIgnored(Component.PROPERTY_ENABLED, true);

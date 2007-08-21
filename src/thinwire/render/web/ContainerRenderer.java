@@ -49,10 +49,11 @@ class ContainerRenderer extends ComponentRenderer implements ItemChangeListener 
     private static final String SET_SCROLL_TYPE = "setScrollType";
     private static final String REMOVE_COMPONENT = "removeComponent";            
 
+    private boolean fullyRendered;
     private Map<Component, ComponentRenderer> compToRenderer;
     
 	void render(WindowRenderer wr, Component comp, ComponentRenderer container) {
-        if (jsClass == null) init(CONTAINER_CLASS, wr, comp, container);            
+        if (jsClass == null) init(CONTAINER_CLASS, wr, comp, container);
         setPropertyChangeIgnored(Component.PROPERTY_FOCUS, true);
         setPropertyChangeIgnored(Component.PROPERTY_ENABLED, true);
         Container<Component> c = (Container<Component>)comp;
@@ -99,21 +100,24 @@ class ContainerRenderer extends ComponentRenderer implements ItemChangeListener 
     
     void renderChildren(Container<Component> c) {
         List<Component> children = c.getChildren();
-        this.compToRenderer = new HashMap<Component, ComponentRenderer>(children.size());
+        if (compToRenderer == null) compToRenderer = new HashMap<Component, ComponentRenderer>(children.size()); 
+        fullyRendered = false;
         
         for (Component comp : children) {
             renderChild(comp);
         }
+        
+        fullyRendered = true;
     }
     
     void renderChild(Component comp) {
-        ComponentRenderer r = wr.ai.getRenderer(comp);
-        compToRenderer.put(comp, r);
-        r.render(wr, comp, this);        
+    	ComponentRenderer r = compToRenderer.get(comp);
+    	if (r == null) compToRenderer.put(comp, r = wr.ai.getRenderer(comp));
+        r.render(wr, comp, this);
     }
     
     boolean isFullyRendered() {
-        return compToRenderer.size() == ((Container)comp).getChildren().size();
+        return fullyRendered;
     }
     
     public void propertyChange(PropertyChangeEvent pce) {        

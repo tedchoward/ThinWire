@@ -48,7 +48,6 @@ import thinwire.ui.event.PropertyChangeEvent;
 
 /**
  * @author Joshua J. Gertzen
- * @author Tom E. Kimball
  */
 final class MenuRenderer extends ComponentRenderer implements ItemChangeListener {    
 	private static final Pattern REGEX_AMP = Pattern.compile("[&](\\w)");
@@ -173,24 +172,22 @@ final class MenuRenderer extends ComponentRenderer implements ItemChangeListener
     }
 
     private void setupKeyPressListener(final Menu.Item item) {
-        KeyPressListener listener = new KeyPressListener() {
-            public void keyPress(KeyPressEvent ev) {
-                Menu menu = item.getHierarchy();                        
-                if (menu != null) menu.fireAction(new ActionEvent(Menu.ACTION_CLICK, menu, item));
-            }
-        };
-
         Window w = (Window)wr.comp;
         
-        if (itemToKeyPressListeners == null) {
-            itemToKeyPressListeners = new HashMap<Menu.Item, KeyPressListener>();
-        } else {
-            KeyPressListener old = itemToKeyPressListeners.get(item);
-            if (old != null) w.removeKeyPressListener(old);
-        }
-        
-        itemToKeyPressListeners.put(item, listener);
-        w.addKeyPressListener(item.getKeyPressCombo(), listener);
+        if (itemToKeyPressListeners == null) itemToKeyPressListeners = new HashMap<Menu.Item, KeyPressListener>();
+        KeyPressListener listener = itemToKeyPressListeners.get(item);
+
+        if (listener == null) {
+            listener = new KeyPressListener() {
+                public void keyPress(KeyPressEvent ev) {
+                    Menu menu = item.getHierarchy();                        
+                    if (menu != null) menu.fireAction(new ActionEvent(Menu.ACTION_CLICK, menu, item));
+                }
+            };
+        	
+            itemToKeyPressListeners.put(item, listener);
+            w.addKeyPressListener(item.getKeyPressCombo(), listener);
+        }        
     }
     
 	private void buildMenuInit(Menu.Item item, int index, boolean isRoot) {

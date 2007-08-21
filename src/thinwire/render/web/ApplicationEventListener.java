@@ -48,6 +48,7 @@ class ApplicationEventListener implements WebComponentListener {
     //private static final String SHUTDOWN_INSTANCE = "tw_shutdownInstance";
     private static final String INIT = "INIT";
     private static final String STARTUP = "STARTUP";
+    private static final String REPAINT = "REPAINT";
     static final String SHUTDOWN = "SHUTDOWN";
     private static final String RUN_TIMER = "RUN_TIMER";
     
@@ -73,6 +74,10 @@ class ApplicationEventListener implements WebComponentListener {
     	if (mainClass == null || mainClass.length() == 0) throw new IllegalArgumentException("The init-param 'mainClass' is required and must point to your application's entry point");
         StartupInfo info = new StartupInfo(mainClass, args);
         return new WebComponentEvent(ID, STARTUP, info);
+    }
+    
+    static final WebComponentEvent newRepaintEvent() {
+    	return new WebComponentEvent(ID, REPAINT, null);
     }
     
     static final WebComponentEvent newShutdownEvent() {
@@ -123,7 +128,14 @@ class ApplicationEventListener implements WebComponentListener {
                 	if (!(e instanceof RuntimeException)) e = new RuntimeException(e);
                     throw (RuntimeException)e;
                 }
-            }                    
+            }
+        } else if (REPAINT.equals(name)) {
+            if (log.isLoggable(LEVEL)) log.log(LEVEL, Thread.currentThread().getName() + ": repainting the application frame");
+            app.sendStyleInitInfo();
+            Frame f = app.getFrame();
+            WindowRenderer wr = app.getWindowRenderer(f);
+        	app.sendDefaultComponentStyles(wr);
+            wr.render(wr, f, null);
         } else if (SHUTDOWN.equals(name)) {
             Frame f = app.getFrame();
             
@@ -136,7 +148,7 @@ class ApplicationEventListener implements WebComponentListener {
                     if (d.isWaitForWindow()) captured = true;
                 }
                 
-                //TODO Depends on this listener being the last listener executed once we toggle visiblity of frame to false
+                //TODO Depends on this listener being the last listener executed once we toggle visibility of frame to false
                 //This code attempts to force an exception that won't be caught so that the call stack unrolls properly in
                 //cases where a waitForWindow dialog is in use.  It's important that this execute as the last listener so
                 //that all other visibility listeners have a chance to execute properly.

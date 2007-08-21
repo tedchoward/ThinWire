@@ -49,17 +49,20 @@ class WindowRenderer extends ContainerRenderer {
     private Map<Component, Integer> compToId;
     private MenuRenderer mr;
     WebApplication ai;
-    int[] compBounds;
     
     void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         setPropertyChangeIgnored(Component.PROPERTY_VISIBLE, true);
         Window w = (Window)c;
         addInitProperty(Window.PROPERTY_TITLE, w instanceof Frame ? w.getTitle() : parseRichText(w.getTitle()));
-        compToId = new HashMap<Component, Integer>(w.getChildren().size());
-        compBounds = new int[4];
+        if (compToId == null) compToId = new HashMap<Component, Integer>(w.getChildren().size());
         super.render(wr, c, container);
         Menu m = w.getMenu();
-        if (m != null) (mr = (MenuRenderer)ai.getRenderer(m)).render(wr, m, this);
+        
+        if (m != null) {
+        	if (mr == null) mr = (MenuRenderer)ai.getRenderer(m);
+        	mr.render(wr, m, this);
+        }
+        
         log.fine("Showing window with id:" + id);
     }
     
@@ -71,7 +74,6 @@ class WindowRenderer extends ContainerRenderer {
         ai = null;
         compToId.clear();
         compToId = null;
-        compBounds = null;
     }
     
     Integer getComponentId(Component comp) {
@@ -79,8 +81,13 @@ class WindowRenderer extends ContainerRenderer {
     }
     
     Integer addComponentId(Component comp) {
-        Integer id = ai.getNextComponentId();
-        compToId.put(comp, id);
+    	Integer id = compToId.get(comp);
+
+    	if (id == null) {
+        	id = ai.getNextComponentId();
+            compToId.put(comp, id);
+        }
+    	
         return id;
     }
 

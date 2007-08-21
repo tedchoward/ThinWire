@@ -80,6 +80,13 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
     private Map<GridBox, GridBoxRenderer> childToRenderer;
     private int autoColumnWidth;
     
+    @Override
+    void init(String jsClass, WindowRenderer wr, Component comp, ComponentRenderer container) {
+    	super.init(jsClass, wr, comp, container);
+    	rowState.clear();
+    	columnState.clear();
+    }
+    
     //TODO: Column indexes on the client side may differ if there is a hidden column between two visible columns
     void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         render(wr, c, container, null);
@@ -409,8 +416,8 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
 
     private void renderChild(Integer rowIndex, GridBox gb) {
         if (childToRenderer == null) childToRenderer = new HashMap<GridBox, GridBoxRenderer>(5);
-        GridBoxRenderer gbr = new GridBoxRenderer();
-        childToRenderer.put(gb, gbr);
+        GridBoxRenderer gbr = childToRenderer.get(gb);
+        if (gbr == null) childToRenderer.put(gb, gbr = new GridBoxRenderer());
         gbr.render(wr, gb, this, rowIndex);
     }
     

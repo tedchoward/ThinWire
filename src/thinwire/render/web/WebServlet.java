@@ -56,7 +56,7 @@ public final class WebServlet extends HttpServlet {
     private static final Logger log = Logger.getLogger(WebServlet.class.getName());
     
     private static enum InitParam {
-        MAIN_CLASS, EXTRA_ARGUMENTS, STYLE_SHEET;
+        MAIN_CLASS, EXTRA_ARGUMENTS, STYLE_SHEET, RELOAD_ON_REFRESH;
 
         private String mixedCaseName;
         
@@ -122,20 +122,7 @@ public final class WebServlet extends HttpServlet {
         }
     }   
     
-    private void handleStart(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        HttpSession httpSession = request.getSession();
-        String id = httpSession.getId(); 
-        
-        ApplicationHolder holder = (ApplicationHolder)httpSession.getAttribute("instance");
-        if (log.isLoggable(LEVEL)) log.log(LEVEL, "start id=" + id + ",old instance is null=" + (holder == null));
-        
-        //In the case of a refresh, there may be an old Application instance hanging
-        //around.  Clean it up.
-        if (holder != null) httpSession.removeAttribute("instance");
-
-        response.setContentType("text/html");        
-        response.getOutputStream().write(WebApplication.MAIN_PAGE);        
-
+    private Set<String> getStartArguments(HttpServletRequest request) {
         Set<String> args = new TreeSet<String>();
         StringBuilder sb = new StringBuilder();        
         
@@ -206,11 +193,36 @@ public final class WebServlet extends HttpServlet {
             sb.append("CLIENT_INFO_ADDRESS").append('=').append(request.getRemoteAddr());
             args.add(sb.toString());
             sb.setLength(0);
+        }	
+        
+        return args;
+    }
+    
+    private void handleStart(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        HttpSession httpSession = request.getSession();
+        String id = httpSession.getId(); 
+        
+        ApplicationHolder holder = (ApplicationHolder)httpSession.getAttribute("instance");
+        response.setContentType("text/html");        
+        response.getOutputStream().write(WebApplication.MAIN_PAGE);
+        
+        if (holder != null && getInitParameter(InitParam.RELOAD_ON_REFRESH.mixedCaseName()).toLowerCase().equals("false")) {
+            if (log.isLoggable(LEVEL)) log.log(LEVEL, "repainting frame for application id=" + id);
+            holder.app.repaint();
+            return;
+        } else {
+            if (log.isLoggable(LEVEL)) log.log(LEVEL, "starting new application with id=" + id);
+
+            if (holder != null) {
+	        	if (log.isLoggable(LEVEL)) log.log(LEVEL, "removing existing application instance with id=" + id);
+	        	httpSession.removeAttribute("instance");
+	        }
         }
         
+        Set<String> args = getStartArguments(request);	        
         holder = new ApplicationHolder();
         holder.app = new WebApplication(this.getServletContext().getRealPath(""), getInitParameter(InitParam.MAIN_CLASS.mixedCaseName()), getInitParameter(InitParam.STYLE_SHEET.mixedCaseName()), args.toArray(new String[args.size()]));
-        httpSession.setAttribute("instance", holder);        
+        httpSession.setAttribute("instance", holder);
     }    
     
     private void handleResource(HttpServletRequest request, HttpServletResponse response, String resourceName) throws IOException, ServletException {        
@@ -236,6 +248,7 @@ public final class WebServlet extends HttpServlet {
                 response.setContentType(mimeType);
                 response.getOutputStream().write(data);
             } catch (Exception e){
+            	log.warning("resource not found:" + resourceName);
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
             }
         }        

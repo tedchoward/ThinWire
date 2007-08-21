@@ -77,9 +77,9 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
 
     private static final Object NO_VALUE = new Object();
         
-    private Map<String, Object> ignoredProperties = new HashMap<String, Object>(3);
     private List<String> remoteFiles;
     private StringBuilder initProps = new StringBuilder();
+    private Map<String, Object> ignoredProperties = new HashMap<String, Object>(3);
     private Map<String, String> clientSideProps = new HashMap<String, String>();    
 	private RichTextParser richTextParser;
 	
@@ -94,6 +94,9 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         this.wr = wr;
         this.cr = container instanceof ContainerRenderer ? (ContainerRenderer)container : null;
         this.comp = comp;
+        //this.initProps = new StringBuilder();
+        //ignoredProperties.clear();
+        //clientSideProps.clear();
     }
     
     static String getSimpleClassName(Class type) {
@@ -134,7 +137,8 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
             wr.ai.clientSideFunctionCall("tw_newComponent", jsClass, id, 
                     cr == null ? (container == null ? 0 : container.id) : cr.id, 
                     initProps);
-            initProps = null;
+            //initProps = null;
+            initProps.setLength(0);
         }
         
         if (visibleChange != Effect.Motion.NONE && !isPropertyChangeIgnored(Component.PROPERTY_VISIBLE) && comp.isVisible() && cr != null && cr.isFullyRendered())
@@ -186,12 +190,12 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         wr.ai.setWebComponentListener(id, null);
         comp.removePropertyChangeListener(this);
         wr.removeComponentId(comp);
-        ignoredProperties.clear();
         comp = null;
         wr = null;
         id = null;
-        initProps = new StringBuilder();
-        ignoredProperties = new HashMap<String, Object>(3);
+        ignoredProperties.clear();
+        clientSideProps.clear();
+        initProps.setLength(0);
         
         if (remoteFiles != null) {
             for (String s : remoteFiles) {

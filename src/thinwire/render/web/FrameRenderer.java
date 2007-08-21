@@ -37,7 +37,6 @@ import thinwire.ui.Component;
  */
 final class FrameRenderer extends WindowRenderer {  
     private static final String FRAME_CLASS = "tw_Frame";
-    private WebApplication app;
     
 	void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         init(FRAME_CLASS, wr, c, container);
@@ -45,7 +44,6 @@ final class FrameRenderer extends WindowRenderer {
         setPropertyChangeIgnored(Component.PROPERTY_Y, true);
         setPropertyChangeIgnored(Component.PROPERTY_WIDTH, true);
         setPropertyChangeIgnored(Component.PROPERTY_HEIGHT, true);
-        app = (WebApplication)WebApplication.current();
         super.render(wr, c, null);
 	}
     
@@ -55,9 +53,9 @@ final class FrameRenderer extends WindowRenderer {
         
         if (name.equals("frameSize")) {
             String[] ary = value.split(",");
-            app.setPackagePrivateMember("innerWidth", comp, Integer.valueOf(ary[0]));
-            app.setPackagePrivateMember("innerHeight", comp, Integer.valueOf(ary[1]));            
-            app.setPackagePrivateMember("frameSize", comp, new Integer[]{Integer.valueOf(ary[2]), Integer.valueOf(ary[3])});
+            ai.setPackagePrivateMember("innerWidth", comp, Integer.valueOf(ary[0]));
+            ai.setPackagePrivateMember("innerHeight", comp, Integer.valueOf(ary[1]));            
+            ai.setPackagePrivateMember("frameSize", comp, new Integer[]{Integer.valueOf(ary[2]), Integer.valueOf(ary[3])});
         } else {
             super.componentChange(event);
         }

@@ -32,6 +32,9 @@ package thinwire.render.web;
 
 import thinwire.ui.Component;
 
+/**
+ * @author Ted C. Howard
+ */
 final class ProgressBarRenderer extends RangeComponentRenderer {
     private static String PROGRESS_BAR_CLASS = "tw_ProgressBar";
     

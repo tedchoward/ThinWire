@@ -170,7 +170,7 @@ public final class WebApplication extends Application {
         boolean repeat;
     }
     
-    private static enum State {INIT, STARTUP, RUNNING, SHUTDOWN, TERMINATED}
+    private static enum State {INIT, STARTUP, RUNNING, REPAINT, SHUTDOWN, TERMINATED}
     
     private String baseFolder;
     private String styleSheet;
@@ -214,6 +214,10 @@ public final class WebApplication extends Application {
         if (state == State.SHUTDOWN || state == State.TERMINATED) return;
         if (log.isLoggable(LEVEL)) log.log(LEVEL, Thread.currentThread().getName() + ": initiating application instance shutdown");        
         state = State.SHUTDOWN;
+    }
+    
+    void repaint() {
+    	state = State.REPAINT;
     }
     
     void shutdown() {
@@ -292,6 +296,9 @@ public final class WebApplication extends Application {
                     this.startupEvent = null;
                     proc.handleRequest(startupEvent, w);
                     state = State.RUNNING;
+                } else if (state == State.REPAINT) {
+                    proc.handleRequest(ApplicationEventListener.newRepaintEvent(), w);
+                    state = State.RUNNING;
                 }
             }
         } finally {
@@ -300,6 +307,27 @@ public final class WebApplication extends Application {
                 proc = null;
             }
         }
+    }
+    
+    void sendDefaultComponentStyles(WindowRenderer wr) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{");
+        
+        for (Map.Entry<Class<? extends Component>, Style> e : getDefaultStyles().entrySet()) {
+            Class<? extends Component> clazz = e.getKey();
+            
+            if (clazz != null) {
+                String styleClass = ComponentRenderer.getSimpleClassName(clazz);
+                Style style = e.getValue();
+                styleToStyleClass.put(style, styleClass);
+                sb.append(styleClass).append(":");
+                getStyleValues(wr, sb, style, null);
+                sb.append(',');
+            }
+        }
+        
+        sb.setCharAt(sb.length() - 1, '}');
+        clientSideMethodCall("tw_Component", "setDefaultStyles", sb);
     }
     
     void sendStyleInitInfo() {
@@ -702,24 +730,7 @@ public final class WebApplication extends Application {
             //Force events to be sent to client because dialog show's must be immediate!
             proc.flush();
         } else {
-            StringBuilder sb = new StringBuilder();
-            sb.append("{");
-            
-            for (Map.Entry<Class<? extends Component>, Style> e : getDefaultStyles().entrySet()) {
-                Class<? extends Component> clazz = e.getKey();
-                
-                if (clazz != null) {
-                    String styleClass = ComponentRenderer.getSimpleClassName(clazz);
-                    Style style = e.getValue();
-                    styleToStyleClass.put(style, styleClass);
-                    sb.append(styleClass).append(":");
-                    getStyleValues(wr, sb, style, null);
-                    sb.append(',');
-                }
-            }
-            
-            sb.setCharAt(sb.length() - 1, '}');
-            clientSideMethodCall("tw_Component", "setDefaultStyles", sb);
+        	sendDefaultComponentStyles(wr);
             wr.render(wr, w, null);
         }
     }
