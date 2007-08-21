@@ -51,7 +51,7 @@ import thinwire.ui.event.PropertyChangeEvent;
  */
 final class MenuRenderer extends ComponentRenderer implements ItemChangeListener {    
 	private static final Pattern REGEX_AMP = Pattern.compile("[&](\\w)");
-	private static final Pattern REGEX_DAMP = Pattern.compile("[&][&]");
+	private static final Pattern REGEX_DAMP = Pattern.compile("[&]{1,2}");
     private static final String MENU_CLASS = "tw_Menu";
     private static final String ITEM_REMOVE = "itemRemove";
     private static final String ITEM_LOAD = "itemLoad";
@@ -197,7 +197,7 @@ final class MenuRenderer extends ComponentRenderer implements ItemChangeListener
 
     	if (text.indexOf('&') >= 0) {
     		text = REGEX_AMP.matcher(text).replaceFirst("<u>$1</u>");
-    		text = REGEX_DAMP.matcher(text).replaceAll("&");
+    		text = REGEX_DAMP.matcher(text).replaceAll("&amp;");
     	}
 	
         sb.append(",t:");
