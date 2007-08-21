@@ -53,6 +53,7 @@ class TabSheetRenderer extends ContainerRenderer {
         setPropertyChangeIgnored(Border.PROPERTY_BORDER_TYPE, true);
         setPropertyChangeIgnored(Border.PROPERTY_BORDER_COLOR, true);
         setPropertyChangeIgnored(Border.PROPERTY_BORDER_SIZE, true);
+        setPropertyChangeIgnored(Border.PROPERTY_BORDER_IMAGE, true);
         TabSheet ts = (TabSheet)c;
         addInitProperty(TabSheet.PROPERTY_TEXT, parseRichText(ts.getText()));
         addInitProperty(TabSheet.PROPERTY_IMAGE, getQualifiedURL(ts.getImage()));
