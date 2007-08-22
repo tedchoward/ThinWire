@@ -269,7 +269,7 @@ var tw_GridBox = tw_Component.extend({
     
     _cellClickListener: function(event) {
         if (!this._enabled) return;
-        this.setFocus(true);
+        if (this._focusCapable) this.setFocus(true);
         var cell = tw_getEventTarget(event, "gridBoxCell");
         var column = cell.parentNode;
         var position = this._getCellPosition(cell);
@@ -403,7 +403,7 @@ var tw_GridBox = tw_Component.extend({
                                         
                 gbc.setVisible(true);
                 this._childOpen = true;
-                gbc.setFocus(true);
+                if (gbc._focusCapable) gbc.setFocus(true);
             }
         } else {
             //TODO: is there ever a false case? if not, then change API.
@@ -504,10 +504,19 @@ var tw_GridBox = tw_Component.extend({
 
     setEnabled: function(enabled) {
         arguments.callee.$.call(this, enabled);        
-        tw_setFocusCapable(this._box, enabled);
+        if (this._focusCapable) tw_setFocusCapable(this._box, enabled);
         this._toggleHighlight(this._currentIndex, true);
         this._header.style.color = this._enabled ? tw_COLOR_BUTTONTEXT : tw_COLOR_GRAYTEXT;
     },
+
+	setFocusCapable: function(focusCapable) {
+		arguments.callee.$.call(this, focusCapable);
+		if (focusCapable && this._enabled) {
+			tw_setFocusCapable(this._box, true);
+		} else {
+			tw_setFocusCapable(this._box, false);
+		}
+	},
         
     keyPressNotify: function(keyPressCombo) {
         if (!this._enabled) return;
@@ -554,7 +563,7 @@ var tw_GridBox = tw_Component.extend({
         
                 case "ArrowLeft":
                     if (this._parent instanceof tw_GridBox) {
-                        this._parent.setFocus(true);
+                        if (this._parent._focusCapable) this._parent.setFocus(true);
                         this._parent.setRowIndexSelected(this._parent._currentIndex, false);
                     }
         
@@ -730,6 +739,7 @@ var tw_GridBox = tw_Component.extend({
     },
     
     setRowIndexSelected: function(index, sendEvent) {
+		if (this._currentIndex == index) return;
         if (index < 0) {
             index = 0;
         } else {

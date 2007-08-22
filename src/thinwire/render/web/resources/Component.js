@@ -175,7 +175,7 @@ var tw_Component = Class.extend({
     },
     
     _focusListener: function() {
-        this.setFocus(true);
+        if (this._focusCapable) this.setFocus(true);
     },
     
     _blurListener: function() {

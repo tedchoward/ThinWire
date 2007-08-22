@@ -108,8 +108,17 @@ var tw_TabSheet = tw_BaseContainer.extend({
         }
 
         s.marginTop = margin + "px";
-        tw_setFocusCapable(this._tab, active);
+        if (this._focusCapable) tw_setFocusCapable(this._tab, active);
     },    
+
+	setFocusCapable: function(focusCapable) {
+		arguments.callee.$.call(this, focusCapable);
+		if (focusCapable && this._enabled) {
+			tw_setFocusCapable(this._tab, true);
+		} else {
+			tw_setFocusCapable(this._tab, false);
+		}
+	},
         
     setStyle: function(name, value) {
         arguments.callee.$.call(this, name, value);

@@ -133,10 +133,19 @@ var tw_Slider = tw_BaseRange.extend({
     },
     
     setEnabled: function(enabled) {
-       tw_setFocusCapable(this._box, enabled);
+       if (this._focusCapable) tw_setFocusCapable(this._box, enabled);
        if (enabled == this._enabled) return;
        arguments.callee.$.call(this, enabled);
     },
+
+	setFocusCapable: function(focusCapable) {
+		arguments.callee.$.call(this, focusCapable);
+		if (focusCapable && this._enabled) {
+			tw_setFocusCapable(this._box, true);
+		} else {
+			tw_setFocusCapable(this._box, false);
+		}
+	},
     
     keyPressNotify: function(keyPressCombo) {
         if ((keyPressCombo == "ArrowDown" && this._vertical) || (keyPressCombo == "ArrowLeft" && !this._vertical)) {

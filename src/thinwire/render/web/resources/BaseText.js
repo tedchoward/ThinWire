@@ -118,7 +118,7 @@ var tw_BaseText = tw_Component.extend({
         this._editor.readOnly = !enabled;
     },
 
-    setFocus: function(focus) {        
+    setFocus: function(focus) {
         if (focus) {
             var ret = arguments.callee.$.call(this, focus);        
             this._valueOnFocus = this._editor.value;

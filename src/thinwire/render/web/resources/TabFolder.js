@@ -203,7 +203,7 @@ var tw_TabFolder = tw_BaseContainer.extend({
         if (sendEvent && this._currentIndex == index) sendEvent = false;            
         this._currentIndex = index;
         this._setTabActive(this._currentIndex, true);
-        this.setFocus(true);
+        if (this._focusCapable) this.setFocus(true);
         if (sendEvent) this.firePropertyChange("currentIndex", index);
     },
     

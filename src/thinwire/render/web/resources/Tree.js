@@ -69,7 +69,7 @@ var tw_Tree = tw_Component.extend({
     _textClickListener: function(event, item) {
         if (!this._enabled) return false;
         var item = tw_getEventTarget(event, "treeRow");
-        this.setFocus(true);
+        if (this._focusCapable) this.setFocus(true);
         this._select(item, true);
         var index = this._fullIndex(item);
         var action = this._getClickAction(event.type, index);
@@ -82,7 +82,7 @@ var tw_Tree = tw_Component.extend({
     _buttonClickListener: function(event) {
         if (!this._enabled) return false;
         var item = tw_getEventTarget(event, "treeRow");
-        this.setFocus(true);
+        if (this._focusCapable) this.setFocus(true);
         this._setExpanded(item, !item.tw_expanded, true);
     },
     
@@ -533,11 +533,20 @@ var tw_Tree = tw_Component.extend({
     
     setEnabled: function(enabled) {
         arguments.callee.$.call(this, enabled);        
-        tw_setFocusCapable(this._box, enabled);
+        if (this._focusCapable) tw_setFocusCapable(this._box, enabled);
         var item = this._currentItem;
         this._currentItem = undefined;
         this._select(item);        
     },
+
+	setFocusCapable: function(focusCapable) {
+		arguments.callee.$.call(this, focusCapable);
+		if (focusCapable && this._enabled) {
+			tw_setFocusCapable(this._box, true);
+		} else {
+			tw_setFocusCapable(this._box, false);
+		}
+	},
     
     _expandImageURL: function(itemImg) {
         if (itemImg != undefined && itemImg != null && itemImg.length > 0)

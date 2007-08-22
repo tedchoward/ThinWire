@@ -20,8 +20,8 @@
   contact the following company who invented, built and supports the technology:
   
                 Custom Credit Systems, Richardson, TX 75081, USA.
-   	            email: info@thinwire.com    ph: +1 (888) 644-6405
- 	                        http://www.thinwire.com
+                email: info@thinwire.com    ph: +1 (888) 644-6405
+                            http://www.thinwire.com
 #ENDIF
 #IFDEF ALT_LICENSE
 #LICENSE_HEADER#
@@ -83,7 +83,7 @@ var tw_BaseCheckRadio = tw_Component.extend({
     
     _clickListener: function(ev) {
         if (!this._enabled) return;
-        this.setFocus(true)
+        if (this._focusCapable) this.setFocus(true)
         //#IFNDEF V1_1_COMPAT
         if (this instanceof tw_CheckBox || !this.isChecked()) {
         //#ENDIF
@@ -119,10 +119,19 @@ var tw_BaseCheckRadio = tw_Component.extend({
     },
     
     setEnabled: function(enabled) {
-        tw_setFocusCapable(this._box, enabled);
+        if (this._focusCapable) tw_setFocusCapable(this._box, enabled);
         arguments.callee.$.call(this, enabled);
         if (enabled == this._enabled) return;
         if (this.isChecked()) this._image.style.backgroundImage = enabled ? this._imageChecked : this._imageDisabledChecked;
+    },
+
+    setFocusCapable: function(focusCapable) {
+        arguments.callee.$.call(this, focusCapable);
+        if (focusCapable && this._enabled) {
+            tw_setFocusCapable(this._box, true);
+        } else {
+            tw_setFocusCapable(this._box, fal);
+        }
     },
     
     setStyle: function(name, value) {
