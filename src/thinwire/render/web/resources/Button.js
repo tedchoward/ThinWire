@@ -58,7 +58,7 @@ var tw_Button = tw_Component.extend({
         s.paddingRight = tw_Button.textPadding + "px";
         s.backgroundColor = tw_COLOR_TRANSPARENT;
         s.backgroundRepeat = "no-repeat";
-        s.backgroundPosition = "5% 50%";
+        s.backgroundPosition = "center";
         surface.appendChild(document.createTextNode(""));
         border.appendChild(surface);
         
@@ -154,6 +154,7 @@ var tw_Button = tw_Component.extend({
     setText: function(text) {
         var b = this._fontBox;         
         b.replaceChild(tw_Component.setRichText(text), b.firstChild);
+        b.style.backgroundPosition = text.length > 0 ? "5% 50%" : "center";
     },
     
     setImage: function(image) {
