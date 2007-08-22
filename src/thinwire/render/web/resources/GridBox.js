@@ -111,6 +111,7 @@ var tw_GridBox = tw_Component.extend({
         tw_addEventListener(header, "mousemove", this._headerMouseMoveListener.bind(this));
         tw_addEventListener(header, "mousedown", this._headerMouseDownListener.bind(this));
         tw_addEventListener(header, "mouseup", this._headerMouseUpListener.bind(this));
+        tw_addEventListener(this._box, ["click", "dblClick"], this._clickListener.bind(this));
          
         var showDropDown = false;
         var showChild = false;
@@ -265,6 +266,10 @@ var tw_GridBox = tw_Component.extend({
         var body = this._content.parentNode;        
         this._header.style.left = "-" + body.scrollLeft + "px";
         if (this._childOpen) this.closeChildren();
+    },
+
+    _clickListener: function(event) {
+        event.cancelBubble = true;
     },
     
     _cellClickListener: function(event) {
@@ -509,14 +514,14 @@ var tw_GridBox = tw_Component.extend({
         this._header.style.color = this._enabled ? tw_COLOR_BUTTONTEXT : tw_COLOR_GRAYTEXT;
     },
 
-	setFocusCapable: function(focusCapable) {
-		arguments.callee.$.call(this, focusCapable);
-		if (focusCapable && this._enabled) {
-			tw_setFocusCapable(this._box, true);
-		} else {
-			tw_setFocusCapable(this._box, false);
-		}
-	},
+    setFocusCapable: function(focusCapable) {
+        arguments.callee.$.call(this, focusCapable);
+        if (focusCapable && this._enabled) {
+            tw_setFocusCapable(this._box, true);
+        } else {
+            tw_setFocusCapable(this._box, false);
+        }
+    },
         
     keyPressNotify: function(keyPressCombo) {
         if (!this._enabled) return;
@@ -739,7 +744,7 @@ var tw_GridBox = tw_Component.extend({
     },
     
     setRowIndexSelected: function(index, sendEvent) {
-		if (this._currentIndex == index) return;
+        if (this._currentIndex == index) return;
         if (index < 0) {
             index = 0;
         } else {

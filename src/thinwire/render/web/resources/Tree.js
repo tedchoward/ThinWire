@@ -54,7 +54,8 @@ var tw_Tree = tw_Component.extend({
         this._textClickListener = this._textClickListener.bind(this); 
         
         tw_addEventListener(this._box, "focus", this._focusListener.bind(this));
-        tw_addEventListener(this._box, "blur", this._blurListener.bind(this));        
+        tw_addEventListener(this._box, "blur", this._blurListener.bind(this));      
+        tw_addEventListener(this._box, ["click", "dblClick"], this._clickListener.bind(this));
         
         var initData = props.initData;
         delete props.initData;
@@ -64,6 +65,11 @@ var tw_Tree = tw_Component.extend({
         this._addRootItem(initData.rv, initData.rt, initData.ri);
         this._rootItem.tw_expanded = true;
         if (initData.rv && initData.re == false) this._setExpanded(this._rootItem, false);    
+    },
+
+    _clickListener: function(event, item) {
+        // This listener exists to prevent any parent containers from acting on events
+        event.cancelBubble = true;
     },
     
     _textClickListener: function(event, item) {
@@ -539,14 +545,14 @@ var tw_Tree = tw_Component.extend({
         this._select(item);        
     },
 
-	setFocusCapable: function(focusCapable) {
-		arguments.callee.$.call(this, focusCapable);
-		if (focusCapable && this._enabled) {
-			tw_setFocusCapable(this._box, true);
-		} else {
-			tw_setFocusCapable(this._box, false);
-		}
-	},
+    setFocusCapable: function(focusCapable) {
+        arguments.callee.$.call(this, focusCapable);
+        if (focusCapable && this._enabled) {
+            tw_setFocusCapable(this._box, true);
+        } else {
+            tw_setFocusCapable(this._box, false);
+        }
+    },
     
     _expandImageURL: function(itemImg) {
         if (itemImg != undefined && itemImg != null && itemImg.length > 0)
