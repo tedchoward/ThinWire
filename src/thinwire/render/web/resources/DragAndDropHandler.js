@@ -156,15 +156,22 @@ var tw_DragAndDropHandler = Class.extend({
         this._cnt = null;
         
         if (this._dragBox != null) {
-            for (target in this._targets) {
-                var curTarget = this._targets[target];
+            if (this._dragBox.style.display == "block") {
+               for (target in this._targets) {
+                    var curTarget = this._targets[target];
                 
-                if (tw_getEventTarget(event, curTarget.getDropArea().className) == curTarget.getDropArea()) {
-                    curTarget.fireDrop(curTarget.getDropTarget(event), this._source, this._dragBox._dragObject, this._dragX, this._dragY, 
-                        tw_getEventOffsetX(event, curTarget._box.className), tw_getEventOffsetY(event, curTarget._box.className));                    
+                    if (tw_getEventTarget(event, curTarget.getDropArea().className) == curTarget.getDropArea()) {
+                        var dragX = this._dragX >= 0 ? this._dragX : 0;
+                        var dragY = this._dragY >= 0 ? this._dragY : 0;
+                        var srcX = tw_getEventOffsetX(event, curTarget._box.className);
+                        var srcY = tw_getEventOffsetY(event, curTarget._box.className);
+                        if (srcX < 0) srcX = 0;
+                        if (srcY < 0) srcY = 0;
+                        curTarget.fireDrop(curTarget.getDropTarget(event), this._source, this._dragBox._dragObject, dragX, dragY, srcX, srcY);                    
+                    }
                 }
             }
-            
+    
             document.body.removeChild(this._dragInd);
             document.body.removeChild(this._dragBox);
             this._dragBox = null;
