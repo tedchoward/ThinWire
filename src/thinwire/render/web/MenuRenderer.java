@@ -65,7 +65,8 @@ final class MenuRenderer extends ComponentRenderer implements ItemChangeListener
 	
 	void render(WindowRenderer wr, Component c, ComponentRenderer container) {        
         init(MENU_CLASS, wr, c, container);
-        boolean windowMenu = container instanceof WindowRenderer;
+
+        boolean windowMenu = container instanceof WindowRenderer && comp.equals(((Window) ((WindowRenderer) container).comp).getMenu());
 
         //a menu does not support the focus, enabled, x, y, width or height properties
         if (windowMenu) {

@@ -86,7 +86,7 @@ abstract class AbstractContainer<T extends Component> extends AbstractComponent 
             if (o == AbstractContainer.this) throw new IllegalArgumentException("cannot add component to itself");
             if (o.getParent() != null) throw new IllegalArgumentException("cannot add component to multiple containers or twice to the same container");
             if (o instanceof Dialog) throw new IllegalArgumentException("cannot add a dialog to a container");
-            if (TabFolder.class.isInstance(AbstractContainer.this) && o instanceof TabSheet) throw new IllegalArgumentException("cannot add a TabSheet to a container that is not a TabFolder");
+            if (!TabFolder.class.isInstance(AbstractContainer.this) && o instanceof TabSheet) throw new IllegalArgumentException("cannot add a TabSheet to a container that is not a TabFolder");
             l.add(index, o);
             processAdd(o);
             icei.fireItemChange(null, Type.ADD, new Integer(index), null, o);
