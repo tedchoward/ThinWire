@@ -225,7 +225,9 @@ public abstract class AbstractLayout implements Layout {
 		if (autoLayout) apply();
 	}
 	
-	protected abstract void update();
+	protected void update() {
+		
+	}
 	
     public void apply() {
     	if (update) return;
