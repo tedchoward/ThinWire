@@ -55,12 +55,12 @@ public abstract class AbstractLayout implements Layout {
     protected boolean limitLayout;
     protected int margin;
     protected int spacing;
-    private boolean reApply;
+    private boolean update;
     
-    private Runnable applyTask = new Runnable() {
+    private Runnable updateTask = new Runnable() {
 		public void run() {
-			realApply();
-			reApply = false;
+			update();
+			update = false;
 		}
     };
 
@@ -131,7 +131,7 @@ public abstract class AbstractLayout implements Layout {
             }
             
             this.autoLayoutProps = autoLayoutProps;
-            reApply = false;
+            update = false;
         }
     }
     
@@ -225,12 +225,11 @@ public abstract class AbstractLayout implements Layout {
 		if (autoLayout) apply();
 	}
 	
-	protected abstract void realApply();
+	protected abstract void update();
 	
-    final public void apply() {
-    	if (!reApply) {
-    		Application.current().addTimerTask(applyTask, 0, false);
-    		reApply = true;
-    	}
+    public void apply() {
+    	if (update) return;
+		update = true;
+		Application.current().addTimerTask(updateTask, 0, false);
 	}
 }

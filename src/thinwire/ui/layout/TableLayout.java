@@ -745,7 +745,7 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
         return absoluteSizes;
     }
     
-    protected void realApply() {
+    protected void update() {
         if (container == null) return;
         
         SortedSet<Row> visibleRows = getVisibleRows();

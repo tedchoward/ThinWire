@@ -273,7 +273,7 @@ public final class SplitLayout extends AbstractLayout {
 			apply();
 	}
 
-	protected void realApply() {
+	protected void update() {
 		if (container == null)
 			return;
 		int innerHeight = container.getInnerHeight();
