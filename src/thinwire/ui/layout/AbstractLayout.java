@@ -32,6 +32,7 @@ package thinwire.ui.layout;
 
 import java.util.logging.Logger;
 
+import thinwire.ui.Application;
 import thinwire.ui.Component;
 import thinwire.ui.Container;
 import thinwire.ui.Window;
@@ -45,7 +46,8 @@ import thinwire.ui.event.ItemChangeEvent.Type;
  * @author Joshua J. Gertzen
  */
 public abstract class AbstractLayout implements Layout {
-    private static final Logger log = Logger.getLogger(AbstractLayout.class.getName());
+
+	private static final Logger log = Logger.getLogger(AbstractLayout.class.getName());
     
     protected Container<Component> container;
     protected String[] autoLayoutProps;
@@ -53,6 +55,14 @@ public abstract class AbstractLayout implements Layout {
     protected boolean limitLayout;
     protected int margin;
     protected int spacing;
+    private boolean reApply;
+    
+    private Runnable applyTask = new Runnable() {
+		public void run() {
+			realApply();
+			reApply = false;
+		}
+    };
 
     private final PropertyChangeListener pclContainer = new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent pce) {
@@ -121,6 +131,7 @@ public abstract class AbstractLayout implements Layout {
             }
             
             this.autoLayoutProps = autoLayoutProps;
+            reApply = false;
         }
     }
     
@@ -212,5 +223,14 @@ public abstract class AbstractLayout implements Layout {
 		if (spacing < 0 || spacing >= Short.MAX_VALUE) throw new IllegalArgumentException("spacing < 0 || spacing >= " + Short.MAX_VALUE);
 		this.spacing = spacing;
 		if (autoLayout) apply();
+	}
+	
+	protected abstract void realApply();
+	
+    final public void apply() {
+    	if (!reApply) {
+    		Application.current().addTimerTask(applyTask, 0, false);
+    		reApply = true;
+    	}
 	}
 }

@@ -37,6 +37,7 @@ import java.net.SocketTimeoutException;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -128,20 +129,6 @@ class EventProcessor extends Thread {
             WebComponentEvent event = queue.remove(0);
             if (log.isLoggable(LEVEL)) log.log(LEVEL, getName() + ": process user action event:" + event);
             if (app.userActionListener != null) app.notifyUserActionReceived(event);
-
-            //if (app.playBackOn && !app.playBackEventReceived) {
-            //    app.playBackEventReceived = true;
-            //    app.playBackStart = new Date().getTime();
-            //}
-            
-            //if (app.playBackOn) {
-                //TODO figure out what makes sense here
-                //synchronized (response) {
-                    //response.reset();
-                //}
-                
-                //if (ApplicationEventListener.SHUTDOWN.equals(event.getName())) app.setPlayBackOn(false);
-            //}
             
             try {
                 WebComponentListener wcl = app.getWebComponentListener((Integer) event.getSource());
@@ -149,6 +136,13 @@ class EventProcessor extends Thread {
             } catch (Exception e) {
                 app.reportException(null, e);
             }
+        } else if (app.timers.size() > 0) {
+        	try {
+        		if (log.isLoggable(LEVEL)) log.log(LEVEL, getName() + ": process timer task 1 of " + app.timers.size());
+        		app.timers.remove(0).run();
+        	} catch (Exception e) {
+        		app.reportException(null, e);
+        	}
         } else {
             active = false;
             waitToRespond = false;
@@ -186,6 +180,11 @@ class EventProcessor extends Thread {
         threadCaptured = false;
         captureCount--;
         if (log.isLoggable(LEVEL)) log.log(LEVEL, getName() + ": release count:" + captureCount);
+    }
+    
+    //This method should only be called from a processing thread.
+    void queueEvent(WebComponentEvent ev) {
+    	queue.add(ev);
     }
     
     //This method is called by the servers request handler thread, not this thread.

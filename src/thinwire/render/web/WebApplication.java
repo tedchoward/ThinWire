@@ -40,9 +40,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -166,7 +168,7 @@ public final class WebApplication extends Application {
     
     static class Timer {
         Runnable task;
-        private long timeout;
+        long timeout;
         boolean repeat;
     }
     
@@ -183,6 +185,7 @@ public final class WebApplication extends Application {
     private Map<Component, Object> renderStateListeners;
     private EventProcessor proc;
     
+    List<Runnable> timers;
     Map<String, Timer> timerMap;
     WebComponentEvent startupEvent;
     Map<Style, String> styleToStyleClass = new HashMap<Style, String>();
@@ -203,6 +206,7 @@ public final class WebApplication extends Application {
         nameToRenderer = new HashMap<String, Class<ComponentRenderer>>();
         windowToRenderer = new HashMap<Window, WindowRenderer>();
         timerMap = new HashMap<String, Timer>();
+        timers = new LinkedList<Runnable>();
         webComponentListeners = new HashMap<Integer, WebComponentListener>();
      
         setWebComponentListener(ApplicationEventListener.ID, new ApplicationEventListener(this));
@@ -777,30 +781,39 @@ public final class WebApplication extends Application {
     }
 
     public void addTimerTask(Runnable task, long timeout, boolean repeat) {
-        String timerId = String.valueOf(System.identityHashCode(task));
-        
-        if (timerMap.containsKey(timerId)) {
-            resetTimerTask(task);
-        } else {
-            Timer timer = new Timer();
-            timer.task = task;
-            timer.timeout = timeout;
-            timer.repeat = repeat;
-            timerMap.put(timerId, timer);
-            clientSideFunctionCall("tw_addTimerTask", timerId, timeout);
-        }
+    	
+    	if (timeout == 0 && !repeat) {
+    		if (!timers.contains(task)) timers.add(task);
+    	} else {
+    		String timerId = String.valueOf(System.identityHashCode(task));
+    		
+    		if (timerMap.containsKey(timerId)) {
+                resetTimerTask(task);
+            } else {
+	    		Timer timer = new Timer();
+	            timer.task = task;
+	            timer.timeout = timeout;
+	            timer.repeat = repeat;
+	        	timerMap.put(timerId, timer);
+	        	clientSideFunctionCall("tw_addTimerTask", timerId, timeout);
+            }
+    	}
     }
 
     public void resetTimerTask(Runnable task) {
-        String timerId = String.valueOf(System.identityHashCode(task));
-        Timer timer = timerMap.get(timerId);        
-        if (timer != null) clientSideFunctionCall("tw_addTimerTask", timerId, timer.timeout);
+    	if (!timers.contains(task)) {
+	        String timerId = String.valueOf(System.identityHashCode(task));
+	        Timer timer = timerMap.get(timerId);        
+	        if (timer != null) clientSideFunctionCall("tw_addTimerTask", timerId, timer.timeout);
+    	}
     }
 
     public void removeTimerTask(Runnable task) {
-        String timerId = String.valueOf(System.identityHashCode(task));
-        clientSideFunctionCall("tw_removeTimerTask", timerId);
-        timerMap.remove(timerId);
+    	if (!timers.remove(task)) {
+	        String timerId = String.valueOf(System.identityHashCode(task));
+	        clientSideFunctionCall("tw_removeTimerTask", timerId);
+	        timerMap.remove(timerId);
+    	}
     }
 
     protected Object setPackagePrivateMember(String memberName, Component comp, Object value) {
