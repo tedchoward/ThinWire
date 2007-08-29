@@ -633,26 +633,27 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
     private void removeFromLayout(Component comp, Range r) {        
         int row = r.getRowIndex();
         int col = r.getColumnIndex();
+        int rowSpan = r.getRowSpan();
         
         //XXX JJG Why is this check necessary?
         if (row >= 0 && col >= 0) {
             ignoreSet = true;            
             List<Row> rows = getRows();        
-        
-            for (int i = row, cnt = r.getRowSpan() + row; i < cnt; i++) {
-                Row curRow = rows.get(i);
-                
-                for (int j = col, cnt2 = r.getColumnSpan() + col; j < cnt2; j++) {
-                    Object o = curRow.get(j);
-                    
-                    if (o instanceof Component) {
-                        curRow.set(j, null);
-                    } else if (o instanceof List) {
-                        ((List) o).remove(comp);
-                    }
-                }
+            if (rows.size() > row + rowSpan) {
+	            for (int i = row, cnt = rowSpan + row; i < cnt; i++) {
+	                Row curRow = rows.get(i);
+	                
+	                for (int j = col, cnt2 = r.getColumnSpan() + col; j < cnt2; j++) {
+	                    Object o = curRow.get(j);
+	                    
+	                    if (o instanceof Component) {
+	                        curRow.set(j, null);
+	                    } else if (o instanceof List) {
+	                        ((List) o).remove(comp);
+	                    }
+	                }
+	            }
             }
-            
             ignoreSet = false;
         }
     }
@@ -778,6 +779,7 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
     
     private void processComponent(Component c, Map<Integer, List<Component>> rowComponents, Map<Integer, List<Component>> colComponents, int rowIndex, int i, int[] absoluteWidths, int[] absoluteHeights) {
     	Range limit = (Range) c.getLimit();
+
 		Justify just = limit.getJustify();
 		int x = margin, y = margin, width = 0, height = 0;
 		
