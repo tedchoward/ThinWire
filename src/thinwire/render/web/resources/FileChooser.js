@@ -46,12 +46,8 @@ var tw_FileChooser = Class.extend({
         iframe.src = "?_twr_=FileUploadPage.html";
         iframe.frameBorder = "0";
         s = iframe.style;
-        s.top = "0px";
-        s.width = btn._width + "px";
-        s.height = btn._height + "px";
-        s.position = "absolute";
-        s.overflow = "hidden";
-        s.zIndex = "1";
+        var cssText = "top:0px;width:" + btn._width + "px;height:" + btn._height + "px;position:absolute;overflow:hidden;z-index:1;";
+        tw_Component.setCSSText(cssText, iframe);
         tw_setOpacity(iframe, 0);
         btn._box.appendChild(iframe);
     },

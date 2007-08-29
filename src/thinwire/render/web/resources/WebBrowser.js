@@ -20,8 +20,8 @@
   contact the following company who invented, built and supports the technology:
   
                 Custom Credit Systems, Richardson, TX 75081, USA.
-   	            email: info@thinwire.com    ph: +1 (888) 644-6405
- 	                        http://www.thinwire.com
+                email: info@thinwire.com    ph: +1 (888) 644-6405
+                            http://www.thinwire.com
 #ENDIF
 #IFDEF ALT_LICENSE
 #LICENSE_HEADER#
@@ -39,20 +39,14 @@ var tw_WebBrowser = tw_BaseBrowserLink.extend({
         var browser = this._browser = document.createElement("iframe");
         browser.frameBorder = "0";
         var s = browser.style;
-        s.overflow = "auto";
         if (tw_isIE) this._box.allowTransparency = true;
-        s.backgroundColor = "window";
-        s.position = "absolute";
-        s.width = "100%";
-        s.height = "100%";     
-        s.zIndex = "1";
+        var cssText = "overflow:auto;background-color:window;position:absolute;width:100%;height:100%;z-index:1;";
+        tw_Component.setCSSText(cssText, browser);
         
         var dragLayer = this._dragLayer = document.createElement("div");
         var s = dragLayer.style;
-        s.position = "absolute";
-        s.width = "100%";
-        s.height = "100%";
-        s.zIndex = "2";
+        cssText = "position:absolute;width:100%;height:100%;z-index:2;";
+        tw_Component.setCSSText(cssText, dragLayer);
         tw_setLayerTransparent(dragLayer);
         this.setDragLayerVisible(false);
         
@@ -78,14 +72,10 @@ var tw_WebBrowser = tw_BaseBrowserLink.extend({
     getDragBox: function() {
         var dragBox = document.createElement("div");
         var s = dragBox.style;
-        s.height = "16px";
         var hls = defaultStyles["hyperlink"];
-        s.fontFamily = hls.fontFamily;
-        s.fontSize = hls.fontSize;
-        s.fontWeight = hls.fontWeight;
-        s.fontStyle = hls.fontStyle;
-        s.textDecoration = hls.textDecoration;
-        s.color = hls.color;
+        var cssText = "height:16px;font-family:" + hls.fontFamily + ";font-size:" + hls.fontSize + ";font-weight:" + hls.fontWeight +
+            ";font-style:" + hls.fontStyle + ";text-decoration:" + hls.textDecoration + ";color:" + hls.color + ";";
+        tw_Component.setCSSText(cssText, dragBox);
         dragBox.appendChild(document.createTextNode(this._browser.src));
         return dragBox;
     },

@@ -41,22 +41,19 @@ var tw_DropDown = tw_BaseText.extend({
         var button = this._button = document.createElement("div");
         var buttonBorder = this._buttonBorder = document.createElement("div");
         arguments.callee.$.call(this, ["div", "input", "text"], "dropDownGridBox", id, containerId);
-        this._box.style.fontSize = "1px"; //Hack to work around IE height sizing issue
+		//Hack to work around IE height sizing issue (font-size: 1px;)
+		tw_Component.setCSSText("position:absolute;overflow:hidden;padding:0px;margin:0px;font-size:1px;", this._box);
         this._subtractEditorWidth += this._buttonWidth;
         
         var s = button.style;
-        s.backgroundRepeat = "no-repeat";
-        s.backgroundPosition = "center center";                
-        s.backgroundColor = tw_COLOR_BUTTONFACE;
+		var cssText = "background-repeat:no-repeat;background-position:center center;background-color:" + tw_COLOR_BUTTONFACE + ";";
+		tw_Component.setCSSText(cssText, button);
         tw_Component.applyButtonBorder(button);
         
         var s = buttonBorder.style;
-        s.position = "absolute";
-        s.right = "0px";
-        s.backgroundColor = tw_COLOR_TRANSPARENT;
-        s.borderStyle = "solid";
-        s.borderColor = tw_COLOR_WINDOWFRAME;                        
-        s.borderWidth = "0px";
+		cssText = "position:absolute;right:0px;background-color:" + tw_COLOR_TRANSPARENT + ";border-style:solid;border-color:" + 
+			tw_COLOR_WINDOWFRAME + ";border-width:0px;";
+		tw_Component.setCSSText(cssText, buttonBorder);
         buttonBorder.appendChild(button);
         this._box.appendChild(buttonBorder);
                 

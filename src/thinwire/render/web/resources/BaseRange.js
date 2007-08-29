@@ -20,8 +20,8 @@
   contact the following company who invented, built and supports the technology:
   
                 Custom Credit Systems, Richardson, TX 75081, USA.
-   	            email: info@thinwire.com    ph: +1 (888) 644-6405
- 	                        http://www.thinwire.com
+                email: info@thinwire.com    ph: +1 (888) 644-6405
+                            http://www.thinwire.com
 #ENDIF
 #IFDEF ALT_LICENSE
 #LICENSE_HEADER#
@@ -41,8 +41,8 @@ var tw_BaseRange = tw_Component.extend({
 
         var selection = document.createElement("div");     
         var s = selection.style;
-        s.position = "absolute";
-        s.lineHeight = "0px";
+        var cssText = "position:absolute;line-height:0px;";
+        tw_Component.setCSSText(cssText, selection);
         this._box.appendChild(selection);
         this._selection = this._backgroundBox = selection;
         tw_addEventListener(this._box, ["click", "dblclick"], this._clickListener.bind(this));

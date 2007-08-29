@@ -41,30 +41,24 @@ var tw_BaseCheckRadio = tw_Component.extend({
         this._box.appendChild(document.createTextNode(""));
         
         var s = this._box.style;
-        s.display = "block";
-        s.cursor = "default";        
-        s.backgroundRepeat = "no-repeat";
-        s.backgroundPosition = "center left";        
-        s.textDecoration = "none";
-        s.padding = s.margin = s.border = "0px";
-        s.whiteSpace = "nowrap";
+
+        var cssText = "position:absolute;overflow:hidden;padding:0px;margin:0px;display:block;cursor:default;background-repeat:no-repeat;" +
+            "background-position:center left;text-decoration:none;border:0px;white-space:nowrap;";
+        tw_Component.setCSSText(cssText, this._box);
         
         this._backgroundBox = this._borderBox = document.createElement("div");
         var s = this._borderBox.style;
-        s.position = "absolute";
-        s.overflow = "hidden";
-        s.fontSize = "0px";
-        s.left = "3px";
+        
+        cssText = "position:absolute;overflow:hidden;font-size:0px;left:3px;";
+        tw_Component.setCSSText(cssText, this._borderBox);
         
         this._image = document.createElement("div");
         var s = this._image.style; 
-        s.position = "absolute";
-        s.lineHeight = "0px";
-        s.backgroundColor = tw_COLOR_TRANSPARENT;
-        s.backgroundPosition = "center";
-        s.backgroundRepeat = "no-repeat";
-        s.backgroundImage = "";
-        s.width = s.height = tw_BaseCheckRadio.boxSize + "px"
+
+        cssText = "position:absolute;line-height:0px;background-color:" + tw_COLOR_TRANSPARENT + ";background-position:center;" +
+            "background-repeat:no-repeat;width:" + tw_BaseCheckRadio.boxSize + "px;height:" + tw_BaseCheckRadio.boxSize + "px;";
+        tw_Component.setCSSText(cssText, this._image);
+
         this._borderBox.appendChild(this._image);        
         this._box.appendChild(this._borderBox);
                 

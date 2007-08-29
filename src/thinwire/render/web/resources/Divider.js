@@ -20,8 +20,8 @@
   contact the following company who invented, built and supports the technology:
   
                 Custom Credit Systems, Richardson, TX 75081, USA.
-   	            email: info@thinwire.com    ph: +1 (888) 644-6405
- 	                        http://www.thinwire.com
+                email: info@thinwire.com    ph: +1 (888) 644-6405
+                            http://www.thinwire.com
 #ENDIF
 #IFDEF ALT_LICENSE
 #LICENSE_HEADER#
@@ -33,13 +33,14 @@ var tw_Divider = tw_Component.extend({
         arguments.callee.$.call(this, "div", "divider", id, containerId);
         this._fontBox = null;
         var s = this._box.style;
-        s.backgroundColor = tw_COLOR_TRANSPARENT;
+        var cssText = "position:absolute;overflow:hidden;padding:0px;margin:0px;background-color:" + tw_COLOR_TRANSPARENT + ";";
+        tw_Component.setCSSText(cssText, this._box);
         tw_addEventListener(this._box, ["click", "dblclick"], this._clickListener.bind(this));
 
         var tagLine = this._borderBox = document.createElement("div");
         var s = tagLine.style;
-        s.position = "absolute";
-        s.lineHeight = "0px";        
+        cssText = "position:absolute;line-height:0px;";
+        tw_Component.setCSSText(cssText, tagLine);
         this._box.appendChild(tagLine);
         this.init(-1, props);
     },

@@ -35,30 +35,22 @@ var tw_Button = tw_Component.extend({
     construct: function(id, containerId, props) {
         arguments.callee.$.call(this, "div", "button", id, containerId);
         var s = this._box.style;
-        s.borderStyle = "solid";
-        s.borderColor = tw_COLOR_WINDOWFRAME;
-        s.borderWidth = "0px";
-        s.backgroundColor = tw_COLOR_TRANSPARENT;
-        
+        var cssText = "position:absolute;overflow:hidden;padding:0px;margin:0px;border-style:solid;border-color:" + tw_COLOR_WINDOWFRAME + 
+            ";border-width:0px;background-color:" + tw_COLOR_TRANSPARENT + ";";
+        tw_Component.setCSSText(cssText, this._box, true);
+
         var border = this._borderBox = this._backgroundBox = this._focusBox = document.createElement("div");
         var s = border.style;
-        s.overflow = "hidden";
-        s.position = "absolute";
+        cssText = "overflow:hidden;position:absolute;";
+        tw_Component.setCSSText(cssText, border);
         this._box.appendChild(border);
 
         var surface = this._fontBox = this._focusBox = document.createElement("a");
         var s = surface.style;
-        s.display = "block"; 
-        s.overflow = "hidden";
-        s.cursor = "default";
-        s.position = "absolute";
-        s.whiteSpace = "nowrap";
-        s.textAlign = "center";
-        s.paddingLeft = tw_Button.textPadding + "px";
-        s.paddingRight = tw_Button.textPadding + "px";
-        s.backgroundColor = tw_COLOR_TRANSPARENT;
-        s.backgroundRepeat = "no-repeat";
-        s.backgroundPosition = "center";
+        cssText = "display:block;overflow:hidden;cursor:default;position:absolute;white-space:nowrap;text-align:center;" +
+            "padding-left:" + tw_Button.textPadding + "px;padding-right:" + tw_Button.textPadding + "px;background-color:" + 
+            tw_COLOR_TRANSPARENT + ";background-repeat:no-repeat;background-position:center;";
+        tw_Component.setCSSText(cssText, surface);
         surface.appendChild(document.createTextNode(""));
         border.appendChild(surface);
         

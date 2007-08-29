@@ -45,34 +45,23 @@ var tw_Dialog = tw_BaseContainer.extend({
         tw_addEventListener(this._box, "mousedown", this._mouseDownListener.bind(this));
         var dialog = this._box;
         var s = dialog.style;
-        s.cursor = "default";
-        s.overflow = "visible";
+        var cssText = "position:absolute;overflow:visible;padding:0px;margin:0px;cursor:default;";
+        tw_Component.setCSSText(cssText, this._box);
         
         var title = this._fontBox = document.createElement("div");
         var s = title.style;
-        s.paddingLeft = "2px";
-        s.marginBottom = "1px";
-        s.height = "18px";    
-        s.lineHeight = "17px";
-        s.whiteSpace = "nowrap";
-        s.overflow = "hidden";
-        s.backgroundColor = tw_COLOR_ACTIVECAPTION;
+        cssText = "padding-left:2px;margin-bottom:1px;height:18px;line-height:17px;white-space:nowrap;overflow:hidden;" + 
+            "background-color:" + tw_COLOR_ACTIVECAPTION + ";";
+        tw_Component.setCSSText(cssText, title);
         title.appendChild(document.createTextNode(""));
         
         var closeButton = this._closeButton = document.createElement("div");
         var s = closeButton.style;
-        s.textAlign = "center";
-        s.position = "absolute";
-        s.backgroundPosition = "center";
-        s.backgroundRepeat = "no-repeat";
-        s.backgroundImage = "url(" + tw_IMAGE_DIALOG_CLOSE + ")";
-        s.margin = "0px";
-        s.overflow = "hidden";
-        s.top = "2px";
-        s.right = "2px";
-        if (tw_isIE) s.fontSize = "0px";
-        s.backgroundColor = tw_COLOR_BUTTONFACE;
-        s.color = tw_COLOR_BUTTONTEXT;
+        var fontSizeText = tw_isIE ? "font-size:0px;" : "";
+        cssText = "text-align:center;position:absolute;background-position:center;background-repeat:no-repeat;background-image:" +
+            "url(" + tw_IMAGE_DIALOG_CLOSE + ");margin:0px;overflow:hidden;top:2px;right:2px;" + fontSizeText + "background-color:" +
+            tw_COLOR_BUTTONFACE + ";color:" + tw_COLOR_BUTTONTEXT + ";";
+        tw_Component.setCSSText(cssText, closeButton);
         tw_Component.applyButtonBorder(closeButton);
         
         title.appendChild(closeButton);    
@@ -81,8 +70,12 @@ var tw_Dialog = tw_BaseContainer.extend({
         this._container = this._scrollBox = document.createElement("div");
         this._container.className = "container";
         var s = this._container.style;
+        cssText = "position:absolute;background-color:" + tw_COLOR_TRANSPARENT + ";";
+        tw_Component.setCSSText(cssText, this._container);
+        /*
         s.position = "absolute";
         s.backgroundColor = tw_COLOR_TRANSPARENT;
+        */
         dialog.appendChild(this._container);
 
         this.setModal(props.modal);
@@ -173,16 +166,9 @@ var tw_Dialog = tw_BaseContainer.extend({
             if (this._resizeDrag != null) return;
             var sizer = document.createElement("div");
             var s = sizer.style;
-            s.width = "12px";
-            s.height = "12px";
-            s.position = "absolute";
-            s.overflow = "hidden";
-            s.backgroundImage = "url(" + tw_IMAGE_DIALOG_RESIZE + ")";
-            s.backgroundRepeat = "no-repeat";
-            s.backgroundPosition = "top right";
-            s.right = "0px";
-            s.bottom = "0px";
-            s.cursor = "NW-resize";
+            var cssText = "width:12px;height:12px;position:absolute;overflow:hidden;background-image:url(" + tw_IMAGE_DIALOG_RESIZE + 
+                ");background-repeat:no-repeat;background-position:top right;right:0px;bottom:0px;cursor:NW-resize;";
+            tw_Component.setCSSText(cssText, sizer);
             this._box.appendChild(sizer);
             this._resizeDrag = new tw_DragHandler(sizer, this._resizeDragListener.bind(this));            
         } else {
@@ -292,6 +278,7 @@ var tw_Dialog = tw_BaseContainer.extend({
             s.color = this._fontColor;
             tw_Dialog.active = this;
             if (!flash) this._box.style.zIndex = ++tw_Component.zIndex;       
+            //console.log("dialog.zIndex=" + this._box.style.zIndex);
         } else {
             s.backgroundColor = tw_COLOR_INACTIVECAPTION;
             s.color = tw_COLOR_INACTIVECAPTIONTEXT;

@@ -20,8 +20,8 @@
   contact the following company who invented, built and supports the technology:
   
                 Custom Credit Systems, Richardson, TX 75081, USA.
-   	            email: info@thinwire.com    ph: +1 (888) 644-6405
- 	                        http://www.thinwire.com
+                email: info@thinwire.com    ph: +1 (888) 644-6405
+                            http://www.thinwire.com
 #ENDIF
 #IFDEF ALT_LICENSE
 #LICENSE_HEADER#
@@ -48,15 +48,12 @@ var tw_BaseText = tw_Component.extend({
         
         var editor = document.createElement(tagNames[1]);    
         var s = editor.style;
-        s.position = "absolute";
-        s.left = tw_isKHTML || tw_isSafari ? "-1px" : "0px";
-        s.top = tw_isKHTML || tw_isSafari ? "-1px" : "0px";
-        s.margin = "0px";
-        s.border = "0px";
-        s.padding = this._paddingSize + "px";
+        var left =  tw_isKHTML || tw_isSafari ? "-1px" : "0px";
+        var top = tw_isKHTML || tw_isSafari ? "-1px" : "0px";
+        var cssText = "position:absolute;" + "left:" + left + ";" + "top:" + top + ";" + "margin:0px;border:0px;padding:" + 
+            this._paddingSize + "px;background-color:" + tw_COLOR_TRANSPARENT + ";";
+        tw_Component.setCSSText(cssText, editor);
         
-        s.backgroundColor = tw_COLOR_TRANSPARENT;
-
         if (tagNames.length > 2) editor.type = tagNames[2];
         this._box.appendChild(editor);
         this._editor = this._focusBox = this._fontBox = editor;
@@ -107,9 +104,12 @@ var tw_BaseText = tw_Component.extend({
     },
         
     setText: function(text) {
+        var length = this._editor.maxLength;
+        this._editor.maxLength = text.length;
         this._lastValue = this._editor.value = text;
         if (this._useToolTip) this._editor.title = text; 
-        this._validateInput(0);            
+        this._validateInput(0);
+        this._editor.maxLength = length;
         this._textStateChange(false, true);
     },
 
@@ -420,7 +420,7 @@ var tw_BaseText = tw_Component.extend({
                         if (tmp == fmcntr)
                             reCh = "[1-2]";
                         else
-                        	reCh = "[0-9]";
+                            reCh = "[0-9]";
                     } else
                         reCh = "[0-9]";
     
@@ -448,14 +448,14 @@ var tw_BaseText = tw_Component.extend({
         return new RegExp(reMask);
     },
     
-    _validateInput: function(keyCode) {            
+    _validateInput: function(keyCode) {
         var newValue = this._editor.value;
         var editMask = this._editMask;
         var valid = true;
         var cntr;
         var maskChars = "9#MdyAaXxhmp";
     
-        if (editMask.length > 0 && newValue.length > 0) {  
+        if (editMask.length > 0 && newValue.length > 0) {
             //Reformat amount masks, otherwise Validate data
             if (editMask.indexOf('#') >= 0) {
                 var maxLength = editMask.length;
@@ -614,7 +614,7 @@ var tw_BaseText = tw_Component.extend({
             
             return false;
         } else {
-			this._textStateChange(false, true);
+            this._textStateChange(false, true);
             return arguments.callee.$.call(this, keyPressCombo);
         }        
     },

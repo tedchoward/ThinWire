@@ -38,8 +38,8 @@ var tw_Hyperlink = tw_BaseBrowserLink.extend({
         this._box.appendChild(document.createTextNode(""));
         
         var s = this._box.style;
-        s.whiteSpace = "nowrap";
-        s.overflow = "hidden";        
+        var cssText = "position:absolute;overflow:hidden;padding:0px;margin:0px;white-space:nowrap;";
+        tw_Component.setCSSText(cssText, this._box);
         tw_addEventListener(this._box, ["click", "dblclick"], this._clickListener.bind(this));
         this.init(-1, props);
     },

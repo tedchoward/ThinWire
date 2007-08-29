@@ -20,8 +20,8 @@
   contact the following company who invented, built and supports the technology:
   
                 Custom Credit Systems, Richardson, TX 75081, USA.
-   	            email: info@thinwire.com    ph: +1 (888) 644-6405
- 	                        http://www.thinwire.com
+                email: info@thinwire.com    ph: +1 (888) 644-6405
+                            http://www.thinwire.com
 #ENDIF
 #IFDEF ALT_LICENSE
 #LICENSE_HEADER#
@@ -41,10 +41,9 @@ var tw_Slider = tw_BaseRange.extend({
         
         var line = this._line = document.createElement("div");
         var s = line.style;
-        s.position = "absolute";
-        s.lineHeight = "0px";
         var ds = tw_Component.defaultStyles["Divider"];
-        s.borderStyle = ds.borderStyle;
+        var cssText = "position:absolute;line-height:0px;border-style:" + ds.borderStyle + ";";
+        tw_Component.setCSSText(cssText, line);
         this._box.insertBefore(line, this._selection);
         
         this._borderBox = this._selection;
@@ -138,14 +137,14 @@ var tw_Slider = tw_BaseRange.extend({
        arguments.callee.$.call(this, enabled);
     },
 
-	setFocusCapable: function(focusCapable) {
-		arguments.callee.$.call(this, focusCapable);
-		if (focusCapable && this._enabled) {
-			tw_setFocusCapable(this._box, true);
-		} else {
-			tw_setFocusCapable(this._box, false);
-		}
-	},
+    setFocusCapable: function(focusCapable) {
+        arguments.callee.$.call(this, focusCapable);
+        if (focusCapable && this._enabled) {
+            tw_setFocusCapable(this._box, true);
+        } else {
+            tw_setFocusCapable(this._box, false);
+        }
+    },
     
     keyPressNotify: function(keyPressCombo) {
         if ((keyPressCombo == "ArrowDown" && this._vertical) || (keyPressCombo == "ArrowLeft" && !this._vertical)) {

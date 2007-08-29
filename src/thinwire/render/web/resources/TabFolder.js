@@ -40,21 +40,19 @@ var tw_TabFolder = tw_BaseContainer.extend({
         arguments.callee.$.call(this, "tabFolder", id, containerId);
         this._fontBox = null; 
         var s = this._box.style;
-        s.backgroundColor = tw_COLOR_TRANSPARENT;
-        s.overflow = "visible";
+        var cssText = "position:absolute;overflow:visible;padding:0px;margin:0px;background-color:" + tw_COLOR_TRANSPARENT + ";";
+        tw_Component.setCSSText(cssText, this._box);
     
         this._tabs = document.createElement("div");
         var s = this._tabs.style;
-        s.position = "absolute";
-        s.zIndex = "1";
-        s.height = tw_TabFolder._tabsHeight + "px";
+        cssText = "position:absolute;z-index:1;height:" + tw_TabFolder._tabsHeight + "px;";
+        tw_Component.setCSSText(cssText, this._tabs);
         this._box.appendChild(this._tabs);
         
         this._borderBox = this._backgroundBox = this._container = this._scrollBox = document.createElement("div");
         var s = this._container.style;
-        s.position = "absolute";
-        s.zIndex = "0";
-        s.top = tw_TabFolder._tabsHeight + "px";
+        cssText = "position:absolute;z-index:0;top: " + tw_TabFolder._tabsHeight + "px;";
+        tw_Component.setCSSText(cssText, this._container);
 
         tw_addEventListener(this.getClickBox(), ["click", "dblclick"], this._containerClickListener.bind(this)); 
         

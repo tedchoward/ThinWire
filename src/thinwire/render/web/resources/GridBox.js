@@ -69,20 +69,16 @@ var tw_GridBox = tw_Component.extend({
         var header = this._header = document.createElement("div");
         header.className = "gridBoxHeader";
         var s = header.style;
-        s.position = "absolute";
-        s.backgroundColor = tw_COLOR_THREEDFACE;
-        s.color = tw_COLOR_BUTTONTEXT;
-        s.display = "none";
+        var cssText = "position:absolute;background-color:" + tw_COLOR_THREEDFACE + ";color:" + tw_COLOR_BUTTONTEXT + ";display:none;";
+        tw_Component.setCSSText(cssText, header);
         this._hresize = {column: null, startX: -1};        
         this._box.appendChild(header);
         
         var body = this._scrollBox = document.createElement("div");
         body.className = "gridBoxBody";
         var s = body.style;
-        s.position = "absolute";
-        s.width = "100%";
-        s.overflow = "auto";        
-        s.top = "0px";
+        cssText = "position:absolute;width:100%;overflow:auto;top:0px;";
+        tw_Component.setCSSText(cssText, body);
         this._box.appendChild(body);
     
         var content = this._content = document.createElement("div");
@@ -90,7 +86,7 @@ var tw_GridBox = tw_Component.extend({
         body.appendChild(content);
     
         var empty = document.createElement("span");
-        empty.style.display = "none";
+        tw_Component.setCSSText("display:none;", empty);
         content.appendChild(empty);
         
         this._focusListener = this._focusListener.bind(this);
@@ -137,9 +133,9 @@ var tw_GridBox = tw_Component.extend({
                 var column = document.createElement("div");
                 column.className = "gridBoxColumn";
                 var s = column.style;
+                cssText = "overflow:hidden;width:" + tw_GridBox.childColumnWidth + "px;";
                 s.styleFloat = "left";
-                s.overflow = "hidden";                            
-                column.style.width = tw_GridBox.childColumnWidth + "px";                
+                tw_Component.setCSSText(cssText, column);
                             
                 for (var i = parentContent.firstChild.childNodes.length; --i >= 0;) {
                     column.appendChild(container._newCell("", 1));
@@ -341,12 +337,9 @@ var tw_GridBox = tw_Component.extend({
         var cell = document.createElement("div");
         cell.className = "gridBoxCell";
         var s = cell.style;
-        s.height = "14px";
-        s.paddingLeft = "3px";
-        s.whiteSpace = "nowrap";
-        s.backgroundRepeat = "no-repeat";
-        s.backgroundPosition = "center left";
-        s.backgroundColor = tw_COLOR_TRANSPARENT;
+        var cssText = "height:14px;padding-left:3px;white-space:nowrap;background-repeat:no-repeat;background-position:center left;" + 
+            "background-color:" + tw_COLOR_TRANSPARENT + ";";
+        tw_Component.setCSSText(cssText, cell);
             
         if (columnIndex == 0) {
             var s = cell.style;        
@@ -598,7 +591,8 @@ var tw_GridBox = tw_Component.extend({
                     var charValue = keyPressCombo;
                     if (charValue.indexOf("Num") >= 0) charValue = charValue.substring(3);
                     if (charValue == "Dash") charValue = "-";
-                    if (charValue.length == 1 && /[a-zA-Z0-9]/.test(charValue)) {
+                    var autoComplete = this._root._parent instanceof tw_DropDown && this._root._parent._editAllowed;
+                    if (!autoComplete && charValue.length == 1 && /[a-zA-Z0-9]/.test(charValue)) {
                         charValue = charValue.toLowerCase();
                         var content = this._content;
                         
@@ -782,17 +776,14 @@ var tw_GridBox = tw_Component.extend({
         var columnHeader = document.createElement("div");
         columnHeader.className = "gridBoxColumnHeader";
         var s = columnHeader.style;
-        s.styleFloat = "left";
-        s.overflow = "hidden";
-        s.whiteSpace = "nowrap";        
-        s.height = tw_GridBox.rowHeight + "px";
-        s.textAlign = alignX;
-        s.backgroundRepeat = "no-repeat";
-        s.backgroundPosition = "center right";
-        if (sortOrder != 0) s.backgroundImage = "url(" + (sortOrder == 1 ? tw_IMAGE_GRIDBOX_SORTARROWASC : tw_IMAGE_GRIDBOX_SORTARROWDESC) + ")"; 
-
-        s.borderWidth = (this._borderSize > 2 ? 2 : this._borderSize) + "px";        
-        s.backgroundColor = tw_COLOR_BUTTONFACE;
+        var bgImg = sortOrder != 0 ? "background-image: url(" + 
+            (sortOrder == 1 ? tw_IMAGE_GRIDBOX_SORTARROWASC : tw_IMAGE_GRIDBOX_SORTARROWDESC) + "); " : "";
+        var borderWidth =  (this._borderSize > 2 ? 2 : this._borderSize) + "px; ";
+        var cssText = "overflow:hidden;white-space:nowrap;height:" + tw_GridBox.rowHeight + "px;" + 
+            "text-align:" + alignX + ";background-repeat:no-repeat;background-position:center right;" + bgImg + 
+            "border-width:" + borderWidth + "background-color:" + tw_COLOR_BUTTONFACE + ";";
+            s.styleFloat = "left";
+        tw_Component.setCSSText(cssText, columnHeader);
         tw_Component.applyButtonBorder(columnHeader, true, false, false, true);
         
         columnHeader.appendChild(tw_Component.setRichText(name));
@@ -804,9 +795,9 @@ var tw_GridBox = tw_Component.extend({
         var column = document.createElement("div");
         column.className = "gridBoxColumn";
         var s = column.style;
+        cssText = "overflow:hidden;text-align:" + alignX + ";";
         s.styleFloat = "left";
-        s.overflow = "hidden";        
-        s.textAlign = alignX;
+        tw_Component.setCSSText(cssText, column);
         
         tw_addEventListener(column, "focus", this._focusListener);
         tw_addEventListener(column, "blur", this._blurListener);
@@ -973,7 +964,9 @@ var tw_GridBox = tw_Component.extend({
         
         var dragBox = document.createElement("div");
         var s = dragBox.style;
-        s.height = tw_GridBox.rowHeight + "px";
+        var cssText = "height:" + tw_GridBox.rowHeight + "px;";
+        tw_Component.setCSSText(cssText, dragBox);
+        //s.height = tw_GridBox.rowHeight + "px";
         var width = this._width - this._borderSizeSub;
         
         if (position[1] >= 0) {

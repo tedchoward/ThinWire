@@ -182,11 +182,6 @@ class EventProcessor extends Thread {
         if (log.isLoggable(LEVEL)) log.log(LEVEL, getName() + ": release count:" + captureCount);
     }
     
-    //This method should only be called from a processing thread.
-    void queueEvent(WebComponentEvent ev) {
-    	queue.add(ev);
-    }
-    
     //This method is called by the servers request handler thread, not this thread.
     void handleRequest(WebComponentEvent ev, Writer w) throws IOException {
         synchronized (queue) {

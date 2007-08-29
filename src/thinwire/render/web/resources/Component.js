@@ -74,10 +74,14 @@ var tw_Component = Class.extend({
         var box = document.createElement(tagName);
         box.className = className;
         var s = box.style;
+		var cssText = "position:absolute;overflow:hidden;padding:0px;margin:0px;";
+		tw_Component.setCSSText(cssText, box);
+		/*
         s.position = "absolute";
         s.overflow = "hidden";
         s.padding = "0px";
         s.margin = "0px";
+		*/
         box.id = id;
         this._box = this._focusBox = this._backgroundBox = this._borderBox = this._fontBox = box;
         this._id = id;
@@ -242,8 +246,8 @@ var tw_Component = Class.extend({
                 this._borderSize = parseInt(value);
                 this._borderSizeSub = this._borderSize * 2;
                 
-                if (this._borderImage == null) {
-                    s[name] = value;
+                if (this._borderImage == null) {                    
+					s[name] = value;
                 } else {
                     this._borderImage.setBorderSize(this._borderSize);
                 }
@@ -256,8 +260,8 @@ var tw_Component = Class.extend({
                 }
             } else if (name == "borderStyle") {
                 this._borderType = value;
-                s[name] = value;
-                
+               	s[name] = value;
+
                 if (tw_isIE && this._borderColor != null) {
                     name = "borderColor";
                     value = tw_Component.getIEBorder(this._borderColor, this._borderType);
@@ -541,27 +545,27 @@ var tw_Component = Class.extend({
             
             style = styleProps;
         }
-        
-        this.setStyle("backgroundColor", style["backgroundColor"])
+		
+       	this.setStyle("backgroundColor", style["backgroundColor"])
         this.setStyle("backgroundImage", style["backgroundImage"]);
         this.setStyle("backgroundRepeat", style["backgroundRepeat"]);
         this.setStyle("backgroundPosition", style["backgroundPosition"]);
         
         if (this._borderBox != null) {
-            var borderStyle = style["borderStyle"];
-            if (borderStyle != undefined) this.setStyle("borderStyle", borderStyle);
+			var borderStyle = style["borderStyle"];
+           	if (borderStyle != undefined) this.setStyle("borderStyle", borderStyle);
             this.setStyle("borderWidth", style["borderWidth"]);
             this.setStyle("borderColor", style["borderColor"]);
-            this.setStyle("borderImage", style["borderImage"]);
+			this.setStyle("borderImage", style["borderImage"]);
         }
         
         if (this._fontBox != null) {
-            this.setStyle("fontFamily", style["fontFamily"]);
+           	this.setStyle("fontFamily", style["fontFamily"]);
             this.setStyle("color", style["color"]);
             this.setStyle("fontSize", style["fontSize"]);
             this.setStyle("fontStyle", style["fontStyle"]);
             this.setStyle("fontWeight", style["fontWeight"]);
-            this.setStyle("textDecoration", style["textDecoration"]);
+           	this.setStyle("textDecoration", style["textDecoration"]);
         }
         
         if (props.insertAtIndex != undefined) {
@@ -827,5 +831,22 @@ tw_Component.setRichText = function(text, element) {
     }
     
     return element;
+}
+
+tw_Component.camelCaseRegex = /\-(.)/g;
+
+tw_Component.camelCaseReplaceFunc = function(m, l) { return l.toUpperCase(); }
+
+tw_Component.setCSSText = function(cssText, box) {
+	var s = box.style;
+	if (typeof s.cssText != "undefined") {
+		s.cssText = cssText;
+	} else {
+		var styleEntries = cssText.split(";");
+		for (var i = 0; i < styleEntries.length; i++) {
+			var entry = styleEntries[i].split(":");
+			if (entry.length == 2) s[entry[0].replace(tw_Component.camelCaseRegex, tw_Component.camelCaseReplaceFunc)] = entry[1];
+		}
+	}
 }
 

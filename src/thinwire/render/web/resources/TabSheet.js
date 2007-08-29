@@ -20,8 +20,8 @@
   contact the following company who invented, built and supports the technology:
   
                 Custom Credit Systems, Richardson, TX 75081, USA.
-   	            email: info@thinwire.com    ph: +1 (888) 644-6405
- 	                        http://www.thinwire.com
+                email: info@thinwire.com    ph: +1 (888) 644-6405
+                            http://www.thinwire.com
 #ENDIF
 #IFDEF ALT_LICENSE
 #LICENSE_HEADER#
@@ -35,29 +35,23 @@ var tw_TabSheet = tw_BaseContainer.extend({
     construct: function(id, containerId, props) {
         arguments.callee.$.call(this, "tabSheet", id, containerId);
         var s = this._box.style;
-        s.top = "0px";
-        s.left = "0px";
-        s.zIndex = "0";
+        var cssText = "position:absolute;overflow:hidden;padding:0px;margin:0px;top:0px;left:0px;z-index:0;";
+        tw_Component.setCSSText(cssText, this._box);
         
         var tab = this._tab = this._fontBox = this._borderBox = document.createElement("a");
         tab.className = "floatDivLeft"; //hack for FF
         var s = tab.style;
-        s.cursor = "default";
-        s.overflow = "hidden";
-        s.whiteSpace = "nowrap";
-        s.styleFloat = "left"; //Doesn't work in FF.
-
+        cssText = "cursor:default;overflow:hidden;white-space:nowrap;";
+        s.styleFloat = "left";
+        tw_Component.setCSSText(cssText, tab);
+        
         var tabImage = document.createElement("div");
         tabImage.className = "floatDivLeft"; //hack for FF
         var s = tabImage.style;
-        s.styleFloat = "left"; //Doesn't work in FF.
-        s.backgroundRepeat = "no-repeat";
-        s.backgroundPosition = "center center";
-        s.width = "16px";
-        s.height = "16px";
-        s.paddingLeft = "3px";
-        s.overflow = "hidden";
-        s.display = "none";
+        cssText = "background-repeat:no-repeat;background-position:center center;width:16px;height:16px; " +
+            "padding-left:3px;overflow:hidden;display:none;";
+        s.styleFloat = "left";
+        tw_Component.setCSSText(cssText, tabImage);
 
         tab.appendChild(tabImage);       
         tab.appendChild(document.createTextNode(""));
@@ -111,14 +105,14 @@ var tw_TabSheet = tw_BaseContainer.extend({
         if (this._focusCapable) tw_setFocusCapable(this._tab, active);
     },    
 
-	setFocusCapable: function(focusCapable) {
-		arguments.callee.$.call(this, focusCapable);
-		if (focusCapable && this._enabled) {
-			tw_setFocusCapable(this._tab, true);
-		} else {
-			tw_setFocusCapable(this._tab, false);
-		}
-	},
+    setFocusCapable: function(focusCapable) {
+        arguments.callee.$.call(this, focusCapable);
+        if (focusCapable && this._enabled) {
+            tw_setFocusCapable(this._tab, true);
+        } else {
+            tw_setFocusCapable(this._tab, false);
+        }
+    },
         
     setStyle: function(name, value) {
         arguments.callee.$.call(this, name, value);

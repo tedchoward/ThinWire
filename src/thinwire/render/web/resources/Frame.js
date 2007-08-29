@@ -45,11 +45,8 @@ var tw_Frame = tw_BaseContainer.extend({
         this._fontBox = this._borderBox = null;
         
         var s = this._box.style;
-        s.cursor = "default";    
-        s.top = "0px";
-        s.left = "0px";
-        s.width = "100%";
-        s.height = "100%";
+        var cssText = "position:absolute;overflow:hidden;padding:0px;margin:0px;cursor:default;top:0px;left:0px;width:100%;height:100%;";
+        tw_Component.setCSSText(cssText, this._box);
         
         tw_Frame.active = this;
         this._modalDialogIds = [];
@@ -57,19 +54,14 @@ var tw_Frame = tw_BaseContainer.extend({
         this._backgroundBox = this._container = this._scrollBox = document.createElement("div");
         this._container.className = "container";
         var s = this._container.style;
-        s.position = "absolute";        
-        s.overflow = "hidden";
-        s.zIndex = "0";
-        s.width = "100%";
+        cssText = "position:absolute;overflow:hidden;z-index:0;width:100%;";
+        tw_Component.setCSSText(cssText, this._container);
         this._box.appendChild(this._container);
 
         this._modalLayer = document.createElement("div");
         var s = this._modalLayer.style; 
-        s.display = "none";
-        s.position = "absolute";
-        s.height = "100%";
-        s.width = "100%";
-        s.zIndex = "1";
+        cssText = "display:none;position:absolute;height:100%;width:100%;z-index:1;";
+        tw_Component.setCSSText(cssText, this._modalLayer);
         tw_setLayerTransparent(this._modalLayer);        
         
         tw_addEventListener(this._modalLayer, "mousedown", this._modalLayerMouseDownListener);

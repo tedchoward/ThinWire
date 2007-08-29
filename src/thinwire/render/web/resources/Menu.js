@@ -20,8 +20,8 @@
   contact the following company who invented, built and supports the technology:
   
                 Custom Credit Systems, Richardson, TX 75081, USA.
-   	            email: info@thinwire.com    ph: +1 (888) 644-6405
- 	                        http://www.thinwire.com
+                email: info@thinwire.com    ph: +1 (888) 644-6405
+                            http://www.thinwire.com
 #ENDIF
 #IFDEF ALT_LICENSE
 #LICENSE_HEADER#
@@ -40,10 +40,9 @@ var tw_Menu = tw_Component.extend({
         delete props.windowMenu;
 
         var s = this._box.style;
-        s.overflow = "visible";
-        s.padding = "1px";
-        s.zIndex = "1";
-        if (this._windowMenu) s.position = "";
+        var positionText = this._windowMenu ? "" : "position:absolute;";
+        var cssText = positionText + "overflow:visible;padding:1px;margin:0px;z-index:1;";
+        tw_Component.setCSSText(cssText, this._box);
 
         this._boxSizeSub = tw_sizeIncludesBorders ? 0 : parseInt(s.padding) * 2; 
         
@@ -415,74 +414,60 @@ var tw_Menu = tw_Component.extend({
                 
         if (menu.className != "mainMenu") {
             var s = item.style;
-            s.position = "relative";
+            var cssText = "position:relative;";
+            tw_Component.setCSSText(cssText, item);
             
             var s = button.style;
-            s.position = "relative";
-            s.padding = "2px";
-            s.paddingRight = "18px";
-            s.backgroundRepeat = "no-repeat";
-            s.backgroundPosition = "center right";
+            cssText = "position:relative;padding:2px;padding-right:18px;background-repeat:no-repeat;background-position:center right;";
+            tw_Component.setCSSText(cssText, button);
 
             var image = document.createElement("div");
             image.className = "menuButtonImage";
             var s = image.style;
-            s.height = "16px";
-            s.width = "16px";
-            s.backgroundRepeat = "no-repeat";
-            s.backgroundPosition = "center center";
+            cssText = "height:16px;width:16px;background-repeat:no-repeat;background-position:center center;";
+            tw_Component.setCSSText(cssText, image);
             button.appendChild(image);
     
             var text = document.createElement("span");
             text.className = "menuButtonText";
             var s = text.style;
-            s.position = "absolute";
-            s.top = "3px";
-            s.left = "20px";            
+            cssText = "position:absolute;top:3px;left:20px;";
+            tw_Component.setCSSText(cssText, text);
             button.appendChild(text);
             
             var shortcutText = document.createElement("span");
             shortcutText.className = "menuButtonSText";
             var s = shortcutText.style;
-            s.position = "absolute";
-            s.top = "2px";
-            s.right = "20px";
+            cssText = "position:absolute;top:2px;right:20px;";
+            tw_Component.setCSSText(cssText, shortcutText);
             button.appendChild(shortcutText);                    
             
             if (menu.className != "mainMenuItem") this._setArrowVisible(menu, true);
         } else {
             var s = item.style;
             s.styleFloat = "left";
-            
-            var s = button.style;
-            s.whiteSpace = "nowrap";
-            s.paddingTop = "2px";
-            s.paddingBottom = "2px";
-            s.borderWidth = "1px";
-            s.borderStyle = "solid";
-            s.borderColor = this._backgroundColor;
-            s.paddingLeft = "5px";
-            s.paddingRight = "5px";
+            //s.styleFloat = "left";
+
             var lineHeight = this._height - this._mainItemSub;
             if (lineHeight < 0) lineHeight = 0;
-            s.lineHeight = lineHeight + "px";
+            
+            var s = button.style;
+            cssText = "white-space:nowrap;padding-top:2px;padding-bottom:2px;border-width:1px;border-style:solid;border-color:" +
+                this._backgroundColor + ";padding-left:5px;padding-right:5px;line-height:" + lineHeight + "px;";
+            tw_Component.setCSSText(cssText, button);
         }
     
         item.appendChild(button);
         
         var content = document.createElement("div");
         content.className = prefix + "enuContent";
-        var s = content.style;        
-        s.position = "absolute";
-        s.visibility = "hidden";
-        
-        s.backgroundColor = this._backgroundColor;
-        s.borderWidth = this._borderSize + "px";
+        var s = content.style;
         var borderType = this._borderType;
-        s.borderStyle = borderType;
-        s.borderColor = tw_Component.getIEBorder(this._borderColor, borderType);
-
-        if (prefix == "m") s.top = "-2px";        
+        var topText = prefix == "m" ? "top: -2px; " : "";
+        var cssText = "position:absolute;visibility:hidden;background-color:" + this._backgroundColor + ";border-width:" + 
+            this._borderSize + "px;border-style:" + borderType + ";border-color:" + 
+            tw_Component.getIEBorder(this._borderColor, borderType) + ";" + top;
+        tw_Component.setCSSText(cssText, content);
         content.tw_maxTextWidth = 0;
         content.tw_maxShortcutTextWidth = 0;
         item.appendChild(content);
@@ -549,18 +534,12 @@ var tw_Menu = tw_Component.extend({
         var item = document.createElement("div");
         item.className = "menuDivider";
         var s = item.style;
-        s.marginTop = "3px";
-        s.marginBottom = "3px";
-        s.marginLeft = "2px";
-        s.marginRight = "1px";
-        
-        var borderSize = this._borderSize / 2;        
-        s.borderTopWidth = Math.floor(borderSize) + "px";
-        s.borderRightWidth = s.borderLeftWidth = "0px";
-        s.borderBottomWidth = (borderSize < 1 ? 1 : Math.floor(borderSize)) + "px";
+        var borderSize = this._borderSize / 2;
         var borderStyle = this._getReverseBorderStyle(this._borderType);
-        s.borderStyle = borderStyle;
-        s.borderColor = tw_Component.getIEBorder(this._borderColor, borderStyle);
+        var cssText = "margin-top:3px;margin-bottom:3px;margin-left:2px;margin-right:1px;border-top-width:" + Math.floor(borderSize) +
+            "px;border-right-width:0px;border-left-width:0px;border-bottom-width:" + (borderSize < 1 ? 1 : Math.floor(borderSize)) + 
+            "px;border-style:" + borderStyle + ";border-color:" + tw_Component.getIEBorder(this._borderColor, borderStyle) + ";";
+        tw_Component.setCSSText(cssText, item);
         
         var parent = menu.lastChild;
         

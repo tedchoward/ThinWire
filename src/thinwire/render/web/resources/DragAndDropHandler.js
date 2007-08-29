@@ -48,7 +48,8 @@ var tw_DragAndDropHandler = Class.extend({
             
         this._dragInd = document.createElement("img");
         var s = this._dragInd.style;
-        s.position = "absolute";
+        var cssText = "position:absolute;";
+        tw_Component.setCSSText(cssText, this._dragInd);
         
         this._dragBoxHandler = new tw_DragHandler(this._source.getDragArea(), this._dragBoxListener.bind(this));
         tw_addEventListener(this._source.getDragArea(), "mousedown", this._mouseDown);

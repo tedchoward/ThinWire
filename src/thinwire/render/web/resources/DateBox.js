@@ -20,8 +20,8 @@
   contact the following company who invented, built and supports the technology:
   
                 Custom Credit Systems, Richardson, TX 75081, USA.
-   	            email: info@thinwire.com    ph: +1 (888) 644-6405
- 	                        http://www.thinwire.com
+                email: info@thinwire.com    ph: +1 (888) 644-6405
+                            http://www.thinwire.com
 #ENDIF
 #IFDEF ALT_LICENSE
 #LICENSE_HEADER#
@@ -48,18 +48,17 @@ var tw_DateBox = tw_Component.extend({
         this._footerClickListener = this._footerClickListener.bind(this);
         
         var s = this._box.style;
-        s.textAlign = "center";
+        var cssText = "position:absolute;overflow:hidden;padding:0px;margin:0px;text-align:center;";
+        tw_Component.setCSSText(cssText, this._box);
         
         this._curDate = this._today = new Date(props.today);
         delete props.today;
         
         this._header = document.createElement("div");
         s = this._header.style;
-        s.overflow = "hidden";
-        s.whiteSpace = "nowrap";        
-        s.height = tw_DateBox.rowHeight + "px";
-        s.color = tw_COLOR_BUTTONTEXT;
-        s.backgroundColor = tw_COLOR_BUTTONFACE;
+        cssText = "overflow:hidden;white-space:nowrap;height:" + tw_DateBox.rowHeight + "px;color:" + tw_COLOR_BUTTONTEXT +
+            ";background-color:" + tw_COLOR_BUTTONFACE + ";";
+        tw_Component.setCSSText(cssText, this._header);
         tw_Component.applyButtonBorder(this._header, true, true, false, true);
 
         this._header.appendChild(document.createTextNode(tw_DateBox.MONTHS[this._today.getMonth()] + " " + this._today.getFullYear()));
@@ -78,8 +77,8 @@ var tw_DateBox = tw_Component.extend({
         
         var footer = document.createElement("div");
         s = footer.style;
-        s.height = "18px";
-        s.textAlign = "center";
+        cssText = "height:18px;text-align:center;";
+        tw_Component.setCSSText(cssText, footer);
         footer.appendChild(document.createTextNode("Today: " + this._getFormattedDate(this._today)));
         this._box.appendChild(footer);
         this._footer = footer;
@@ -145,10 +144,9 @@ var tw_DateBox = tw_Component.extend({
         var days = ["S", "M", "T", "W", "T", "F", "S"];
         var row = document.createElement("tr");
         var s = table.style;
-        s.height = "17px";
-        s.borderBottom = "1px solid " + tw_COLOR_WINDOWFRAME;
-        s.marginLeft = "auto";
-        s.marginRight = "auto";
+        var cssText = "height:17px;border-bottom:1px solid " + tw_COLOR_WINDOWFRAME + ";margin-left:auto;margin-right:auto;";
+        tw_Component.setCSSText(cssText, table);
+
         for (var i = 0; i < days.length; i++) {
             var cell = document.createElement("th");
             cell.appendChild(document.createTextNode(days[i]));
@@ -166,15 +164,15 @@ var tw_DateBox = tw_Component.extend({
         var tbody = document.createElement("tbody");
         table.appendChild(tbody);
         var s = table.style;
-        s.borderBottom = "1px solid " + tw_COLOR_WINDOWFRAME;
-        s.marginLeft = "auto";
-        s.marginRight = "auto";
+        var cssText = "border-bottom:1px solid " + tw_COLOR_WINDOWFRAME + ";margin-left:auto;margin-right:auto;";
+        tw_Component.setCSSText(cssText, table);
+
         for (var i = 0; i < 6; i++) {
             var row = document.createElement("tr");
             for (var j = 0; j < 7; j++) {
                 var cell = document.createElement("td");
-                cell.style.border = "none 1px " + tw_COLOR_WINDOWFRAME;
-                cell.style.padding = "1px";
+                tw_Component.setCSSText("border:none 1px " + tw_COLOR_WINDOWFRAME + ";padding:1px;", cell);
+
                 cell.appendChild(document.createTextNode(""));
                 tw_addEventListener(cell, ["click", "dblclick"], this._cellClickListener);
                 
@@ -302,16 +300,13 @@ var tw_DateBox = tw_Component.extend({
     
     _createButton: function(img, align) {
         var btn = document.createElement("div");
+        var imgText = img != null ? "background-image:" + img + ";" : "";
+        var alignText = align != null ? align.replace(tw_Component.cssRegex, tw_Component.cssReplaceFunc) + ":3px;" : "";
         s = btn.style;
-        s.position = "absolute";
-        s.margin = "0px";
-        s.padding = "1px";    
-        s.overflow = "hidden";
-        s.top = "0px";
-        s.width = "16px";
-        s.height = this._header.style.height;
-        if (align != null) s[align] = "3px";
-        if (img != null) btn.style.backgroundImage = img;
+        var cssText = "position:absolute;margin:0px;padding:1px;overflow:hidden;top:0px;width:16px;height:" + 
+            this._header.style.height + ";" + alignText + imgText;
+        tw_Component.setCSSText(cssText, btn);
+
         tw_addEventListener(btn, "click", this._btnClickListener);
         return btn;
     },

@@ -44,8 +44,8 @@ var tw_Tree = tw_Component.extend({
         this._scrollBox = this._box;
         this._box.tw_isLeaf = false;
         var s = this._box.style;
-        s.overflow = "auto";
-        s.whiteSpace = "nowrap";
+        var cssText = "position:absolute;overflow:auto;padding:0px;margin:0px;white-space:nowrap;";
+        tw_Component.setCSSText(cssText, this._box);
         
         this._treeTop = document.createElement("span");
         this._box.appendChild(this._treeTop);
@@ -110,10 +110,7 @@ var tw_Tree = tw_Component.extend({
     _createTextNode: function() {
         var textNode = document.createElement("span");
         var s = textNode.style;
-        s.verticalAlign = "middle";
-        s.padding = "2px";
-        s.paddingTop = "1px";
-        s.paddingBottom = "1px";
+        tw_Component.setCSSText("vertical-align:middle;padding:2px;padding-top:1px;padding-bottom:1px;", textNode);
         return textNode;        
     },
     
@@ -124,16 +121,18 @@ var tw_Tree = tw_Component.extend({
             
             itemImg = this._expandImageURL(itemImg);            
             var imgNode = document.createElement("img");
-            imgNode.style.verticalAlign = "middle";
+            var imgNodeCSSText = "vertical-align:middle;";
             node.appendChild(imgNode);
             node.assignedImageNode = imgNode;
             
             if (itemImg == null) {
-                imgNode.style.display = "none";
+                imgNodeCSSText += "display:none;";
             } else {
                 imgNode.src = itemImg;
-                imgNode.style.display = "inline";
-            }            
+                imgNodeCSSText += "display:inline;";
+            }       
+
+            tw_Component.setCSSText(imgNodeCSSText, imgNode);
             
             var textNode = this._createTextNode();
             node.appendChild(textNode);
@@ -289,7 +288,7 @@ var tw_Tree = tw_Component.extend({
 
         for (var i=0; i < level; i++) {
             tiNode = document.createElement("img");
-            tiNode.style.verticalAlign = "middle";
+            tw_Component.setCSSText("vertical-align:middle;", tiNode);
             tiNode.src = tw_IMAGE_TREE_STRAIGHT;
             node.appendChild(tiNode);
         }
@@ -312,7 +311,7 @@ var tw_Tree = tw_Component.extend({
         //Add another image node to the new node.
         //This image node gets a click event handler.
         tiNode = document.createElement("img");
-        tiNode.style.verticalAlign = "middle";
+        tw_Component.setCSSText("vertical-align:middle;", tiNode);
         tiNode.src = bimg;
         node.appendChild(tiNode);
         node.imageNode = tiNode;
@@ -321,17 +320,19 @@ var tw_Tree = tw_Component.extend({
         //Add an assignedImage node to the new node if the 
         //itemImg parameter has a non-empty value.
         itemImg = this._expandImageURL(itemImg);        
-        var imgNode = document.createElement("img");        
-        imgNode.style.verticalAlign = "middle";
+        var imgNode = document.createElement("img");
+        var imgNodeCSSText = "vertical-align:middle; ";
         node.appendChild(imgNode);
         node.assignedImageNode = imgNode;
 
         if (itemImg == null) {
-            imgNode.style.display = "none";
+            imgNodeCSSText += "display:none; ";
         } else {
             imgNode.src = itemImg;
-            imgNode.style.display = "inline";            
+            imgNodeCSSText += "display:inline; ";           
         }
+
+        tw_Component.setCSSText(imgNodeCSSText, imgNode);
       
         //Add a text node to the new row node.
         var textNode = this._createTextNode();
@@ -344,7 +345,7 @@ var tw_Tree = tw_Component.extend({
         //Add the span which will hold the row's child rows.
         var br = document.createElement("span");
         br.className = "treeBranch";
-        br.style.display = "none";
+        tw_Component.setCSSText("display:none;", br);
         node.appendChild(br);
         node.subNodes = br;
         
@@ -619,7 +620,7 @@ var tw_Tree = tw_Component.extend({
         dragBox.appendChild(item.getElementsByTagName("span")[0].cloneNode(true));
         
         var s = dragBox.style;
-        s.height = tw_Tree.rowHeight + "px";
+        tw_Component.setCSSText("height:" + tw_Tree.rowHeight + "px;", dragBox);
         dragBox._dragObject = this._fullIndex(item);
         return dragBox;
     },
