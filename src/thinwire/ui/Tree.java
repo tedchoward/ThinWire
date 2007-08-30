@@ -255,11 +255,11 @@ public class Tree extends AbstractHierarchyComponent<Tree.Item> {
     void removingItem(Tree.Item item) {
         if (priorSelectedItem == item) priorSelectedItem = null;
         
-        if (selectedItem == item) {
-            if (selectedItem.getParent() instanceof Tree.Item) {
-                Tree.Item parent = (Tree.Item)selectedItem.getParent();
+        if (selectedItem == item || childSelected(item)) {
+            if (item.getParent() instanceof Tree.Item) {
+                Tree.Item parent = (Tree.Item)item.getParent();
                 List<Tree.Item> kids = parent.getChildren(); 
-                int index = kids.indexOf(selectedItem);
+                int index = kids.indexOf(item);
                 
                 if ((index - 1) >= 0) {
                     kids.get(index - 1).setSelected(true);
@@ -270,6 +270,12 @@ public class Tree extends AbstractHierarchyComponent<Tree.Item> {
                 }
             }
         }
+    }
+    
+    private boolean childSelected(Tree.Item item) {
+    	if (!item.hasChildren()) return false;
+    	for (Tree.Item i : item.getChildren()) if (selectedItem.equals(i) || childSelected(i)) return true;
+    	return false;
     }
     
     /**
