@@ -250,7 +250,7 @@ public final class WebServlet extends HttpServlet {
                 response.setContentType(mimeType);
                 response.getOutputStream().write(data);
             } catch (Exception e){
-            	log.warning("resource not found:" + resourceName);
+            	if (log.isLoggable(Level.WARNING)) log.log(Level.WARNING, "resource not found: " + resourceName, e);
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
             }
         }        

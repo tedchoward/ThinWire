@@ -136,7 +136,8 @@ class EventProcessor extends Thread {
             } catch (Exception e) {
                 app.reportException(null, e);
             }
-        } else if (app.timers.size() > 0) {
+        } else if (app != null && app.timers != null && app.timers.size() > 0) {
+        	//Extra checks required since thread may start before being tied to an app.
         	try {
         		if (log.isLoggable(LEVEL)) log.log(LEVEL, getName() + ": process timer task 1 of " + app.timers.size());
         		app.timers.remove(0).run();
