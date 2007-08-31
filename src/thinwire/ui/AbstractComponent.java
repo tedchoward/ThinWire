@@ -349,13 +349,28 @@ abstract class AbstractComponent implements Component {
     }
 
     public void setFocus(boolean focus) {
-        if (!this.isFocusCapable()) throw new IllegalStateException("!this.isFocusCapable()");
+        if (!this.isFocusCapable()) throw new IllegalStateException(this.getClass().getSimpleName() + ": !this.isFocusCapable()");
             
         if (parent instanceof Container || parent == null) {
             if (this.focus == focus) return;
             
             if (focus) {
-                if (parent != null || this instanceof Dialog) {
+            	
+            	// Determine if the component is a new container (a container that has just been given focus by application code
+            	//  or has a component thet has focus, but hasn't yet been rendered)
+            	boolean newContainer = false;
+            	if (this instanceof Container) {
+            		Container cont = (Container) this;
+            		Component cwf = cont.getChildWithFocus();
+            		if (cwf != null) {
+            			while (cwf != null && cwf instanceof Container) cwf = ((Container) cwf).getChildWithFocus();
+        				if (!cwf.equals(cont.getComponentWithFocus())) newContainer = true;
+            		} else {
+            			newContainer = true;
+            		}
+            	}
+            	
+                if ((parent != null && (!(this instanceof Container) || newContainer)) || (this instanceof Dialog && newContainer)) {
                     Container container = parent != null ? (Container)parent : app.getFrame();                    
                     Component childWithFocus = container.getChildWithFocus();
                     
@@ -364,30 +379,34 @@ abstract class AbstractComponent implements Component {
                         if (container == null) break;
                         childWithFocus = container.getChildWithFocus();
                     }
-                    
+
                     if (childWithFocus != null) childWithFocus.setFocus(false);
                 }
                 
     		    firePropertyChange(this, PROPERTY_FOCUS, this.focus, this.focus = true);
-    		                    
+    		    
     		    if (parent != null || this instanceof Dialog) {
                     AbstractContainer container = parent != null ? (AbstractContainer)parent : app.getFrame();
                     container.setChildWithFocus(this);
-                    container.setFocus(true);
+                    if (app == null || !container.equals(app.getFrame())) container.setFocus(true);
     		    }
             } else {
-                if (app != null) app.setPriorFocus(this);
-                
-                if (this instanceof Container) {
-                    Component childWithFocus = ((Container)this).getChildWithFocus();                      
-                    if (childWithFocus != null) childWithFocus.setFocus(false);
-                } else if (parent != null || this instanceof Dialog) {
-                    AbstractContainer container = parent != null ? (AbstractContainer)parent : app.getFrame();
+            	app.setPriorFocus(this);
+            	// We need to walk down the containment hierarchy nulling out the childWithFocus property
+            	//  and setting each component's focus property to false, until we reach the final component
+            	if (this instanceof Container) {
+            		Component childWithFocus = ((Container)this).getChildWithFocus();                      
+                    if (childWithFocus != null) {
+                    	((AbstractContainer) this).setChildWithFocus(null);
+                    	childWithFocus.setFocus(false);
+                    }
+            	} else if (parent != null) {
+            		AbstractContainer container = (AbstractContainer)parent;
                     Component childWithFocus = container.getChildWithFocus();
-                    if (this.equals(childWithFocus)) container.setChildWithFocus(null);                    
-                }
-                
-    		    firePropertyChange(this, PROPERTY_FOCUS, this.focus, this.focus = false);
+                    if (this.equals(childWithFocus)) container.setChildWithFocus(null);
+            	}
+            	
+            	firePropertyChange(this, PROPERTY_FOCUS, this.focus, this.focus = false);
             }
         } else
             throw new UnsupportedOperationException("the property 'focus' is not supported by " + this.getClass());

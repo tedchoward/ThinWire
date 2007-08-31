@@ -203,19 +203,22 @@ abstract class AbstractContainer<T extends Component> extends AbstractComponent 
     
     public T getComponentWithFocus() {
         T ret = null;
-        Object root = this;
+        Object root = app != null ? app.getFrame() : this;
         Object parent;
         
+        
         //Walk up the tree to the root container
-        while (root instanceof Container && (parent = ((Container)root).getParent()) != null)
+        while (root instanceof Container && (parent = ((Container)root).getParent()) != null) {
             root = parent;
+        }
 
         //If the root is a container, walk down the children with focus to get the component with focus.
         if (root instanceof Container) {
             ret = (T)root;
                         
-	        while (ret instanceof Container)
+	        while (ret instanceof Container) {
 	            ret = ((Container<T>)ret).getChildWithFocus();
+	        }
     	}
     
         return ret;

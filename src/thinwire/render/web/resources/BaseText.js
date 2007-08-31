@@ -104,12 +104,12 @@ var tw_BaseText = tw_Component.extend({
     },
         
     setText: function(text) {
-        var length = this._editor.maxLength;
-        this._editor.maxLength = text.length;
+        var length = parseInt(this._editor.maxLength);
+		if (length != -1) this._editor.maxLength = text.length;
         this._lastValue = this._editor.value = text;
         if (this._useToolTip) this._editor.title = text; 
         this._validateInput(0);
-        this._editor.maxLength = length;
+        if (length != -1) this._editor.maxLength = length;
         this._textStateChange(false, true);
     },
 

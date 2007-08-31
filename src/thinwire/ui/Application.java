@@ -741,7 +741,7 @@ public abstract class Application {
     }
     
     void setPriorFocus(Component comp) {
-        priorFocus = new WeakReference<Component>(comp);    
+        priorFocus = new WeakReference<Component>(comp);
     }
             
 	/**
