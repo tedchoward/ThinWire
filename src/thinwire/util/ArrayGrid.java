@@ -208,8 +208,8 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
                 row.set(columns.size() - 1, null); //force the row to expand
                 
                 //Shift row values over
-                for (int i = columns.size() - 1; addAtIndex < i; i--)
-                    row.set(i, row.get(i - 1));
+                for (int i = columns.size() - 1; addAtIndex < i; i--) row.set(i, row.get(i - 1));
+                row.set(addAtIndex, null);
             }            
         }
 
