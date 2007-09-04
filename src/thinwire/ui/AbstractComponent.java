@@ -362,12 +362,9 @@ abstract class AbstractComponent implements Component {
             	if (this instanceof Container) {
             		Container cont = (Container) this;
             		Component cwf = cont.getChildWithFocus();
-            		if (cwf != null) {
-            			while (cwf != null && cwf instanceof Container) cwf = ((Container) cwf).getChildWithFocus();
-        				if (cwf == null || !cwf.equals(cont.getComponentWithFocus())) newContainer = true;
-            		} else {
-            			newContainer = true;
-            		}
+            		
+            		while (cwf != null && cwf instanceof Container) cwf = ((Container) cwf).getChildWithFocus();
+            		if (cwf == null || !cwf.equals(cont.getComponentWithFocus())) newContainer = true;
             	}
             	
                 if ((parent != null && (!(this instanceof Container) || newContainer)) || (this instanceof Dialog && newContainer)) {
