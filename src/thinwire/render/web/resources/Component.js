@@ -243,7 +243,7 @@ var tw_Component = Class.extend({
             var s = this._borderBox == null ? null : this._borderBox.style;
             
             if (name == "borderWidth") {
-                this._borderSize = parseInt(value);
+                this._borderSize = parseInt(value, 10);
                 this._borderSizeSub = this._borderSize * 2;
                 
                 if (this._borderImage == null) {                    
@@ -546,7 +546,7 @@ var tw_Component = Class.extend({
             style = styleProps;
         }
 		
-       	this.setStyle("backgroundColor", style["backgroundColor"])
+       	this.setStyle("backgroundColor", style["backgroundColor"]);
         this.setStyle("backgroundImage", style["backgroundImage"]);
         this.setStyle("backgroundRepeat", style["backgroundRepeat"]);
         this.setStyle("backgroundPosition", style["backgroundPosition"]);
@@ -735,11 +735,11 @@ tw_Component.getClickAction = function(type, index) {
     } else if (type == "dblclick") {
         return "doubleClick";
     }
-}
+};
 
 tw_Component.setText = function(text) {
     this._box.replaceChild(tw_Component.setRichText(text), this._box.firstChild);
-}
+};
 
 tw_Component.rtStyleMap = {
     ff: "fontFamily",
@@ -803,15 +803,15 @@ tw_Component.processRichTextNode = function(node, element) {
         if (node.c != undefined) element.appendChild(tw_Component.setRichText(node.c));    
         return element;
     } else {
-        var textNode = document.createTextNode(node);
+        var textNode = document.createTextNode(node.replace(/ /g, '\u00A0'));
         if (element != null) element.appendChild(textNode);
         return textNode;
     }
-}
+};
 
 tw_Component.setRichText = function(text, element) {
     if (typeof(text) == "string" || text instanceof String) {
-        var textNode = document.createTextNode(text);
+        var textNode = document.createTextNode(text.replace(/ /g, '\u00A0'));
         if (element != null) element.appendChild(textNode);
         element = textNode;
     } else {
@@ -831,11 +831,11 @@ tw_Component.setRichText = function(text, element) {
     }
     
     return element;
-}
+};
 
 tw_Component.camelCaseRegex = /\-(.)/g;
 
-tw_Component.camelCaseReplaceFunc = function(m, l) { return l.toUpperCase(); }
+tw_Component.camelCaseReplaceFunc = function(m, l) { return l.toUpperCase(); };
 
 tw_Component.setCSSText = function(cssText, box) {
 	var s = box.style;
@@ -848,5 +848,4 @@ tw_Component.setCSSText = function(cssText, box) {
 			if (entry.length == 2) s[entry[0].replace(tw_Component.camelCaseRegex, tw_Component.camelCaseReplaceFunc)] = entry[1];
 		}
 	}
-}
-
+};
