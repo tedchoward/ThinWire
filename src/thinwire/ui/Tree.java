@@ -237,19 +237,6 @@ public class Tree extends AbstractHierarchyComponent<Tree.Item> {
         super(new Item(), EventListenerImpl.ACTION_VALIDATOR);
         selectedItem = getRootItem();
         selectedItem.setExpanded(true);
-        
-        addItemChangeListener(new ItemChangeListener() {
-			public void itemChange(ItemChangeEvent ev) {
-				if (ev.getType() == ItemChangeEvent.Type.ADD) {
-					Tree.Item newItem = (Tree.Item) ev.getNewValue();
-					Tree tree = newItem.getHierarchy();
-					if (tree.getRootItem().getChildren().size() == 1 || newItem.isSelected()) newItem.setSelected(true);
-				} else if (ev.getType() == ItemChangeEvent.Type.SET) {
-					if (((Tree.Item) ev.getOldValue()).isSelected()) ((Tree.Item) ev.getNewValue()).setSelected(true);
-				}
-			}
-        });
-        
     }
 
     void removingItem(Tree.Item item) {

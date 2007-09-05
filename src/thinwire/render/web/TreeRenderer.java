@@ -121,6 +121,13 @@ final class TreeRenderer extends ComponentRenderer implements ItemChangeListener
                 postClientEvent(ITEM_EXPAND, fullIndex(((Tree.Item)newValue.getParent())), true);
             }
         }
+        
+        if (type == ItemChangeEvent.Type.ADD) {
+        	Tree tree = newValue.getHierarchy();
+			if (tree.getRootItem().getChildren().size() == 1 || newValue.isSelected()) newValue.setSelected(true);
+        } else if (type == ItemChangeEvent.Type.SET) {
+			if (((Tree.Item) ice.getOldValue()).isSelected()) (newValue).setSelected(true);
+		}
     }
     
     private void renderChildren(Tree.Item parent) {
