@@ -177,15 +177,15 @@ var tw_Frame = tw_BaseContainer.extend({
     
     setMenu: function(menu) {        
         if (this._menu != null) {
-            this._container.style.height = parseInt(this._container.style.height) + tw_Dialog.menuBarHeight + "px";
+            this._container.style.height = parseInt(this._container.style.height, 10) + tw_Dialog.menuBarHeight + "px";
             this._box.removeChild(this._menu._box);
         }
         
         this._menu = menu;
         
         if (menu instanceof tw_Menu) {
-            this._box.insertBefore(menu._box, this._container);
-            this._container.style.height = parseInt(this._container.style.height) - tw_Dialog.menuBarHeight + "px";
+			document.body.appendChild(menu._box);
+            this._container.style.height = parseInt(this._container.style.height, 10) - tw_Dialog.menuBarHeight + "px";
         }
     },
     

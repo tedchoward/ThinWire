@@ -40,11 +40,11 @@ var tw_Menu = tw_Component.extend({
         delete props.windowMenu;
 
         var s = this._box.style;
-        var positionText = this._windowMenu ? "" : "position:absolute;";
-        var cssText = positionText + "overflow:visible;padding:1px;margin:0px;z-index:1;";
+		var sizeText = this._windowMenu ? "width:100%;" : "";
+        var cssText = "position:absolute;overflow:visible;padding:1px;margin:0px;z-index:1;" + sizeText;
         tw_Component.setCSSText(cssText, this._box);
 
-        this._boxSizeSub = tw_sizeIncludesBorders ? 0 : parseInt(s.padding) * 2; 
+        this._boxSizeSub = tw_sizeIncludesBorders ? 0 : parseInt(s.padding, 10) * 2; 
         
         this._mainMenuMouseOver = this._mainMenuMouseOver.bind(this);
         this._mainMenuMouseDown = this._mainMenuMouseDown.bind(this);
@@ -116,7 +116,7 @@ var tw_Menu = tw_Component.extend({
                 if (name == "borderColor") {
                     s[name] = value;
                 } else if (name == "borderWidth") {
-                    var borderSize = parseInt(value) / 2;        
+                    var borderSize = parseInt(value, 10) / 2;        
                     s.borderTopWidth = Math.floor(borderSize) + "px";
                     s.borderRightWidth = "0px";
                     s.borderLeftWidth = "0px";
@@ -299,7 +299,11 @@ var tw_Menu = tw_Component.extend({
                 var parent = item.parentNode;
                 content.style.left = (parent.tw_maxTextWidth + parent.tw_maxShortcutTextWidth + 2.50) + "em";
             } else {
-                content.style.zIndex = ++tw_Component.zIndex;            
+				if (this._windowMenu) {
+					this._box.style.zIndex = ++tw_Component.zIndex;
+				} else {
+					content.style.zIndex = ++tw_Component.zIndex;
+				}
             }
             
             content.style.visibility = "visible";
@@ -599,12 +603,12 @@ var tw_Menu = tw_Component.extend({
         if (findex == "rootItem") return this._box;
         
         var ary = findex.split(".");
-        var value = parseInt(ary[0]);
+        var value = parseInt(ary[0], 10);
         var node = this._box.childNodes.item(value);
         
         for (var i = 1; i < ary.length; i++) {
             pnode = node.childNodes.item(1);
-            value = parseInt(ary[i]);
+            value = parseInt(ary[i], 10);
             node = pnode.childNodes.item(value);
         }
         
