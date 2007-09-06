@@ -778,6 +778,8 @@ tw_Component.rtAttrMap = {
     h: "height"
 };
 
+tw_Component.nonBreakingSpace = String.fromCharCode(160);
+
 tw_Component.processRichTextNode = function(node, element) {
     if (node instanceof Object) {
         if (element == null) element = document.createElement(node.t);
@@ -803,7 +805,7 @@ tw_Component.processRichTextNode = function(node, element) {
         if (node.c != undefined) element.appendChild(tw_Component.setRichText(node.c));    
         return element;
     } else {
-        var textNode = document.createTextNode(node.replace(/ /g, '\u00A0'));
+        var textNode = document.createTextNode(node.replace(/ /g, tw_Component.nonBreakingSpace));
         if (element != null) element.appendChild(textNode);
         return textNode;
     }
@@ -811,7 +813,7 @@ tw_Component.processRichTextNode = function(node, element) {
 
 tw_Component.setRichText = function(text, element) {
     if (typeof(text) == "string" || text instanceof String) {
-        var textNode = document.createTextNode(text.replace(/ /g, '\u00A0'));
+        var textNode = document.createTextNode(text.replace(/ /g, tw_Component.nonBreakingSpace));
         if (element != null) element.appendChild(textNode);
         element = textNode;
     } else {
