@@ -326,10 +326,23 @@ var tw_Menu = tw_Component.extend({
                 }
                 
                 if (this._activeMenuItem != null) {
-                    var itemIndex = this._fullIndex(item);
+                    var itemArray = this._fullIndex(item).split(".");
                     var activeIndex = this._fullIndex(this._activeMenuItem);
-                    activeIndex = activeIndex.substring(0, itemIndex.length);
-                    if (itemIndex.indexOf(activeIndex) != 0) this.close(this._fullIndexItem(activeIndex));
+					var activeArray = activeIndex.split(".");
+					var child = true;
+					
+					if (activeArray.length > itemArray.length) {
+						child = false;
+					} else {
+						for (var i = 0; i < activeArray.length; i++) {
+							if (itemArray[i] != activeArray[i]) {
+								child = false;
+								break;
+							}
+						}
+					}
+
+					if (!child) this.close(this._fullIndexItem(activeIndex));
                 }
                 
                 var nodes = item.parentNode.childNodes;
