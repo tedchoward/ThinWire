@@ -54,7 +54,7 @@ var tw_Frame = tw_BaseContainer.extend({
         this._backgroundBox = this._container = this._scrollBox = document.createElement("div");
         this._container.className = "container";
         var s = this._container.style;
-        cssText = "position:absolute;overflow:hidden;z-index:0;width:100%;";
+        cssText = "position:absolute;overflow:hidden;z-index:0;width:100%;bottom:0px;";
         tw_Component.setCSSText(cssText, this._container);
         this._box.appendChild(this._container);
 
