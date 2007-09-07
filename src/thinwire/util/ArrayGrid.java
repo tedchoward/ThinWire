@@ -196,11 +196,14 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
         ensuringSymmetry = true;        
         
         if (r != null) {
+        	//NOTE: Only one of the two following loops will actually execute, never both
+        	//Grow number of columns to match row size
             while (columns.size() < r.size())
                 columns.add(newColumnInstance());
 
-	        if (r.size() < columns.size())
-	            r.set(columns.size() - 1, null);
+            //Grow row as necessary to match number of columns
+	        while (r.size() < columns.size())
+	            r.add(null);
         }
         
         for (Grid.Row row : rows) {            
@@ -557,15 +560,16 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
          * @see java.util.List#set(int, java.lang.Object)
          */
         public R set(int index, R o) {
+            if (!(o instanceof List)) throw new ClassCastException("unsupported type");
             R ret = l.get(index);
             R r = prepareRow(o);
+            ensureSymmetry(r, r.size());            
             l.set(index, r);
             //If the parent is set to null during a call to Collections.sort,
             //problems arise.  djv 12/08/2004
             //ret.setParent(null, null);
             r.setParent(table, ArrayGrid.this);
             r.setIndex(index);
-            ensureSymmetry(r, r.size());            
             fireItemChange(Type.SET, index, -1, ret, r);            
             return ret;
         }
@@ -576,6 +580,7 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
         public void add(int index, R o) {
             if (!(o instanceof List)) throw new ClassCastException("unsupported type");
             R r = prepareRow(o);
+            ensureSymmetry(r, r.size());
             l.add(index, r);
             
             for (int i = index + 1, cnt = l.size(); i < cnt; i++)
@@ -584,7 +589,6 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
             r.setParent(table, ArrayGrid.this);
             r.setIndex(index);
             modCount++;
-            ensureSymmetry(r, r.size());
             fireItemChange(Type.ADD, index, -1, null, r);
         }
         
