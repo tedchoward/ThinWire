@@ -184,6 +184,9 @@ var tw_Frame = tw_BaseContainer.extend({
         this._menu = menu;
         
         if (menu instanceof tw_Menu) {
+			// All components inherit this style from the frame, but since the menu is not actually
+			//  attached to the frame in the DOM, the style doesn't cascade down.
+			menu._box.style.cursor = "default";
 			document.body.appendChild(menu._box);
             this._container.style.height = parseInt(this._container.style.height, 10) - tw_Dialog.menuBarHeight + "px";
         }
