@@ -40,20 +40,20 @@ import thinwire.ui.event.ItemChangeEvent.Type;
 /**
  * ArrayGrid is an implementation of the Grid interface which provides a disconnected dataset.<p>
  * The samples below populate an ArrayGrid with values from an
- * array and then prints out the values in the ArrayGrid.<p>
+ * array and then print out the values in the ArrayGrid.<p>
  * <h3>Notes</h3>
  * <UL>
  * <LI>Don't add the same Column to an ArrayGrid twice.  The following code illustrates the error.
  * <pre>
- * var ag = new ArrayGrid();
- * var col = new ArrayGrid.Column();
+ * Grid ag = new ArrayGrid();
+ * Grid.Column col = new ArrayGrid.Column();
  * ag.getColumns().add(col);
  * ag.getColumns().add(col); //!!! Don't do this.
  * </pre>
  * <LI>Don't add the same Row to an ArrayGrid twice.  
  * <pre>
- *  var ag = new ArrayGrid();
- *  var row = new ArrayGrid.Row();
+ *  Grid ag = new ArrayGrid();
+ *  Grid.Row row = new ArrayGrid.Row();
  *  ag.getRows().add(row);
  *  ag.getRows().add(row); //!!! Don't do this.
  * </pre>
@@ -61,12 +61,12 @@ import thinwire.ui.event.ItemChangeEvent.Type;
  * If after replacing a Row, you retrieve an element from the replaced Row, the element
  * will still be converted according to the ArrayGrid's policy. 
  * <pre>
- *    var ag = new ArrayGrid();
- *    var row1 = new ArrayGrid.Row();
+ *    Grid ag = new ArrayGrid();
+ *    Grid.Row row1 = new ArrayGrid.Row();
  *    ag.getRows().add(row1);
- *    var row2 = new ArrayGrid.Row();
- *    var row3 = ag.getRows().set(0, row2);  //Be careful with row3.
- *    var rowVal = row3.get(0); //Be careful with rowVal.
+ *    Grid.Row row2 = new ArrayGrid.Row();
+ *    Grid.row row3 = ag.getRows().set(0, row2);  //Be careful with row3.
+ *    Object rowVal = row3.get(0); //Be careful with rowVal.
  * <pre>
  * In the code above, row1 is replaced in ag with row2, and row3 is identical to
  * row1.  Despite its removal from ag, row1 (aka row3) still has ag as a parent.  If you retrieve
@@ -75,12 +75,13 @@ import thinwire.ui.event.ItemChangeEvent.Type;
  * original via ag's policy.
  * 
  * </UL>
- * <b>Sample Java Code:</b><br>
+ * <b>Sample Code:</b><br>
  * <pre>
- *   int[][] values = { { 0, 1, 2, 3, 4 }, { 10, 11, 12, 13, 14 },
+ *   int[][] values = new int[][]{ { 0, 1, 2, 3, 4 }, { 10, 11, 12, 13, 14 },
  *       { 20, 21, 22, 23, 24 }, { 30, 31, 32, 33, 34 }, { 40, 41, 42, 43, 44 } };
  *   
  *   ArrayGrid ag = new ArrayGrid();
+ *   
  *   for (int i = 0; i < 5; i++) {
  *     ArrayGrid.Column col = new ArrayGrid.Column();
  *     ag.getColumns().add(col);
@@ -89,15 +90,18 @@ import thinwire.ui.event.ItemChangeEvent.Type;
  *   for (int i = 0; i < 5; i++) {
  *     ArrayGrid.Row row = new ArrayGrid.Row();
  *     ag.getRows().add(row);
+ *   
  *     for (int j = 0; j < 5; j++) {
  *       row.set(j, new Integer(values[i][j]));
  *     }
  *   }
  *   
  *   System.out.println("\r\n");
+ *   
  *   for (int i = 0; i < 5; i++) {
  *     ArrayGrid.Row row = (ArrayGrid.Row) ag.getRows().get(i);
  *     String line = "";
+ *   
  *     for (int j = 0; j < 5; j++) {
  *       line += row.get(j) + " ";
  *     }

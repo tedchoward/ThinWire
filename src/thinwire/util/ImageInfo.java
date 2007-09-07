@@ -129,9 +129,10 @@ public class ImageInfo {
     }
 }
 
-/* XXX CCS Note: This class is a public domain class that is used by the ui
- * packages Image class to determine the width and height of an image. It is made
- * package-private because it is to only be used by the Image class
+/* XXX Note: This class is a public domain class that is used by
+ * ImageInfo (above) to determine the width and height of an image.
+ * It is made package-private because it is not intended to be used
+ * directly.
  */
 
 /*
