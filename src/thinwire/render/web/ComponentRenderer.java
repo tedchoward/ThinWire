@@ -31,8 +31,10 @@
 package thinwire.render.web;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.logging.Logger;
@@ -633,14 +635,18 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
             WindowRenderer wr = this instanceof WindowRenderer ? (WindowRenderer)this : this.wr;
             
             if (location.startsWith("file") || location.startsWith("class") || wr.ai.getRelativeFile(location).exists()) {
-                if (!location.startsWith("class")) location = wr.ai.getRelativeFile(location).getAbsolutePath();
+                if (!location.startsWith("class")) {
+                	if (location.startsWith("file:///")) location = location.substring(7);
+                	location = wr.ai.getRelativeFile(location).getAbsolutePath();
+                }
                 if (remoteFiles == null) remoteFiles = new ArrayList<String>(5);
                 remoteFiles.add(location);
                 location = "%SYSROOT%" + RemoteFileMap.INSTANCE.add(location);
             } else {
                 try {
-                    location = new URI(location).toString();
-                } catch (URISyntaxException e) {
+                    location = new URL(location).toString();
+                } catch (MalformedURLException e) {
+                	location = "";
                 }
             }
         } else {

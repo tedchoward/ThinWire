@@ -80,7 +80,6 @@ public class WebBrowser extends AbstractComponent {
     
     public void setLocation(String location) {
         String oldLocation = this.location;
-        if (!oldLocation.startsWith("http")) new File(oldLocation).delete();
         location = location == null ? "" : location;
         this.location = location;
         firePropertyChange(this, PROPERTY_LOCATION, oldLocation, location);        

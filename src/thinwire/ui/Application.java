@@ -32,6 +32,7 @@ package thinwire.ui;
 
 import java.io.*;
 import java.lang.ref.WeakReference;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -178,6 +179,17 @@ public abstract class Application {
 	public static Application current() {
         return thinwire.render.web.WebApplication.current();
 	}
+	
+	static boolean validateURL(String url) {
+		try {
+			new URL(url);
+			return true;
+		} catch (MalformedURLException e) {
+			if (url.startsWith("class:///")) return true;
+			Application app = current();
+			return app != null ? app.getRelativeFile(url).exists() : new File(url).exists();
+		}
+	}
     
     /**
      * Returns an InputStream representing the specified resource.
@@ -195,7 +207,7 @@ public abstract class Application {
     public static InputStream getResourceAsStream(String uri) {
         InputStream is = null;
 
-        if (uri != null && uri.trim().length() > 0) {
+        if (uri != null && uri.trim().length() > 0 && validateURL(uri)) {
             try {
                 String innerFile = null;
                 int index = uri.indexOf(".zip");
@@ -212,12 +224,13 @@ public abstract class Application {
                     String resource = uri.substring(endIndex + 1);
                     Class clazz = Class.forName(className);
                     is = clazz.getResourceAsStream(resource);
-                } else if (uri.startsWith("http://")) {
+                } else if (uri.indexOf("://") >= 0 && !uri.startsWith("file:///")) {
                     URL remoteImageURL = new URL(uri);
                     URLConnection remoteImageConnection = remoteImageURL.openConnection();
                     is = remoteImageConnection.getInputStream();
                 } else {
                     Application app = Application.current();
+                    if (uri.startsWith("file:///")) uri = uri.substring(7);
                     File file = app == null ? new File(uri) : app.getRelativeFile(uri);
                     if (file.exists()) is = new FileInputStream(file);
                 }

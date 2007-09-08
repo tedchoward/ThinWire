@@ -178,7 +178,7 @@ var tw_Frame = tw_BaseContainer.extend({
     setMenu: function(menu) {        
         if (this._menu != null) {
             this._container.style.height = parseInt(this._container.style.height, 10) + tw_Dialog.menuBarHeight + "px";
-            this._box.removeChild(this._menu._box);
+            document.body.removeChild(this._menu._box);
         }
         
         this._menu = menu;

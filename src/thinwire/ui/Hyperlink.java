@@ -93,22 +93,19 @@ public class Hyperlink extends AbstractTextComponent {
         
         Application.current().removeFileFromMap(location);
     }
-    
-    private static String validateURL(String uri) {
-    	if (uri.startsWith("class:///") || uri.startsWith("http://")) {
-    		return uri;
-    	} else {
-    		File file = Application.current().getRelativeFile(uri);
-    		return file.exists() ? uri : null;
-    	}
-    }
-    
+
     private String location = "";
         
     public Hyperlink() {}       
     
+    /**
+	 * Constructs a new Hyperlink displaying the specified text. If the text is
+	 * a valid URL, the location property is also set.
+	 * 
+	 * @param text
+	 */
     public Hyperlink(String text) {
-        this(text, validateURL(text));
+        this(text, Application.validateURL(text) ? text : null);
     }
 
     public Hyperlink(String text, String location) {
