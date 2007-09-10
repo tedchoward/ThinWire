@@ -924,6 +924,8 @@ var tw_GridBox = tw_Component.extend({
             var column = content.childNodes.item(i);
             content.replaceChild(column.cloneNode(false), column);
         }
+        
+        this._currentIndex = -1;
     },
 
     //TODO: extra messages are being sent from the server.  This is caused by gb.rows.add(new Row()) which then
