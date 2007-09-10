@@ -434,6 +434,16 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         Effect.Motion NONE = Effect.Motion.NONE;
         
         if (type == NONE || (type.getDuration() == NONE.getDuration()) && type.getFrames() == NONE.getFrames()) {
+        	if (newValue instanceof Color) {
+	        	Color color = (Color)oldValue;
+	            if (color.isSystemColor()) color = wr.ai.getSystemColor(color.toString());
+	            oldValue = color.toHexString();
+	            
+	            color = (Color)newValue;
+	            if (color.isSystemColor()) color = wr.ai.getSystemColor(color.toString());
+	            newValue = color.toHexString();
+        	}
+        	
             postClientEvent(standardMethod, newValue);
         } else {
             int time = type.getDuration();
@@ -513,16 +523,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         } else if (name.equals(Background.PROPERTY_BACKGROUND_COLOR) ||
                 name.equals(Border.PROPERTY_BORDER_COLOR) || name.equals(Font.PROPERTY_FONT_COLOR)) {
             String setMethod = "set" + Character.toUpperCase(name.charAt(0)) + name.substring(1);
-            
-            Color color = (Color)pce.getOldValue();
-            if (color.isSystemColor()) color = wr.ai.getSystemColor(color.toString());
-            String oldValue = color.toHexString();
-            
-            color = (Color)pce.getNewValue();
-            if (color.isSystemColor()) color = wr.ai.getSystemColor(color.toString());
-            String newValue = color.toHexString();
-            
-            setPropertyWithEffect(name, newValue, oldValue, setMethod, FX.PROPERTY_FX_COLOR_CHANGE);
+            setPropertyWithEffect(name, pce.getNewValue(), pce.getOldValue(), setMethod, FX.PROPERTY_FX_COLOR_CHANGE);
         } else if (name.equals(Style.PROPERTY_OPACITY)) {
             setPropertyWithEffect(name, pce.getNewValue(), pce.getOldValue(), SET_OPACITY, FX.PROPERTY_FX_OPACITY_CHANGE);
         } else if (name.equals(Component.PROPERTY_X)) {
