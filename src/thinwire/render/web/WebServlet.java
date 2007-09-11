@@ -85,8 +85,9 @@ public final class WebServlet extends HttpServlet {
         }
     }
     
-    private static class ApplicationHolder implements HttpSessionBindingListener {
-        WebApplication app;
+    private static class ApplicationHolder implements HttpSessionBindingListener, Serializable {
+    	private static final long serialVersionUID = 2454889032868933806L;
+        transient WebApplication app;
         
         public void valueBound(HttpSessionBindingEvent event) {
             
