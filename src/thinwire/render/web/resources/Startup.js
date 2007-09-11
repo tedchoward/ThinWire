@@ -306,7 +306,7 @@ function tw_selectStartListener(event) {
 //Add Selection Prevention eventlistener
 if (tw_isIE) {
     tw_addEventListener(document, "selectstart", tw_selectStartListener);
-} else {
+} else if (!(tw_isSafari && tw_bVer < 420)) {
     document.onmousedown = tw_selectStartListener;
 }
 
