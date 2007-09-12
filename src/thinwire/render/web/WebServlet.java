@@ -95,7 +95,7 @@ public final class WebServlet extends HttpServlet {
         
         public void valueUnbound(HttpSessionBindingEvent event) {
         	if (log.isLoggable(LEVEL)) log.log(LEVEL, "Unbinding application instance " + event.getSession().getId());            
-            app.shutdown();
+            if (app != null) app.shutdown();
         }
     }
 
