@@ -113,8 +113,8 @@ var tw_DateBox = tw_Component.extend({
     
     setHeight: function(height) {
         arguments.callee.$.call(this, height);
-        var tblHeight = height - (parseInt(this._footer.style.height) + parseInt(this._header.style.height) +
-            this._borderSizeSub +this._headerBorderSizeSub + parseInt(this._columnHeaders.style.height) + 1);
+        var tblHeight = height - (parseInt(this._footer.style.height, 10) + parseInt(this._header.style.height, 10) +
+            this._borderSizeSub +this._headerBorderSizeSub + parseInt(this._columnHeaders.style.height, 10) + 1);
         if (tblHeight < 0) tblHeight = 0;
         this._table.style.height = tblHeight + "px";
     },
@@ -130,7 +130,7 @@ var tw_DateBox = tw_Component.extend({
         arguments.callee.$.call(this, name, value);
         
         if (name == "borderWidth") {
-            value = parseInt(value) >= 2 ? 2 : 1;
+            value = parseInt(value, 10) >= 2 ? 2 : 1;
             this._headerBorderSizeSub = value * 2;
             value += "px";
             this._header.style.borderWidth = value;
@@ -198,6 +198,7 @@ var tw_DateBox = tw_Component.extend({
                 var newValue;
                 if (dayIdx > 0 && dayIdx <= last) {
                     newValue = dayIdx;
+					cells[j].style.color = "";
                 } else {
                     newValue = new Date(this._curDate.getFullYear(), this._curDate.getMonth(), dayIdx).getDate();
                     cells[j].style.color = tw_COLOR_GRAYTEXT;
@@ -227,7 +228,7 @@ var tw_DateBox = tw_Component.extend({
         if (!this._enabled) return;
         var cell = tw_getEventTarget(event);
         var rowIdx = this._getRowIndex(cell);
-        var newDt = parseInt(cell.firstChild.nodeValue);
+        var newDt = parseInt(cell.firstChild.nodeValue, 10);
         if (rowIdx == 0 && newDt >= 23) {
             this._incrementMonth(-1);
         } else if (rowIdx >= 4 && newDt <= 14) {
@@ -243,7 +244,7 @@ var tw_DateBox = tw_Component.extend({
     
     _getDate: function(cell) {
         var rowIdx = this._getRowIndex(cell);
-        var newDt = parseInt(cell.firstChild.nodeValue);
+        var newDt = parseInt(cell.firstChild.nodeValue, 10);
         var tmpDate = this._selectedDate;
         if (rowIdx == 0 && newDt >= 23) {
             tmpDate = new Date(this._curDate.getFullYear(), this._curDate.getMonth() - 1, this._curDate.getDate());
