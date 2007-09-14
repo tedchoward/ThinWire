@@ -197,17 +197,19 @@
 	</target>
 	
 	<!-- Archive the source, including everything needed to build the framework -->
-	<target name="source" depends="-init,-zipSource,-clean"/>
+	<target name="source" depends="-init,-zipSource"/>
 	
 	<target name="-zipSource">		
 		<copy todir="${path.temp}" overwrite="true">
 			<fileset dir="../" defaultexcludes="yes">
 				<include name="lib/**/*"/>
-				<include name="src/**/*"/>
 				<include name="build/**/*"/>
 				<include name="LICENSE.txt"/>
 				<include name="README.txt"/>
 			</fileset>
+		</copy>
+		<copy todir="${path.temp}/src" overwrite="true">
+			<fileset dir="${path.source}" defaultexcludes="yes"/>
 		</copy>
 
 		<zip destfile="../thinwire-${versionInfo.productVersion}-src.zip"><fileset dir="${path.temp}"/></zip>
