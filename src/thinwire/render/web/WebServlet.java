@@ -205,11 +205,14 @@ public final class WebServlet extends HttpServlet {
         
         ApplicationHolder holder = (ApplicationHolder)httpSession.getAttribute("instance");
         response.setContentType("text/html");        
+        response.setHeader("Pragma", "no-cache");
+        response.setHeader("Cache-Control", "no-cache, no-store");
+        response.setHeader("Expires", "-1");
         response.getOutputStream().write(WebApplication.MAIN_PAGE);
         
         String reload = getInitParameter(InitParam.RELOAD_ON_REFRESH.mixedCaseName());
         
-        if (holder != null && reload != null && reload.toLowerCase().equals("false")) {
+        if (holder != null && holder.app != null && (reload == null || reload.toLowerCase().equals("false"))) {
             if (log.isLoggable(LEVEL)) log.log(LEVEL, "repainting frame for application id=" + id);
             holder.app.repaint();
             return;

@@ -59,7 +59,7 @@ function tw_getActiveElement() {
 
 //Should be a function of Frame, used by GridBox
 function tw_getVisibleWidth() {
-    if (document.body.clientWidth) {
+	if (document.body.clientWidth) {
         if (document.documentElement.clientWidth) {
             return Math.max(document.body.clientWidth, document.documentElement.clientWidth); 
         } else {
@@ -74,7 +74,7 @@ function tw_getVisibleWidth() {
 
 //Should be a function of Frame, used by GridBox & DropDownGridBox
 function tw_getVisibleHeight() {
-    if (document.body.clientHeight) {
+	if (document.body.clientHeight) {
         if (document.documentElement.clientHeight) {
             return Math.max(document.body.clientHeight, document.documentElement.clientHeight); 
         } else {
@@ -83,7 +83,9 @@ function tw_getVisibleHeight() {
     } else if (document.documentElement.clientHeight) {
         return document.documentElement.clientHeight;
     } else {
-        return 600;
+    	//Using the frames clientWidth is a hack to fix Safari 2.
+    	var height = tw_Frame != null && tw_Frame.active != null ? tw_Frame.active._box.clientHeight : 0;
+        return height > 0 ? height : 600;
     }
 }
 
