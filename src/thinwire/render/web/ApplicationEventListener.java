@@ -133,9 +133,14 @@ class ApplicationEventListener implements WebComponentListener {
             if (log.isLoggable(LEVEL)) log.log(LEVEL, Thread.currentThread().getName() + ": repainting the application frame");
             app.sendStyleInitInfo();
             Frame f = app.getFrame();
-            WindowRenderer wr = app.getWindowRenderer(f);
-        	app.sendDefaultComponentStyles(wr);
-            wr.render(wr, f, null);
+            WindowRenderer fr = app.getWindowRenderer(f);
+        	app.sendDefaultComponentStyles(fr);
+            fr.render(fr, f, null);
+            
+            for (Dialog d : f.getDialogs()) {
+            	WindowRenderer dr = app.getWindowRenderer(d);
+            	dr.render(dr, d, fr);
+            }
         } else if (SHUTDOWN.equals(name)) {
             Frame f = app.getFrame();
             
