@@ -86,7 +86,9 @@ public abstract class Application {
             }
             
             versionInfo = Collections.unmodifiableMap(vi);
-            defaultStyleMap = buildStyleMap(DEFAULT_STYLE_SHEET + "/Style.xml");
+            XOD xod = new XOD();
+            xod.execute(DEFAULT_STYLE_SHEET + "/Style.xml");
+            defaultStyleMap = buildStyleMap(xod);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -181,14 +183,28 @@ public abstract class Application {
 	}
 	
 	static boolean validateURL(String url) {
-		try {
-			new URL(url);
-			return true;
-		} catch (MalformedURLException e) {
-			if (url.startsWith("class:///")) return true;
-			Application app = current();
-			return app != null ? app.getRelativeFile(url).exists() : new File(url).exists();
-		}
+ 		if (url != null && url.trim().length() > 0) {
+            int index = url.indexOf(".zip");            
+            if (index > 0 && index + 5 < url.length()) url = url.substring(0, index + 4);
+            
+            if (url.startsWith("class:///")) {
+            	return true;
+            } else if (url.indexOf("://") >= 0 && !url.startsWith("file:///")) {
+        		try {
+        			new URL(url);
+        			return true;
+        		} catch (MalformedURLException e) {
+        			return false;
+        		}
+            } else {
+                Application app = Application.current();
+                if (url.startsWith("file:///")) url = url.substring(7);
+                File file = app == null ? new File(url) : app.getRelativeFile(url);
+                return file.exists();
+            }
+ 		} else {
+ 			return false;
+ 		}
 	}
     
     /**
@@ -207,7 +223,7 @@ public abstract class Application {
     public static InputStream getResourceAsStream(String uri) {
         InputStream is = null;
 
-        if (uri != null && uri.trim().length() > 0 && validateURL(uri)) {
+        if (uri != null && uri.trim().length() > 0) {
             try {
                 String innerFile = null;
                 int index = uri.indexOf(".zip");
@@ -239,12 +255,13 @@ public abstract class Application {
                     is = new BufferedInputStream(is);
                     
                     if (innerFile != null) {
-                        innerFile = innerFile.replace('\\', '/');
+                        innerFile = innerFile.replace('\\', '/').toLowerCase();
                         ZipInputStream zip = new ZipInputStream(is);
+                        is = null;
                         ZipEntry entry;
                         
                         while ((entry = zip.getNextEntry()) != null) {
-                            if (!entry.isDirectory() && entry.getName().equals(innerFile)) {
+                            if (!entry.isDirectory() && entry.getName().toLowerCase().equals(innerFile)) {
                                 byte[] bytes = new byte[(int)entry.getSize()];
                                 int pos = 0, cnt;
 
@@ -327,11 +344,7 @@ public abstract class Application {
         return style;
     }
     
-    private static Map<Class<? extends Component>, Style> buildStyleMap(String styleSheet) {
-    	XOD props = new XOD();
-    	if (!styleSheet.endsWith(".xml")) styleSheet += "/Style.xml";
-    	props.execute(styleSheet);
-    	
+    private static Map<Class<? extends Component>, Style> buildStyleMap(XOD props) {
     	Map<Class<? extends Component>, Style> styleMap = new HashMap<Class<? extends Component>, Style>();
     	
     	for (Map.Entry<String, Object> e : props.getObjectMap().entrySet()) {
@@ -356,7 +369,7 @@ public abstract class Application {
     	
     	return styleMap;
     }
-
+        
     private List<ExceptionListener> exceptionListeners;
     private Map<Class, EventListenerImpl> globalListeners;
     private WeakReference<Component> priorFocus;
@@ -686,15 +699,14 @@ public abstract class Application {
     public Component getPriorFocus() {
         return priorFocus.get();
     }
-    
-        
+
     protected void loadStyleSheet(String styleSheet) {
         XOD props = new XOD();
         String sheet = styleSheet == null ? DEFAULT_STYLE_SHEET : styleSheet;
+        sheet = getSystemFile(sheet);
         if (!sheet.endsWith(".xml")) sheet += "/Style.xml";
-        props.execute(getSystemFile(sheet));
-        
-        compTypeToStyle = buildStyleMap(sheet);
+        props.execute(sheet);        
+        compTypeToStyle = buildStyleMap(props);
         systemColors = new HashMap<String, Color>();
         systemImages = new HashMap<String, String>();
 
@@ -726,7 +738,7 @@ public abstract class Application {
                 systemImages.put(key, e.getValue());
             }
         }
-    }
+    }    
     
     protected String getSystemFile(String value) {        
         if (!value.matches("^\\w{3,}://.*")) {
@@ -735,7 +747,7 @@ public abstract class Application {
             try {
                 value = new File(value).getCanonicalPath();
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                return value;
             }
         }
         

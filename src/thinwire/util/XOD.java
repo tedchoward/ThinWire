@@ -376,8 +376,8 @@ public final class XOD {
             DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
             uri = uri.replace('\\', '/');
             InputStream is = Application.getResourceAsStream(uri);
+            if (is == null) throw new IllegalArgumentException("Content for URI was not found:" + uri);
             uriStack.add(uri);
-            
             int index = uri.lastIndexOf('/');
             if (index == -1) index = 0;
             properties.put("xod.file", uri.substring(index));
