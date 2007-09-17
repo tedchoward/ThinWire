@@ -544,7 +544,7 @@ public final class XOD {
                                 
                 if (getMethod != null) {
                     if (setMethod == null) {
-                        Object subObject = invoke(parent, getMethod, null);    
+                        Object subObject = invoke(parent, getMethod, (Object[])null);    
                         appendAttributes(n);
                         processBranch(subObject, n.getChildNodes(), level + 1);                        
                         property = true;
