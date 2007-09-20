@@ -40,8 +40,8 @@ var tw_Menu = tw_Component.extend({
         delete props.windowMenu;
 
         var s = this._box.style;
-		var sizeText = this._windowMenu ? "width:100%;" : "";
-        var cssText = "position:absolute;overflow:visible;padding:1px;margin:0px;z-index:1;" + sizeText;
+		var positionText = this._windowMenu ? "" : "position:absolute;";
+        var cssText = positionText + "overflow:visible;padding:1px;margin:0px;z-index:1;";
         tw_Component.setCSSText(cssText, this._box);
 
         this._boxSizeSub = tw_sizeIncludesBorders ? 0 : parseInt(s.padding, 10) * 2; 
@@ -299,7 +299,7 @@ var tw_Menu = tw_Component.extend({
                 var parent = item.parentNode;
                 content.style.left = (parent.tw_maxTextWidth + parent.tw_maxShortcutTextWidth + 2.50) + "em";
             } else {
-				if (this._windowMenu) {
+				if (this._windowMenu && this._parent instanceof tw_Frame) {
 					this._box.style.zIndex = ++tw_Component.zIndex;
 				} else {
 					content.style.zIndex = ++tw_Component.zIndex;
