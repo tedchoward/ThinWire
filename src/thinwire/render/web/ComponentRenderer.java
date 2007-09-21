@@ -641,7 +641,6 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     
     final String getQualifiedURL(String location) {
         if (location.trim().length() > 0) {
-            URI uri;
             WindowRenderer wr = this instanceof WindowRenderer ? (WindowRenderer)this : this.wr;
             
             if (location.startsWith("file") || location.startsWith("class") || wr.ai.getRelativeFile(location).exists()) {
@@ -652,12 +651,6 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
                 if (remoteFiles == null) remoteFiles = new ArrayList<String>(5);
                 remoteFiles.add(location);
                 location = "%SYSROOT%" + RemoteFileMap.INSTANCE.add(location);
-            } else {
-                try {
-                    location = new URL(location).toString();
-                } catch (MalformedURLException e) {
-                	location = "";
-                }
             }
         } else {
             location = "";

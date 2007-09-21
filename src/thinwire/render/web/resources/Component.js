@@ -805,7 +805,7 @@ tw_Component.processRichTextNode = function(node, element) {
         if (node.c != undefined) element.appendChild(tw_Component.setRichText(node.c));    
         return element;
     } else {
-        var textNode = document.createTextNode(node.replace(/ /g, tw_Component.nonBreakingSpace));
+        var textNode = document.createTextNode(node.replace(/( ) |^ /g, "$1" + tw_Component.nonBreakingSpace));
         if (element != null) element.appendChild(textNode);
         return textNode;
     }
@@ -813,7 +813,7 @@ tw_Component.processRichTextNode = function(node, element) {
 
 tw_Component.setRichText = function(text, element) {
     if (typeof(text) == "string" || text instanceof String) {
-        var textNode = document.createTextNode(text.replace(/ /g, tw_Component.nonBreakingSpace));
+        var textNode = document.createTextNode(text.replace(/( ) |^ /g, "$1" + tw_Component.nonBreakingSpace));
         if (element != null) element.appendChild(textNode);
         element = textNode;
     } else {
