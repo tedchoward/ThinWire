@@ -31,6 +31,7 @@
 package thinwire.render.web;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -141,6 +142,11 @@ class ApplicationEventListener implements WebComponentListener {
             	WindowRenderer dr = app.getWindowRenderer(d);
             	dr.render(dr, d, fr);
             }
+            
+            for (Map.Entry<String, Timer> entry : app.timerMap.entrySet()) {
+            	app.clientSideFunctionCall("tw_addTimerTask", entry.getKey(), entry.getValue().timeout);
+            }
+            
         } else if (SHUTDOWN.equals(name)) {
             Frame f = app.getFrame();
             
