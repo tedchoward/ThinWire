@@ -430,7 +430,14 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
                             TableLayout.this.visibleRows.clear();
                             if (kids != null) kids.clear();
                         } else {
-                            if (((TableLayout.Row)oldValue).isVisible()) TableLayout.this.visibleRows.remove(oldValue);
+                            if (((TableLayout.Row)oldValue).isVisible()) {
+                            	if (!TableLayout.this.visibleRows.remove(oldValue)) {
+	                            	for (Iterator<TableLayout.Row> i = TableLayout.this.visibleRows.iterator(); i.hasNext();) {
+	                            		TableLayout.Row r = i.next();
+	                            		if (r.getParent() == null || r.getIndex() == -1) i.remove();
+	                            	}
+                            	}
+                            }
                             
                             for (Iterator<Component> i = kids.iterator(); i.hasNext();) {
                                 Component c = i.next();
@@ -493,7 +500,14 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
                             }
                         }
                     } else if (type == ItemChangeEvent.Type.REMOVE) {
-                        if (((TableLayout.Column)oldValue).isVisible()) TableLayout.this.visibleColumns.remove(oldValue);
+                        if (((TableLayout.Column)oldValue).isVisible()) {
+                        	if (!TableLayout.this.visibleColumns.remove(oldValue)) {
+                        		for (Iterator<TableLayout.Column> i = TableLayout.this.visibleColumns.iterator(); i.hasNext();) {
+                        			TableLayout.Column c = i.next();
+                        			if (c.getParent() == null || c.getIndex() == -1) i.remove();
+                        		}
+                        	}
+                        }
                         
                         if (kids != null) {
                             for (Iterator<Component> i = kids.iterator(); i.hasNext();) {
