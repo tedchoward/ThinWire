@@ -357,7 +357,7 @@ abstract class AbstractComponent implements Component {
             if (focus) {
             	
             	// Determine if the component is a new container (a container that has just been given focus by application code
-            	//  or has a component thet has focus, but hasn't yet been rendered)
+            	//  or has a component that has focus, but hasn't yet been rendered)
             	boolean newContainer = false;
             	if (this instanceof Container) {
             		Container cont = (Container) this;

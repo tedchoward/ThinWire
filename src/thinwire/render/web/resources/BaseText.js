@@ -41,6 +41,7 @@ var tw_BaseText = tw_Component.extend({
     _escapeLastPressedAt: null,
     _valueOnFocus: null,
     _selectionOld: undefined,
+    _decimalPointTyped: false,
     
     construct: function(tagNames, className, id, containerId) {
         arguments.callee.$.call(this, tagNames[0], className, id, containerId);
@@ -72,6 +73,7 @@ var tw_BaseText = tw_Component.extend({
     _keyUpListener: function(event) {
         if (!this._enabled) return;
         var keyCode = tw_getEventKeyCode(event);
+        if (keyCode == 190) this._decimalPointTyped = true;
         this._validateInput(keyCode);
         this._textStateChange(true);
     },
@@ -86,7 +88,7 @@ var tw_BaseText = tw_Component.extend({
         width -= this._borderSizeSub + this._subtractEditorWidth + this._paddingSize * 2;
         if (width < 0) width = 0;
         if (tw_isKHTML || tw_isSafari) {
-            this._editor.style.width = width - ((parseInt(this._editor.style.left) - 1) * 3) + "px";
+            this._editor.style.width = width - ((parseInt(this._editor.style.left, 10) - 1) * 3) + "px";
         } else {
             this._editor.style.width = width + "px";
         }
@@ -97,15 +99,15 @@ var tw_BaseText = tw_Component.extend({
         height -= this._borderSizeSub + this._paddingSize * 2;
         if (height < 0) height = 0;
         if (tw_isKHTML || tw_isSafari) {
-            this._editor.style.height = height - ((parseInt(this._editor.style.top) - 1) * 3) + "px";
+            this._editor.style.height = height - ((parseInt(this._editor.style.top, 10) - 1) * 3) + "px";
         } else {
             this._editor.style.height = height + "px";
         }
     },
         
     setText: function(text) {
-        var length = parseInt(this._editor.maxLength);
-		if (length != -1) this._editor.maxLength = text.length;
+        var length = parseInt(this._editor.maxLength, 10);
+        if (length != -1) this._editor.maxLength = text.length;
         this._lastValue = this._editor.value = text;
         if (this._useToolTip) this._editor.title = text; 
         this._validateInput(0);
@@ -305,7 +307,7 @@ var tw_BaseText = tw_Component.extend({
         //If the editMask is all numeric then it indicates the maximum length, not a true mask.
         if (editMask.indexOf("<=") == 0) {
             var ary = [];
-            var maxLength = parseInt(editMask.substring(2));
+            var maxLength = parseInt(editMask.substring(2), 10);
             
             while (--maxLength >= 0) {
                 ary.push("x");
@@ -486,6 +488,10 @@ var tw_BaseText = tw_Component.extend({
                     var valueAfter = value.substring(valueDot);
                     var chop = valueAfter.length - mask.substring(maskDot).length;
                     if (chop > 0) value = valueBefore + valueAfter.substring(0, valueAfter.length - chop);
+                    chop = valueBefore.length - mask.substring(0, maskDot).length;
+                    if (chop > 0) value = valueBefore.substring(0, valueBefore.length - chop) + valueAfter;
+                } else {
+                    this._decimalPointTyped = false;
                 }
                 
                 var chop = value.length - mask.length;
@@ -551,7 +557,7 @@ var tw_BaseText = tw_Component.extend({
                     if (i >= editMask.length) { //Truncate the value if it exceeds the mask                    
                         newValue = newValue.substring(0, i);                    
                         break;
-                    } else if (!dateMask && mch == "y" && /\d\d\d\d/.test(newValue.substring(i, i + 4)) && editMask.charAt(i + 1) == "y" && editMask.charAt(i + 2) != "y") { //special rule to refromat four digit year to two digit year
+                    } else if (!dateMask && mch == "y" && (/\d\d\d\d/).test(newValue.substring(i, i + 4)) && editMask.charAt(i + 1) == "y" && editMask.charAt(i + 2) != "y") { //special rule to refromat four digit year to two digit year
                         dateMask = true;
                         newValue = newValue.substring(0, i) + newValue.substring(i + 2);
                         i--;
@@ -596,7 +602,19 @@ var tw_BaseText = tw_Component.extend({
         }
         
         if (valid) this._validatedValue = newValue;
-        if (this._editor.value != this._validatedValue) this._editor.value = this._validatedValue;                     
+        if (this._editor.value != this._validatedValue) {
+            this._editor.value = this._validatedValue;
+            //If it's a # mask and the '.' hasn't been typed by the user, and the value before the '.' is
+            // within the mask, leave the cursor to the left of the '.'.
+            if (editMask.indexOf("#") >= 0 && !this._decimalPointTyped) {
+                var valueDot = this._validatedValue.indexOf(".");
+                
+                if (valueDot >= 0) {
+                    var mask = editMask.charAt(0) == "-" && this._validatedValue.charAt(0) != "-" ? editMask.substring(1) : editMask;
+                    if (valueDot < mask.indexOf(".")) this.setSelectionRange(valueDot, valueDot);
+                }
+            }
+        }
         return valid;
     },
         
