@@ -327,7 +327,7 @@ public abstract class Application {
                 
                 if (style == null) {
                     Class sc = findClazz.getSuperclass();
-                    if (Component.class.isAssignableFrom(sc)) lst.add(sc);
+                    if (sc != null && Component.class.isAssignableFrom(sc)) lst.add(sc);
                     
                     for (Class i : findClazz.getInterfaces()) {
                         if (Component.class.isAssignableFrom(i)) lst.add(i);
