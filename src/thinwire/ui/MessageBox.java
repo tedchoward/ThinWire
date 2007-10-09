@@ -575,13 +575,24 @@ public final class MessageBox {
 		    String[] lines = text.split("\\r?\\n");
 		    
 		    int width = 0;
-		    Font f = new Label().getStyle().getFont();
-		    
-		    for (int i = 0; i < lines.length; i++) {
-		        int length = f.getStringWidth(lines[i]);
-		        
-		        if (length > width)
-		            width = f.getStringWidth(lines[i]);
+		    try {
+			    Font f = new Label().getStyle().getFont();
+			    
+			    for (int i = 0; i < lines.length; i++) {
+			        int length = f.getStringWidth(lines[i]);
+			        if (length > width) width = f.getStringWidth(lines[i]);
+			    }
+		    } catch (Exception e) {
+		    	//TODO: Using Font.getStringWidth() is the preferred method for 
+		    	//  determining the width of the text, but it doesn't work for 
+		    	//  some international characters.  Until we find a better 
+		    	//  solution, we'll fall back on the old width calculation.
+		    	for (int i = 0; i < lines.length; i++) {
+			        int length = lines[i].length();
+			        if (length > width) width = lines[i].length();
+			    }
+		    	
+		    	width *= TEXT_CHAR_WIDTH;
 		    }
 
 		    int y = 0;
