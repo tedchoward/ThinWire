@@ -30,6 +30,8 @@
 */
 package thinwire.ui;
 
+import java.util.List;
+
 import thinwire.ui.event.ActionEvent;
 import thinwire.ui.event.KeyPressEvent;
 
@@ -172,6 +174,56 @@ public class Menu extends AbstractHierarchyComponent<Menu.Item> {
         public String toString() {
             return "Menu.Item{" + super.toString() + ",enabled:" + this.isEnabled() + ",keyPressCombo:" + this.getKeyPressCombo() + "}";
         }
+    }
+    
+    /**
+	 * Represents a horizontal divider in a <code>Menu</code> component. Since
+	 * a Menu.Item without the text property being set is a divider, the
+	 * <code>Divider</code> class is a Menu.Item that you cannot set the text,
+	 * image, or keyPressCombo and has no children.
+	 * @see thinwire.ui.Menu.Item
+	 */
+    public static class Divider extends Item {
+    	
+    	/**
+    	 * Constructs a horizontal divider (or separator).
+    	 * @see thinwire.ui.Menu.Item#Item()
+    	 */
+    	public Divider() {
+    		super(null, null, null);
+    	}
+
+    	/**
+    	 * @throws UnsupportedOperationException
+    	 */
+		@Override
+		public void setKeyPressCombo(String keyPressCombo) {
+			throw new UnsupportedOperationException(getClass().getName() + " does not support writing to the property: " + PROPERTY_ITEM_KEY_PRESS_COMBO);
+		}
+
+		/**
+		 * @return null
+		 */
+		@Override
+		public List<Item> getChildren() {
+			return null;
+		}
+
+		/**
+    	 * @throws UnsupportedOperationException
+    	 */
+		@Override
+		public void setImage(String image) {
+			throw new UnsupportedOperationException(getClass().getName() + " does not support writing to the property: " + PROPERTY_ITEM_IMAGE);
+		}
+
+		/**
+    	 * @throws UnsupportedOperationException
+    	 */
+		@Override
+		public void setText(String text) {
+			throw new UnsupportedOperationException(getClass().getName() + " does not support writing to the property: " + PROPERTY_ITEM_TEXT);
+		}
     }
 
     /**

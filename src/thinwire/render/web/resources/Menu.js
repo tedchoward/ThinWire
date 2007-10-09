@@ -40,7 +40,7 @@ var tw_Menu = tw_Component.extend({
         delete props.windowMenu;
 
         var s = this._box.style;
-		var positionText = this._windowMenu ? "" : "position:absolute;";
+        var positionText = this._windowMenu ? this._parent instanceof tw_Frame ? "position:absolute;width:100%;" : "" : "position:absolute;";
         var cssText = positionText + "overflow:visible;padding:1px;margin:0px;z-index:1;";
         tw_Component.setCSSText(cssText, this._box);
 
@@ -299,11 +299,11 @@ var tw_Menu = tw_Component.extend({
                 var parent = item.parentNode;
                 content.style.left = (parent.tw_maxTextWidth + parent.tw_maxShortcutTextWidth + 2.50) + "em";
             } else {
-				if (this._windowMenu && this._parent instanceof tw_Frame) {
-					this._box.style.zIndex = ++tw_Component.zIndex;
-				} else {
-					content.style.zIndex = ++tw_Component.zIndex;
-				}
+                if (this._windowMenu && this._parent instanceof tw_Frame) {
+                    this._box.style.zIndex = ++tw_Component.zIndex;
+                } else {
+                    content.style.zIndex = ++tw_Component.zIndex;
+                }
             }
             
             content.style.visibility = "visible";
@@ -328,21 +328,21 @@ var tw_Menu = tw_Component.extend({
                 if (this._activeMenuItem != null) {
                     var itemArray = this._fullIndex(item).split(".");
                     var activeIndex = this._fullIndex(this._activeMenuItem);
-					var activeArray = activeIndex.split(".");
-					var child = true;
-					
-					if (activeArray.length > itemArray.length) {
-						child = false;
-					} else {
-						for (var i = 0; i < activeArray.length; i++) {
-							if (itemArray[i] != activeArray[i]) {
-								child = false;
-								break;
-							}
-						}
-					}
+                    var activeArray = activeIndex.split(".");
+                    var child = true;
+                    
+                    if (activeArray.length > itemArray.length) {
+                        child = false;
+                    } else {
+                        for (var i = 0; i < activeArray.length; i++) {
+                            if (itemArray[i] != activeArray[i]) {
+                                child = false;
+                                break;
+                            }
+                        }
+                    }
 
-					if (!child) this.close(this._fullIndexItem(activeIndex));
+                    if (!child) this.close(this._fullIndexItem(activeIndex));
                 }
                 
                 var nodes = item.parentNode.childNodes;
