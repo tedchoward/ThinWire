@@ -40,6 +40,7 @@ var tw_bVer = 0;
 function parseBrowserType(ua) {
     var msg = "This browser is not officially supported";
     var agent = ua.toLowerCase();
+    //alert(agent);
 
     function parseBrowser(browser, ver) {
         var index = agent.indexOf(browser);
@@ -58,7 +59,7 @@ function parseBrowserType(ua) {
     }
 
     if (tw_isOpera = parseBrowser("opera", 8)) {}
-    else if (tw_isSafari = parseBrowser("safari", 412)) {}
+    else if (tw_isSafari = parseBrowser("webkit", 412)) {}
     else if (tw_isKHTML = parseBrowser("khtml", 3.5)) {}
     else if (tw_isFirefox = tw_isGecko = parseBrowser("firefox", 1)) {}
     else if (tw_isIE = parseBrowser("msie", 6)) {}
