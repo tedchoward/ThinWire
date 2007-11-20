@@ -398,7 +398,7 @@ var tw_Component = Class.extend({
         if (this._eventNotifiers != null) props = this._eventNotifiers["propertyChange"];                        
 
         if (props != undefined && props[name] === true) {
-            tw_em.postViewStateChanged(this._id, name, value);
+            tw_em.sendViewStateChanged(this._id, name, value);
         } else {
             tw_em.queueViewStateChanged(this._id, name, value, key);
         }                          
@@ -516,7 +516,7 @@ var tw_Component = Class.extend({
             
             if (keyPressNotifiers != undefined) {
                 if (keyPressNotifiers[keyPressCombo] == true) {
-                    tw_em.postViewStateChanged(this._id, "keyPress", keyPressCombo);
+                    tw_em.sendViewStateChanged(this._id, "keyPress", keyPressCombo);
                     return false;
                 }
             }
