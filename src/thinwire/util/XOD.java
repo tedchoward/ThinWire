@@ -36,6 +36,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.net.URISyntaxException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -272,16 +274,6 @@ public final class XOD {
     private static final Logger log = Logger.getLogger(XOD.class.getName());
     private static final Level LEVEL = Level.FINER;
     
-    private static File getRelativeFile(String uri) {
-        Application app = Application.current();
-        return app == null ? new File(uri) : app.getRelativeFile(uri);
-    }    
-
-    private static File getRelativeFile(String parent, String child) {
-        Application app = Application.current();
-        return app == null ? new File(parent, child) : app.getRelativeFile(parent, child);
-    }
-    
     private Map<String, Object> objectMap;
     private Map<Object, String> idMap;
     private List<Object> rootObjects;
@@ -378,11 +370,7 @@ public final class XOD {
             InputStream is = Application.getResourceAsStream(uri);
             if (is == null) throw new IllegalArgumentException("Content for URI was not found:" + uri);
             uriStack.add(uri);
-            int index = uri.lastIndexOf('/');
-            if (index == -1) index = 0;
-            properties.put("xod.file", uri.substring(index));
-            properties.put("xod.path", index == 0 ? "" : uri.substring(0, index));
-
+            setUriVariables(uri);
             Document doc = builder.parse(is);
             is.close();
             ret = processBranch(parent, doc.getChildNodes(), level);
@@ -390,17 +378,17 @@ public final class XOD {
             throw new RuntimeException("processing file '" + uri + "'", e);
         } finally {
             uriStack.remove(uriStack.size() - 1);
-            
-            if (uriStack.size() > 0) {
-                uri = uriStack.get(uriStack.size() - 1);
-                int index = uri.lastIndexOf('/');
-                if (index == -1) index = 0;
-                properties.put("xod.file", uri.substring(index));
-                properties.put("xod.path", index == 0 ? "" : uri.substring(0, index));
-            }
+            if (uriStack.size() > 0) setUriVariables(uriStack.get(uriStack.size() - 1));
         }
         
         return ret;
+    }
+    
+    private void setUriVariables(String uri) {
+        int index = uri.lastIndexOf('/');
+        if (index == -1) index = 0;
+        properties.put("xod.file", uri.substring(index));
+        properties.put("xod.path", index == 0 ? "" : uri.substring(0, index));
     }
 
     private void appendAttributes(Node n) {
@@ -475,24 +463,30 @@ public final class XOD {
             if (n.getAttributes().getLength() != 1) throw new DOMException(DOMException.NOT_SUPPORTED_ERR, name + ":n.getAttributes().getLength() != 1");
             if (n.getChildNodes().getLength() != 0) throw new DOMException(DOMException.NOT_SUPPORTED_ERR, name + ":n.getChildNodes().getLength() != 0");
             String fileUri = this.replaceProperties((String)n.getAttributes().getNamedItem("file").getNodeValue());
-                        
-            if (!getRelativeFile(fileUri).exists()) {
-                String curFileUri = uriStack.get(0);
-                String newUri = fileUri;
-                
-                do {
-                    File parentFolder = getRelativeFile(curFileUri).getParentFile();
-                    
-                    if (parentFolder == null) {
-                        newUri = null;
-                        break;
-                    }
-                    
-                    curFileUri = parentFolder.getAbsolutePath();
-                    newUri = getRelativeFile(curFileUri, fileUri).getAbsolutePath();
-                } while (!getRelativeFile(newUri).exists());
-                
-                if (newUri != null) fileUri = newUri;
+
+            //TODO This whole section is questionable going forward. Rather than walking up the directory structure, we should just 
+            //require that uri's have explicit pathing relative to ${xod.path} or relative from the app folder.
+            if (fileUri.indexOf("://") == -1 || fileUri.startsWith("file:///")) {
+            	String newUri = fileUri;
+                if (newUri.startsWith("file:///")) newUri = newUri.substring(7);
+            
+	            if (!Application.getRelativeFile(newUri).exists()) {
+	                String curFileUri = uriStack.get(0);
+	                
+	                do {
+	                    File parentFolder = Application.getRelativeFile(curFileUri).getParentFile();
+	                    
+	                    if (parentFolder == null) {
+	                        newUri = null;
+	                        break;
+	                    }
+	                    
+	                    curFileUri = parentFolder.getAbsolutePath();
+	                    newUri = Application.getRelativeFile(curFileUri, newUri).getAbsolutePath();
+	                } while (!Application.getRelativeFile(newUri).exists());
+	                
+	                if (newUri != null) fileUri = newUri;
+	            }
             }
             
             processingInclude = true;
