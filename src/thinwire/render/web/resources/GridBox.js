@@ -701,9 +701,9 @@ var tw_GridBox = tw_Component.extend({
     setColumnWidth: function(index, width, sendEvent) {   
         var header = this._header;
         var content = this._content;
-        var column = this._content.childNodes.item(index);
     
         if (arguments.length > 0) {
+			var column = this._content.childNodes.item(index);
             var columnHeader = header.childNodes.item(index);
             columnHeader.style.width = width <= this._headerBorderSizeSub ? "0px" : width - this._headerBorderSizeSub + "px";
             column.style.width = width + "px";
