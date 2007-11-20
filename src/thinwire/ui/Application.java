@@ -245,9 +245,8 @@ public abstract class Application {
                     URLConnection remoteImageConnection = remoteImageURL.openConnection();
                     is = remoteImageConnection.getInputStream();
                 } else {
-                    Application app = Application.current();
                     if (uri.startsWith("file:///")) uri = uri.substring(7);
-                    File file = app == null ? new File(uri) : app.getRelativeFile(uri);
+                    File file = Application.getRelativeFile(uri);
                     if (file.exists()) is = new FileInputStream(file);
                 }
                 
@@ -799,8 +798,9 @@ public abstract class Application {
      * @param pathname
      * @return
      */
-    public File getRelativeFile(String pathname) {
-        return new File(appendBaseFolder(pathname));
+    public static File getRelativeFile(String pathname) {
+    	Application app = Application.current();
+    	return app == null ? new File(pathname) : new File(app.appendBaseFolder(pathname));
     }
     
     /**
@@ -809,8 +809,9 @@ public abstract class Application {
      * @param child
      * @return
      */
-    public File getRelativeFile(String parent, String child) {
-        return new File(appendBaseFolder(parent), child);
+    public static File getRelativeFile(String parent, String child) {
+        Application app = Application.current();
+        return app == null ? new File(parent, child) : new File(app.appendBaseFolder(parent), child);
     }
     
     private String appendBaseFolder(String s) {
