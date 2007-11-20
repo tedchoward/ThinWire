@@ -77,11 +77,7 @@ var tw_HttpRequest = Class.extend({
         //XMLHttpRequest are empty.
         //Second error after playing with VS: The data necessary to complete this operation is not yet available.
         this._comm.open(method, url, this._userAsyncFunc != null);
-
-        if (method == "POST") {
-            this._comm.setRequestHeader("Content-Type", "text/plain; charset=utf-8");
-            this._comm.setRequestHeader("Content-Length", data.length);
-        }
+        if (method == "POST") this._comm.setRequestHeader("Content-Type", "text/plain; charset=utf-8");
         
         if (this._userAsyncFunc != null) {
             if (this._usingMSHttpRequest) {
