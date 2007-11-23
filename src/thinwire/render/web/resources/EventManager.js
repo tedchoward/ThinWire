@@ -83,16 +83,34 @@ var tw_EventManager = Class.extend({
                 eval("calls = " + calls);
 
 	            for (var i = 0, cnt = calls.length; i < cnt; i++) {
-	                var call = calls[i];            
-	                var obj = call.i == undefined ? (call.n == undefined ? window : call.n) : tw_Component.instances[call.i];                    
+	                var call = calls[i];
+	
+					try {
+		                var obj = call.i == undefined ? (call.n == undefined ? window : call.n) : tw_Component.instances[call.i];                    
 
-	                if (obj != null) {
-	                    var ret = obj[call.m].apply(obj, call.a);            
-	                    if (call.s && this._autoSyncResponse) this.sendSyncResponse(ret, true);
-	                }
+		                if (obj != null) {
+		                    var ret = obj[call.m].apply(obj, call.a);            
+		                    if (call.s && this._autoSyncResponse) this.sendSyncResponse(ret, true);
+		                }
+					} catch (e) {
+						var eAry = ["ERROR INVOKING call ", i, " of ", cnt, ": ", call.m, "\n"];
+						
+						for (var item in e)
+							eAry.push("error:" + item + "=" + (e[item].length > 100 ? e[item].substring(0, 100) : e[item]) + "\n");
+					    
+						for (var ai = 0; ai < call.a.length; ai++)
+							eAry.push("arg" + ai + "=" + call.a[ai] + "\n");
+							
+						alert(eAry.join(""));
+					}
 	            }            
             } catch (e) {
-                alert("SYNTAX ERROR WITH eval(calls): " + calls);
+				var eAry = ["SYNTAX ERROR WITH eval(calls):\n"];
+
+			    for (var item in e)
+					eAry.push("error:" + item + "=" + (e[item].length > 100 ? e[item].substring(0, 100) : e[item]) + "\n");
+
+				eAry.push("calls=" + (calls.length > 250 ? calls.substring(0, 250) : calls))
             } 
         }        
         
@@ -108,22 +126,21 @@ var tw_EventManager = Class.extend({
             this._comm.send("POST", tw_APP_URL, msg);           
         }
     },
-        
-    _sendOutboundEvent: function(type, value) {
-        this._queueOutboundEvent(type, value);
-        clearTimeout(this._timerId);
-        this._timerId = setTimeout(this._sendEvents, 0); //delay send until callstack completes execution                  
-    }, 
     
     _queueOutboundEvent: function(type, value) {
         this._outboundEvents.push(type);
         if (value == null) value = "";        
         this._outboundEvents.push(value);
     },
+
+	resetSendEventsTimer: function(delay) {
+        clearTimeout(this._timerId);
+        this._timerId = setTimeout(this._sendEvents, delay); //delay send until callstack completes execution                  
+	},
     
     sendViewStateChanged: function(id, name, value) {
-        value = id + ":" + name + (value == null ? ":0:" : ":" + new String(value).length + ":" + value);
-        this._sendOutboundEvent(this._EVENT_WEB_COMPONENT, value);
+		this.queueViewStateChanged(id, name, value);
+		this.resetSendEventsTimer(0);
     },
 
     postViewStateChanged: this.sendViewStateChanged, //here in case there is an existing reference in 3rd party code
@@ -151,13 +168,22 @@ var tw_EventManager = Class.extend({
         }
     },
         
-    sendGetEvents: function() { this._sendOutboundEvent(this._EVENT_GET_EVENTS, null); },    
-    sendRunTimer: function(id) { this._sendOutboundEvent(this._EVENT_RUN_TIMER, id + ":"); },    
+    sendGetEvents: function() {
+	    this._queueOutboundEvent(this._EVENT_GET_EVENTS, null);
+		this.resetSendEventsTimer(0);
+	},    
+	
+    sendRunTimer: function(id) {
+		this._queueOutboundEvent(this._EVENT_RUN_TIMER, id + ":");
+		this.resetSendEventsTimer(0);
+	},
+	    
 	manualSyncResponse: function() { this._autoSyncResponse = false; },
     
     sendSyncResponse: function(value) {
         value = value == null ? "0:" : new String(value).length + ":" + value;
-		this._sendOutboundEvent(this._EVENT_SYNC_CALL, value);
+		this._queueOutboundEvent(this._EVENT_SYNC_CALL, value);
+		this.resetSendEventsTimer(0);
         this._autoSyncResponse = true;
     },
     
