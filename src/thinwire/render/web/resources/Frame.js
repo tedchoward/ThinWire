@@ -69,7 +69,8 @@ var tw_Frame = tw_BaseContainer.extend({
         
         this._getFrameBounds = this._getFrameBounds.bind(this);        
         tw_addEventListener(this._box, "mousedown", this._mouseDownListener.bind(this));
-        tw_addEventListener(window, "resize", this._windowBoundsListener.bind(this));
+        this._windowBoundsListener = this._windowBoundsListener.bind(this);
+        tw_addEventListener(window, "resize", this._windowBoundsListener);
         tw_addEventListener(this._box, ["click", "dblclick"], this._clickListener.bind(this));
         this.init(-1, props);
         
@@ -211,7 +212,8 @@ var tw_Frame = tw_BaseContainer.extend({
     _clickListener: tw_Component.clickListener,
 
     destroy: function() {
-        if (tw_Frame.active == this) tw_Frame.active = null;                
+        if (tw_Frame.active == this) tw_Frame.active = null;
+        tw_removeEventListener(window, "resize", this._windowBoundsListener);
         document.body.removeChild(this._modalLayer);
         document.body.removeChild(this._box);
         this._menu = this._standardButton = this._modalLayer = this._modalDialogIds = null;
