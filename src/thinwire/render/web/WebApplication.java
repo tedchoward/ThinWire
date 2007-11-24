@@ -44,11 +44,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
 
 import thinwire.render.RenderStateEvent;
@@ -172,12 +170,11 @@ public final class WebApplication extends Application {
         boolean repeat;
     }
     
-    private static enum State {INIT, STARTUP, RUNNING, REPAINT, SHUTDOWN, TERMINATED}
+    static enum State {INIT, STARTUP, RUNNING, REPAINT, SHUTDOWN, TERMINATED}
     
     private String baseFolder;
     private String styleSheet;
     private int nextCompId;
-    private State state;
     private Map<String, Class<ComponentRenderer>> nameToRenderer;
     private Map<Window, WindowRenderer> windowToRenderer;
     private Map<Integer, WebComponentListener> webComponentListeners;
@@ -185,6 +182,7 @@ public final class WebApplication extends Application {
     private Map<Component, Object> renderStateListeners;
     private EventProcessor proc;
     
+    State state;
     List<Runnable> timers;
     Map<String, Timer> timerMap;
     WebComponentEvent startupEvent;
@@ -214,10 +212,9 @@ public final class WebApplication extends Application {
         state = State.INIT;
     }
 
-    void signalShutdown() {
-        if (state == State.SHUTDOWN || state == State.TERMINATED) return;
-        if (log.isLoggable(LEVEL)) log.log(LEVEL, Thread.currentThread().getName() + ": initiating application instance shutdown");        
-        state = State.SHUTDOWN;
+    //NOTE: Only to be called by ApplicationEventListener's frame visibility PropertyChangeListener.
+    void flushEvents() {
+        proc.flush();
     }
     
     void repaint() {
@@ -226,7 +223,8 @@ public final class WebApplication extends Application {
     
     void shutdown() {
         if (state == State.TERMINATED) return;
-        if (state != State.SHUTDOWN) signalShutdown();
+        if (state != State.SHUTDOWN) state = State.SHUTDOWN;
+        if (log.isLoggable(LEVEL)) log.log(LEVEL, Thread.currentThread().getName() + ": initiating application instance shutdown");        
         
         try {
             proc = EventProcessorPool.INSTANCE.getProcessor(this);            
@@ -235,6 +233,7 @@ public final class WebApplication extends Application {
             try {
                 proc.handleRequest(wce, new CharArrayWriter());
 
+                //XXX Loops infinitely if entered while frame is not visible and a dialog is blocking.
                 while (proc.isInUse()) {
                     if (log.isLoggable(LEVEL)) log.log(LEVEL, Thread.currentThread().getName() + ": processor returned, probably from flush(), sending null event");
                     proc.handleRequest((WebComponentEvent)null, new CharArrayWriter());                    

@@ -267,6 +267,11 @@ public final class WebServlet extends HttpServlet {
         response.setHeader("Cache-Control", "no-store");
         if (holder == null) return;
         holder.app.processActionEvents(request.getReader(), response.getWriter());
+        
+        if (holder.app.state == WebApplication.State.TERMINATED) {
+        	holder.app = null;
+        	httpSession.invalidate();
+        }
     }
     
     private void handleUserUpload(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {

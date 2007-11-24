@@ -30,7 +30,6 @@
 */
 package thinwire.render.web;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -46,7 +45,6 @@ class ApplicationEventListener implements WebComponentListener {
     private static final Level LEVEL = Level.FINER;
     
     static final Integer ID = new Integer(Integer.MAX_VALUE);
-    //private static final String SHUTDOWN_INSTANCE = "tw_shutdownInstance";
     private static final String INIT = "INIT";
     private static final String STARTUP = "STARTUP";
     private static final String REPAINT = "REPAINT";
@@ -104,11 +102,14 @@ class ApplicationEventListener implements WebComponentListener {
             if (log.isLoggable(LEVEL)) log.log(LEVEL, Thread.currentThread().getName() + ": client time in milliseconds is " + time);
 
             //When the frame is set to non-visible, fire a shutdown event
+            //NOTE: The proper execution of this behavior depends on the this listener being run first
             f.addPropertyChangeListener(Frame.PROPERTY_VISIBLE, new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent pce) {
                     if (pce.getNewValue() == Boolean.FALSE) {
                         if (log.isLoggable(LEVEL)) log.log(LEVEL, Thread.currentThread().getName() + ": frame visibility set to false, signaling shutdown");
-                        app.signalShutdown();
+                        app.state = WebApplication.State.SHUTDOWN;
+                        //Triggers a return and initiates full shutdown, preventing anything else from being written out to the browser
+                        app.flushEvents();
                     }
                 }
             });
@@ -146,37 +147,46 @@ class ApplicationEventListener implements WebComponentListener {
             for (Map.Entry<String, Timer> entry : app.timerMap.entrySet()) {
             	app.clientSideFunctionCall("tw_addTimerTask", entry.getKey(), entry.getValue().timeout);
             }
-            
         } else if (SHUTDOWN.equals(name)) {
             Frame f = app.getFrame();
+            StringBuilder capturedTitles = null;
             
-            if (f.isVisible()) {
-                if (log.isLoggable(LEVEL)) log.log(LEVEL, Thread.currentThread().getName() + ": shutdown event changing frame visibility to false");
+            Dialog[] diags = f.getDialogs().toArray(new Dialog[f.getDialogs().size()]);
+            
+            //Walk the dialogs from bottom up so the most recent dialog closes first.
+            for (int i = diags.length; --i >= 0;) {
+            	Dialog d = diags[i];
+            	
+                if (d.isWaitForWindow()) {
+                	if (capturedTitles == null) {
+                		capturedTitles = new StringBuilder();
+                	} else {
+                		capturedTitles.append(", ");
+                	}
+                	
+                	capturedTitles.append('\'').append(d.getTitle()).append('\'');
+                }
 
-                boolean captured = false;
-                
-                for (Dialog d : f.getDialogs()) {
-                    if (d.isWaitForWindow()) captured = true;
-                }
-                
-                //TODO Depends on this listener being the last listener executed once we toggle visibility of frame to false
-                //This code attempts to force an exception that won't be caught so that the call stack unrolls properly in
-                //cases where a waitForWindow dialog is in use.  It's important that this execute as the last listener so
-                //that all other visibility listeners have a chance to execute properly.
-                if (captured) {
-                    f.addPropertyChangeListener(Frame.PROPERTY_VISIBLE, new PropertyChangeListener() {
-                        public void propertyChange(PropertyChangeEvent pce) {
-                            if (pce.getNewValue() == Boolean.FALSE) {
-                                if (log.isLoggable(LEVEL)) log.log(LEVEL, Thread.currentThread().getName() + ": attempting to unroll stack naturally since their is a waitForWindow Dialog");
-                                throw new EventProcessor.GracefulShutdown(); 
-                            }
-                        }
-                    });
-                }
-                
-                f.setVisible(false);
-            } else {
-                if (log.isLoggable(LEVEL)) log.log(LEVEL, Thread.currentThread().getName() + ": shutdown event doesn't need to do anything, frame already has visible set to false");
+                if (d.isVisible()) {
+            		try {
+            			d.setVisible(false);
+            		} catch (Exception e) {
+                        if (log.isLoggable(Level.WARNING)) log.log(Level.WARNING, Thread.currentThread().getName() + ": exception setting dialog visible property to 'false' during shutdown", e);                    
+            		}
+            	}
+            }
+
+    		try {
+    			f.setVisible(false);
+    		} catch (Exception e) {
+                if (log.isLoggable(Level.WARNING)) log.log(Level.WARNING, Thread.currentThread().getName() + ": exception setting frame visible property to 'false' during shutdown", e);                    
+    		}
+
+            if (capturedTitles != null) {
+                if (log.isLoggable(LEVEL)) log.log(LEVEL, Thread.currentThread().getName() + ": attempting to unroll stack naturally since their is a waitForWindow Dialog");
+                //NOTE: If a developer ever uses a try/catch on Error, they will be able to intercept
+                //the following graceful shutdown exception, in which case the behavior is undetermined.
+                throw new EventProcessor.GracefulShutdown();
             }
         } else if (RUN_TIMER.equals(name)) {
             String timerId = (String)event.getValue();

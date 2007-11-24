@@ -313,6 +313,7 @@ public abstract class Application {
     public static Style getDefaultStyle(Class<? extends Component> clazz) {
         if (clazz == null) throw new IllegalArgumentException("clazz == null");
         Map<Class<? extends Component>, Style> map = current() != null ? current().compTypeToStyle : defaultStyleMap;
+        if (map == null) map = defaultStyleMap;
         
         Style style = map.get(clazz);
         
