@@ -650,7 +650,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
                 }
                 if (remoteFiles == null) remoteFiles = new ArrayList<String>(5);
                 remoteFiles.add(location);
-                location = "%SYSROOT%" + RemoteFileMap.INSTANCE.add(location);
+                location = WebApplication.REMOTE_FILE_PREFIX + RemoteFileMap.INSTANCE.add(location);
             }
         } else {
             location = "";
@@ -661,7 +661,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     
     void removeFileFromMap(String location) {
     	
-    	location = location.replaceAll("%SYSROOT%(.*)", "$1");
+    	location = location.replaceAll(WebApplication.REMOTE_FILE_PREFIX + "(.*)", "$1");
     	
     	try {
     		RemoteFileMap.INSTANCE.remove(location);

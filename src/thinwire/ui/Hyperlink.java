@@ -84,14 +84,17 @@ public class Hyperlink extends AbstractTextComponent {
         if (target == null || target.length() < 1) {
             Integer id = targetId.get();
             targetId.set(id + 1);
-            target = "olhl" + id;
+            target = "tw_olhl" + id;
         }
         
         location = Application.current().getQualifiedURL(location);
         
-        ((WebApplication)WebApplication.current()).clientSideMethodCallWaitForReturn("tw_Hyperlink", "openLocation", location, target);
-        
-        Application.current().removeFileFromMap(location);
+        if (location.startsWith(WebApplication.REMOTE_FILE_PREFIX)) {
+        	((WebApplication)WebApplication.current()).clientSideMethodCallWaitForReturn("tw_Hyperlink", "openLocation", location, target);
+	        Application.current().removeFileFromMap(location);
+        } else {
+        	((WebApplication)WebApplication.current()).clientSideMethodCall("tw_Hyperlink", "openLocation", location, target);
+        }
     }
 
     private String location = "";

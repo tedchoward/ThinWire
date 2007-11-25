@@ -172,6 +172,8 @@ public final class WebApplication extends Application {
     
     static enum State {INIT, STARTUP, RUNNING, REPAINT, SHUTDOWN, TERMINATED}
     
+    public static final String REMOTE_FILE_PREFIX = "%SYSROOT%";
+    
     private String baseFolder;
     private String styleSheet;
     private int nextCompId;
@@ -352,7 +354,7 @@ public final class WebApplication extends Application {
             for (Map.Entry<String, String> e : getSystemImages().entrySet()) {
                 String value = getSystemFile(e.getValue());
                 value = RemoteFileMap.INSTANCE.add(value, null, Application.getResourceBytes(value));
-                sb.append(e.getKey()).append(":\"").append("%SYSROOT%").append(value).append("\",");
+                sb.append(e.getKey()).append(":\"").append(REMOTE_FILE_PREFIX).append(value).append("\",");
             }
             
             sb.setCharAt(sb.length() - 1, '}');
