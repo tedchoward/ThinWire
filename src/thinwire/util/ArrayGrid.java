@@ -237,6 +237,7 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
         private Grid<? extends Grid.Row, ? extends Grid.Column> parent;       
         private List<Object> l;
         private int rowIndex;
+        private Object userObject;
         
         /**
          * Construct a Row.
@@ -270,11 +271,7 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
             this.arrayGrid = arrayGrid;
             if (parent == null) rowIndex = -1;
         }
-        
-        /**
-         * Gets the grid that contains this row.
-         * @see thinwire.util.Grid.Row#getParent
-         */
+
         public Grid getParent() {
             return parent;
         }
@@ -292,41 +289,32 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
             throw new IllegalArgumentException("there is no column with the name '" + columnName + "'");
         }
         
-        /*
-         * Sets the index of the current row.
-         * @param index The value to set the index to
-         */
         private void setIndex(int index) {
             if (parent == null) throw new IllegalStateException("index cannot be set before the row is added to a grid");
             if (parent.getRows().get(index) != this) throw new IllegalArgumentException("this row is not at the specified index");
             this.rowIndex = index;
         }
         
-        /**
-         * Gets the index for this row.
-         * @see thinwire.util.Grid.Row#getIndex()
-         */
         public int getIndex() {
             return rowIndex;
         }
         
-        /**
-         * @see thinwire.util.Grid.Row#get(java.lang.String)
-         */
+        public Object getUserObject() {
+        	return userObject;
+        }
+
+        public void setUserObject(Object value) {
+        	this.userObject = value;
+        }
+        
         public Object get(String columnName) {
             return get(getColumnIndexByName(columnName));
         }
         
-        /**
-         * @see java.util.List#get(int)
-         */
         public Object get(int index) {
             return l.get(index);
         }
         
-        /**
-         * @see java.util.List#set(int, java.lang.Object)
-         */
         public Object set(int index, Object o) {            
             if (parent != null) {
                 while (l.size() < parent.getColumns().size())
@@ -342,18 +330,12 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
             return set(getColumnIndexByName(columnName), o);
         }
         
-        /**
-         * @see java.util.List#add(int, java.lang.Object)
-         */
         public void add(int index, Object o) {
             if (parent != null) throw new UnsupportedOperationException("you cannot add an item to a row, you must instead add a column and then set the cell's value");
             l.add(index, o);
             modCount++;
         }
         
-        /**
-         * @see java.util.List#remove(int)
-         */
         public Object remove(int index) {
             if (parent != null) throw new UnsupportedOperationException("you cannot remove an item from a row, you must instead remove a column or set this cell's value to a new value");
             Object o = l.remove(index);
@@ -361,9 +343,6 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
             return o;
         }
 
-        /**
-         * @see java.util.Collection#size()
-         */
         public int size() {
             return l.size();
         }
@@ -379,6 +358,7 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
         private List<Object> l;
         private int columnIndex;
         private String name = "";
+        private Object userObject;
                
         /**
          * Construct a Column.
@@ -408,16 +388,10 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
                 add(o);
         }        
         
-        /**
-         * @see thinwire.util.Grid.Column#getName()
-         */
         public String getName() {
             return name;            
         }
         
-        /**
-         * @see thinwire.util.Grid.Column#setName(java.lang.String)
-         */
         public void setName(String name) {
             this.name = name == null ? "" : name;
         }
@@ -434,10 +408,6 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
             modCount++;
         }
         
-        /**
-         * Gets the grid that contains this column.
-         * @see thinwire.util.Grid.Column#getParent()
-         */
         public Grid getParent() {
             return parent;
         }
@@ -452,16 +422,18 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
             this.columnIndex = columnIndex;
         }
         
-        /**
-         * @see thinwire.util.Grid.Column#getIndex()
-         */
         public int getIndex() {
             return columnIndex;
-        }        
+        }
         
-        /**
-         * @see java.util.List#get(int)
-         */
+        public Object getUserObject() {
+        	return userObject;
+        }
+
+        public void setUserObject(Object value) {
+        	this.userObject = value;
+        }
+        
         public Object get(int index) {            
             if (parent == null) {
                 if (index < 0 || index >= size() || l == null) throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size());
@@ -472,9 +444,6 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
             }
         }
         
-        /**
-         * @see java.util.List#set(int, java.lang.Object)
-         */
         public Object set(int index, Object o) {            
             if (parent == null) {
                 if (index < 0 || index >= size() || l == null) throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size());
@@ -487,9 +456,6 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
             }
         }
                 
-        /**
-         * @see java.util.List#add(int, java.lang.Object)
-         */
         public void add(int index, Object o) {
             if (parent != null) throw new UnsupportedOperationException("you cannot add an item to a column, you must instead add a row and then set the cell's value");            
             if (index < 0 || index > size()) throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size());
@@ -497,10 +463,7 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
             l.add(index, o);            
             modCount++;
         }
-        
-        /**
-         * @see java.util.List#remove(int)
-         */
+
         public Object remove(int index) {
             if (parent != null) throw new UnsupportedOperationException("you cannot remove an item from a column, you must instead remove a row or set this cell's value to a new value");            
             if (index < 0 || index > size() || l == null) throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size());            
@@ -509,9 +472,6 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
             return o;
         }
 
-        /**
-         * @see java.util.Collection#size()
-         */
         public int size() {
             if (parent == null)
                 return l == null ? 0 : l.size();
@@ -548,9 +508,6 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
             return r;
         }
         
-        /*
-         * @see java.util.List#get(int)
-         */
         public R get(int index) {
             return l.get(index);
         }
@@ -578,9 +535,6 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
             return ret;
         }
         
-        /*
-         * @see java.util.List#add(int, java.lang.Object)
-         */
         public void add(int index, R o) {
             if (!(o instanceof List)) throw new ClassCastException("unsupported type");
             R r = prepareRow(o);
@@ -596,9 +550,6 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
             fireItemChange(Type.ADD, index, -1, null, r);
         }
         
-        /*
-         * @see java.util.List#remove(int)
-         */
         public R remove(int index) {
             R r = l.get(index);
             l.remove(index);
@@ -622,9 +573,6 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
             }
         }
 
-        /*
-         * @see java.util.Collection#size()
-         */
         public int size() {
             return l.size();
         }
@@ -677,16 +625,10 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
             }
         }
         
-        /*
-         * @see java.util.List#get(int)
-         */
         public C get(int index) {
             return l.get(index);
         }
 
-        /* 
-         * @see java.util.List#set(int, java.lang.Object)
-         */
         public C set(int index, C o) {
             if (!(o instanceof List)) throw new ClassCastException("unsupported type");            
             C ret = l.get(index);
@@ -702,9 +644,6 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
             return ret;
         }
         
-        /*
-         * @see java.util.List#add(int, java.lang.Object)
-         */
         public void add(int index, C o) {
             if (!(o instanceof List)) throw new ClassCastException("unsupported type");
             C c = prepareColumn(o);
@@ -721,9 +660,6 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
             fireItemChange(Type.ADD, -1, index, null, c);
         }
         
-        /*
-         * @see java.util.List#remove(int)
-         */
         public C remove(int index) {
             C c = l.remove(index);
             c.setParent(null, null);            
@@ -737,9 +673,6 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
             return c;
         }
 
-        /*
-         * @see java.util.Collection#size()
-         */
         public int size() {
             return l.size();
         }

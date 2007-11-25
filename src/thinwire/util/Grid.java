@@ -65,6 +65,17 @@ public interface Grid<R extends Grid.Row, C extends Grid.Column> {
          * @return the index for this Column
          */
         public int getIndex();
+        
+        /**
+         * Get the developer/user defined object that has been associated to this Grid.Column.
+         * @return the general purpose object that has been associated to this Grid.Column.
+         */
+        public Object getUserObject();
+
+        /**
+         * Set the developer/user defined object for this Grid.Column.
+         */
+        public void setUserObject(Object value);
     }
 
     /**
@@ -99,6 +110,17 @@ public interface Grid<R extends Grid.Row, C extends Grid.Column> {
          * @return the index for this Row
          */
         public int getIndex();
+        
+        /**
+         * Get the developer/user defined object that has been associated to this Grid.Row.
+         * @return the general purpose object that has been associated to this Grid.Row.
+         */
+        public Object getUserObject();
+
+        /**
+         * Set the developer/user defined object for this Grid.Row.
+         */
+        public void setUserObject(Object value);
     }
 
     /**
