@@ -265,7 +265,7 @@ public final class WebServlet extends HttpServlet {
         ApplicationHolder holder = (ApplicationHolder)httpSession.getAttribute("instance");
         response.setContentType("text/plain; charset=utf-8");
         response.setHeader("Cache-Control", "no-store");
-        if (holder == null) return;
+        if (holder == null || holder.app == null) return;
         holder.app.processActionEvents(request.getReader(), response.getWriter());
         
         if (holder.app.state == WebApplication.State.TERMINATED) {

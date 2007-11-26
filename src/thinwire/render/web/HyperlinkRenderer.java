@@ -40,11 +40,17 @@ import thinwire.ui.event.PropertyChangeEvent;
 final class HyperlinkRenderer extends TextComponentRenderer {	
     private static final String HYPERLINK_CLASS = "tw_Hyperlink";
     private static final String SET_LOCATION = "setLocation";
+    private static final String SET_TARGET = "setTarget";
+    private static final String SET_VISIBLE_CHROME = "setVisibleChrome";
+    private static final String SET_RESIZE_ALLOWED = "setResizeAllowed";
 
     void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         init(HYPERLINK_CLASS, wr, c, container);
         Hyperlink hl = (Hyperlink)c;
         addInitProperty(Hyperlink.PROPERTY_LOCATION, getQualifiedURL(hl.getLocation()));
+        addInitProperty(Hyperlink.PROPERTY_TARGET, hl.getTarget());
+        addInitProperty(Hyperlink.PROPERTY_VISIBLE_CHROME, hl.isVisibleChrome());
+        addInitProperty(Hyperlink.PROPERTY_RESIZE_ALLOWED, hl.isResizeAllowed());
         super.render(wr, c, container);
     }
 
@@ -55,6 +61,12 @@ final class HyperlinkRenderer extends TextComponentRenderer {
 
         if (name.equals(Hyperlink.PROPERTY_LOCATION)) {
             postClientEvent(SET_LOCATION, getQualifiedURL((String)newValue));
+        } else if (name.equals(Hyperlink.PROPERTY_TARGET)) {
+            postClientEvent(SET_TARGET, newValue);
+        } else if (name.equals(Hyperlink.PROPERTY_VISIBLE_CHROME)) {
+            postClientEvent(SET_VISIBLE_CHROME, newValue);
+        } else if (name.equals(Hyperlink.PROPERTY_RESIZE_ALLOWED)) {
+            postClientEvent(SET_RESIZE_ALLOWED, newValue);
         } else {
             super.propertyChange(pce);
         }

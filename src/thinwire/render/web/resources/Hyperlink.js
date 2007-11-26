@@ -28,10 +28,11 @@
 #ENDIF
 #VERSION_HEADER#
 */
-//TODO: In firefox, when you click a hyperlink, the focus gain / focus lose event gets stuck
-//in a loop.
 var tw_Hyperlink = tw_BaseBrowserLink.extend({
     _location: "",
+    _target: "",
+    _visibleChrome: true,
+    _resizeAllowed: true,
     
     construct: function(id, containerId, props) {
         arguments.callee.$.call(this, "a", "hyperlink", id, containerId);
@@ -46,7 +47,7 @@ var tw_Hyperlink = tw_BaseBrowserLink.extend({
     
     _clickListener: function(ev) {
         this._superClick(ev);
-        tw_Hyperlink.openLocation(this._location, "hl" + this._id);
+        tw_Hyperlink.openLocation(this._location, this._target, this._visibleChrome, this._resizeAllowed);
         return false;
     },
     
@@ -66,13 +67,29 @@ var tw_Hyperlink = tw_BaseBrowserLink.extend({
         this._box.href = "javascript:void('" + tw_Component.expandUrl(this._location) + "')";
     },
 
+    setTarget: function(target) {
+        this._target = target;
+    },
+
+    setVisibleChrome: function(visibleChrome) {
+        this._visibleChrome = visibleChrome;
+    },
+
+    setResizeAllowed: function(resizeAllowed) {
+        this._resizeAllowed = resizeAllowed;
+    },
+
     setEnabled: function(enabled) {
         arguments.callee.$.call(this, enabled);
         this._box.style.cursor = enabled ? "pointer" : "default";
     }
 });
 
-tw_Hyperlink.openLocation = function(location, target) {
-    if (location.length > 0) window.open(tw_Component.expandUrl(location), target);
+tw_Hyperlink.openLocation = function(location, target, visibleChrome, resizeAllowed) {
+    if (location.length > 0) {
+        var vc = visibleChrome ? "1" : "0";
+        var chromeOptions = "scrollbars=1,menubar=" + vc + ",toolbar=" + vc + ",location=" + vc + ",directories=" + vc + 
+            ",status=" + vc + ",resizable=" + (resizeAllowed ? "1" : "0");
+        window.open(tw_Component.expandUrl(location), target, chromeOptions);
+    }
 };
-
