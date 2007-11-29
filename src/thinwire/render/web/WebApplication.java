@@ -190,15 +190,6 @@ public final class WebApplication extends Application {
     WebComponentEvent startupEvent;
     Map<Style, String> styleToStyleClass = new HashMap<Style, String>();
     FileInfo[] fileList = new FileInfo[1];
-
-    //Stress Test Variables.
-    UserActionListener userActionListener;    
-    boolean playBackOn = false;
-    long playBackStart = -1;
-    private long playBackDuration = -1;
-    private long recordDuration = -1;
-    boolean playBackEventReceived = false;
-    //end Stress Test.
     
     WebApplication(String baseFolder, String mainClass, String styleSheet, String[] args) throws IOException {
         this.baseFolder = baseFolder;
@@ -264,7 +255,6 @@ public final class WebApplication extends Application {
             if (renderStateListeners != null) renderStateListeners.clear();
             if (timerMap != null) timerMap.clear();
             if (styleToStyleClass != null) styleToStyleClass.clear();
-            if (userActionListener != null) userActionListener.stop();
             
             nameToRenderer = null;
             windowToRenderer = null;
@@ -274,10 +264,6 @@ public final class WebApplication extends Application {
             timerMap = null;
             styleToStyleClass = null;
             fileList = null;
-            userActionListener = null;
-            
-            //app.clientSideFunctionCall(SHUTDOWN_INSTANCE, 
-            //      "The application instance has shutdown. Press F5 to restart the application or close the browser to end your session.");
             
             state = State.TERMINATED;            
         }
@@ -820,48 +806,8 @@ public final class WebApplication extends Application {
     protected Object setPackagePrivateMember(String memberName, Component comp, Object value) {
         return super.setPackagePrivateMember(memberName, comp, value);
     }    
-
-    public void setUserActionListener(UserActionListener listener) {
-		this.userActionListener = listener;
-	}
-
-	void notifyUserActionReceived(WebComponentEvent evt) {
-		UserActionEvent uae = new UserActionEvent(evt);
-		this.userActionListener.actionReceived(uae);
-	}
     
     protected void finalize() {
         if (log.isLoggable(LEVEL)) log.log(LEVEL, Thread.currentThread().getName() + ": finalizing app");
     }
-
-	public void setPlayBackOn(boolean playBackOn){
-		this.playBackOn = playBackOn;
-		if (!this.playBackOn){
-			this.endPlayBack();
-		}
-	}
-	
-	private void endPlayBack(){
-		log.entering("ThinWireApplication", "endPlayBack");
-		this.playBackDuration = new Date().getTime() - this.playBackStart;
-        StringBuilder sb = new StringBuilder(EOL + EOL);
-		sb.append(Thread.currentThread().getName()
-				+ " Playback Statistics" + EOL);
-		sb.append("-----------------------------------------------------" + EOL);
-		sb.append("Duration of recording session:  " + this.recordDuration + EOL);
-		sb.append(" Duration of playback session:  " + this.playBackDuration + EOL);
-		DecimalFormat df = new DecimalFormat();
-		df.setMinimumFractionDigits(2);
-		df.setMinimumIntegerDigits(1);
-		double drecord = new Long(this.recordDuration).doubleValue();
-		double dplay = new Long(this.playBackDuration).doubleValue();
-		double pctChange = (((dplay/drecord) - 1) * 100);
-		sb.append("                     % change:  " + df.format(pctChange)  + EOL + EOL);
-		log.info(sb.toString());	
-		log.exiting("ThinWireApplication", "endPlayBack");
-	}
-
-	public void setRecordDuration(long recordDuration) {
-		this.recordDuration = recordDuration;
-	}
 }

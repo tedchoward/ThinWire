@@ -127,7 +127,6 @@ class EventProcessor extends Thread {
 
             WebComponentEvent event = queue.remove(0);
             if (log.isLoggable(LEVEL)) log.log(LEVEL, Thread.currentThread().getName() + ": process user action event:" + event);
-            if (app.userActionListener != null) app.notifyUserActionReceived(event);
             
             try {
                 WebComponentListener wcl = app.getWebComponentListener((Integer) event.getSource());
