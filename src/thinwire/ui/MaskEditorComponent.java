@@ -38,14 +38,40 @@ public interface MaskEditorComponent extends EditorComponent {
     public static final String PROPERTY_FORMAT_TEXT = "formatText";
     
     /**
-     * Get this TextField's edit mask
+     * Get the edit mask for this Component.
      * @return the edit mask
      */
     public String getEditMask();
 
     /**
-     * This method accepts an edit mask as a String and applies it to the text field.
-     * @param editMask
+     * This method accepts an edit mask as a String and applies it to the text field. 
+     * 
+     * Allowed mask chars are:
+     * - "A" alphabetic characters, converted automatically to uppercase (regex: [A-Z ]|[\u00c0-\u00d6]|[\u00d8-\u00de]). 
+	 * - "a" alphabetic characters (regex: [A-Za-z ]|[\u00c0-\u00d6]|[\u00d8-\u00f6]|[\u00f8-\u00ff]). 
+	 * - "X" all typographic characters, with alphabetic characters converted automatically to uppercase (regex: [\u0020-`]|[{-~]|[\u00a1-\u00de]|\u00f7). 
+	 * - "x" all typographic characters (regex: [ -~]|[\u00a1-\u00ff]). 
+	 * - "9" numbers. Values 0-9. 
+     * - "#" numbers. Values 0-9, special behavior for monetary amounts or decimal values.
+     * ---- "." is treated as decimal sign and "-" on the first position as negative sign. 
+	 * - "M" month. Use "MM" for values 01-12. 
+	 * - "d" day. Use "dd" for values 01-31, depending on month. 
+	 * - "y" year. Use "yyyy" for values 1800-2200 and "yy" for values 00-99. 
+	 * - "h" hour. Use "hh" for values 00-23. 
+	 * - "m" minute. Use "mm" for values 00-59.
+	 * - "p" AM/PM identifier, limits the "hh" mask to 01-12 when present, uppercase and lowercase allowed.
+	 *  
+	 * All other characters are handled as literals and are not substituted. 
+	 * The edit mask is processed on the client side without server calls. 
+	 * LOCALIZATION NOTES:
+	 * - No support yet for a decimal sign other than ".", such as ","
+	 * - No support yet for a decimal separator other than ",", such as "."
+	 * - Placing a '+' character at the beginning of a phone editMask does not work correctly.
+	 * - Date masking (MM/dd/yyyy) doesn't work 100% right when reordering it to (dd/MM/yyyy). 
+     * - Nothing outside of UTF-8 latin characters are validated for 'x', 'X', 'a' or 'A'.
+     * - Nothing outside of UTF-8 latin alphabetic characters are auto uppercased for 'X' and 'A'. 
+	 * 
+	 * @param editMask the edit mask string that should be applied to this editor.
      */
     public void setEditMask(String editMask);
 

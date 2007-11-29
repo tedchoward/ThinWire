@@ -555,16 +555,21 @@ var tw_BaseText = tw_Component.extend({
                     break;
     
                 case 'y':
-                    if ((tmp = mask.indexOf("yyyy")) >= 0) {
-                        if (tmp == fmcntr)
-                            reCh = "[1-2]";
-                        else
-                            reCh = "[0-9]";
-                    } else
-                        reCh = "[0-9]";
-    
-                    break;
-    
+                   if ((tmp = mask.indexOf("yyyy")) >= 0) {
+                       if (tmp == fmcntr)
+                           reCh = "[1-2]";
+                       else if (tmp == fmcntr - 1) {
+                           if (data.charAt(fmcntr - 1) == '1')
+                               reCh = "[8-9]";
+                           else
+                               reCh = "[0-2]";
+                       } else
+                           reCh = "[0-9]";
+                   } else
+                       reCh = "[0-9]";
+   
+                   break;
+
                 case '(':
                     reCh = "\\(";
                     break;
