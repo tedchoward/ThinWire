@@ -30,9 +30,7 @@
 */
 package thinwire.render.web;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -60,20 +58,18 @@ final class RemoteFileMap {
         remoteToFileInfo = new HashMap<String, RemoteFileInfo>(initialMapSize);
         localToFileInfo = new HashMap<String, RemoteFileInfo>(initialMapSize);
     }
-
-    final String getLocalName(String remoteName) {
-        RemoteFileInfo fileInfo = remoteToFileInfo.get(remoteName);
-        return fileInfo == null ? null : fileInfo.localName;
-    }
     
-    final byte[] load(String remoteName) {
+    final byte[] load(WebApplication app, String remoteName) {
         RemoteFileInfo fileInfo = remoteToFileInfo.get(remoteName);
         
         if (fileInfo != null) {
             byte[] data;
             
             if (fileInfo.data == null) {
-                data = WebApplication.getResourceBytes(fileInfo.localName);
+            	InputStream is = app.getContextResourceAsStream(fileInfo.localName);
+            	ByteArrayOutputStream os = new ByteArrayOutputStream();
+            	WebApplication.writeInputToStream(is, os);
+            	data = fileInfo.data = os.toByteArray();
             } else {
                 data = fileInfo.data;
             }
@@ -88,15 +84,11 @@ final class RemoteFileMap {
         }
     }
     
-    String add(String localName) {
-        return add(localName, null, null);
+    String add(WebApplication app, String localName) {
+        return add(app, localName, null);
     }
 
-    String add(String localName, String remoteName) {
-        return add(localName, remoteName, null);
-    }
-
-    String add(String localName, String remoteName, byte[] data) {               
+    String add(WebApplication app, String localName, byte[] data) {               
         synchronized (localToFileInfo) {
             RemoteFileInfo fileInfo = localToFileInfo.get(localName);
             
@@ -106,35 +98,31 @@ final class RemoteFileMap {
                 fileInfo.refCount = 1;
                 fileInfo.data = data;
                 
-                if (remoteName == null) {
-                    int lastIndex = fileInfo.localName.lastIndexOf(File.separatorChar);
-                    if (lastIndex == -1) lastIndex = fileInfo.localName.lastIndexOf(File.separatorChar == '/' ? '\\' : '/');  
-                    fileInfo.remoteName = fileInfo.localName.substring(lastIndex + 1);
+                int lastIndex = fileInfo.localName.lastIndexOf(File.separatorChar);
+                if (lastIndex == -1) lastIndex = fileInfo.localName.lastIndexOf(File.separatorChar == '/' ? '\\' : '/');  
+                fileInfo.remoteName = fileInfo.localName.substring(lastIndex + 1);
+                
+                if (remoteToFileInfo.containsKey(fileInfo.remoteName)) {                
+                    lastIndex = fileInfo.remoteName.lastIndexOf('.');
+                    String file, ext;
                     
-                    if (remoteToFileInfo.containsKey(fileInfo.remoteName)) {                
-                        lastIndex = fileInfo.remoteName.lastIndexOf('.');
-                        String file, ext;
-                        
-                        if (lastIndex == -1) {
-                            file = fileInfo.remoteName;
-                            ext = "";
-                        } else {
-                            file = fileInfo.remoteName.substring(0, lastIndex);
-                            ext = fileInfo.remoteName.substring(lastIndex);
-                        }
-                        
-                        StringBuilder sb = new StringBuilder();
-                        int i = 0;
-                        
-                        do {
-                            i++;
-                            sb.append(file).append('-').append(i).append(ext);
-                            fileInfo.remoteName = sb.toString();
-                            sb.setLength(0);
-                        } while (remoteToFileInfo.containsKey(fileInfo.remoteName));
+                    if (lastIndex == -1) {
+                        file = fileInfo.remoteName;
+                        ext = "";
+                    } else {
+                        file = fileInfo.remoteName.substring(0, lastIndex);
+                        ext = fileInfo.remoteName.substring(lastIndex);
                     }
-                } else {
-                    fileInfo.remoteName = remoteName;
+                    
+                    StringBuilder sb = new StringBuilder();
+                    int i = 0;
+                    
+                    do {
+                        i++;
+                        sb.append(file).append('-').append(i).append(ext);
+                        fileInfo.remoteName = sb.toString();
+                        sb.setLength(0);
+                    } while (remoteToFileInfo.containsKey(fileInfo.remoteName));
                 }
                 
                 localToFileInfo.put(localName, fileInfo);
@@ -150,7 +138,7 @@ final class RemoteFileMap {
         }
     }
     
-    void remove(String localName) throws IOException {
+    void remove(WebApplication app, String localName) {
         synchronized (localToFileInfo) {
             RemoteFileInfo fileInfo = localToFileInfo.get(localName);
             
@@ -161,11 +149,13 @@ final class RemoteFileMap {
                     localToFileInfo.remove(localName);
                     remoteToFileInfo.remove(fileInfo.remoteName);
                 }
+                
+                if (log.isLoggable(LEVEL)) log.log(LEVEL, "Removed file mapping for local file: localName='" + 
+                        localName + "'" + (fileInfo == null ? "" : ", remoteName='" + fileInfo.remoteName + 
+                        "', refCount='" + fileInfo.refCount + "'"));
+            } else {
+                log.log(Level.WARNING, "Attempt to remove reference for unmapped local file: " + localName);
             }
-            
-            if (log.isLoggable(LEVEL)) log.log(LEVEL, "Removed file mapping for local file: localName='" + 
-                    localName + "'" + (fileInfo == null ? "" : ", remoteName='" + fileInfo.remoteName + 
-                    "', refCount='" + fileInfo.refCount + "'"));
         }
     }
 }

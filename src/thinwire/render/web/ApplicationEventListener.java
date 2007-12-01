@@ -52,10 +52,10 @@ class ApplicationEventListener implements WebComponentListener {
     private static final String RUN_TIMER = "RUN_TIMER";
     
     private static final class StartupInfo {
-        String mainClass;
+        Class mainClass;
         String[] args;
         
-        StartupInfo(String mainClass, String[] args) {
+        StartupInfo(Class mainClass, String[] args) {
             this.mainClass = mainClass;
             this.args = args;
         }
@@ -69,8 +69,7 @@ class ApplicationEventListener implements WebComponentListener {
         return new WebComponentEvent(ID, INIT, null);
     }
     
-    static final WebComponentEvent newStartEvent(String mainClass, String[] args) {
-    	if (mainClass == null || mainClass.length() == 0) throw new IllegalArgumentException("The init-param 'mainClass' is required and must point to your application's entry point");
+    static final WebComponentEvent newStartEvent(Class mainClass, String[] args) {
         StartupInfo info = new StartupInfo(mainClass, args);
         return new WebComponentEvent(ID, STARTUP, info);
     }
@@ -118,8 +117,7 @@ class ApplicationEventListener implements WebComponentListener {
 
             try {
                 if (log.isLoggable(LEVEL)) log.log(LEVEL, Thread.currentThread().getName() + ": calling entry point class=" + info.mainClass);
-                Class clazz = Class.forName(info.mainClass);
-                clazz.getMethod("main", new Class[] { String[].class }).invoke(clazz, new Object[] { info.args });
+                info.mainClass.getMethod("main", new Class[] { String[].class }).invoke(info.mainClass, new Object[] { info.args });
             } catch (Exception e) {
                 Throwable th = e;          
                 while (th.getCause() != null) th = th.getCause();                

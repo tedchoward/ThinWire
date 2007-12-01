@@ -51,7 +51,7 @@ import javax.servlet.http.*;
 /**
  * @author Joshua J. Gertzen
  */
-public final class WebServlet extends HttpServlet {
+public class WebServlet extends HttpServlet {
 	private static final Level LEVEL = Level.FINER;
     private static final Logger log = Logger.getLogger(WebServlet.class.getName());
     
@@ -97,6 +97,12 @@ public final class WebServlet extends HttpServlet {
         	if (log.isLoggable(LEVEL)) log.log(LEVEL, "Unbinding application instance " + event.getSession().getId());            
             if (app != null) app.shutdown();
         }
+    }
+    
+    public WebServlet() {
+    	if (Thread.currentThread() instanceof EventProcessor) {
+    		throw new IllegalStateException("This class '" + this.getClass().getName() + "' is managed by the servlet engine and cannot be constructed from an EventProcessor UI thread");
+    	}
     }
 
     public void service(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
@@ -227,14 +233,33 @@ public final class WebServlet extends HttpServlet {
         
         Set<String> args = getStartArguments(request);	        
         holder = new ApplicationHolder();
-        holder.app = new WebApplication(this.getServletContext().getRealPath(""), getInitParameter(InitParam.MAIN_CLASS.mixedCaseName()), getInitParameter(InitParam.STYLE_SHEET.mixedCaseName()), args.toArray(new String[args.size()]));
+        String className = getInitParameter(InitParam.MAIN_CLASS.mixedCaseName());
+        Class mainClass;
+        
+        if (className == null || className.trim().length() == 0) {
+        	if (WebServlet.class != this.getClass()) {
+        		mainClass = this.getClass();
+        	} else {
+            	throw new IllegalArgumentException("The init-param 'mainClass' is required or the servlet you specify must subclass WebServlet and contain a static 'main' method");
+        	}
+        } else {
+        	try {
+        		mainClass = Class.forName(className);
+        	} catch (ClassNotFoundException e) {
+        		throw new RuntimeException(e);
+        	}
+        }
+        
+        holder.app = new WebApplication(this.getServletContext().getRealPath(""), mainClass, getInitParameter(InitParam.STYLE_SHEET.mixedCaseName()), args.toArray(new String[args.size()]));
         httpSession.setAttribute("instance", holder);
     }    
     
     private void handleResource(HttpServletRequest request, HttpServletResponse response, String resourceName) throws IOException, ServletException {        
+        ApplicationHolder holder = (ApplicationHolder)request.getSession().getAttribute("instance");
+        if (holder == null || holder.app == null) return;
         if (log.isLoggable(LEVEL)) log.log(LEVEL, "getting resource: " + resourceName);
-        byte[] data = RemoteFileMap.INSTANCE.load(resourceName);
-        
+        byte[] data = RemoteFileMap.INSTANCE.load(holder.app, resourceName);
+
         if (data == null) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         } else {

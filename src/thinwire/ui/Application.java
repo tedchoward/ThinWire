@@ -88,7 +88,7 @@ public abstract class Application {
             versionInfo = Collections.unmodifiableMap(vi);
             XOD xod = new XOD();
             xod.execute(DEFAULT_STYLE_SHEET + "/Style.xml");
-            defaultStyleMap = buildStyleMap(xod);
+            defaultStyleMap = buildStyleMap(Application.class.getClassLoader(), xod);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -221,6 +221,10 @@ public abstract class Application {
      * @return an InputStream representing the specified resource or null if the resource was not found.
      */
     public static InputStream getResourceAsStream(String uri) {
+    	return getResourceAsStream(null, uri);
+    }
+
+    protected static InputStream getResourceAsStream(ClassLoader classLoader, String uri) {
         InputStream is = null;
 
         if (uri != null && uri.trim().length() > 0) {
@@ -238,8 +242,13 @@ public abstract class Application {
                     int endIndex = uri.indexOf('/', 9);
                     String className = uri.substring(9, endIndex);
                     String resource = uri.substring(endIndex + 1);
-                    Class clazz = Class.forName(className);
-                    is = clazz.getResourceAsStream(resource);
+                    
+                    if (classLoader == null) {
+                    	Application app = current();
+                    	classLoader = app == null ? Application.class.getClassLoader() : app.getClassLoader();
+                    }
+                    
+                    is = classLoader.loadClass(className).getResourceAsStream(resource);
                 } else if (uri.indexOf("://") >= 0 && !uri.startsWith("file:///")) {
                     URL remoteImageURL = new URL(uri);
                     URLConnection remoteImageConnection = remoteImageURL.openConnection();
@@ -297,6 +306,13 @@ public abstract class Application {
         if (os == null) throw new IllegalArgumentException("os == null");
         InputStream is = getResourceAsStream(uri);
         if (is == null) throw new IllegalArgumentException("Content for URI was not found:" + uri);
+        writeInputToStream(is, os);
+    }
+    
+    public static void writeInputToStream(InputStream is, OutputStream os) {
+    	if (is == null) throw new IllegalArgumentException("is == null");
+        if (os == null) throw new IllegalArgumentException("os == null");
+    	
         byte[] bytes = new byte[128];
         int size;
         
@@ -344,7 +360,7 @@ public abstract class Application {
         return style;
     }
     
-    private static Map<Class<? extends Component>, Style> buildStyleMap(XOD props) {
+    private static Map<Class<? extends Component>, Style> buildStyleMap(ClassLoader classLoader, XOD props) {
     	Map<Class<? extends Component>, Style> styleMap = new HashMap<Class<? extends Component>, Style>();
     	
     	for (Map.Entry<String, Object> e : props.getObjectMap().entrySet()) {
@@ -358,7 +374,7 @@ public abstract class Application {
                     if (Character.isUpperCase(name.charAt(0)) && name.indexOf('.') == -1) name = "thinwire.ui." + name;
                     
                     try {
-                        Class clazz = Class.forName(name);
+                        Class clazz = classLoader.loadClass(name);
                         if (clazz.getMethod("getStyle") != null) styleMap.put((Class<? extends Component>)clazz, (Style)value);
                     } catch (Exception ex) { /*purposely fall through*/ }
                 }
@@ -706,7 +722,7 @@ public abstract class Application {
         sheet = getSystemFile(sheet);
         if (!sheet.endsWith(".xml")) sheet += "/Style.xml";
         props.execute(sheet);        
-        compTypeToStyle = buildStyleMap(props);
+        compTypeToStyle = buildStyleMap(getClassLoader(), props);
         systemColors = new HashMap<String, Color>();
         systemImages = new HashMap<String, String>();
 
@@ -863,6 +879,7 @@ public abstract class Application {
         return null;
     }
     
+    protected abstract ClassLoader getClassLoader();
     protected abstract void captureThread();
     protected abstract void releaseThread();
     protected abstract void showWindow(Window w);

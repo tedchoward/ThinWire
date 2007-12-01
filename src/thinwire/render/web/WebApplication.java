@@ -33,6 +33,7 @@ package thinwire.render.web;
 import java.io.ByteArrayOutputStream;
 import java.io.CharArrayWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.io.PrintWriter;
 import java.text.DecimalFormat;
@@ -120,7 +121,7 @@ public final class WebApplication extends Application {
         for (String res : BUILT_IN_RESOURCES) {
             if (!res.endsWith(".js")) {
                 if (!res.startsWith("class:///")) res = classURL + res;
-                RemoteFileMap.INSTANCE.add(res, null, Application.getResourceBytes(res));
+                RemoteFileMap.INSTANCE.add(null, res);
             }
         }
 
@@ -183,6 +184,7 @@ public final class WebApplication extends Application {
     private Set<String> clientSideIncludes;
     private Map<Component, Object> renderStateListeners;
     private EventProcessor proc;
+    private ClassLoader classLoader;
     
     State state;
     List<Runnable> timers;
@@ -191,7 +193,7 @@ public final class WebApplication extends Application {
     Map<Style, String> styleToStyleClass = new HashMap<Style, String>();
     FileInfo[] fileList = new FileInfo[1];
     
-    WebApplication(String baseFolder, String mainClass, String styleSheet, String[] args) throws IOException {
+    WebApplication(String baseFolder, Class mainClass, String styleSheet, String[] args) throws IOException {
         this.baseFolder = baseFolder;
         this.styleSheet = styleSheet;
         nameToRenderer = new HashMap<String, Class<ComponentRenderer>>();
@@ -199,10 +201,19 @@ public final class WebApplication extends Application {
         timerMap = new HashMap<String, Timer>();
         timers = new LinkedList<Runnable>();
         webComponentListeners = new HashMap<Integer, WebComponentListener>();
+        classLoader = mainClass.getClassLoader();
      
         setWebComponentListener(ApplicationEventListener.ID, new ApplicationEventListener(this));
         startupEvent = ApplicationEventListener.newStartEvent(mainClass, args);
         state = State.INIT;
+    }
+    
+    protected ClassLoader getClassLoader() {
+    	return classLoader;
+    }
+    
+    InputStream getContextResourceAsStream(String uri) {
+    	return getResourceAsStream(classLoader, uri);
     }
 
     //NOTE: Only to be called by ApplicationEventListener's frame visibility PropertyChangeListener.
@@ -264,6 +275,7 @@ public final class WebApplication extends Application {
             timerMap = null;
             styleToStyleClass = null;
             fileList = null;
+            classLoader = null;
             
             state = State.TERMINATED;            
         }
@@ -339,7 +351,7 @@ public final class WebApplication extends Application {
             
             for (Map.Entry<String, String> e : getSystemImages().entrySet()) {
                 String value = getSystemFile(e.getValue());
-                value = RemoteFileMap.INSTANCE.add(value, null, Application.getResourceBytes(value));
+                value = RemoteFileMap.INSTANCE.add(null, value); //Technically this could be an App level cache item, but it's not necessary for system images.
                 sb.append(e.getKey()).append(":\"").append(REMOTE_FILE_PREFIX).append(value).append("\",");
             }
             
@@ -571,8 +583,9 @@ public final class WebApplication extends Application {
         
         if (localName == null || localName.trim().length() == 0) throw new IllegalArgumentException("localName == null || localName.trim().length() == 0");
         if (!localName.startsWith("class:///")) localName = this.getRelativeFile(localName).getAbsolutePath();
-        String remoteName = RemoteFileMap.INSTANCE.add(localName);
+        String remoteName = RemoteFileMap.INSTANCE.add(this, localName);
         clientSideFunctionCallWaitForReturn("tw_include", remoteName);
+        RemoteFileMap.INSTANCE.remove(this, localName);
         clientSideIncludes.add(localName);
     }
     
