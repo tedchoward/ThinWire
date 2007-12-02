@@ -118,12 +118,16 @@ var tw_EventManager = Class.extend({
     },
         
     _sendEvents: function() {
-        if (this._comm != null && this._comm.isReady()) {
-            this._setActivityIndVisible(true);
-            var msg = this._outboundEvents.join(":");                
-            this._outboundEvents = [];
-            this._vsEventOrder = {};
-            this._comm.send("POST", tw_APP_URL, msg);           
+        if (this._comm != null) {
+            if (this._comm.isReady()) {
+                this._setActivityIndVisible(true);
+                var msg = this._outboundEvents.join(":");                
+                this._outboundEvents = [];
+                this._vsEventOrder = {};
+                this._comm.send("POST", tw_APP_URL, msg);
+            } else {
+                this.resetSendEventsTimer(100);
+            }
         }
     },
     
