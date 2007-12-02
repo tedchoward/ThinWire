@@ -74,43 +74,74 @@ public class Hyperlink extends AbstractTextComponent {
         }
     };
     
-    public static final String PROPERTY_LOCATION = "location";
-
-    public static void openLocation(String location) {
-        openLocation(location, null);
+    private static String getNextGeneratedTarget() {
+    	String target;
+        Integer id = targetId.get();
+        targetId.set(id + 1);
+        target = "hl" + id;
+    	return target;
     }
     
+    public static final String PROPERTY_LOCATION = "location";
+    public static final String PROPERTY_TARGET = "target";
+    public static final String PROPERTY_VISIBLE_CHROME = "visibleChrome";
+    public static final String PROPERTY_RESIZE_ALLOWED = "resizeAllowed";
+
+    public static void openLocation(String location) {
+        openLocation(location, null, false, false);
+    }
+
     public static void openLocation(String location, String target) {
-        if (target == null || target.length() < 1) {
-            Integer id = targetId.get();
-            targetId.set(id + 1);
-            target = "olhl" + id;
-        }
-        
+    	openLocation(location, null, false, false);
+    }
+    
+    public static void openLocation(String location, String target, boolean visibleChrome) {
+    	openLocation(location, null, visibleChrome, false);
+    }
+
+    public static void openLocation(String location, String target, boolean visibleChrome, boolean resizeAllowed) {
+        if (target == null || target.length() < 1) target = getNextGeneratedTarget();
         location = Application.current().getQualifiedURL(location);
         
-        ((WebApplication)WebApplication.current()).clientSideMethodCallWaitForReturn("tw_Hyperlink", "openLocation", location, target);
-        
-        Application.current().removeFileFromMap(location);
+        if (location.startsWith(WebApplication.REMOTE_FILE_PREFIX)) {
+        	((WebApplication)WebApplication.current()).clientSideMethodCallWaitForReturn("tw_Hyperlink", "openLocation", location, target, visibleChrome, resizeAllowed);
+	        Application.current().removeFileFromMap(location);
+        } else {
+        	((WebApplication)WebApplication.current()).clientSideMethodCall("tw_Hyperlink", "openLocation", location, target, visibleChrome, resizeAllowed);
+        }
     }
 
     private String location = "";
+    private String target = "";
+    private boolean visibleChrome;
+    private boolean resizeAllowed;
         
-    public Hyperlink() {}       
-    
-    /**
-	 * Constructs a new Hyperlink displaying the specified text. If the text is
-	 * a valid URL, the location property is also set.
-	 * 
-	 * @param text
-	 */
+    public Hyperlink() {
+    	this(null, null, null, true, true);
+    }       
+
     public Hyperlink(String text) {
-        this(text, Application.validateURL(text) ? text : null);
+        this(text, Application.validateURL(text) ? text : null, null, true, true);
     }
 
     public Hyperlink(String text, String location) {
-        this.setText(text);
-        this.setLocation(location);
+    	this(text, location, null, true, true);
+    }
+    
+    public Hyperlink(String text, String location, String target) {
+    	this(text, location, target, true, true);
+    }
+    
+    public Hyperlink(String text, String location, String target, boolean visibleChrome) {
+    	this(text, location, target, visibleChrome, true);
+    }
+
+    public Hyperlink(String text, String location, String target, boolean visibleChrome, boolean resizeAllowed) {
+        setText(text);
+        setLocation(location);
+        setTarget(target);
+        this.visibleChrome = visibleChrome;
+        this.resizeAllowed = resizeAllowed;
     }
     
     public void setLocation(String location) {
@@ -122,5 +153,36 @@ public class Hyperlink extends AbstractTextComponent {
     
     public String getLocation() {
         return this.location;
-    }    
+    }
+
+	public void setTarget(String target) {
+		String oldTarget = this.target;
+		target = target == null ? getNextGeneratedTarget() : target;
+		this.target = target;
+		firePropertyChange(this, PROPERTY_TARGET, oldTarget, target);
+	}
+
+	public String getTarget() {
+		return target;
+	}
+
+	public void setVisibleChrome(boolean visibleChrome) {
+		boolean oldVisibleChrome = this.visibleChrome;
+		this.visibleChrome = visibleChrome;
+		firePropertyChange(this, PROPERTY_VISIBLE_CHROME, oldVisibleChrome, visibleChrome);
+	}
+
+	public boolean isVisibleChrome() {
+		return visibleChrome;
+	}
+
+	public void setResizeAllowed(boolean resizeAllowed) {
+		boolean oldResizeAllowed = this.resizeAllowed;
+		this.resizeAllowed = resizeAllowed;
+		firePropertyChange(this, PROPERTY_RESIZE_ALLOWED, oldResizeAllowed, resizeAllowed);
+	}
+
+	public boolean isResizeAllowed() {
+		return resizeAllowed;
+	}
 }

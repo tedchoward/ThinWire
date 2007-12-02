@@ -74,13 +74,12 @@ var tw_BaseText = tw_Component.extend({
         if (!this._enabled) return;
         var keyCode = tw_getEventKeyCode(event);
         if (keyCode == 190) this._decimalPointTyped = true;
-        this._validateInput(keyCode);
-        this._textStateChange(true);
+		this._textChange(keyCode);
     },
         
     _mouseUpListener: function(event) {
         if (!this._enabled) return;
-        this._textStateChange(true);
+		this._textChange(0);
     },
     
     setWidth: function(width) {     
@@ -110,9 +109,8 @@ var tw_BaseText = tw_Component.extend({
         if (length != -1) this._editor.maxLength = text.length;
         this._lastValue = this._editor.value = text;
         if (this._useToolTip) this._editor.title = text; 
-        this._validateInput(0);
+		this._textChange(0);
         if (length != -1) this._editor.maxLength = length;
-        this._textStateChange(false, true);
     },
 
     setEnabled: function(enabled) {        
@@ -124,9 +122,7 @@ var tw_BaseText = tw_Component.extend({
         if (focus) {
             var ret = arguments.callee.$.call(this, focus);        
             this._valueOnFocus = this._editor.value;
-            this._textStateChange();
         } else {
-            this._textStateChange(false, true);
             var ret = arguments.callee.$.call(this, focus);            
         }
         
@@ -194,11 +190,8 @@ var tw_BaseText = tw_Component.extend({
         return index;
     },    
     
-    /****
-     * Don't call this until the textfield has been attached to a document.
-     * Calling it first resulted in an "unspecified" HTML error.  
-     * 2005-09-13 djv
-     */
+    //Don't call this until the textfield has been attached to a document.
+    //Calling it first resulted in an "unspecified" HTML error.  
     setSelectionRange: function(beginIndex, endIndex) {
         this._selectionOld = beginIndex + "," + endIndex;        
         
@@ -220,7 +213,6 @@ var tw_BaseText = tw_Component.extend({
         }            
     },
     
-    //Should be function of BaseText
     getSelectionRange: function() {
         var comp = this._editor;
                 
@@ -245,56 +237,8 @@ var tw_BaseText = tw_Component.extend({
         start += this._getStringCount(value, "\n", 0, start);
         end += this._getStringCount(value, "\n", 0, end);       
         return [start, end];
-    },      
-    
-    _textStateChange: function(useTimer, noSelectChange) {
-        if (useTimer && noSelectChange) alert("_textStateChange:unsupported");
-        var te = this._editor;
-        
-        if (this._timerId != 0) {
-            clearTimeout(this._timerId);
-            this._timerId = 0;
-        }
-                            
-        if (te.value != this._lastValue) {        
-            if (useTimer) {
-                //if this is the first character, notify immediately
-                if (te.value.length == 0 || (te.value.length > 0 && this._lastValue.length == 0)) {
-                    this._changeText(noSelectChange);
-                } else {
-                    this._timerId = setTimeout(this._changeText.bind(this), 400);
-                }
-            } else {
-                this._changeText(noSelectChange);
-            }
-        } else {
-            if (useTimer) {
-                this._timerId = setTimeout(this._handleSelectionChange.bind(this), 400);
-            } else {
-                this._handleSelectionChange(noSelectChange);
-            }
-        }        
     },
-    
-    _handleSelectionChange: function(noSelectChange) {
-        if (noSelectChange || !this.isVisible() || !this._enabled) return;
-        this._timerId = 0;
-        if (this._selectionOld == undefined) this._selectionOld = this._editor.value.length + "," + this._editor.value.length;            
-        var selectionNew = this.getSelectionRange().join();
 
-        if (this._selectionOld != selectionNew && selectionNew.indexOf("-1") == -1) {
-            this.firePropertyChange("selectionRange", selectionNew);
-            this._selectionOld = selectionNew;
-        }
-    },    
-    
-    _changeText: function(noSelectChange) {        
-        this._timerId = 0;
-        this._lastValue = this._editor.value;
-        this.firePropertyChange("text", this._lastValue);
-        if (this._useToolTip) this._editor.title = this._lastValue;
-        this._handleSelectionChange(noSelectChange); //call selection notify
-    },    
 
     setAlignX: function(alignX) {
         this._editor.style.textAlign = alignX;
@@ -319,136 +263,34 @@ var tw_BaseText = tw_Component.extend({
         this._editMask = editMask;
         if (editMask.length > 0) this._editor.maxLength = editMask.length;
         this._validatedValue = "";
-        this._validateInput(0);
-        this._textStateChange(false, true);
+		this._textChange(0);
     },
-    
-    _reFromMask: function(data, mask, start, end) {
-        var chMask, chData, reCh, tmp, fmcntr;
-        var reMask = "";
-        
-        if (start == null) {
-            start = 0;
-            end = data.length;
-        } else if (end == null)
-            end = start + 1;
-    
-        for (fmcntr = start; fmcntr < end; fmcntr++) {
-            chMask = mask.charAt(fmcntr);
-            chData = data.charAt(fmcntr);
-    
-            switch (chMask) {
-                case 'M': case 'h':
-                    reCh = "[0-1]";
-    
-                    if (fmcntr > 0) {
-                        if ("Mh".indexOf(mask.charAt(fmcntr - 1)) >= 0) {
-                            if (data.charAt(fmcntr - 1) == '0')
-                                reCh = "[1-9]";
-                            else
-                                reCh = "[0-2]";
-                        }
-                    }
-    
-                    break;
-    
-                case 'd':
-                    reCh = "[0-3]";
-    
-                    if (fmcntr > 0) {
-                        tmp = new Number(data.substring(mask.indexOf("MM"), mask.indexOf("MM") + 2));
-    
-                        if (mask.charAt(fmcntr - 1) == 'd') {
-                            if (data.charAt(fmcntr - 1) == '3') {
-                                if (tmp == 4 || tmp == 6 || tmp == 9 || tmp == 11)
-                                    reCh = "[0]";
-                                else
-                                    reCh = "[0-1]";
-                            } else if (data.charAt(fmcntr - 1) == '0')
-                                reCh = "[1-9]";
-                            else
-                                reCh = "[0-9]";
-                        } else {
-                            if (tmp == 2)
-                                reCh = "[0-2]";
-                        }
-                    }
-    
-                    break;
-    
-                case 'm':
-                    reCh = "[0-5]";
-    
-                    if (fmcntr > 0) {
-                        if (mask.charAt(fmcntr - 1) == 'm')
-                            reCh = "[0-9]";
-                    }
-    
-                    break;
-    
-                case 'p':
-                    reCh = "[A|P|a|p]";
-    
-                    if (fmcntr > 0) {
-                        if (mask.charAt(fmcntr - 1) == 'p')
-                            reCh = "[M|m]";
-                    }
-    
-                    break;
-    
-                //From: http://unicode.org/charts/PDF/U0080.pdf
-                case 'a':
-                    reCh = "[A-Za-z ]|[\u00c0-\u00d6]|[\u00d8-\u00f6]|[\u00f8-\u00ff]";
-                    break;
-    
-                case 'A':
-                    reCh = "[A-Z ]|[\u00c0-\u00d6]|[\u00d8-\u00de]";
-                    break;
-                    
-                case 'x':
-                    reCh = "[ -~]|[\u00a1-\u00ff]";
-                    break;
-                    
-                case 'X':
-                    reCh = "[\u0020-`]|[{-~]|[\u00a1-\u00de]|\u00f7";
-                    break;
-                    
-                case '9': case '#':
-                    reCh = "\\d";
-                    break;
-    
-                case 'y':
-                    if ((tmp = mask.indexOf("yyyy")) >= 0) {
-                        if (tmp == fmcntr)
-                            reCh = "[1-2]";
-                        else
-                            reCh = "[0-9]";
-                    } else
-                        reCh = "[0-9]";
-    
-                    break;
-    
-                case '(':
-                    reCh = "\\(";
-                    break;
-    
-                case ')':
-                    reCh = "\\)";
-                    break;
-    
-                case '.':
-                    reCh = "\\.";
-                    break;
-    
-                default:
-                    reCh = chMask;
-            }
-    
-            reMask += reCh;
-        }
-    
-        return new RegExp(reMask);
-    },
+
+	_textChange: function(keyCode) {
+		this._validateInput(keyCode);
+		var value = this._editor.value;
+		var reset = false;
+
+        if (value != this._lastValue) {
+	        this.firePropertyChange("text", value);
+			reset = true;
+	        this._lastValue = value;
+	        if (this._useToolTip) this._editor.title = this._lastValue;
+		}
+		
+		if (this._visible && this._enabled) {
+	        if (this._selectionOld == undefined) this._selectionOld = value.length + "," + value.length;
+	        var selectionNew = this.getSelectionRange().join();
+
+	        if (this._selectionOld != selectionNew && selectionNew.indexOf("-1") == -1) {
+	            this.firePropertyChange("selectionRange", selectionNew);
+				reset = true;
+	            this._selectionOld = selectionNew;
+	        }
+		}
+		
+		if (reset) tw_em.resetSendEventsTimer(400);
+	},
     
     _validateInput: function(keyCode) {
         var newValue = this._editor.value;
@@ -616,8 +458,140 @@ var tw_BaseText = tw_Component.extend({
             }
         }
         return valid;
-    },
+    },    
+
+    _reFromMask: function(data, mask, start, end) {
+        var chMask, chData, reCh, tmp, fmcntr;
+        var reMask = "";
         
+        if (start == null) {
+            start = 0;
+            end = data.length;
+        } else if (end == null)
+            end = start + 1;
+    
+        for (fmcntr = start; fmcntr < end; fmcntr++) {
+            chMask = mask.charAt(fmcntr);
+            chData = data.charAt(fmcntr);
+    
+            switch (chMask) {
+                case 'M': case 'h':
+                    reCh = "[0-1]";
+    
+                    if (fmcntr > 0) {
+                        if ("Mh".indexOf(mask.charAt(fmcntr - 1)) >= 0) {
+                            if (data.charAt(fmcntr - 1) == '0')
+                                reCh = "[1-9]";
+                            else
+                                reCh = "[0-2]";
+                        }
+                    }
+    
+                    break;
+    
+                case 'd':
+                    reCh = "[0-3]";
+    
+                    if (fmcntr > 0) {
+                        tmp = new Number(data.substring(mask.indexOf("MM"), mask.indexOf("MM") + 2));
+    
+                        if (mask.charAt(fmcntr - 1) == 'd') {
+                            if (data.charAt(fmcntr - 1) == '3') {
+                                if (tmp == 4 || tmp == 6 || tmp == 9 || tmp == 11)
+                                    reCh = "[0]";
+                                else
+                                    reCh = "[0-1]";
+                            } else if (data.charAt(fmcntr - 1) == '0')
+                                reCh = "[1-9]";
+                            else
+                                reCh = "[0-9]";
+                        } else {
+                            if (tmp == 2)
+                                reCh = "[0-2]";
+                        }
+                    }
+    
+                    break;
+    
+                case 'm':
+                    reCh = "[0-5]";
+    
+                    if (fmcntr > 0) {
+                        if (mask.charAt(fmcntr - 1) == 'm')
+                            reCh = "[0-9]";
+                    }
+    
+                    break;
+    
+                case 'p':
+                    reCh = "[A|P|a|p]";
+    
+                    if (fmcntr > 0) {
+                        if (mask.charAt(fmcntr - 1) == 'p')
+                            reCh = "[M|m]";
+                    }
+    
+                    break;
+    
+                //From: http://unicode.org/charts/PDF/U0080.pdf
+                case 'a':
+                    reCh = "[A-Za-z ]|[\u00c0-\u00d6]|[\u00d8-\u00f6]|[\u00f8-\u00ff]";
+                    break;
+    
+                case 'A':
+                    reCh = "[A-Z ]|[\u00c0-\u00d6]|[\u00d8-\u00de]";
+                    break;
+                    
+                case 'x':
+                    reCh = "[ -~]|[\u00a1-\u00ff]";
+                    break;
+                    
+                case 'X':
+                    reCh = "[\u0020-`]|[{-~]|[\u00a1-\u00de]|\u00f7";
+                    break;
+                    
+                case '9': case '#':
+                    reCh = "\\d";
+                    break;
+    
+                case 'y':
+                   if ((tmp = mask.indexOf("yyyy")) >= 0) {
+                       if (tmp == fmcntr)
+                           reCh = "[1-2]";
+                       else if (tmp == fmcntr - 1) {
+                           if (data.charAt(fmcntr - 1) == '1')
+                               reCh = "[8-9]";
+                           else
+                               reCh = "[0-2]";
+                       } else
+                           reCh = "[0-9]";
+                   } else
+                       reCh = "[0-9]";
+   
+                   break;
+
+                case '(':
+                    reCh = "\\(";
+                    break;
+    
+                case ')':
+                    reCh = "\\)";
+                    break;
+    
+                case '.':
+                    reCh = "\\.";
+                    break;
+    
+                default:
+                    reCh = chMask;
+            }
+    
+            reMask += reCh;
+        }
+    
+        return new RegExp(reMask);
+    },
+
     keyPressNotify: function(keyPressCombo) {        
         if (keyPressCombo == "Esc") {
             var time = new Date().getTime();
@@ -632,7 +606,6 @@ var tw_BaseText = tw_Component.extend({
             
             return false;
         } else {
-            this._textStateChange(false, true);
             return arguments.callee.$.call(this, keyPressCombo);
         }        
     },

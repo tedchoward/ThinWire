@@ -740,7 +740,7 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
         
         if (fillCnt > 0) {
             int fillSize = availableSize / fillCnt;
-            int lastIndex = -1;
+            int remainder = availableSize % fillCnt;
             i = 0;
             
             for (List o : sizes) {
@@ -748,13 +748,14 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
 
                 if (size == 0) {
                     absoluteSizes[i] = fillSize;
-                    lastIndex = i;
+                    if (remainder > 0) {
+                    	absoluteSizes[i]++;
+                    	remainder--;
+                    }
                 }
                 
                 i++;
             }
-            
-            if (lastIndex != -1) absoluteSizes[lastIndex] += availableSize % fillCnt;
         }
         
         return absoluteSizes;

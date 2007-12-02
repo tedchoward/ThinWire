@@ -193,7 +193,6 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         comp.removePropertyChangeListener(this);
         wr.removeComponentId(comp);
         comp = null;
-        wr = null;
         id = null;
         ignoredProperties.clear();
         clientSideProps.clear();
@@ -201,13 +200,11 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         
         if (remoteFiles != null) {
             for (String s : remoteFiles) {
-                try {
-                    RemoteFileMap.INSTANCE.remove(s);
-                } catch (IOException e) {
-                    log.log(Level.WARNING, "Local file no longer exists", e);
-                }
+                RemoteFileMap.INSTANCE.remove(wr.ai, s);
             }
         }
+
+        wr = null;
         remoteFiles = null;
     }
     
@@ -650,7 +647,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
                 }
                 if (remoteFiles == null) remoteFiles = new ArrayList<String>(5);
                 remoteFiles.add(location);
-                location = "%SYSROOT%" + RemoteFileMap.INSTANCE.add(location);
+                location = WebApplication.REMOTE_FILE_PREFIX + RemoteFileMap.INSTANCE.add(wr.ai, location);
             }
         } else {
             location = "";
@@ -660,15 +657,8 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     }
     
     void removeFileFromMap(String location) {
-    	
-    	location = location.replaceAll("%SYSROOT%(.*)", "$1");
-    	
-    	try {
-    		RemoteFileMap.INSTANCE.remove(location);
-    	} catch (IOException e) {
-    		log.log(Level.WARNING, "Local file no longer exists", e);
-    	}
-    	
+    	location = location.replaceAll(WebApplication.REMOTE_FILE_PREFIX + "(.*)", "$1");
+		RemoteFileMap.INSTANCE.remove(wr.ai, location);
     	remoteFiles.remove(location);
     }
 }

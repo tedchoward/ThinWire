@@ -49,8 +49,7 @@ var tw_TextArea = tw_BaseText.extend({
     setMaxLength: function(len) {    
         this._maxLength = len;
         this._lastValue = this._editor.value;        
-        this._validateInput();
-        this._textStateChange(false, true);
+		this._textChange();
     },
     
     keyPressNotify: function(keyPressCombo) {

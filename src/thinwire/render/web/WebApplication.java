@@ -33,6 +33,7 @@ package thinwire.render.web;
 import java.io.ByteArrayOutputStream;
 import java.io.CharArrayWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.io.PrintWriter;
 import java.text.DecimalFormat;
@@ -44,11 +45,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
 
 import thinwire.render.RenderStateEvent;
@@ -122,7 +121,7 @@ public final class WebApplication extends Application {
         for (String res : BUILT_IN_RESOURCES) {
             if (!res.endsWith(".js")) {
                 if (!res.startsWith("class:///")) res = classURL + res;
-                RemoteFileMap.INSTANCE.add(res, null, Application.getResourceBytes(res));
+                RemoteFileMap.INSTANCE.add(null, res);
             }
         }
 
@@ -172,35 +171,29 @@ public final class WebApplication extends Application {
         boolean repeat;
     }
     
-    private static enum State {INIT, STARTUP, RUNNING, REPAINT, SHUTDOWN, TERMINATED}
+    static enum State {INIT, STARTUP, RUNNING, REPAINT, SHUTDOWN, TERMINATED}
+    
+    public static final String REMOTE_FILE_PREFIX = "%SYSROOT%";
     
     private String baseFolder;
     private String styleSheet;
     private int nextCompId;
-    private State state;
     private Map<String, Class<ComponentRenderer>> nameToRenderer;
     private Map<Window, WindowRenderer> windowToRenderer;
     private Map<Integer, WebComponentListener> webComponentListeners;
     private Set<String> clientSideIncludes;
     private Map<Component, Object> renderStateListeners;
     private EventProcessor proc;
+    private ClassLoader classLoader;
     
+    State state;
     List<Runnable> timers;
     Map<String, Timer> timerMap;
     WebComponentEvent startupEvent;
     Map<Style, String> styleToStyleClass = new HashMap<Style, String>();
     FileInfo[] fileList = new FileInfo[1];
-
-    //Stress Test Variables.
-    UserActionListener userActionListener;    
-    boolean playBackOn = false;
-    long playBackStart = -1;
-    private long playBackDuration = -1;
-    private long recordDuration = -1;
-    boolean playBackEventReceived = false;
-    //end Stress Test.
     
-    WebApplication(String baseFolder, String mainClass, String styleSheet, String[] args) throws IOException {
+    WebApplication(String baseFolder, Class mainClass, String styleSheet, String[] args) throws IOException {
         this.baseFolder = baseFolder;
         this.styleSheet = styleSheet;
         nameToRenderer = new HashMap<String, Class<ComponentRenderer>>();
@@ -208,16 +201,24 @@ public final class WebApplication extends Application {
         timerMap = new HashMap<String, Timer>();
         timers = new LinkedList<Runnable>();
         webComponentListeners = new HashMap<Integer, WebComponentListener>();
+        classLoader = mainClass.getClassLoader();
      
         setWebComponentListener(ApplicationEventListener.ID, new ApplicationEventListener(this));
         startupEvent = ApplicationEventListener.newStartEvent(mainClass, args);
         state = State.INIT;
     }
+    
+    protected ClassLoader getClassLoader() {
+    	return classLoader;
+    }
+    
+    InputStream getContextResourceAsStream(String uri) {
+    	return getResourceAsStream(classLoader, uri);
+    }
 
-    void signalShutdown() {
-        if (state == State.SHUTDOWN || state == State.TERMINATED) return;
-        if (log.isLoggable(LEVEL)) log.log(LEVEL, Thread.currentThread().getName() + ": initiating application instance shutdown");        
-        state = State.SHUTDOWN;
+    //NOTE: Only to be called by ApplicationEventListener's frame visibility PropertyChangeListener.
+    void flushEvents() {
+        proc.flush();
     }
     
     void repaint() {
@@ -226,7 +227,8 @@ public final class WebApplication extends Application {
     
     void shutdown() {
         if (state == State.TERMINATED) return;
-        if (state != State.SHUTDOWN) signalShutdown();
+        if (state != State.SHUTDOWN) state = State.SHUTDOWN;
+        if (log.isLoggable(LEVEL)) log.log(LEVEL, Thread.currentThread().getName() + ": initiating application instance shutdown");        
         
         try {
             proc = EventProcessorPool.INSTANCE.getProcessor(this);            
@@ -235,6 +237,7 @@ public final class WebApplication extends Application {
             try {
                 proc.handleRequest(wce, new CharArrayWriter());
 
+                //XXX Loops infinitely if entered while frame is not visible and a dialog is blocking.
                 while (proc.isInUse()) {
                     if (log.isLoggable(LEVEL)) log.log(LEVEL, Thread.currentThread().getName() + ": processor returned, probably from flush(), sending null event");
                     proc.handleRequest((WebComponentEvent)null, new CharArrayWriter());                    
@@ -263,7 +266,6 @@ public final class WebApplication extends Application {
             if (renderStateListeners != null) renderStateListeners.clear();
             if (timerMap != null) timerMap.clear();
             if (styleToStyleClass != null) styleToStyleClass.clear();
-            if (userActionListener != null) userActionListener.stop();
             
             nameToRenderer = null;
             windowToRenderer = null;
@@ -273,10 +275,7 @@ public final class WebApplication extends Application {
             timerMap = null;
             styleToStyleClass = null;
             fileList = null;
-            userActionListener = null;
-            
-            //app.clientSideFunctionCall(SHUTDOWN_INSTANCE, 
-            //      "The application instance has shutdown. Press F5 to restart the application or close the browser to end your session.");
+            classLoader = null;
             
             state = State.TERMINATED;            
         }
@@ -352,8 +351,8 @@ public final class WebApplication extends Application {
             
             for (Map.Entry<String, String> e : getSystemImages().entrySet()) {
                 String value = getSystemFile(e.getValue());
-                value = RemoteFileMap.INSTANCE.add(value, null, Application.getResourceBytes(value));
-                sb.append(e.getKey()).append(":\"").append("%SYSROOT%").append(value).append("\",");
+                value = RemoteFileMap.INSTANCE.add(null, value); //Technically this could be an App level cache item, but it's not necessary for system images.
+                sb.append(e.getKey()).append(":\"").append(REMOTE_FILE_PREFIX).append(value).append("\",");
             }
             
             sb.setCharAt(sb.length() - 1, '}');
@@ -584,8 +583,9 @@ public final class WebApplication extends Application {
         
         if (localName == null || localName.trim().length() == 0) throw new IllegalArgumentException("localName == null || localName.trim().length() == 0");
         if (!localName.startsWith("class:///")) localName = this.getRelativeFile(localName).getAbsolutePath();
-        String remoteName = RemoteFileMap.INSTANCE.add(localName);
+        String remoteName = RemoteFileMap.INSTANCE.add(this, localName);
         clientSideFunctionCallWaitForReturn("tw_include", remoteName);
+        RemoteFileMap.INSTANCE.remove(this, localName);
         clientSideIncludes.add(localName);
     }
     
@@ -819,48 +819,8 @@ public final class WebApplication extends Application {
     protected Object setPackagePrivateMember(String memberName, Component comp, Object value) {
         return super.setPackagePrivateMember(memberName, comp, value);
     }    
-
-    public void setUserActionListener(UserActionListener listener) {
-		this.userActionListener = listener;
-	}
-
-	void notifyUserActionReceived(WebComponentEvent evt) {
-		UserActionEvent uae = new UserActionEvent(evt);
-		this.userActionListener.actionReceived(uae);
-	}
     
     protected void finalize() {
         if (log.isLoggable(LEVEL)) log.log(LEVEL, Thread.currentThread().getName() + ": finalizing app");
     }
-
-	public void setPlayBackOn(boolean playBackOn){
-		this.playBackOn = playBackOn;
-		if (!this.playBackOn){
-			this.endPlayBack();
-		}
-	}
-	
-	private void endPlayBack(){
-		log.entering("ThinWireApplication", "endPlayBack");
-		this.playBackDuration = new Date().getTime() - this.playBackStart;
-        StringBuilder sb = new StringBuilder(EOL + EOL);
-		sb.append(Thread.currentThread().getName()
-				+ " Playback Statistics" + EOL);
-		sb.append("-----------------------------------------------------" + EOL);
-		sb.append("Duration of recording session:  " + this.recordDuration + EOL);
-		sb.append(" Duration of playback session:  " + this.playBackDuration + EOL);
-		DecimalFormat df = new DecimalFormat();
-		df.setMinimumFractionDigits(2);
-		df.setMinimumIntegerDigits(1);
-		double drecord = new Long(this.recordDuration).doubleValue();
-		double dplay = new Long(this.playBackDuration).doubleValue();
-		double pctChange = (((dplay/drecord) - 1) * 100);
-		sb.append("                     % change:  " + df.format(pctChange)  + EOL + EOL);
-		log.info(sb.toString());	
-		log.exiting("ThinWireApplication", "endPlayBack");
-	}
-
-	public void setRecordDuration(long recordDuration) {
-		this.recordDuration = recordDuration;
-	}
 }

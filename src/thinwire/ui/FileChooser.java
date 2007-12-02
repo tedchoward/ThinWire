@@ -114,18 +114,25 @@ public class FileChooser extends Panel {
      * @author Joshua J. Gertzen and Ted C. Howard
      */
     public static class FileInfo {
+    	String fullName;
         String name;
         String description;
         InputStream is;
         
+        public FileInfo(String name, InputStream is) {
+        	this.name = name;
+        	this.is = is;
+        	this.description = "";
+        }
+        
+        public String getFullName() {
+        	return fullName;
+        }
+        
         public String getName() {
             return name;
         }
-        
-        public void setName(String name) {
-            this.name = name;
-        }
-        
+
         public String getDescription() {
             return description;
         }
@@ -185,6 +192,7 @@ public class FileChooser extends Panel {
     private WebApplication app;
     private TextField fileName;
     private Button browseButton;
+    private FileInfo fileInfo;
     
     private PropertyChangeListener sizeListener = new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent ev) {
@@ -215,6 +223,7 @@ public class FileChooser extends Panel {
         fileName.addPropertyChangeListener(TextField.PROPERTY_TEXT, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent ev) {
                 // Empty listener makes sure text validation is accurate
+        		fileInfo = null;
             }
         });
         kids.add(fileName);
@@ -238,10 +247,15 @@ public class FileChooser extends Panel {
      * @return a <code>FileInfo</code> object for the file uploaded
      */
     public FileInfo getFileInfo() {
-        if (fileName.getText().length() == 0) return null;
-        app.clientSideMethodCallWaitForReturn("tw_FileChooser", "submit", app.getComponentId(fileName));
-        FileInfo fi = ((Application) app).getFileInfo();
-        return fi;
+    	if (fileInfo == null) {
+	    	String name = fileName.getText();
+	        if (name.length() == 0) return null;
+	        app.clientSideMethodCallWaitForReturn("tw_FileChooser", "submit", app.getComponentId(fileName));
+	        fileInfo = ((Application) app).getFileInfo();
+	        fileInfo.fullName = name;
+    	}
+    	
+        return fileInfo;
     }   
     
     @Override

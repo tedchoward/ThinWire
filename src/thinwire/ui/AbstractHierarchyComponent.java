@@ -127,10 +127,17 @@ abstract class AbstractHierarchyComponent<HI extends AbstractHierarchyComponent.
             return imageInfo;
         }
 
+        /**
+         * Get the developer/user defined object that has been associated to this Tree.Item.
+         * @return the general purpose object that has been associated to this Tree.Item.
+         */
         public Object getUserObject() {
             return userObject;
         }
 
+        /**
+         * Set the developer/user defined object for this Tree.Item.
+         */
         public void setUserObject(Object value) {
             Object oldValue = this.userObject;
             this.userObject = value;
