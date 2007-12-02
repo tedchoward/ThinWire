@@ -354,8 +354,11 @@ class RichTextParser extends DefaultHandler {
         if (richText.indexOf('<') >= 0 && richText.indexOf('>') > 0 & TAG_REGEX.matcher(richText).matches()) {
             try {
                 sb = new StringBuilder();
+                sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>").append("<richText>").append(richText).append("</richText>");
+                richText = sb.toString();
+                sb.setLength(0);
             	depth.reset();
-            	parser.parse(new ByteArrayInputStream(("<richText>" + richText + "</richText>").getBytes()), this);
+            	parser.parse(new ByteArrayInputStream(richText.getBytes("utf-8")), this);
             	if (log.isLoggable(LEVEL)) log.log(LEVEL, "RICH TEXT: " + sb.toString());
                 return sb;
             } catch (Exception e) {

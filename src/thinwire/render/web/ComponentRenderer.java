@@ -193,7 +193,6 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         comp.removePropertyChangeListener(this);
         wr.removeComponentId(comp);
         comp = null;
-        wr = null;
         id = null;
         ignoredProperties.clear();
         clientSideProps.clear();
@@ -204,6 +203,8 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
                 RemoteFileMap.INSTANCE.remove(wr.ai, s);
             }
         }
+
+        wr = null;
         remoteFiles = null;
     }
     
