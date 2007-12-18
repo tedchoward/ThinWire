@@ -790,7 +790,7 @@ public final class XOD {
         
     private Class getClassForName(String name, String className) {
         try {
-            Class c = Class.forName(className);
+        	Class c = Application.getApplicationContextClass(className);
             if (name != null) aliases.put(name, c);
             return c;
         } catch (ClassNotFoundException e) {

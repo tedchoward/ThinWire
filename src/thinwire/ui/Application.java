@@ -325,6 +325,12 @@ public abstract class Application {
             throw new RuntimeException(e);
         }
     }
+
+    //XXX: This method exposes a "potential" security issue because it expose the ClassLoader & Classes of the app to non-app libraries.
+    public static Class getApplicationContextClass(String className) throws ClassNotFoundException {
+        Application app = current();
+        return (app == null ? Application.class.getClassLoader() : app.getClassLoader()).loadClass(className);
+    }
     
     public static Style getDefaultStyle(Class<? extends Component> clazz) {
         if (clazz == null) throw new IllegalArgumentException("clazz == null");
