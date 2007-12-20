@@ -580,13 +580,11 @@ public final class WebApplication extends Application {
         } else if (clientSideIncludes.contains(localName)) {
             return;
         }
-        
-        if (localName == null || localName.trim().length() == 0) throw new IllegalArgumentException("localName == null || localName.trim().length() == 0");
-        if (!localName.startsWith("class:///")) localName = this.getRelativeFile(localName).getAbsolutePath();
-        String remoteName = RemoteFileMap.INSTANCE.add(this, localName);
-        clientSideFunctionCallWaitForReturn("tw_include", remoteName);
-        RemoteFileMap.INSTANCE.remove(this, localName);
-        clientSideIncludes.add(localName);
+
+        String remoteName = getQualifiedURL(localName);
+        clientSideFunctionCall("tw_include", remoteName);
+        //TODO: The server cache doesn't need to hold onto the included JS after it has been retrieved once.
+        if (remoteName.startsWith(WebApplication.REMOTE_FILE_PREFIX)) clientSideIncludes.add(localName);
     }
     
     public void clientSideFunctionCall(String functionName, Object... args) {
