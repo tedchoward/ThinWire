@@ -283,6 +283,7 @@ public final class XOD {
     private Map<Class, Map<String, Object[]>> propertyAliases;
     private List<String> uriStack;
     private boolean processingInclude;
+    private List<Object> parentStack;
     
     /**
      * Create a new XOD.
@@ -302,6 +303,7 @@ public final class XOD {
         aliases = new HashMap<String, Class>();
         properties = new HashMap<String, String>();
         uriStack = new ArrayList<String>();
+        parentStack = new ArrayList<Object>();
         if (uri != null) execute(uri);
     }
     
@@ -368,8 +370,8 @@ public final class XOD {
             DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
             uri = uri.replace('\\', '/');
             InputStream is = Application.getResourceAsStream(uri);
-            if (is == null) throw new IllegalArgumentException("Content for URI was not found:" + uri);
             uriStack.add(uri);
+            if (is == null) throw new IllegalArgumentException("Content for URI was not found:" + uri);
             setUriVariables(uri);
             Document doc = builder.parse(is);
             is.close();
@@ -403,7 +405,8 @@ public final class XOD {
         }
     }
     
-    private Object processBranch(Object parent, NodeList nl, int level) {        
+    private Object processBranch(Object parent, NodeList nl, int level) { 
+    	Object ret = null;
         for (int i = 0, cnt = nl.getLength(); i < cnt; i++) {
             Node n = nl.item(i);
             
@@ -418,7 +421,8 @@ public final class XOD {
             	    break;
             	
             	case Node.ELEMENT_NODE:
-            	    evaluateNode(parent, n, level);
+            	    Object o = evaluateNode(parent, n, level);
+            	    if (ret == null) ret = o;
             	    break;
             	    
             	default:
@@ -426,7 +430,7 @@ public final class XOD {
             }
         }
         
-        return null;
+        return ret;
     }           
     
     private Object evaluateNode(Object parent, Node n, int level) {
@@ -490,7 +494,11 @@ public final class XOD {
             }
             
             processingInclude = true;
-            processFile(parent, fileUri, level + 1);
+            Object o = processFile(parent, fileUri, level + 1);
+            if (o != null && parent != null && parent instanceof Collection) {
+                if (log.isLoggable(LEVEL)) log.log(LEVEL, "adding include child to collection");
+                ((Collection)parent).add(o);
+            }
             processingInclude = false;
             if (log.isLoggable(LEVEL)) log.log(LEVEL, "include[file:" + fileUri + "]");
         } else if (name.equals("ref")) {
@@ -504,7 +512,7 @@ public final class XOD {
                 if (log.isLoggable(LEVEL)) log.log(LEVEL, "adding ref child to collection");
                 ((Collection)parent).add(ret);
             }
-        } else {            
+        } else {
             boolean property = false;
             
             //If there is a parent and the tag name does not contain a period and the first character is lowerCase, then this might be a property
@@ -540,13 +548,16 @@ public final class XOD {
                     if (setMethod == null) {
                         Object subObject = invoke(parent, getMethod, (Object[])null);    
                         appendAttributes(n);
-                        processBranch(subObject, n.getChildNodes(), level + 1);                        
+                        parentStack.add(subObject);
+                        processBranch(subObject, n.getChildNodes(), level + 1);
+                        parentStack.remove(parentStack.size() - 1);
                         property = true;
                     } else {
                         Class[] params = setMethod.getParameterTypes();
                                             
                         if (params.length == 1) {                        
                             NodeList propNodes = n.getChildNodes();
+                            
                             Node node = null;
                             
                             if (propNodes.getLength() == 1) 
@@ -555,7 +566,7 @@ public final class XOD {
                                 for (int i = propNodes.getLength() - 1; i >= 0; i--) {
                                     Node item = propNodes.item(i);
                                     
-                                    if (item.getNodeType() == Node.ELEMENT_NODE) {
+                                    if (item.getNodeType() == Node.ELEMENT_NODE || item.getNodeType() == Node.CDATA_SECTION_NODE) {
                                         node = item;
                                         break;
                                     }
@@ -569,7 +580,7 @@ public final class XOD {
                                 
                                 //If there is only one property then this is a simple value assignment
                                 //Else if there is three then there is a tag being set as the value
-                                if (nodeType == Node.TEXT_NODE) {                            
+                                if (nodeType == Node.TEXT_NODE || nodeType == Node.CDATA_SECTION_NODE) {                            
                                     value = getObjectForTypeFromString(paramClass, (String)node.getNodeValue(), true);
                                 } else if (nodeType == Node.ELEMENT_NODE) {
                                     value = evaluateNode(null, node, level + 1);
@@ -597,6 +608,7 @@ public final class XOD {
             
             //If this was determined to not be a property, this must be a class instantiation
             if (!property) {
+            	parentStack.add(null); // adds the placeholder for the new class instance
                 Class c = aliases.get(name);
                 if (c == null) c = getClassForName(name, name);
 
@@ -659,6 +671,8 @@ public final class XOD {
                         if (log.isLoggable(LEVEL)) log.log(LEVEL, "new " + c.getName());
                     }
                     
+                    parentStack.set(parentStack.size() - 1, ret);
+                    
                     if (nonStatic != null) {
                         for (Object[] callMeth : nonStatic) {
                             invoke(ret, (Method)callMeth[0], callMeth[1]);
@@ -674,8 +688,9 @@ public final class XOD {
                         if (log.isLoggable(LEVEL)) log.log(LEVEL, "adding child to collection");
                         ((Collection)parent).add(ret);
                     }
-                    
+
                     processBranch(ret, children, level + 1);
+                    parentStack.remove(parentStack.size() - 1);
                 } catch (IllegalAccessException e) {
                     throw new RuntimeException(e);
                 } catch (InstantiationException e) {
@@ -691,72 +706,95 @@ public final class XOD {
     
     private String replaceProperties(String value) {
         if (log.isLoggable(LEVEL)) log.log(LEVEL, "before replaceProperties:" + value);
-        if (value != null && value.indexOf("${") >= 0) {
-            StringBuffer sb = new StringBuffer();
-            Matcher m = REGEX_PROPERTY.matcher(value);
-            
-            while (m.find()) {
-                String prop = m.group(2);
-                String val = properties.get(prop);
-                if (val == null) val = "${" + prop + "}";
-                m.appendReplacement(sb, m.group(1) + val + m.group(3));
-            }
-            
-            m.appendTail(sb);
-            value = sb.toString();
+        if (value != null) {
+        	if (value.indexOf("${") >= 0) {
+	        
+	            StringBuffer sb = new StringBuffer();
+	            Matcher m = REGEX_PROPERTY.matcher(value);
+	            
+	            while (m.find()) {
+	                String prop = m.group(2);
+	                String val = properties.get(prop);
+	                if (val == null) val = "${" + prop + "}";
+	                m.appendReplacement(sb, m.group(1) + val + m.group(3));
+	            }
+	            
+	            m.appendTail(sb);
+	            value = sb.toString();
+	        }
         }
+        
         
         if (log.isLoggable(LEVEL)) log.log(LEVEL, "after replaceProperties:" + value);
         return value;
     }
     
+    public Object parent(int level) {
+    	// parentStack = [frame, panel, field]
+    	// current node = field | parentStack.size() - 1
+    	// parent(0) = panel; | parentStack.size() - 2
+    	// parent(1) = frame; | parentStack.size() - 3
+    	return parentStack.get(parentStack.size() - (2 + level));
+    }
+    
+    private static final Pattern REGEX_PARENT_METHOD = Pattern.compile("\\$\\{xod\\.parent\\((\\d)\\)\\}");
+    
     private Object getObjectForTypeFromString(Class type, String str, boolean performObjectFieldLookup) {
         Object value;
-        str = replaceProperties(str);
         
-        if (type == String.class) {
-            value = str;
-    	} else if (type == boolean.class || type == Boolean.class) {
-            value = Boolean.valueOf(str);
-        } else if (type == int.class || type == Integer.class) {                            
-            value = new Integer(Double.valueOf(str).intValue());
-        } else if (type == long.class || type == Long.class) {                            
-            value = new Long(Double.valueOf(str).longValue());
-        } else if (type == short.class || type == Short.class) {
-            value = new Short(Double.valueOf(str).shortValue());
-        } else if (type == byte.class || type == Byte.class) {
-            value = new Byte(Double.valueOf(str).byteValue());
-        } else if (type == float.class || type == Float.class) {
-            value = new Float(Double.valueOf(str).floatValue());
-        } else if (type == double.class || type == Double.class) {
-            value = Double.valueOf(str);                                
-        } else if (type == char.class || type == Character.class) {                                
-            value = new Character(str.charAt(0));
-        } else if (performObjectFieldLookup) {
-            //See if there is a constant with the name specified
-            try {
-                Method method = type.getMethod("valueOf", String.class);
-                value = method.invoke(null, str);
-            } catch (Exception e) {
-                String upperStr = str.toUpperCase();
-                value = null;
-                
-                for (Field f : type.getFields()) {
-                    if (f.getName().toUpperCase().equals(upperStr)) {
-                        try {
-                            value = f.get(null);
-                        } catch (IllegalAccessException e2) {
-                            value = null;
-                        }
-
-                        break;
-                    }
-                }
-                
-                if (value == null) value = objectMap.get(str);
-            }
-        } else
-            value = null;
+        Matcher m = REGEX_PARENT_METHOD.matcher(str);
+        
+        if (m.matches()) {
+        	int level = Integer.parseInt(m.group(1));
+        	value = parent(level);
+        } else {
+        
+	        str = replaceProperties(str);
+	        
+	        if (type == String.class) {
+	            value = str;
+	    	} else if (type == boolean.class || type == Boolean.class) {
+	            value = Boolean.valueOf(str);
+	        } else if (type == int.class || type == Integer.class) {                            
+	            value = new Integer(Double.valueOf(str).intValue());
+	        } else if (type == long.class || type == Long.class) {                            
+	            value = new Long(Double.valueOf(str).longValue());
+	        } else if (type == short.class || type == Short.class) {
+	            value = new Short(Double.valueOf(str).shortValue());
+	        } else if (type == byte.class || type == Byte.class) {
+	            value = new Byte(Double.valueOf(str).byteValue());
+	        } else if (type == float.class || type == Float.class) {
+	            value = new Float(Double.valueOf(str).floatValue());
+	        } else if (type == double.class || type == Double.class) {
+	            value = Double.valueOf(str);                                
+	        } else if (type == char.class || type == Character.class) {                                
+	            value = new Character(str.charAt(0));
+	        } else if (performObjectFieldLookup) {
+	            //See if there is a constant with the name specified
+	            try {
+	                Method method = type.getMethod("valueOf", String.class);
+	                value = method.invoke(null, str);
+	            } catch (Exception e) {
+	                String upperStr = str.toUpperCase();
+	                value = null;
+	                
+	                for (Field f : type.getFields()) {
+	                    if (f.getName().toUpperCase().equals(upperStr)) {
+	                        try {
+	                            value = f.get(null);
+	                        } catch (IllegalAccessException e2) {
+	                            value = null;
+	                        }
+	
+	                        break;
+	                    }
+	                }
+	                
+	                if (value == null) value = objectMap.get(str);
+	            }
+	        } else
+	            value = null;
+        }
         
         return value == null ? str : value;
     }
