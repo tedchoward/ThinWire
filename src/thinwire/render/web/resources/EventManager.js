@@ -110,7 +110,8 @@ var tw_EventManager = Class.extend({
 			    for (var item in e)
 					eAry.push("error:" + item + "=" + (e[item].length > 100 ? e[item].substring(0, 100) : e[item]) + "\n");
 
-				eAry.push("calls=" + (calls.length > 250 ? calls.substring(0, 250) : calls))
+				eAry.push("calls=" + (calls != null && calls.length > 250 ? calls.substring(0, 250) : calls))
+				alert(eAry.join(""));
             } 
         }        
         
