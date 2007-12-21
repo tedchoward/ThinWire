@@ -75,27 +75,24 @@ var tw_useSmartTab = tw_isWin && ((tw_isIE && tw_bVer >= 6) || (tw_isFirefox && 
 var tw_APP_URL = new String(location);
 if (tw_APP_URL.indexOf("?") >= 0) tw_APP_URL = tw_APP_URL.substring(0, tw_APP_URL.indexOf("?"));
 
+var tw_scriptLoadQueue = [];
+var tw_loadingScript = null;
+
 function tw_include(name) {
-    try {
-        if (tw_include.tw_request == undefined) tw_include.tw_request = new tw_HttpRequest();
-        var script = tw_include.tw_request.send("GET", tw_APP_URL + "?_twr_=" + name, "");
-    
-        if (tw_isIE && window.execScript) {
-            window.execScript(script);
-        } else {
-            window.eval(script);
-        }        
-    } catch (e) {
-        var ret = confirm("Failed to include library '" + name + "'\n" +
-            "Exception details:" + e + "\n\n" +
-            "Would you like to load the libary via a <script> tag for more accurate error info?");
-            
-        if (ret) {
-            //This causes the same file to be loaded using a script tag, which allows the file to be
-            //easily debugged. However a script tag loads content async so it is not appropriate for
-            //loading scripts on the fly.
-            document.getElementById("jsidebug").src = tw_APP_URL + "?_twr_=" + name + ".js"; 
-        }
-    }       
+	tw_scriptLoadQueue.push(name);
+	if (tw_loadingScript == null) tw_loadScript();
 }
 
+function tw_loadScript() {
+	if (tw_scriptLoadQueue.length > 0) {
+		var name = tw_scriptLoadQueue.shift();
+		name = tw_Component.expandUrl(name);
+		var script = document.createElement("script");
+		document.body.appendChild(script);
+		tw_addEventListener(script, tw_isIE ? "readystatechange" : "load", tw_loadScript);
+		script.src = name;
+		tw_loadingScript = script;
+	} else {
+		tw_loadingScript = null;
+	}
+}

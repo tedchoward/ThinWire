@@ -107,8 +107,9 @@ var tw_DateBox = tw_Component.extend({
     
     setWidth: function(width) {
         arguments.callee.$.call(this, width);
-        this._table.style.width = (width - 14) + "px";
-        this._columnHeaders.style.width = (width - 14) + "px";
+        var tblWidth = width - 14;
+        if (tblWidth < 0) tblWidth = 0;
+        this._columnHeaders.style.width = this._table.style.width = tblWidth + "px";
     },
     
     setHeight: function(height) {

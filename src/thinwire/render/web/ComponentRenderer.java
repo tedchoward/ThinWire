@@ -30,11 +30,6 @@
 */
 package thinwire.render.web;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.logging.Logger;
@@ -84,21 +79,21 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     private Map<String, Object> ignoredProperties = new HashMap<String, Object>(3);
     private Map<String, String> clientSideProps = new HashMap<String, String>();    
 	private RichTextParser richTextParser;
+	private Component baseComp;
 	
     String jsClass;
     Component comp;
     WindowRenderer wr;
     ContainerRenderer cr;
+	ComponentRenderer pr;
     Integer id;
     
     void init(String jsClass, WindowRenderer wr, Component comp, ComponentRenderer container) {
         this.jsClass = jsClass;
         this.wr = wr;
         this.cr = container instanceof ContainerRenderer ? (ContainerRenderer)container : null;
+        this.pr = container;
         this.comp = comp;
-        //this.initProps = new StringBuilder();
-        //ignoredProperties.clear();
-        //clientSideProps.clear();
     }
     
     static String getSimpleClassName(Class type) {
@@ -139,10 +134,21 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
             wr.ai.clientSideFunctionCall("tw_newComponent", jsClass, id, 
                     cr == null ? (container == null ? 0 : container.id) : cr.id, 
                     initProps);
-            //initProps = null;
             initProps.setLength(0);
         }
-        
+
+    	baseComp = comp;
+    	
+    	if (pr != null) {
+        	ComponentRenderer base = this;
+        	
+	    	while (!(base.pr instanceof ContainerRenderer)) {
+	    		base = base.pr;
+	    	}
+	    	
+	    	if (base.comp != null) baseComp = base.comp;
+    	}
+
         if (visibleChange != Effect.Motion.NONE && !isPropertyChangeIgnored(Component.PROPERTY_VISIBLE) && comp.isVisible() && cr != null && cr.isFullyRendered())
             setPropertyWithEffect(Component.PROPERTY_VISIBLE, Boolean.TRUE, Boolean.FALSE, SET_VISIBLE, FX.PROPERTY_FX_VISIBLE_CHANGE);
         
@@ -150,7 +156,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         
         if (comp.isFocusCapable() && comp.isEnabled() && comp.getParent() instanceof Container && ((Container)wr.comp).getComponentWithFocus() == null) comp.setFocus(true);
         
-        wr.ai.flushRenderCallbacks(comp, id);        
+        wr.ai.flushRenderCallbacks(comp, id);
 	}
 	
     private void setStyle(String propertyName, Object oldValue) {
@@ -316,7 +322,18 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     
     public void componentChange(WebComponentEvent event) {
         String name = event.getName();
-        
+
+        if (!baseComp.isEnabled() || !baseComp.isVisible()) {
+			if (log.isLoggable(Level.WARNING)) {
+    			log.log(Level.WARNING, "Denied attempt by client code to fire event '" + name + "' on " + 
+    						(baseComp.isEnabled() ? "non-visible" : "disabled") + " component {" + comp +
+    						(comp instanceof TextComponent ? ":'" + ((TextComponent)comp).getText() + "'}": "}") + 
+    						" with value '" + event.getValue() + "'");
+    		}
+				
+    		return;
+    	}
+    	
         if (name.equals(Component.ACTION_CLICK) || name.equals(Component.ACTION_DOUBLE_CLICK)) {
             String actionIgnoreProperty;
             String value = (String)event.getValue();
@@ -347,8 +364,20 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
                 actionIgnoreProperty = null;
             }
             
+            Object evObj = getEventObject(comp, value);
+            
+            if (comp instanceof Menu && !((Menu.Item)evObj).isEnabled()) {
+				if (log.isLoggable(Level.WARNING)) {
+	    			log.log(Level.WARNING, "Denied attempt by client code to fire event '" + name + "' on " + 
+	    						"disabled Menu.Item{" + comp + ":'" + ((Menu.Item)evObj).getText() + "'}" + 
+	    						" with value '" + value + "'");
+	    		}
+				
+				return;
+            }
+            
             if (actionIgnoreProperty != null) setPropertyChangeIgnored(actionIgnoreProperty, true);
-            comp.fireAction(new ActionEvent(name, comp, getEventObject(comp, value), x, y, srcX, srcY));
+            comp.fireAction(new ActionEvent(name, comp, evObj, x, y, srcX, srcY));
             if (actionIgnoreProperty != null) setPropertyChangeIgnored(actionIgnoreProperty, false);
         } else if (event.getName().equals(CLIENT_EVENT_DROP)) {
             String[] parts = ((String)event.getValue()).split(",", -1);
