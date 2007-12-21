@@ -190,7 +190,7 @@ var tw_Menu = tw_Component.extend({
         if (overItem == null) {
             var item = tw_getEventTarget(event, "mainMenuItem");
             
-            if (!this._colorMatches(item.style.color, tw_COLOR_GRAYTEXT) && item.lastChild.childNodes.length == 0) {
+            if (item.tw_enabled && item.lastChild.childNodes.length == 0) {
                 this.fireAction(event, "click", this._fullIndex(item));
                 this._setHighlight(item, false);
                 this._menusAreVisible = false;
@@ -204,7 +204,7 @@ var tw_Menu = tw_Component.extend({
         var parentContent = item.parentNode;            
         this._setHighlight(item, true);
         
-        if (!this._colorMatches(item.style.color, tw_COLOR_GRAYTEXT)) this._open(item);
+        if (item.tw_enabled) this._open(item);
     },
     
     _colorMatches: function(c1, c2) {
@@ -217,7 +217,7 @@ var tw_Menu = tw_Component.extend({
         if (!this._enabled) return;
         var item = tw_getEventTarget(event, "menuItem");
         
-        if (this._menusAreVisible && !this._colorMatches(item.style.color, tw_COLOR_GRAYTEXT) && item.lastChild.childNodes.length == 0) {
+        if (this._menusAreVisible && item.tw_enabled && item.lastChild.childNodes.length == 0) {
             this.fireAction(event, "click", this._fullIndex(item));
             var mainMenuItem = tw_getEventTarget(event, "mainMenuItem");            
             this._menusAreVisible = false;
@@ -317,12 +317,12 @@ var tw_Menu = tw_Component.extend({
             if (highlight) {
                 button.tw_invertArrow = true;
                 
-                if (this._colorMatches(item.style.color, tw_COLOR_GRAYTEXT)) {
-                    button.style.color = tw_COLOR_INACTIVECAPTIONTEXT;
-                    button.style.backgroundColor = tw_COLOR_INACTIVECAPTION;
-                } else {
+                if (item.tw_enabled) {
                     button.style.color = tw_COLOR_HIGHLIGHTTEXT;
                     button.style.backgroundColor = tw_COLOR_HIGHLIGHT;
+                } else {
+                    button.style.color = tw_COLOR_INACTIVECAPTIONTEXT;
+                    button.style.backgroundColor = tw_COLOR_INACTIVECAPTION;
                 }
                 
                 if (this._activeMenuItem != null) {
@@ -480,10 +480,10 @@ var tw_Menu = tw_Component.extend({
         content.className = prefix + "enuContent";
         var s = content.style;
         var borderType = this._borderType;
-        var topText = prefix == "m" ? "top: -2px; " : "";
+        var topText = prefix == "m" ? "top:-" + this._borderSize + "px;" : "";
         var cssText = "position:absolute;visibility:hidden;background-color:" + this._backgroundColor + ";border-width:" + 
             this._borderSize + "px;border-style:" + borderType + ";border-color:" + 
-            tw_Component.getIEBorder(this._borderColor, borderType) + ";" + top;
+            tw_Component.getIEBorder(this._borderColor, borderType) + ";" + topText;
         tw_Component.setCSSText(cssText, content);
         content.tw_maxTextWidth = 0;
         content.tw_maxShortcutTextWidth = 0;
@@ -586,15 +586,20 @@ var tw_Menu = tw_Component.extend({
                 this._setText(item, data.t);
                 if (data.g != undefined) this._setImageUrl(item, data.g);        
                 if (data.k != undefined) this._setKeyPressCombo(item, data.k);
-                if (data.d != undefined) item.style.color = tw_COLOR_GRAYTEXT;
+                
+                if (data.en == false) {
+                	item.tw_enabled = false;
+                	item.style.color = tw_COLOR_GRAYTEXT;
+               	} else {
+                	item.tw_enabled = true;
+                	item.style.color = "";
+				}               	
                 
                 if (data.c != undefined) {
                     for (var i = 0, cnt = data.c.length; i < cnt; i++) {
                         this._load(item, data.c[i]);
                     }
                 }                
-    
-                if (data.en == false) item.style.color = tw_COLOR_GRAYTEXT;
             }
         }
     },
@@ -639,22 +644,19 @@ var tw_Menu = tw_Component.extend({
     },
     
     itemSetKeyPressCombo: function(itemPos, keyPressCombo) {
-        if (item.className == "menuItem") {
-            var item = this._fullIndexItem(itemPos);
-            this._setKeyPressCombo(item, text);
-        }
+        var item = this._fullIndexItem(itemPos);
+        if (item.className != "menuDivider") this._setKeyPressCombo(item, text);
     },
     
     itemSetEnabled: function(itemPos, enabled) {
         var item = this._fullIndexItem(itemPos);
         item.style.color = enabled ? "" : tw_COLOR_GRAYTEXT;
+		item.tw_enabled = enabled;
     },
 
     itemSetImageUrl: function(itemPos, image) {
-        if (item.className == "menuItem") {
-            var item = this._fullIndexItem(itemPos);
-            this._setImageUrl(item, image);
-        }
+        var item = this._fullIndexItem(itemPos);
+        if (item.className == "menuItem") this._setImageUrl(item, image);
     },
     
     clear: function(menu) {
