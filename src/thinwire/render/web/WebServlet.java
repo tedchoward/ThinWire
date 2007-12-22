@@ -56,7 +56,7 @@ public class WebServlet extends HttpServlet {
     private static final Logger log = Logger.getLogger(WebServlet.class.getName());
     
     private static enum InitParam {
-        MAIN_CLASS, EXTRA_ARGUMENTS, STYLE_SHEET, RELOAD_ON_REFRESH;
+        MAIN_CLASS, EXTRA_ARGUMENTS, STYLE_SHEET, RELOAD_ON_REFRESH, INITIAL_FRAME_TITLE;
 
         private String mixedCaseName;
         
@@ -214,7 +214,10 @@ public class WebServlet extends HttpServlet {
         response.setHeader("Pragma", "no-cache");
         response.setHeader("Cache-Control", "no-cache, no-store");
         response.setHeader("Expires", "-1");
-        response.getOutputStream().write(WebApplication.MAIN_PAGE);
+
+        String initialFrameTitle = getInitParameter(InitParam.INITIAL_FRAME_TITLE.mixedCaseName());
+        if (initialFrameTitle == null || initialFrameTitle.trim().length() == 0) initialFrameTitle = "Loading ThinWire Application...";
+        response.getOutputStream().write(WebApplication.MAIN_PAGE.replaceAll("[$][{]initialFrameTitle[}]", initialFrameTitle).getBytes());
         
         String reload = getInitParameter(InitParam.RELOAD_ON_REFRESH.mixedCaseName());
         
@@ -250,7 +253,7 @@ public class WebServlet extends HttpServlet {
         	}
         }
         
-        holder.app = new WebApplication(this.getServletContext().getRealPath(""), mainClass, getInitParameter(InitParam.STYLE_SHEET.mixedCaseName()), args.toArray(new String[args.size()]));
+        holder.app = new WebApplication(this.getServletContext().getRealPath(""), mainClass, getInitParameter(InitParam.STYLE_SHEET.mixedCaseName()), args.toArray(new String[args.size()]), initialFrameTitle);
         httpSession.setAttribute("instance", holder);
     }    
     

@@ -54,10 +54,12 @@ class ApplicationEventListener implements WebComponentListener {
     private static final class StartupInfo {
         Class mainClass;
         String[] args;
+        String initialFrameTitle;
         
-        StartupInfo(Class mainClass, String[] args) {
+        StartupInfo(Class mainClass, String[] args, String initialFrameTitle) {
             this.mainClass = mainClass;
             this.args = args;
+            this.initialFrameTitle = initialFrameTitle;
         }
     }
     
@@ -69,8 +71,8 @@ class ApplicationEventListener implements WebComponentListener {
         return new WebComponentEvent(ID, INIT, null);
     }
     
-    static final WebComponentEvent newStartEvent(Class mainClass, String[] args) {
-        StartupInfo info = new StartupInfo(mainClass, args);
+    static final WebComponentEvent newStartEvent(Class mainClass, String[] args, String initialFrameTitle) {
+        StartupInfo info = new StartupInfo(mainClass, args, initialFrameTitle);
         return new WebComponentEvent(ID, STARTUP, info);
     }
     
@@ -95,6 +97,7 @@ class ApplicationEventListener implements WebComponentListener {
         if (INIT.equals(name)) {
             app.sendStyleInitInfo();
             Frame f = app.getFrame();
+            f.setTitle(((StartupInfo)app.startupEvent.getValue()).initialFrameTitle);
             f.setVisible(true);
             if (log.isLoggable(LEVEL)) log.log(LEVEL, Thread.currentThread().getName() + ": testing synchornized client-side call by retrieving client time");
             String time = app.clientSideFunctionCallWaitForReturn("tw_getTime");

@@ -113,7 +113,7 @@ public final class WebApplication extends Application {
         "FileUploadPage.html",
     };
     
-    static final byte[] MAIN_PAGE;
+    static final String MAIN_PAGE;
     
     static {
         String classURL = "class:///" + CLASS_NAME + "/resources/";
@@ -129,7 +129,7 @@ public final class WebApplication extends Application {
             String twLib = loadJSLibrary(classURL);
             //Store the MainPage.html after replacing the JS lib name
             MAIN_PAGE = new String(WebApplication.getResourceBytes(classURL + "MainPage.html"))
-                .replaceAll("[$][{]ThinWire[.]js[}]", twLib).getBytes();
+                .replaceAll("[$][{]ThinWire[.]js[}]", twLib);
         } catch (Exception e) {
             if (!(e instanceof RuntimeException)) e = new RuntimeException(e);
             throw (RuntimeException)e;
@@ -193,7 +193,7 @@ public final class WebApplication extends Application {
     Map<Style, String> styleToStyleClass = new HashMap<Style, String>();
     FileInfo[] fileList = new FileInfo[1];
     
-    WebApplication(String baseFolder, Class mainClass, String styleSheet, String[] args) throws IOException {
+    WebApplication(String baseFolder, Class mainClass, String styleSheet, String[] args, String initialFrameTitle) throws IOException {
         this.baseFolder = baseFolder;
         this.styleSheet = styleSheet;
         nameToRenderer = new HashMap<String, Class<ComponentRenderer>>();
@@ -204,7 +204,7 @@ public final class WebApplication extends Application {
         classLoader = mainClass.getClassLoader();
      
         setWebComponentListener(ApplicationEventListener.ID, new ApplicationEventListener(this));
-        startupEvent = ApplicationEventListener.newStartEvent(mainClass, args);
+        startupEvent = ApplicationEventListener.newStartEvent(mainClass, args, initialFrameTitle);
         state = State.INIT;
     }
     
