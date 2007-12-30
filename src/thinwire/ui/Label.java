@@ -77,14 +77,7 @@ package thinwire.ui;
  * 
  * @author Joshua J. Gertzen
  */
-public class Label extends AbstractTextComponent implements AlignTextComponent {
-    public static final String PROPERTY_LABEL_FOR = "labelFor";
-    public static final String PROPERTY_WRAP_TEXT = "wrapText";
-    
-    private AlignX alignX = AlignX.LEFT;
-    private Component labelFor = null;
-    private boolean wrapText;
-
+public class Label extends AbstractLabelComponent {
     /**
      * Constructs a new Label with no text.
      */
@@ -100,47 +93,5 @@ public class Label extends AbstractTextComponent implements AlignTextComponent {
         if (text != null) setText(text);
         setFocusCapable(false);
         setWrapText(false);
-    }
-    
-    public AlignX getAlignX() {
-        return alignX;
-    }
-
-    public void setAlignX(AlignX alignX) {
-        if (alignX == null) throw new IllegalArgumentException(PROPERTY_ALIGN_X + " == null");
-        AlignX oldAlignX = this.alignX;
-        this.alignX = alignX;
-        firePropertyChange(this, PROPERTY_ALIGN_X, oldAlignX, alignX);
-    }    
-        
-    /**
-     * Returns the component that this label is associated with.
-     * 
-     * @return the Component associated with this Label.
-     */
-    public Component getLabelFor() {
-        return labelFor;
-    }
-
-    /**
-     * This method links a label with an onscreen component.
-     * 
-     * @param labelFor the component to link with the label
-     */
-    public void setLabelFor(Component labelFor) {
-        Component oldLabelFor = this.labelFor;
-        this.labelFor = labelFor;
-        if (labelFor != null) ((AbstractComponent)labelFor).setLabel(this);
-        firePropertyChange(this, PROPERTY_LABEL_FOR, oldLabelFor, labelFor);
-    }
-    
-    public boolean isWrapText() {
-        return wrapText;
-    }
-    
-    public void setWrapText(boolean wrapText) {
-        boolean oldWrap = this.wrapText;
-        this.wrapText = wrapText;
-        if (this.wrapText != oldWrap) firePropertyChange(this, PROPERTY_WRAP_TEXT, oldWrap, this.wrapText);
     }
 }

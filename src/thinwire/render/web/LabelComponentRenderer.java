@@ -31,15 +31,34 @@
 package thinwire.render.web;
 
 import thinwire.ui.Component;
+import thinwire.ui.LabelComponent;
+import thinwire.ui.AlignTextComponent.AlignX;
+import thinwire.ui.event.PropertyChangeEvent;
 
 /**
  * @author Joshua J. Gertzen
  */
-final class LabelRenderer extends LabelComponentRenderer {
-    private static final String LABEL_CLASS = "tw_Label";
-    
+abstract class LabelComponentRenderer extends TextComponentRenderer {
+    private static final String SET_WRAP_TEXT = "setWrapText";
+
 	void render(WindowRenderer wr, Component c, ComponentRenderer container) {
-        init(LABEL_CLASS, wr, c, container);
+		LabelComponent l = (LabelComponent)c;
+        addInitProperty(LabelComponent.PROPERTY_ALIGN_X, l.getAlignX().name().toLowerCase());
+        addInitProperty(LabelComponent.PROPERTY_WRAP_TEXT, l.isWrapText());
         super.render(wr, c, container);                
 	}
+    
+    public void propertyChange(PropertyChangeEvent pce) {
+        String name = pce.getPropertyName();
+        if (isPropertyChangeIgnored(name)) return;
+        Object newValue = pce.getNewValue();
+        
+        if (name.equals(LabelComponent.PROPERTY_ALIGN_X)) {
+            postClientEvent(SET_ALIGN_X, ((AlignX)newValue).name().toLowerCase());
+        } else if (name.equals(LabelComponent.PROPERTY_WRAP_TEXT)) {
+            postClientEvent(SET_WRAP_TEXT, newValue);
+        } else {
+            super.propertyChange(pce);
+        }
+    }    
 }
