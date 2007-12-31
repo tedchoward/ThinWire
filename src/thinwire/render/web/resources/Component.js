@@ -76,12 +76,6 @@ var tw_Component = Class.extend({
         var s = box.style;
 		var cssText = "position:absolute;overflow:hidden;padding:0px;margin:0px;";
 		tw_Component.setCSSText(cssText, box);
-		/*
-        s.position = "absolute";
-        s.overflow = "hidden";
-        s.padding = "0px";
-        s.margin = "0px";
-		*/
         box.id = id;
         this._box = this._focusBox = this._backgroundBox = this._borderBox = this._fontBox = box;
         this._id = id;

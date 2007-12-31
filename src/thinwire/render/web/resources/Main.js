@@ -40,7 +40,6 @@ var tw_bVer = 0;
 function parseBrowserType(ua) {
     var msg = "This browser is not officially supported";
     var agent = ua.toLowerCase();
-    //alert(agent);
 
     function parseBrowser(browser, ver) {
         var index = agent.indexOf(browser);

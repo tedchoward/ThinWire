@@ -126,8 +126,9 @@ var tw_EventManager = Class.extend({
                 this._outboundEvents = [];
                 this._vsEventOrder = {};
                 this._comm.send("POST", tw_APP_URL, msg);
+                this._timerId = 0;
             } else {
-                this.resetSendEventsTimer(100);
+                this._resetTimer(100);
             }
         }
     },
@@ -138,14 +139,18 @@ var tw_EventManager = Class.extend({
         this._outboundEvents.push(value);
     },
 
-	resetSendEventsTimer: function(delay) {
-        clearTimeout(this._timerId);
+	_resetTimer: function(delay) {
+        if (this._timerId != 0) clearTimeout(this._timerId);
         this._timerId = setTimeout(this._sendEvents, delay); //delay send until callstack completes execution                  
+	},
+	
+	resetSendEventsTimer: function(delay) {
+		if (this._timerId != 0) this._resetTimer(delay);
 	},
     
     sendViewStateChanged: function(id, name, value) {
 		this.queueViewStateChanged(id, name, value);
-		this.resetSendEventsTimer(0);
+		this._resetTimer(0);
     },
 
     postViewStateChanged: this.sendViewStateChanged, //here in case there is an existing reference in 3rd party code
@@ -175,12 +180,12 @@ var tw_EventManager = Class.extend({
         
     sendGetEvents: function() {
 	    this._queueOutboundEvent(this._EVENT_GET_EVENTS, null);
-		this.resetSendEventsTimer(0);
+		this._resetTimer(0);
 	},    
 	
     sendRunTimer: function(id) {
 		this._queueOutboundEvent(this._EVENT_RUN_TIMER, id + ":");
-		this.resetSendEventsTimer(0);
+		this._resetTimer(0);
 	},
 	    
 	manualSyncResponse: function() { this._autoSyncResponse = false; },
@@ -188,7 +193,7 @@ var tw_EventManager = Class.extend({
     sendSyncResponse: function(value) {
         value = value == null ? "0:" : new String(value).length + ":" + value;
 		this._queueOutboundEvent(this._EVENT_SYNC_CALL, value);
-		this.resetSendEventsTimer(0);
+		this._resetTimer(0);
         this._autoSyncResponse = true;
     },
     
