@@ -371,7 +371,7 @@ public final class WebApplication extends Application {
         if (propertyName.equals(Border.PROPERTY_BORDER_SIZE)) {
             sb.append(RichTextParser.STYLE_BORDER_WIDTH).append(":\"").append(value).append("px");
         } else if (propertyName.equals(Font.PROPERTY_FONT_SIZE)) {
-            sb.append(RichTextParser.STYLE_FONT_SIZE).append(":\"").append(value).append("pt");
+            sb.append(RichTextParser.STYLE_FONT_SIZE).append(":\"").append(((Number)value).intValue()).append("px");
     	} else if (propertyName.equals(Border.PROPERTY_BORDER_IMAGE)) {
     		sb.append(RichTextParser.STYLE_BORDER_IMAGE).append(":\"");
     		ImageInfo ii = (ImageInfo)value;

@@ -55,7 +55,7 @@ abstract class AbstractComponent implements Component {
     
     Application app;
     private Object parent;
-    private Label label;
+    private LabelComponent label;
     private Style style;
     private EventListenerImpl<PropertyChangeListener> pcei;
     private EventListenerImpl<ActionListener> aei;
@@ -306,11 +306,11 @@ abstract class AbstractComponent implements Component {
         return c;
     }
     
-    public Label getLabel() {
+    public LabelComponent getLabel() {
         return label;
     }    
     
-    void setLabel(Label label) {
+    void setLabel(LabelComponent label) {
         this.label = label;
     }    
     

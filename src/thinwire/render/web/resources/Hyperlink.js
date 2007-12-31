@@ -57,6 +57,10 @@ var tw_Hyperlink = tw_BaseBrowserLink.extend({
     
     setText: tw_Component.setText,
 
+    setAlignX: function(alignX) {
+        this._box.style.textAlign = alignX;
+    },
+
     setHeight: function(height) {
         arguments.callee.$.call(this, height);
         this._box.style.lineHeight = this._box.style.height;
@@ -77,6 +81,18 @@ var tw_Hyperlink = tw_BaseBrowserLink.extend({
 
     setResizeAllowed: function(resizeAllowed) {
         this._resizeAllowed = resizeAllowed;
+    },
+    
+    setWrapText: function(wrapText) {
+        var s = this._box.style;
+
+        if (wrapText) {
+            s.whiteSpace = "";
+            s.lineHeight = "";
+        } else {
+            s.whiteSpace = "nowrap";
+            this.setHeight(this._height);
+        }
     },
 
     setEnabled: function(enabled) {

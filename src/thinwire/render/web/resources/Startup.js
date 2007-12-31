@@ -250,7 +250,7 @@ function tw_getFontMetrics(family, size, bold, italic, underline) {
     s.whiteSpace = "nowrap";
     s.backgroundColor = tw_COLOR_TRANSPARENT;
     s.color = tw_COLOR_TRANSPARENT;    
-    s.fontSize = size + "pt";
+    s.fontSize = size + "px";
     s.fontFamily = family;
     s.fontWeight = bold ? "bold" : "normal";
     s.fontStyle = italic ? "italic" : "normal";

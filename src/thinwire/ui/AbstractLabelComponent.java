@@ -28,18 +28,45 @@
 #ENDIF
 #VERSION_HEADER#
 */
-package thinwire.render.web;
-
-import thinwire.ui.Component;
+package thinwire.ui;
 
 /**
  * @author Joshua J. Gertzen
  */
-final class LabelRenderer extends LabelComponentRenderer {
-    private static final String LABEL_CLASS = "tw_Label";
+abstract class AbstractLabelComponent extends AbstractTextComponent implements LabelComponent {
+    private AlignX alignX = AlignX.LEFT;
+    private Component labelFor = null;
+    private boolean wrapText;
+        
+    public AlignX getAlignX() {
+        return alignX;
+    }
+
+    public void setAlignX(AlignX alignX) {
+        if (alignX == null) throw new IllegalArgumentException(PROPERTY_ALIGN_X + " == null");
+        AlignX oldAlignX = this.alignX;
+        this.alignX = alignX;
+        firePropertyChange(this, PROPERTY_ALIGN_X, oldAlignX, alignX);
+    }    
+        
+    public Component getLabelFor() {
+        return labelFor;
+    }
+
+    public void setLabelFor(Component labelFor) {
+        Component oldLabelFor = this.labelFor;
+        this.labelFor = labelFor;
+        if (labelFor != null) ((AbstractComponent)labelFor).setLabel(this);
+        firePropertyChange(this, PROPERTY_LABEL_FOR, oldLabelFor, labelFor);
+    }
     
-	void render(WindowRenderer wr, Component c, ComponentRenderer container) {
-        init(LABEL_CLASS, wr, c, container);
-        super.render(wr, c, container);                
-	}
+    public boolean isWrapText() {
+        return wrapText;
+    }
+    
+    public void setWrapText(boolean wrapText) {
+        boolean oldWrap = this.wrapText;
+        this.wrapText = wrapText;
+        if (this.wrapText != oldWrap) firePropertyChange(this, PROPERTY_WRAP_TEXT, oldWrap, this.wrapText);
+    }
 }

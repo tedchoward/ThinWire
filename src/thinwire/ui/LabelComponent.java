@@ -28,18 +28,38 @@
 #ENDIF
 #VERSION_HEADER#
 */
-package thinwire.render.web;
-
-import thinwire.ui.Component;
+package thinwire.ui;
 
 /**
  * @author Joshua J. Gertzen
  */
-final class LabelRenderer extends LabelComponentRenderer {
-    private static final String LABEL_CLASS = "tw_Label";
+public interface LabelComponent extends AlignTextComponent {
+    public static final String PROPERTY_LABEL_FOR = "labelFor";
+    public static final String PROPERTY_WRAP_TEXT = "wrapText";
     
-	void render(WindowRenderer wr, Component c, ComponentRenderer container) {
-        init(LABEL_CLASS, wr, c, container);
-        super.render(wr, c, container);                
-	}
+    /**
+     * Returns the component that this label is associated with.
+     * 
+     * @return the Component associated with this Label.
+     */
+    public Component getLabelFor();
+    
+    /**
+     * This method links a label with an onscreen component.
+     * 
+     * @param labelFor the component to link with the label
+     */
+    public void setLabelFor(Component labelFor);
+
+    /**
+     * Returns true if this <code>LabelComponent</code> automatically wraps it's text when it's text exceeds it's width.
+     * @return true if this <code>LabelComponent</code> automatically wraps it's text when it's text exceeds it's width.
+     */
+    public boolean isWrapText();
+    
+    /**
+     * Sets whether this <code>LabelComponent</code> automatically wraps it's text when it's text exceeds it's width.
+     * @param wrapText true to have this <code>LabelComponent</code> automatically wrap it's text, false otherwise.
+     */
+	public void setWrapText(boolean wrapText);
 }

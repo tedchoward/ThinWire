@@ -94,7 +94,7 @@ class RichTextParser extends DefaultHandler {
         map.put("family", new EnumValidator(Font.Family.class, STYLE_FONT_FAMILY));
         map.put("face", new EnumValidator(Font.Family.class, STYLE_FONT_FAMILY));
         map.put("color", new EnumValidator(Color.class, STYLE_COLOR));
-        map.put("size", new NumberValidator(STYLE_FONT_SIZE, 0, 128, "pt"));
+        map.put("size", new NumberValidator(STYLE_FONT_SIZE, 0, 128, "px"));
         map.put("bold", new BooleanValidator(STYLE_FONT_WEIGHT, "bold", "normal"));
         map.put("underline", new BooleanValidator(STYLE_TEXT_DECORATION, "underline", "none"));
         map.put("strike", new BooleanValidator(STYLE_TEXT_DECORATION, "line-through", "none"));
