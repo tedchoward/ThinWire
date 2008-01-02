@@ -52,7 +52,7 @@ import javax.servlet.http.*;
  * @author Joshua J. Gertzen
  */
 public class WebServlet extends HttpServlet {
-	private static final Level LEVEL = Level.FINER;
+	private static final Level LEVEL = Level.INFO;
     private static final Logger log = Logger.getLogger(WebServlet.class.getName());
     
     private static enum InitParam {
@@ -263,9 +263,14 @@ public class WebServlet extends HttpServlet {
     
     private void handleResource(HttpServletRequest request, HttpServletResponse response, String resourceName) throws IOException, ServletException {        
         ApplicationHolder holder = (ApplicationHolder)request.getSession().getAttribute("instance");
-        if (holder == null || holder.app == null) return;
+ 
+        if (holder == null || holder.app == null) {
+        	response.sendError(HttpServletResponse.SC_BAD_REQUEST, "no application instance exists from which to retreive resources");
+        	return;
+        }
+        
         if (log.isLoggable(LEVEL)) log.log(LEVEL, "getting resource: " + resourceName);
-        byte[] data = RemoteFileMap.INSTANCE.load(holder.app, resourceName);
+        byte[] data = holder.app.remoteFileMap.load(resourceName);
 
         if (data == null) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);

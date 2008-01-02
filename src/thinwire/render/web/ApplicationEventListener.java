@@ -134,7 +134,7 @@ class ApplicationEventListener implements WebComponentListener {
             app.sendStyleInitInfo();
             Frame f = app.getFrame();
             WindowRenderer fr = app.getWindowRenderer(f);
-        	app.sendDefaultComponentStyles(fr);
+        	app.sendDefaultComponentStyles();
             fr.render(fr, f, null);
             
             for (Dialog d : f.getDialogs()) {

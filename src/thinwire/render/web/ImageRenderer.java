@@ -42,7 +42,7 @@ final class ImageRenderer extends ComponentRenderer {
 
     void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         init(IMAGE_CLASS, wr, c, container);
-        addInitProperty(Image.PROPERTY_IMAGE, getQualifiedURL(((Image)c).getImage()));
+        addInitProperty(Image.PROPERTY_IMAGE, wr.ai.addResourceMapping(((Image)c).getImage()));
         super.render(wr, c, container);                
     }
     
@@ -51,9 +51,15 @@ final class ImageRenderer extends ComponentRenderer {
         if (isPropertyChangeIgnored(name)) return;        
         
         if (name.equals(Image.PROPERTY_IMAGE)) {
-            postClientEvent(SET_IMAGE, getQualifiedURL((String)pce.getNewValue()));
+        	wr.ai.removeResourceMapping((String)pce.getOldValue());
+            postClientEvent(SET_IMAGE, wr.ai.addResourceMapping((String)pce.getNewValue()));
         } else {
             super.propertyChange(pce);
         }
+    }
+    
+    void destroy() {
+    	wr.ai.removeResourceMapping(((Image)comp).getImage());
+    	super.destroy();
     }
 }

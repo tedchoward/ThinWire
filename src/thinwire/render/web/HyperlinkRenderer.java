@@ -47,7 +47,7 @@ final class HyperlinkRenderer extends LabelComponentRenderer {
     void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         init(HYPERLINK_CLASS, wr, c, container);
         Hyperlink hl = (Hyperlink)c;
-        addInitProperty(Hyperlink.PROPERTY_LOCATION, getQualifiedURL(hl.getLocation()));
+        addInitProperty(Hyperlink.PROPERTY_LOCATION, wr.ai.addResourceMapping(hl.getLocation()));
         addInitProperty(Hyperlink.PROPERTY_TARGET, hl.getTarget());
         addInitProperty(Hyperlink.PROPERTY_VISIBLE_CHROME, hl.isVisibleChrome());
         addInitProperty(Hyperlink.PROPERTY_RESIZE_ALLOWED, hl.isResizeAllowed());
@@ -60,7 +60,8 @@ final class HyperlinkRenderer extends LabelComponentRenderer {
         Object newValue = pce.getNewValue();        
 
         if (name.equals(Hyperlink.PROPERTY_LOCATION)) {
-            postClientEvent(SET_LOCATION, getQualifiedURL((String)newValue));
+        	wr.ai.removeResourceMapping((String)pce.getOldValue());
+            postClientEvent(SET_LOCATION, wr.ai.addResourceMapping((String)newValue));
         } else if (name.equals(Hyperlink.PROPERTY_TARGET)) {
             postClientEvent(SET_TARGET, newValue);
         } else if (name.equals(Hyperlink.PROPERTY_VISIBLE_CHROME)) {
@@ -70,5 +71,10 @@ final class HyperlinkRenderer extends LabelComponentRenderer {
         } else {
             super.propertyChange(pce);
         }
+    }
+    
+    void destroy() {
+    	wr.ai.removeResourceMapping(((Hyperlink)comp).getLocation());
+    	super.destroy();
     }
 }

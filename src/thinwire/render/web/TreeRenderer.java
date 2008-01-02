@@ -30,6 +30,7 @@
 */
 package thinwire.render.web;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import thinwire.ui.Component;
@@ -52,6 +53,7 @@ final class TreeRenderer extends ComponentRenderer implements ItemChangeListener
     private static final String SET_ROOT_ITEM_VISIBLE = "setRootItemVisible";
     private static final String ITEM_ADD = "itemAdd";
     private Tree tree;
+    private List<String> resources;
     
 	void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         init(TREE_CLASS, wr, c, container);
@@ -68,9 +70,35 @@ final class TreeRenderer extends ComponentRenderer implements ItemChangeListener
 	}
     
     void destroy() {
+    	if (resources != null) {
+        	for (String uri : resources) {
+	    		wr.ai.removeResourceMapping(uri);
+	    	}
+	    	
+	    	resources = null;
+    	}
+    	
         super.destroy();
         tree.removeItemChangeListener(this);
         tree = null;
+    }
+    
+    private String addResourceRef(String newUri, String oldUri) {
+    	if (resources == null) {
+    		resources = new ArrayList<String>(3);
+    	} else if (oldUri != null) {
+    		resources.remove(oldUri);
+    		wr.ai.removeResourceMapping(oldUri);
+    	}
+    	
+    	resources.add(newUri);
+    	return wr.ai.addResourceMapping(newUri);
+    }
+    
+    private void removeResourceRef(String oldUri) {
+    	if (resources == null) return;
+		resources.remove(oldUri);
+		wr.ai.removeResourceMapping(oldUri);
     }
     
     public void propertyChange(PropertyChangeEvent pce) {
@@ -84,9 +112,13 @@ final class TreeRenderer extends ComponentRenderer implements ItemChangeListener
 
             if (name.equals(Tree.Item.PROPERTY_ITEM_EXPANDED)) {
                 if (((Tree.Item) source).hasChildren()) postClientEvent(ITEM_EXPAND, fullIndex, newValue);
-            } else if (name.equals(HierarchyComponent.Item.PROPERTY_ITEM_IMAGE) || name.equals(HierarchyComponent.Item.PROPERTY_ITEM_TEXT)) {
+            } else if (name.equals(HierarchyComponent.Item.PROPERTY_ITEM_TEXT)) {
+            	Object newTextValue = GridBoxRenderer.getValue(this, newValue, null, null);
+            	String image = ((Tree.Item)source).getImage();
+                postClientEvent(ITEM_CHANGE, fullIndex, newTextValue, addResourceRef(image, image));
+            } else if (name.equals(HierarchyComponent.Item.PROPERTY_ITEM_IMAGE)) {
             	Object newTextValue = GridBoxRenderer.getValue(this, ((Tree.Item)source).getText(), null, null);
-                postClientEvent(ITEM_CHANGE, fullIndex, newTextValue, getQualifiedURL(((Tree.Item)source).getImage()));
+                postClientEvent(ITEM_CHANGE, fullIndex, newTextValue, addResourceRef((String)newValue, (String)pce.getOldValue()));
             } else if (name.equals(Tree.Item.PROPERTY_ITEM_SELECTED)) {
                 postClientEvent(ITEM_SELECT, fullIndex);
             }
@@ -110,12 +142,13 @@ final class TreeRenderer extends ComponentRenderer implements ItemChangeListener
         if (parent != tree.getRootItem()) fullIndex = fullIndex(parent) + "." + index;
         
         if (type == ItemChangeEvent.Type.REMOVE || type == ItemChangeEvent.Type.SET) {
+        	removeResourceRef(((Tree.Item)ice.getOldValue()).getImage());
             postClientEvent(ITEM_REMOVE, fullIndex);
         }
         
         if (type == ItemChangeEvent.Type.ADD || type == ItemChangeEvent.Type.SET) {
         	Object newTextValue = GridBoxRenderer.getValue(this, newValue.getText(), null, null);
-            postClientEvent(ITEM_ADD, fullIndex, newTextValue, getQualifiedURL(newValue.getImage()));
+            postClientEvent(ITEM_ADD, fullIndex, newTextValue, addResourceRef(newValue.getImage(), null));
             if (newValue.hasChildren()) renderChildren(newValue);
             if (((Tree.Item)newValue.getParent()).isExpanded() && newValue.getIndex() == 0) {
                 postClientEvent(ITEM_EXPAND, fullIndex(((Tree.Item)newValue.getParent())), true);
@@ -137,7 +170,7 @@ final class TreeRenderer extends ComponentRenderer implements ItemChangeListener
             String fullIndex = String.valueOf(index);            
             if (parent != tree.getRootItem()) fullIndex = fullIndex(parent) + "." + index;  
             Object newTextValue = GridBoxRenderer.getValue(this, item.getText(), null, null);
-            postClientEvent(ITEM_ADD, fullIndex, newTextValue, getQualifiedURL(item.getImage()));            
+            postClientEvent(ITEM_ADD, fullIndex, newTextValue, addResourceRef(item.getImage(), null));            
             if (item.getChildren().size() > 0) renderChildren(item);
         }
     }
@@ -196,7 +229,7 @@ final class TreeRenderer extends ComponentRenderer implements ItemChangeListener
 	    sb.append(",fo:").append(tree.isFocus());
 	    sb.append(",rt:");
         GridBoxRenderer.getValue(this, ri.getText(), null, sb);
-        sb.append(",ri:\"").append(getQualifiedURL(ri.getImage())).append('"');        
+        sb.append(",ri:\"").append(addResourceRef(ri.getImage(), null)).append('"');        
 	    sb.append(",re:").append(ri.isExpanded());
 	    sb.append(",rv:").append(tree.isRootItemVisible());
 	    sb.append(',');
@@ -213,7 +246,7 @@ final class TreeRenderer extends ComponentRenderer implements ItemChangeListener
 			
             if (ti != null) {
 			    sb.append("{ix:").append(i);
-                sb.append(",tm:\"").append(getQualifiedURL(ti.getImage())).append('"');
+                sb.append(",tm:\"").append(addResourceRef(ti.getImage(), null)).append('"');
                 sb.append(",tt:");
                 GridBoxRenderer.getValue(this, ti.getText(), null, sb);
 			    sb.append(",te:").append(ti.isExpanded());

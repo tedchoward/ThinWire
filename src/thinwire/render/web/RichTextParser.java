@@ -285,15 +285,13 @@ class RichTextParser extends DefaultHandler {
     }
     
     private static class URLValidator extends Validator {
-        
         URLValidator(String jsPropName) {
             super(jsPropName);
         }
         
-        String getValue(String value, ComponentRenderer cr) {
-            return cr.getQualifiedURL(value);
+        String getValue(RichTextParser parser, String value) {
+        	return parser.addResourceRef(value);
         }
-
     }
     
     private static class TargetValidator extends Validator {
@@ -339,10 +337,15 @@ class RichTextParser extends DefaultHandler {
     	}
     };
     
+    static boolean isRichText(String text) {
+    	return text.indexOf('<') >= 0 && text.indexOf('>') > 0 & TAG_REGEX.matcher(text).matches();
+    }
+    
     private SAXParser parser;
     private Depth depth;
     private ComponentRenderer renderer;
     private StringBuilder sb;
+    private List<String> resources;
     
     RichTextParser(ComponentRenderer cr) {
     	parser = INSTANCE.get();
@@ -351,23 +354,36 @@ class RichTextParser extends DefaultHandler {
     }
     
     Object parse(String richText) {        
-        if (richText.indexOf('<') >= 0 && richText.indexOf('>') > 0 & TAG_REGEX.matcher(richText).matches()) {
-            try {
-                sb = new StringBuilder();
-                sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>").append("<richText>").append(richText).append("</richText>");
-                richText = sb.toString();
-                sb.setLength(0);
-            	depth.reset();
-            	parser.parse(new ByteArrayInputStream(richText.getBytes("utf-8")), this);
-            	if (log.isLoggable(LEVEL)) log.log(LEVEL, "RICH TEXT: " + sb.toString());
-                return sb;
-            } catch (Exception e) {
-                if (log.isLoggable(LEVEL)) log.log(LEVEL, "unable to parse rich text:" + richText, e);
-            	return richText;
-            }
-        } else {
-            return richText;
+        try {
+        	reset();
+            sb = new StringBuilder();
+            sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>").append("<richText>").append(richText).append("</richText>");
+            richText = sb.toString();
+            sb.setLength(0);
+        	depth.reset();
+        	parser.parse(new ByteArrayInputStream(richText.getBytes("utf-8")), this);
+        	if (log.isLoggable(LEVEL)) log.log(LEVEL, "RICH TEXT: " + sb.toString());
+            return sb;
+        } catch (Exception e) {
+            if (log.isLoggable(LEVEL)) log.log(LEVEL, "unable to parse rich text:" + richText, e);
+        	return richText;
         }
+    }
+    
+    private String addResourceRef(String uri) {
+    	if (resources == null) resources = new ArrayList<String>();
+    	resources.add(uri);
+    	return renderer.wr.ai.addResourceMapping(uri);
+    }
+    
+    void reset() {
+    	if (resources != null) {
+    		for (String uri : resources) {
+    			renderer.wr.ai.removeResourceMapping(uri);
+    		}
+    		
+    		resources.clear();
+    	}
     }
 
     @Override
@@ -498,7 +514,7 @@ class RichTextParser extends DefaultHandler {
             	String value = attributes.getValue(i);
             	
                 if (v instanceof URLValidator) {
-                    value = ((URLValidator) v).getValue(value, renderer);
+                    value = ((URLValidator) v).getValue(this, value);
                 } else {
                     value = v.getValue(value);
                 }

@@ -43,7 +43,7 @@ final class ButtonRenderer extends TextComponentRenderer {
     void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         init(BUTTON_CLASS, wr, c, container);
         Button b = (Button)c;
-        addInitProperty(Button.PROPERTY_IMAGE, getQualifiedURL(b.getImage()));
+        addInitProperty(Button.PROPERTY_IMAGE, wr.ai.addResourceMapping(b.getImage()));
         addInitProperty(Button.PROPERTY_STANDARD, b.isStandard());        
         super.render(wr, c, container);
     }
@@ -54,9 +54,15 @@ final class ButtonRenderer extends TextComponentRenderer {
         Object newValue = pce.getNewValue();        
 
         if (name.equals(Button.PROPERTY_IMAGE)) {
-            postClientEvent(SET_IMAGE, getQualifiedURL((String)newValue));
+        	wr.ai.removeResourceMapping((String)pce.getOldValue());
+            postClientEvent(SET_IMAGE, wr.ai.addResourceMapping((String)newValue));
         } else {
             super.propertyChange(pce);
         }
-    }   
+    }
+    
+    void destroy() {
+    	wr.ai.removeResourceMapping(((Button)comp).getImage());
+    	super.destroy();
+    }
 }
