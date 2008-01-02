@@ -581,7 +581,7 @@ public final class WebApplication extends Application {
     public void clientSideIncludeFile(String uri) {
         if (remoteFileMap.contains(uri)) return;
         String remoteName = addResourceMapping(uri);
-        clientSideFunctionCall("tw_include", remoteName);
+        clientSideFunctionCallWaitForReturn("tw_include", remoteName);
     }
     
     public void clientSideFunctionCall(String functionName, Object... args) {
