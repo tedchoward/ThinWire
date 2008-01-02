@@ -59,16 +59,16 @@ var tw_RadioButton = tw_BaseCheckRadio.extend({
         }
     },
     
-    setChecked: function(checked) {
+    setChecked: function(checked, sendEvent) {
         if (checked && this._groupId != 0) {
             var ary = tw_RadioButton.groups[this._groupId];
 
             for (var i = ary.length; --i >= 0;) {
-                if (ary[i].isChecked()) ary[i].setChecked(false, true);
+                if (ary[i].isChecked()) ary[i].setChecked(false, sendEvent);
             }
         }
         
-        arguments.callee.$.call(this, checked, true);
+        arguments.callee.$.call(this, checked, sendEvent);
     },
     
     destroy: function() {
