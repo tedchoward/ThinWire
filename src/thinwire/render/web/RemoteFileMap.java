@@ -41,7 +41,7 @@ import java.util.logging.Logger;
  */
 final class RemoteFileMap {
     private static final Logger log = Logger.getLogger(RemoteFileMap.class.getName());
-    private static final Level LEVEL = Level.INFO;
+    private static final Level LEVEL = Level.FINER;
 
     private static final class FileData {
     	private int appRefCount;
@@ -186,42 +186,28 @@ final class RemoteFileMap {
 		}
     }
     
-    private void removeFile(RemoteFile file) {
-        file.refCount--;
-        
-        if (file.refCount <= 0) {
-            localToFile.remove(file.localName);
-            remoteToFile.remove(file.remoteName);
-            removeSharedFile(file);
-        }
-
-        if (log.isLoggable(LEVEL)) log.log(LEVEL, "Removed application file mapping for local file: localName='" + 
-                file.localName + "', remoteName='" + file.remoteName + "', refCount=" + file.refCount);
-    }
-    
     boolean contains(String localName) {
     	return localToFile.containsKey(localName);
     }
     
-    void removeByLocalName(String localName) {
+    void remove(String localName) {
     	RemoteFile file = localToFile.get(localName);
 
     	if (file != null) {
-    		removeFile(file);
+            file.refCount--;
+            
+            if (file.refCount <= 0) {
+                localToFile.remove(file.localName);
+                remoteToFile.remove(file.remoteName);
+                removeSharedFile(file);
+            }
+
+            if (log.isLoggable(LEVEL)) log.log(LEVEL, "Removed application file mapping for local file: localName='" + 
+                    file.localName + "', remoteName='" + file.remoteName + "', refCount=" + file.refCount);
         } else {
         	if (log.isLoggable(Level.WARNING)) log.log(Level.WARNING, "Attempt to remove reference for unmapped local file: '" + localName + "'");
         }
     }
-    
-    /*void removeByRemoteName(String remoteName) {
-    	RemoteFile file = remoteToFile.get(remoteName);
-
-    	if (file != null) {
-    		removeFile(file);
-        } else {
-            if (log.isLoggable(Level.WARNING)) log.log(Level.WARNING, "Attempt to remove reference for unmapped remote file: '" + remoteName + "'");
-        }
-    }*/
     
     void destroy() {
     	for (RemoteFile file : remoteToFile.values()) {

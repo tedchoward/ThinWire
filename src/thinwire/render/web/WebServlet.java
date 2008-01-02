@@ -52,7 +52,7 @@ import javax.servlet.http.*;
  * @author Joshua J. Gertzen
  */
 public class WebServlet extends HttpServlet {
-	private static final Level LEVEL = Level.INFO;
+	private static final Level LEVEL = Level.FINER;
     private static final Logger log = Logger.getLogger(WebServlet.class.getName());
     
     private static enum InitParam {

@@ -795,7 +795,7 @@ public final class WebApplication extends Application {
                 	uri = getRelativeFile(uri).getAbsolutePath();
                 }
                 
-                remoteFileMap.removeByLocalName(uri);
+                remoteFileMap.remove(uri);
             }
         }
     }
