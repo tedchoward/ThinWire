@@ -377,7 +377,7 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
             public Object format(Object value);
         }    
         
-        private static final Comparator DEFAULT_COMPARATOR = new Comparator() {
+        public static final Comparator DEFAULT_SORT_COMPARATOR = new Comparator() {
             public int compare(Object o1, Object o2) {
                 if (o1 == null) o1 = "";
                 if (o2 == null) o2 = "";
@@ -393,7 +393,7 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
         private int width = -1;
         private AlignX alignX = AlignX.LEFT;
         private Format displayFormat;
-        private Comparator sortComparator = DEFAULT_COMPARATOR;
+        private Comparator sortComparator = DEFAULT_SORT_COMPARATOR;
 
         /**
          * Construct a Column.
@@ -580,7 +580,7 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
          * @param sortComparator this Column's Comparator.
          */
         public void setSortComparator(Comparator sortComparator) {
-            if (sortComparator == null) sortComparator = DEFAULT_COMPARATOR;
+            if (sortComparator == null) sortComparator = DEFAULT_SORT_COMPARATOR;
             Comparator oldSortComparator = this.sortComparator;
             GridBox gb = (GridBox) getParent();
             this.sortComparator = sortComparator;            
