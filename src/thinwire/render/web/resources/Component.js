@@ -140,15 +140,26 @@ var tw_Component = Class.extend({
         
         this._enabled = enabled;
         
-        if (this._fontBox != null && (this instanceof tw_Button || this instanceof tw_Menu || tw_COLOR_GRAYTEXT != "graytext")) {                    
-            this._fontBox.style.color = enabled ? this._fontColor : tw_COLOR_GRAYTEXT;
+        if (this._fontBox != null) {
+	        if (enabled) {
+	        	this._fontBox.style.color = this._fontColor;
+	        } else {
+	        	this._fontColor = this._fontBox.style.color;
+				if (this instanceof tw_Button || this instanceof tw_Menu || tw_COLOR_GRAYTEXT != "graytext") this._fontBox.style.color = tw_COLOR_GRAYTEXT;
+			}
         }
         
-        if (this._backgroundBox != null && tw_COLOR_BACKGROUND != "background" && (this instanceof tw_BaseCheckRadio || this instanceof tw_BaseText || 
-                this instanceof tw_DateBox || this instanceof tw_GridBox || this instanceof tw_Tree || this instanceof tw_WebBrowser ||
-                this instanceof tw_ProgressBar)) {
-            var color = tw_COLOR_BACKGROUND == tw_COLOR_WINDOW ? this._parent._backgroundBox.style.backgroundColor : tw_COLOR_BACKGROUND;
-            this._backgroundBox.style.backgroundColor = enabled ? this._backgroundColor : color;
+        
+        if (this._backgroundBox != null) {
+	        if (enabled) {
+	        	this._backgroundBox.style.backgroundColor = this._backgroundColor;
+	        } else {
+	        	this._backgroundColor = this._backgroundBox.style.backgroundColor;
+	        	if (tw_COLOR_BACKGROUND != "background" && (this instanceof tw_BaseCheckRadio || this instanceof tw_BaseText || 
+                	this instanceof tw_DateBox || this instanceof tw_GridBox || this instanceof tw_Tree || this instanceof tw_WebBrowser ||
+                	this instanceof tw_ProgressBar))
+                	this._backgroundBox.style.backgroundColor = tw_COLOR_BACKGROUND == tw_COLOR_WINDOW ? this._parent._backgroundBox.style.backgroundColor : tw_COLOR_BACKGROUND;
+	        }
         }
     },
     
@@ -229,7 +240,7 @@ var tw_Component = Class.extend({
             
             if (name == "backgroundColor") {
                 this._backgroundColor = value;
-                if (!this._enabled) s = null;
+                if (!this._enabled && tw_COLOR_BACKGROUND != "background" && tw_COLOR_BACKGROUND != "window") s = null;
             } else if (name == "backgroundImage") {
                 value = tw_Component.expandUrl(value, true);
             }
@@ -288,7 +299,10 @@ var tw_Component = Class.extend({
             }
         } else {
             var s = this._fontBox == null ? null : this._fontBox.style;
-            if (name == "color") this._fontColor = value;
+            if (name == "color") {
+            	this._fontColor = value;
+				if (!this._enabled && tw_COLOR_GRAYTEXT != "graytext") s = null;
+           	}
         }
         
         if (s != null) s[name] = value;
