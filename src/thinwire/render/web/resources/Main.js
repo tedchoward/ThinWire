@@ -69,7 +69,7 @@ function parseBrowserType(ua) {
 parseBrowserType(navigator.userAgent);
 var tw_isWin = navigator.userAgent.indexOf("Windows") > 0;
 var tw_sizeIncludesBorders = tw_isIE && tw_bVer < 6;
-var tw_useSmartTab = tw_isWin && ((tw_isIE && tw_bVer >= 6) || (tw_isFirefox && tw_bVer >= 1.5));
+var tw_useSmartTab = (tw_isIE && tw_bVer >= 6) || (tw_isFirefox && tw_bVer >= 1.5);
 
 var tw_APP_URL = new String(location);
 if (tw_APP_URL.indexOf("?") >= 0) tw_APP_URL = tw_APP_URL.substring(0, tw_APP_URL.indexOf("?"));
