@@ -100,14 +100,16 @@ public class Hyperlink extends AbstractLabelComponent {
     }
 
     public static void openLocation(String location, String target, boolean visibleChrome, boolean resizeAllowed) {
+        Application app = Application.current();
+        if (app == null) return;
         if (target == null || target.length() < 1) target = getNextGeneratedTarget();
-        location = Application.current().getQualifiedURL(location);
+        String remoteName = app.addResourceMapping(location);
         
-        if (location.startsWith(WebApplication.REMOTE_FILE_PREFIX)) {
-        	((WebApplication)WebApplication.current()).clientSideMethodCallWaitForReturn("tw_Hyperlink", "openLocation", location, target, visibleChrome, resizeAllowed);
-	        Application.current().removeFileFromMap(location);
+        if (remoteName.startsWith(WebApplication.REMOTE_FILE_PREFIX)) {
+        	((WebApplication)app).clientSideMethodCallWaitForReturn("tw_Hyperlink", "openLocation", remoteName, target, visibleChrome, resizeAllowed);
+	        app.removeResourceMapping(location);
         } else {
-        	((WebApplication)WebApplication.current()).clientSideMethodCall("tw_Hyperlink", "openLocation", location, target, visibleChrome, resizeAllowed);
+        	((WebApplication)app).clientSideMethodCall("tw_Hyperlink", "openLocation", remoteName, target, visibleChrome, resizeAllowed);
         }
     }
 

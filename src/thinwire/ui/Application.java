@@ -891,8 +891,8 @@ public abstract class Application {
     protected abstract void showWindow(Window w);
     protected abstract void hideWindow(Window w);
     protected abstract FileChooser.FileInfo getFileInfo();
-    protected abstract String getQualifiedURL(String location);
-    protected abstract void removeFileFromMap(String location);
+    protected abstract String addResourceMapping(String location);
+    protected abstract void removeResourceMapping(String location);
     
     /**
      * 

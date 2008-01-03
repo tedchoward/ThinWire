@@ -42,120 +42,182 @@ import java.util.logging.Logger;
 final class RemoteFileMap {
     private static final Logger log = Logger.getLogger(RemoteFileMap.class.getName());
     private static final Level LEVEL = Level.FINER;
-    static final RemoteFileMap INSTANCE = new RemoteFileMap(128); 
+
+    private static final class FileData {
+    	private int appRefCount;
+    	private byte[] bytes;
+    }
     
-    private static final class RemoteFileInfo {
-        private int refCount;
-        private String remoteName;
+    private static final class RemoteFile {
         private String localName;
-        private byte[] data;
+        private String remoteName;
+    	private int refCount;
+    	private FileData data;
+    }
+
+    private static final Map<String, FileData> FILE_DATA = new HashMap<String, FileData>(128);
+    static final RemoteFileMap SHARED = new RemoteFileMap(null);
+    
+    private WebApplication app;
+    private Map<String, RemoteFile> localToFile = new HashMap<String, RemoteFile>(32);
+    private Map<String, RemoteFile> remoteToFile = new HashMap<String, RemoteFile>(32);
+    
+    RemoteFileMap(WebApplication app) {
+    	this.app = app;
     }
     
-    private Map<String, RemoteFileInfo> remoteToFileInfo;
-    private Map<String, RemoteFileInfo> localToFileInfo;
-    
-    private RemoteFileMap(int initialMapSize) {
-        remoteToFileInfo = new HashMap<String, RemoteFileInfo>(initialMapSize);
-        localToFileInfo = new HashMap<String, RemoteFileInfo>(initialMapSize);
-    }
-    
-    final byte[] load(WebApplication app, String remoteName) {
-        RemoteFileInfo fileInfo = remoteToFileInfo.get(remoteName);
+    private String getUniqueRemoteName(String name) {
+        if (remoteToFile.containsKey(name)) {                
+            int lastIndex = name.lastIndexOf('.');
+            String file, ext;
+            
+            if (lastIndex == -1) {
+                file = name;
+                ext = "";
+            } else {
+                file = name.substring(0, lastIndex);
+                ext = name.substring(lastIndex);
+            }
+            
+            StringBuilder sb = new StringBuilder();
+            int i = 0;
+            
+            do {
+                i++;
+                sb.append(file).append('-').append(i).append(ext);
+                name = sb.toString();
+                sb.setLength(0);
+            } while (remoteToFile.containsKey(name));
+        }
         
-        if (fileInfo != null) {
-            byte[] data;
-            
-            if (fileInfo.data == null) {
-            	InputStream is = app.getContextResourceAsStream(fileInfo.localName);
-            	ByteArrayOutputStream os = new ByteArrayOutputStream();
-            	WebApplication.writeInputToStream(is, os);
-            	data = fileInfo.data = os.toByteArray();
-            } else {
-                data = fileInfo.data;
-            }
-
+        return name;
+    }
+    
+    byte[] load(String remoteName) {
+    	RemoteFile file = remoteToFile.get(remoteName);
+    	
+    	if (file == null) {
+    		if (this == SHARED) {
+    			throw new RuntimeException(new FileNotFoundException("The specified remote file '" + remoteName + "' does not have a mapping to a local file"));
+    		} else {
+    			return SHARED.load(remoteName);
+    		}
+    	}
+    	
+    	synchronized (file.data) {
             if (log.isLoggable(LEVEL)) log.log(LEVEL, "Loaded file data for local file: localName='" + 
-                    fileInfo.localName + "', remoteName='" + fileInfo.remoteName + "', refCount='" + 
-                    fileInfo.refCount + "', data.length='" + data.length + "'");
-            
-            return data;
-        } else {        
-            throw new RuntimeException(new FileNotFoundException("The specified remote file '" + remoteName + "' does not have a mapping to a local file"));
-        }
-    }
-    
-    String add(WebApplication app, String localName) {
-        return add(app, localName, null);
-    }
+                    file.localName + "', remoteName='" + file.remoteName + "', refCount=" + 
+                    file.refCount + ", data.length='" + file.data.bytes.length + "'");
 
-    String add(WebApplication app, String localName, byte[] data) {               
-        synchronized (localToFileInfo) {
-            RemoteFileInfo fileInfo = localToFileInfo.get(localName);
+    		return file.data.bytes;
+    	}
+    }
+    
+    String add(String localName) {
+    	return add(localName, null);
+    }
+    
+    String add(String localName, byte[] bytes) {
+    	RemoteFile file = localToFile.get(localName);
+    	boolean bytesNotUsed = bytes != null;
+    	
+    	if (file == null) {
+    		file = new RemoteFile();
+    		file.localName = localName;
+            int lastIndex = localName.lastIndexOf(File.separatorChar);
+            if (lastIndex == -1) lastIndex = localName.lastIndexOf(File.separatorChar == '/' ? '\\' : '/');  
+            file.remoteName = getUniqueRemoteName(localName.substring(lastIndex + 1));
+        	
+        	synchronized (FILE_DATA) {
+        		file.data = FILE_DATA.get(localName);
+        		
+        		if (file.data == null) {
+        			FILE_DATA.put(localName, file.data = new FileData());
+
+        			if (log.isLoggable(LEVEL)) log.log(LEVEL, "Added shared file for local file: localName='" + 
+	                        file.localName + "', number of shared entries=" + FILE_DATA.size());
+        		}
+        	}
+
+        	synchronized (file.data) {
+        		if (file.data.bytes == null) {
+        			if (bytesNotUsed) {
+            			bytesNotUsed = false;
+            			file.data.bytes = bytes;
+        			} else {
+	        			InputStream is = app == null ? WebApplication.getResourceAsStream(localName) : app.getContextResourceAsStream(localName);
+	        	    	ByteArrayOutputStream os = new ByteArrayOutputStream();
+	        	    	WebApplication.writeInputToStream(is, os);
+	        	    	file.data.bytes = os.toByteArray();
+        			}
+        		}
+        		
+        		file.data.appRefCount++;
+        	}
+        	
+            remoteToFile.put(file.remoteName, file);
+            localToFile.put(localName, file);
+    	}
+    	
+    	file.refCount++;
+
+    	if (log.isLoggable(LEVEL)) log.log(LEVEL, "Added application file mapping for local file: localName='" + 
+                localName + "', remoteName='" + file.remoteName + "', refCount=" + file.refCount + ", bytesNotUsed=" + bytesNotUsed);            
+    	
+    	return file.remoteName;
+    }
+    
+    private void removeSharedFile(RemoteFile file) {
+		synchronized (file.data) {
+			if (file.data.bytes != null) {
+				file.data.appRefCount--;
+				
+				if (file.data.appRefCount <= 0) {
+					synchronized (FILE_DATA) {
+						FILE_DATA.remove(file.localName);
+
+						if (log.isLoggable(LEVEL)) log.log(LEVEL, "Removed shared file data for local file: localName='" + 
+		                        file.localName + "', shared refCount=" + file.data.appRefCount + ", number of shared entries=" + FILE_DATA.size());
+					}
+					
+	            	file.data.bytes = null;
+				}
+			}
+		}
+    }
+    
+    boolean contains(String localName) {
+    	return localToFile.containsKey(localName);
+    }
+    
+    void remove(String localName) {
+    	RemoteFile file = localToFile.get(localName);
+
+    	if (file != null) {
+            file.refCount--;
             
-            if (fileInfo == null) {
-                fileInfo = new RemoteFileInfo();
-                fileInfo.localName = localName;
-                fileInfo.refCount = 1;
-                fileInfo.data = data;
-                
-                int lastIndex = fileInfo.localName.lastIndexOf(File.separatorChar);
-                if (lastIndex == -1) lastIndex = fileInfo.localName.lastIndexOf(File.separatorChar == '/' ? '\\' : '/');  
-                fileInfo.remoteName = fileInfo.localName.substring(lastIndex + 1);
-                
-                if (remoteToFileInfo.containsKey(fileInfo.remoteName)) {                
-                    lastIndex = fileInfo.remoteName.lastIndexOf('.');
-                    String file, ext;
-                    
-                    if (lastIndex == -1) {
-                        file = fileInfo.remoteName;
-                        ext = "";
-                    } else {
-                        file = fileInfo.remoteName.substring(0, lastIndex);
-                        ext = fileInfo.remoteName.substring(lastIndex);
-                    }
-                    
-                    StringBuilder sb = new StringBuilder();
-                    int i = 0;
-                    
-                    do {
-                        i++;
-                        sb.append(file).append('-').append(i).append(ext);
-                        fileInfo.remoteName = sb.toString();
-                        sb.setLength(0);
-                    } while (remoteToFileInfo.containsKey(fileInfo.remoteName));
-                }
-                
-                localToFileInfo.put(localName, fileInfo);
-                remoteToFileInfo.put(fileInfo.remoteName, fileInfo);
-            } else {
-                fileInfo.refCount++;
+            if (file.refCount <= 0) {
+                localToFile.remove(file.localName);
+                remoteToFile.remove(file.remoteName);
+                removeSharedFile(file);
             }
-            
-            if (log.isLoggable(LEVEL)) log.log(LEVEL, "Added file mapping for local file: localName='" + 
-                    localName + "', remoteName='" + fileInfo.remoteName + "', refCount='" + fileInfo.refCount + "'");            
-            
-            return fileInfo.remoteName;
+
+            if (log.isLoggable(LEVEL)) log.log(LEVEL, "Removed application file mapping for local file: localName='" + 
+                    file.localName + "', remoteName='" + file.remoteName + "', refCount=" + file.refCount);
+        } else {
+        	if (log.isLoggable(Level.WARNING)) log.log(Level.WARNING, "Attempt to remove reference for unmapped local file: '" + localName + "'");
         }
     }
     
-    void remove(WebApplication app, String localName) {
-        synchronized (localToFileInfo) {
-            RemoteFileInfo fileInfo = localToFileInfo.get(localName);
-            
-            if (fileInfo != null) {
-                fileInfo.refCount--;
-                
-                if (fileInfo.refCount <= 0) {
-                    localToFileInfo.remove(localName);
-                    remoteToFileInfo.remove(fileInfo.remoteName);
-                }
-                
-                if (log.isLoggable(LEVEL)) log.log(LEVEL, "Removed file mapping for local file: localName='" + 
-                        localName + "'" + (fileInfo == null ? "" : ", remoteName='" + fileInfo.remoteName + 
-                        "', refCount='" + fileInfo.refCount + "'"));
-            } else {
-                log.log(Level.WARNING, "Attempt to remove reference for unmapped local file: " + localName);
-            }
-        }
+    void destroy() {
+    	for (RemoteFile file : remoteToFile.values()) {
+    		removeSharedFile(file);
+    	}
+    	
+    	remoteToFile.clear();
+    	localToFile.clear();
+    	remoteToFile = null;
+    	localToFile = null;
+    	app = null;
     }
 }

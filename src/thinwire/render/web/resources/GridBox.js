@@ -47,6 +47,7 @@ var tw_GridBox = tw_Component.extend({
     _clickTime: null,
     _sortAllowed: null,
     _sortTimeStamp: null,
+    _cellTemplate: null,
     
     construct: function(id, containerId, props) {
         arguments.callee.$.call(this, "div", "gridBox", id, containerId);
@@ -55,16 +56,24 @@ var tw_GridBox = tw_Component.extend({
         var visibleCheckBoxes = props.visibleCheckBoxes;
         var cols = props.columnData;
         var selectedRow = props.selectedRow;
-        var checkedRows = props.checkedRows;
+        var checkedRows = visibleCheckBoxes ? props.checkedRows : null;
         var parentIndex = props.parentIndex;
         this._sortAllowed = props.sortAllowed;
         
         delete props.visibleCheckBoxes;        
         delete props.columnData;
         delete props.selectedRow;
-        delete props.checkedRows;
+        if (visibleCheckBoxes) delete props.checkedRows;
         delete props.parentIndex;
         delete props.sortAllowed;
+        
+		var cell = document.createElement("div");
+        cell.className = "gridBoxCell";
+        var s = cell.style;
+        var cssText = "height:" + tw_GridBox.rowHeight + "px;padding-left:3px;white-space:nowrap;background-repeat:no-repeat;background-position:center left;" + 
+            "background-color:" + tw_COLOR_TRANSPARENT + ";";
+        tw_Component.setCSSText(cssText, cell);
+        this._cellTemplate = cell;
         
         var header = this._header = document.createElement("div");
         header.className = "gridBoxHeader";
@@ -89,21 +98,11 @@ var tw_GridBox = tw_Component.extend({
         tw_Component.setCSSText("display:none;", empty);
         content.appendChild(empty);
         
-        this._focusListener = this._focusListener.bind(this);
-        this._blurListener = this._blurListener.bind(this);
-        this._cellClickListener = this._cellClickListener.bind(this);
-        this._columnClickListener = this._columnClickListener.bind(this);
         this._scrollListener = this._scrollListener.bind(this);
         this._headerMouseUpTimer = this._headerMouseUpTimer.bind(this);
         
-        tw_addEventListener(this._box, "focus", this._focusListener);    
-        tw_addEventListener(header, "focus", this._focusListener);
-        tw_addEventListener(body, "focus", this._focusListener);
-        tw_addEventListener(content, "focus", this._focusListener);
-        tw_addEventListener(this._box, "blur", this._blurListener); 
-        tw_addEventListener(header, "blur", this._blurListener);
-        tw_addEventListener(body, "blur", this._blurListener);    
-        tw_addEventListener(content, "blur", this._blurListener);
+        tw_addEventListener(this._box, "focus", this._focusListener.bind(this));    
+        tw_addEventListener(this._box, "blur", this._blurListener.bind(this)); 
         tw_addEventListener(header, "mousemove", this._headerMouseMoveListener.bind(this));
         tw_addEventListener(header, "mousedown", this._headerMouseDownListener.bind(this));
         tw_addEventListener(header, "mouseup", this._headerMouseUpListener.bind(this));
@@ -138,7 +137,9 @@ var tw_GridBox = tw_Component.extend({
                 tw_Component.setCSSText(cssText, column);
                             
                 for (var i = parentContent.firstChild.childNodes.length; --i >= 0;) {
-                    column.appendChild(container._newCell("", 1));
+                    var cell = container._cellTemplate.cloneNode(false);
+        			cell.appendChild(document.createTextNode(""));
+                    column.appendChild(cell);
                 }
                 
                 parentContent.insertBefore(column, parentContent.childNodes.item(parentContent.childNodes.length - 1));
@@ -179,11 +180,10 @@ var tw_GridBox = tw_Component.extend({
         for (var i = 0, cnt = cols.length; i < cnt; i++) {
             var c = cols[i];
             this.addColumn(i, c.v, c.n, c.w, c.a, c.s);
-        }    
-    
-        this.setVisibleCheckBoxes(visibleCheckBoxes, checkedRows);
-        if (selectedRow >= 0) this.setRowIndexSelected(selectedRow, false); 
+        }
         
+        if (visibleCheckBoxes) this.setVisibleCheckBoxes(true, checkedRows);
+        if (selectedRow >= 0) this.setRowIndexSelected(selectedRow, false); 
         if (showChild) this._parent._setChildVisible(parentIndex, true);        
     },
     
@@ -250,61 +250,56 @@ var tw_GridBox = tw_Component.extend({
         delete this._hresize.endX;
     },
 
-    _columnClickListener: function(event) {
-        if (!this._enabled || !this._sortAllowed || this._hresize.column != null) return;
-        var columnHeader = tw_getEventTarget(event, "gridBoxColumnHeader");
-        var cn = this._header.childNodes;        
-        for (var index = cn.length; --index >= 0;) if (cn.item(index) === columnHeader) break;
-        tw_em.sendViewStateChanged(this._id, "columnSort", index);        
-    },
-
     _scrollListener: function(event) {
         var body = this._content.parentNode;        
         this._header.style.left = "-" + body.scrollLeft + "px";
         if (this._childOpen) this.closeChildren();
     },
-
-    _clickListener: function(event) {
-        event.cancelBubble = true;
-    },
     
-    _cellClickListener: function(event) {
+    _clickListener: function(event) {
         if (!this._enabled) return;
         if (this._focusCapable) this.setFocus(true);
         var cell = tw_getEventTarget(event, "gridBoxCell");
-        var column = cell.parentNode;
-        var position = this._getCellPosition(cell);
-
-        this.setRowIndexSelected(position[1], true);
         
-        if (this._visibleCheckBoxes) {
-            if (this._fullRowCheckBox || (tw_getEventOffsetX(event) < 16 && this._content.childNodes.item(0) == column)) {
-                this.setRowIndexCheckState(position[1], -1, true);
-            }
-            
-            var msg = position.join("@");
-            var action = this._getClickAction(event.type, msg);
-            if (action == null) return;
-            this.fireAction(event, action, msg);
+        if (cell == null && this._sortAllowed && this._hresize.column == null) {
+	        var columnHeader = tw_getEventTarget(event, "gridBoxColumnHeader");
+	        if (columnHeader == null) return;
+	        var cn = this._header.childNodes;        
+	        for (var index = cn.length; --index >= 0;) if (cn.item(index) === columnHeader) break;
+	        tw_em.sendViewStateChanged(this._id, "columnSort", index);        
         } else {
-            var msg = position.join("@");
-            var action = this._getClickAction(event.type, msg);
-            if (action == null) return;
-            this.fireAction(event, action, msg);
-            
-            if (this._lastColumn().childNodes.item(position[1]).tw_child != undefined) {
-                this._setChildVisible(position[1], true);
-            } else {
-                this._root.closeChildren();
-                
-                //TODO DROPDOWN: GridBox won't play nice
-                if (this._root._parent instanceof tw_DropDown) {
-                    this._root.setVisible(false);
-                }
-            }
+	        var column = cell.parentNode;
+	        var position = this._getCellPosition(cell);
+	
+	        this.setRowIndexSelected(position[1], true);
+	        
+	        if (this._visibleCheckBoxes) {
+	            if (this._fullRowCheckBox || (tw_getEventOffsetX(event) < 16 && this._content.childNodes.item(0) == column)) {
+	                this.setRowIndexCheckState(position[1], -1, true);
+	            }
+	            
+	            var msg = position.join("@");
+	            var action = this._getClickAction(event.type, msg);
+	            if (action == null) return;
+	            this.fireAction(event, action, msg);
+	        } else {
+	            var msg = position.join("@");
+	            var action = this._getClickAction(event.type, msg);
+	            if (action == null) return;
+	            this.fireAction(event, action, msg);
+	            
+	            if (this._lastColumn().childNodes.item(position[1]).tw_child != undefined) {
+	                this._setChildVisible(position[1], true);
+	            } else {
+	                this._root.closeChildren();
+	                
+	                //TODO DROPDOWN: GridBox won't play nice
+	                if (this._root._parent instanceof tw_DropDown) {
+	                    this._root.setVisible(false);
+	                }
+	            }
+	        }
         }
-        
-        
     },
     
     _getClickAction: tw_Component.getClickAction,
@@ -331,33 +326,6 @@ var tw_GridBox = tw_Component.extend({
         } else {
             return [-1, -1];
         }
-    },
-    
-    _newCell: function(value, columnIndex, state) {
-        var cell = document.createElement("div");
-        cell.className = "gridBoxCell";
-        var s = cell.style;
-        var cssText = "height:14px;padding-left:3px;white-space:nowrap;background-repeat:no-repeat;background-position:center left;" + 
-            "background-color:" + tw_COLOR_TRANSPARENT + ";";
-        tw_Component.setCSSText(cssText, cell);
-            
-        if (columnIndex == 0) {
-            var s = cell.style;        
-    
-            if (state == 0) {
-                s.backgroundImage = "url(" + tw_IMAGE_GRIDBOX_UNCHECKED + ")";
-                s.paddingLeft = "18px";
-            } else if (state == 1) {
-                s.backgroundImage = "url(" + tw_IMAGE_GRIDBOX_CHECKED + ")";
-                s.paddingLeft = "18px";
-            }            
-        }
-        
-        if (value != undefined) cell.appendChild(tw_Component.setRichText(value));
-        tw_addEventListener(cell, "focus", this._focusListener);
-        tw_addEventListener(cell, "blur", this._blurListener);        
-        tw_addEventListener(cell, ["click", "dblclick"], this._cellClickListener);                        
-        return cell;
     },
 
     _destroyChildren: function() {
@@ -422,6 +390,20 @@ var tw_GridBox = tw_Component.extend({
         return cnt < 0 ? null : this._content.childNodes.item(cnt);
     },
     
+    _scrollIntoView: function(index) {
+    	if (this._getColumnCount() > 0) {
+			var cell = this._content.childNodes.item(0).childNodes.item(index);
+			var body = this._content.parentNode;        
+	    	var cellOffset = cell.offsetTop + cell.offsetHeight - body.scrollTop;        
+	
+	        if (cellOffset < 0) {        
+	            body.scrollTop = cell.offsetTop;
+	        } else if (cellOffset > body.clientHeight) {
+	            body.scrollTop = (cell.offsetTop + cell.offsetHeight) - body.clientHeight;
+	        }
+        }
+	},
+    
     _toggleHighlight: function(index, state) {
         if (this._getColumnCount() < 1 || index < 0) return;
         var content = this._content;
@@ -432,20 +414,12 @@ var tw_GridBox = tw_Component.extend({
             var color = this._enabled ? tw_COLOR_HIGHLIGHTTEXT : tw_COLOR_INACTIVECAPTIONTEXT;
             var backgroundColor = this._enabled ? tw_COLOR_HIGHLIGHT : tw_COLOR_INACTIVECAPTION;
             var arrowImage = "url(" + tw_IMAGE_GRIDBOX_CHILDARROWINVERT + ")";
-            var cell = childNodes.item(0).childNodes.item(index);
-            var body = content.parentNode;        
-            var cellOffset = cell.offsetTop + cell.offsetHeight - body.scrollTop;        
             
             if (this._sortTimeStamp != null && (new Date() - this._sortTimeStamp) <= 1000) {
                 this._sortTimeStamp = new Date();
             } else {
                 this._sortTimeStamp = null;
-
-                if (cellOffset < 0) {        
-                    body.scrollTop = cell.offsetTop;
-                } else if (cellOffset > body.clientHeight) {
-                    body.scrollTop = (cell.offsetTop + cell.offsetHeight) - body.clientHeight;
-                }
+                if (this._visible) this._scrollIntoView(index);
             }
         } else {
             var color = this._fontBox.style.color;
@@ -496,7 +470,12 @@ var tw_GridBox = tw_Component.extend({
     },
         
     setVisible: function(visible) {
-        if (!visible) this.closeChildren();
+        if (visible) {
+        	this._scrollIntoView(this._currentIndex);
+        } else {
+        	this.closeChildren();
+       	}
+       	
         arguments.callee.$.call(this, visible);
     },
 
@@ -788,10 +767,6 @@ var tw_GridBox = tw_Component.extend({
         
         columnHeader.appendChild(tw_Component.setRichText(name));
                 
-        tw_addEventListener(columnHeader, "focus", this._focusListener);
-        tw_addEventListener(columnHeader, "blur", this._blurListener);    
-        tw_addEventListener(columnHeader, "click", this._columnClickListener);
-        
         var column = document.createElement("div");
         column.className = "gridBoxColumn";
         var s = column.style;
@@ -799,12 +774,9 @@ var tw_GridBox = tw_Component.extend({
         s.styleFloat = "left";
         tw_Component.setCSSText(cssText, column);
         
-        tw_addEventListener(column, "focus", this._focusListener);
-        tw_addEventListener(column, "blur", this._blurListener);
-        var state = this._visibleCheckBoxes ? 0 : -1;
-        
         for (var i = 0; i < values.length; i++) {
-            var cell = this._newCell(values[i], index, state);
+            var cell = this._cellTemplate.cloneNode(false);
+        	cell.appendChild(tw_Component.setRichText(values[i]));
             column.appendChild(cell);
         }                    
         
@@ -851,7 +823,9 @@ var tw_GridBox = tw_Component.extend({
         var state = this._visibleCheckBoxes ? 0 : -1;
         
         for (var i = 0, cnt = this._getColumnCount(); i < cnt; i++) {
-            var cell = this._newCell(values[i], i, state);
+            var cell = this._cellTemplate.cloneNode(false);
+        	cell.appendChild(tw_Component.setRichText(values[i]));
+            if (this._visibleCheckBoxes) cell.style.paddingLeft = "18px";
             var column = content.childNodes.item(i);        
             var length = column.childNodes.length;
             
@@ -861,7 +835,7 @@ var tw_GridBox = tw_Component.extend({
                 column.appendChild(cell);
         }
         
-        if (checked == 1) this.setRowIndexCheckState(index, true, false);        
+        this.setRowIndexCheckState(index, checked == 1, false);        
         var size = this._getRowCount();
         
         if (selected) {
@@ -917,8 +891,6 @@ var tw_GridBox = tw_Component.extend({
     
     clearRows: function() {
         var content = this._content;    
-        //var child = this._lastColumn().childNodes.item(index).tw_child;
-        //if (child != undefined) child.destroy();
     
         for (var i = 0, cnt = content.childNodes.length; i < cnt; i++) {
             var column = content.childNodes.item(i);
@@ -968,7 +940,6 @@ var tw_GridBox = tw_Component.extend({
         var s = dragBox.style;
         var cssText = "height:" + tw_GridBox.rowHeight + "px;";
         tw_Component.setCSSText(cssText, dragBox);
-        //s.height = tw_GridBox.rowHeight + "px";
         var width = this._width - this._borderSizeSub;
         
         if (position[1] >= 0) {
@@ -1064,8 +1035,7 @@ var tw_GridBox = tw_Component.extend({
             this._box.parentNode.removeChild(this._box);
         }
         
-        
-        this._box.tw_root = this._root = this._header = this._content = this._hresize.column = this._parentCell = null;
+        this._box.tw_root = this._root = this._header = this._content = this._hresize.column = this._parentCell = this._cellTemplate = null;
         arguments.callee.$.call(this);
     }    
 });

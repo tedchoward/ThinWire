@@ -76,12 +76,6 @@ var tw_Component = Class.extend({
         var s = box.style;
 		var cssText = "position:absolute;overflow:hidden;padding:0px;margin:0px;";
 		tw_Component.setCSSText(cssText, box);
-		/*
-        s.position = "absolute";
-        s.overflow = "hidden";
-        s.padding = "0px";
-        s.margin = "0px";
-		*/
         box.id = id;
         this._box = this._focusBox = this._backgroundBox = this._borderBox = this._fontBox = box;
         this._id = id;
@@ -146,15 +140,26 @@ var tw_Component = Class.extend({
         
         this._enabled = enabled;
         
-        if (this._fontBox != null && (this instanceof tw_Button || this instanceof tw_Menu || tw_COLOR_GRAYTEXT != "graytext")) {                    
-            this._fontBox.style.color = enabled ? this._fontColor : tw_COLOR_GRAYTEXT;
+        if (this._fontBox != null) {
+	        if (enabled) {
+	        	this._fontBox.style.color = this._fontColor;
+	        } else {
+	        	this._fontColor = this._fontBox.style.color;
+				if (this instanceof tw_Button || this instanceof tw_Menu || tw_COLOR_GRAYTEXT != "graytext") this._fontBox.style.color = tw_COLOR_GRAYTEXT;
+			}
         }
         
-        if (this._backgroundBox != null && tw_COLOR_BACKGROUND != "background" && (this instanceof tw_BaseCheckRadio || this instanceof tw_BaseText || 
-                this instanceof tw_DateBox || this instanceof tw_GridBox || this instanceof tw_Tree || this instanceof tw_WebBrowser ||
-                this instanceof tw_ProgressBar)) {
-            var color = tw_COLOR_BACKGROUND == tw_COLOR_WINDOW ? this._parent._backgroundBox.style.backgroundColor : tw_COLOR_BACKGROUND;
-            this._backgroundBox.style.backgroundColor = enabled ? this._backgroundColor : color;
+        
+        if (this._backgroundBox != null) {
+	        if (enabled) {
+	        	this._backgroundBox.style.backgroundColor = this._backgroundColor;
+	        } else {
+	        	this._backgroundColor = this._backgroundBox.style.backgroundColor;
+	        	if (tw_COLOR_BACKGROUND != "background" && (this instanceof tw_BaseCheckRadio || this instanceof tw_BaseText || 
+                	this instanceof tw_DateBox || this instanceof tw_GridBox || this instanceof tw_Tree || this instanceof tw_WebBrowser ||
+                	this instanceof tw_ProgressBar))
+                	this._backgroundBox.style.backgroundColor = tw_COLOR_BACKGROUND == tw_COLOR_WINDOW ? this._parent._backgroundBox.style.backgroundColor : tw_COLOR_BACKGROUND;
+	        }
         }
     },
     
@@ -193,12 +198,7 @@ var tw_Component = Class.extend({
         if (focus) {
             if (tw_Component.currentFocus !== this) {
                 //We don't need to send a false event to the server, because a true event on the current
-                //component will trigger a false event on the prior.
-                if (tw_Component.currentFocus != null) {
-                    tw_Component.currentFocus.setFocus(false);
-                    tw_setElementFocus(tw_Component.currentFocus, false);
-                }
-                
+                //component will trigger a false event on the prior. The same holds true for client code.
                 tw_Component.priorFocus = tw_Component.currentFocus; 
                 tw_Component.currentFocus = this;
                 tw_em.removeQueuedViewStateChange("focus");
@@ -235,7 +235,7 @@ var tw_Component = Class.extend({
             
             if (name == "backgroundColor") {
                 this._backgroundColor = value;
-                if (!this._enabled) s = null;
+                if (!this._enabled && tw_COLOR_BACKGROUND != "background" && tw_COLOR_BACKGROUND != "window") s = null;
             } else if (name == "backgroundImage") {
                 value = tw_Component.expandUrl(value, true);
             }
@@ -294,7 +294,10 @@ var tw_Component = Class.extend({
             }
         } else {
             var s = this._fontBox == null ? null : this._fontBox.style;
-            if (name == "color") this._fontColor = value;
+            if (name == "color") {
+            	this._fontColor = value;
+				if (!this._enabled && tw_COLOR_GRAYTEXT != "graytext") s = null;
+           	}
         }
         
         if (s != null) s[name] = value;
@@ -778,7 +781,8 @@ tw_Component.rtAttrMap = {
     h: "height"
 };
 
-tw_Component.nonBreakingSpace = String.fromCharCode(160);
+tw_Component.nonBreakingSpaceRegEx = /( ) |^ /g;
+tw_Component.nonBreakingSpaceReplace = "$1" + String.fromCharCode(160);
 
 tw_Component.processRichTextNode = function(node, element) {
     if (node instanceof Object) {
@@ -805,7 +809,7 @@ tw_Component.processRichTextNode = function(node, element) {
         if (node.c != undefined) element.appendChild(tw_Component.setRichText(node.c));    
         return element;
     } else {
-        var textNode = document.createTextNode(node.replace(/( ) |^ /g, "$1" + tw_Component.nonBreakingSpace));
+        var textNode = document.createTextNode(node.replace(tw_Component.nonBreakingSpaceRegEx, tw_Component.nonBreakingSpaceReplace));
         if (element != null) element.appendChild(textNode);
         return textNode;
     }
@@ -813,9 +817,14 @@ tw_Component.processRichTextNode = function(node, element) {
 
 tw_Component.setRichText = function(text, element) {
     if (typeof(text) == "string" || text instanceof String) {
-        var textNode = document.createTextNode(text.replace(/( ) |^ /g, "$1" + tw_Component.nonBreakingSpace));
-        if (element != null) element.appendChild(textNode);
-        element = textNode;
+        var textNode = document.createTextNode(text.replace(tw_Component.nonBreakingSpaceRegEx, tw_Component.nonBreakingSpaceReplace));
+    
+        if (element == null) {
+        	return textNode;
+        } else {
+        	element.appendChild(textNode);
+        	return element;
+        }
     } else {
         if (text instanceof Array) {
             if (text.length > 1) {
@@ -830,9 +839,9 @@ tw_Component.setRichText = function(text, element) {
         } else {
             element = tw_Component.processRichTextNode(text, element);
         }
+
+	    return element;
     }
-    
-    return element;
 };
 
 tw_Component.camelCaseRegex = /\-(.)/g;
@@ -840,11 +849,12 @@ tw_Component.camelCaseRegex = /\-(.)/g;
 tw_Component.camelCaseReplaceFunc = function(m, l) { return l.toUpperCase(); };
 
 tw_Component.setCSSText = function(cssText, box) {
-	var s = box.style;
-	if (typeof s.cssText != "undefined") {
-		s.cssText = cssText;
+	if (tw_useCSSText) {
+		box.style.cssText = cssText;
 	} else {
+		var s = box.style;
 		var styleEntries = cssText.split(";");
+		
 		for (var i = 0; i < styleEntries.length; i++) {
 			var entry = styleEntries[i].split(":");
 			if (entry.length == 2) s[entry[0].replace(tw_Component.camelCaseRegex, tw_Component.camelCaseReplaceFunc)] = entry[1];

@@ -31,6 +31,7 @@
 package thinwire.render.web;
 
 import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -62,13 +63,14 @@ final class MenuRenderer extends ComponentRenderer implements ItemChangeListener
     private Menu menu;
     private Map<Menu.Item, KeyPressListener> itemToKeyPressListeners;
     private StringBuilder sb;
+    private List<String> resources;
 	
 	void render(WindowRenderer wr, Component c, ComponentRenderer container) {        
         init(MENU_CLASS, wr, c, container);
 
         boolean windowMenu = container instanceof WindowRenderer && comp.equals(((Window) ((WindowRenderer) container).comp).getMenu());
 
-        //a menu does not support the focus, enabled, x, y, width or height properties
+        //a menu does not support the focus, x, y, width or height properties
         if (windowMenu) {
             setPropertyChangeIgnored(Component.PROPERTY_X, true);
             setPropertyChangeIgnored(Component.PROPERTY_Y, true);
@@ -88,8 +90,28 @@ final class MenuRenderer extends ComponentRenderer implements ItemChangeListener
 		sb.setLength(0);
 	}
     
-    void destroy() {        
-        Window w = (Window)wr.comp;
+    private String addResourceRef(String newUri, String oldUri) {
+    	if (resources == null) {
+    		resources = new ArrayList<String>(3);
+    	} else if (oldUri != null) {
+    		resources.remove(oldUri);
+    		wr.ai.removeResourceMapping(oldUri);
+    	}
+    	
+    	resources.add(newUri);
+    	return wr.ai.addResourceMapping(newUri);
+    }
+
+    void destroy() {
+    	if (resources != null) {
+	    	for (String uri : resources) {
+	    		wr.ai.removeResourceMapping(uri);
+	    	}
+	    	
+	    	resources = null;
+    	}
+    	
+    	Window w = (Window)wr.comp;
         super.destroy();
         
         if (itemToKeyPressListeners != null) {
@@ -134,7 +156,7 @@ final class MenuRenderer extends ComponentRenderer implements ItemChangeListener
                     postClientEvent(ITEM_SET_TEXT, fullIndex, text);
                 }
             } else if (name.equals(HierarchyComponent.Item.PROPERTY_ITEM_IMAGE)) {
-                postClientEvent(ITEM_SET_IMAGE_URL, fullIndex, getQualifiedURL((String)newValue));                              
+                postClientEvent(ITEM_SET_IMAGE_URL, fullIndex, addResourceRef((String)newValue, (String)pce.getOldValue()));                              
             } else if (name.equals(Menu.Item.PROPERTY_ITEM_KEY_PRESS_COMBO)) {
                 setupKeyPressListener(item);
                 postClientEvent(ITEM_SET_KEY_PRESS_COMBO, fullIndex, newValue);
@@ -218,7 +240,7 @@ final class MenuRenderer extends ComponentRenderer implements ItemChangeListener
 		}
 		
 		String img = item.getImage();
-		if (img.length() > 0) sb.append(",g:\"").append(getQualifiedURL(item.getImage())).append('"');		
+		if (img.length() > 0) sb.append(",g:\"").append(addResourceRef(item.getImage(), null)).append('"');		
 		sb.append('}');
 	}
 	

@@ -38,6 +38,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.fileupload.DiskFileUpload;
 import org.apache.commons.fileupload.FileItem;
@@ -266,9 +267,14 @@ public class WebServlet extends HttpServlet {
     
     private void handleResource(HttpServletRequest request, HttpServletResponse response, String resourceName) throws IOException, ServletException {        
         ApplicationHolder holder = (ApplicationHolder)request.getSession().getAttribute("instance");
-        if (holder == null || holder.app == null) return;
+ 
+        if (holder == null || holder.app == null) {
+        	response.sendError(HttpServletResponse.SC_BAD_REQUEST, "no application instance exists from which to retreive resources");
+        	return;
+        }
+        
         if (log.isLoggable(LEVEL)) log.log(LEVEL, "getting resource: " + resourceName);
-        byte[] data = RemoteFileMap.INSTANCE.load(holder.app, resourceName);
+        byte[] data = holder.app.remoteFileMap.load(resourceName);
 
         if (data == null) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -285,9 +291,21 @@ public class WebServlet extends HttpServlet {
                     if (mimeType != null && mimeType.startsWith("image/")) response.setHeader("Cache-Control", "max-age=43200");
                 }
                 
-                if (data[0] == 31 && data[1] == -117) response.setHeader("Content-Encoding", "gzip");
                 response.setContentType(mimeType);
-                response.getOutputStream().write(data);
+
+                if (data[0] == 31 && data[1] == -117) {
+                	String encoding = request.getHeader("Accept-Encoding");
+                	
+                	if (encoding == null || encoding.toLowerCase().indexOf("gzip") == -1) {
+                		if (log.isLoggable(Level.WARNING)) log.log(Level.WARNING, "User-Agent(" + request.getHeader("User-Agent") + ") does not accept gzip encoding, decompressing resource: " + resourceName);
+                		WebApplication.writeInputToStream(new GZIPInputStream(new ByteArrayInputStream(data)), response.getOutputStream());
+                	} else {
+                		response.setHeader("Content-Encoding", "gzip");
+                        response.getOutputStream().write(data);
+                	}
+                } else {
+                    response.getOutputStream().write(data);
+                }
             } catch (Exception e){
             	if (log.isLoggable(Level.WARNING)) log.log(Level.WARNING, "resource not found: " + resourceName, e);
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);

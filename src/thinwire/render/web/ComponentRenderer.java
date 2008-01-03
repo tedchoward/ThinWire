@@ -74,7 +74,6 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
 
     private static final Object NO_VALUE = new Object();
         
-    private List<String> remoteFiles;
     private StringBuilder initProps = new StringBuilder();
     private Map<String, Object> ignoredProperties = new HashMap<String, Object>(3);
     private Map<String, String> clientSideProps = new HashMap<String, String>();    
@@ -120,7 +119,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         
         Style defaultStyle = wr.ai.getDefaultStyle(comp.getClass());
         addInitProperty("styleClass", wr.ai.styleToStyleClass.get(defaultStyle));
-        StringBuilder styleProps = wr.ai.getStyleValues(this, new StringBuilder(), comp.getStyle(), defaultStyle);
+        StringBuilder styleProps = wr.ai.getStyleValues(new StringBuilder(), comp.getStyle(), defaultStyle);
         if (styleProps.length() > 0) addInitProperty("styleProps", styleProps);
         
         if (comp.isFocus()) addInitProperty(Component.PROPERTY_FOCUS, true);
@@ -182,36 +181,36 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         if (value instanceof Border.Type) {
             if (value == Border.Type.NONE) {
                 value = Border.Type.SOLID;
-                wr.ai.getStyleValue(this, sb, Border.PROPERTY_BORDER_COLOR, s.getBackground().getColor());
+                wr.ai.getStyleValue(sb, Border.PROPERTY_BORDER_COLOR, s.getBackground().getColor());
             } else if (oldValue == Border.Type.NONE) {
-                wr.ai.getStyleValue(this, sb, Border.PROPERTY_BORDER_COLOR, s.getBorder().getColor());
+                wr.ai.getStyleValue(sb, Border.PROPERTY_BORDER_COLOR, s.getBorder().getColor());
             }
         }
         
-        wr.ai.getStyleValue(this, sb, propertyName, value);
+        wr.ai.getStyleValue(sb, propertyName, value);
         sb.setCharAt(sb.length() - 1, '}');
         postClientEvent(SET_STYLES, sb);
     }
         
     void destroy() {
+        if (richTextParser != null) {
+        	richTextParser.reset();
+        	richTextParser = null;
+        }
+        
         wr.ai.setPackagePrivateMember("renderer", comp, null);
         wr.ai.setWebComponentListener(id, null);
         comp.removePropertyChangeListener(this);
         wr.removeComponentId(comp);
         comp = null;
+        baseComp = null;
         id = null;
         ignoredProperties.clear();
         clientSideProps.clear();
         initProps.setLength(0);
-        
-        if (remoteFiles != null) {
-            for (String s : remoteFiles) {
-                RemoteFileMap.INSTANCE.remove(wr.ai, s);
-            }
-        }
-
         wr = null;
-        remoteFiles = null;
+        cr = null;
+        pr = null;
     }
     
     void addInitProperty(String name, Object value) {
@@ -640,8 +639,13 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     Object parseRichText(String value) {
         if (value == null) return "";
     	if (this instanceof EditorComponentRenderer) return value;
-    	if (richTextParser == null) richTextParser = new RichTextParser(this);
-    	return richTextParser.parse(value);
+
+    	if (RichTextParser.isRichText(value)) {
+	    	if (richTextParser == null) richTextParser = new RichTextParser(this);
+	    	return richTextParser.parse(value);
+    	} else {
+    		return value;
+    	}
     }
 
     static Object getEventObject(Component comp, String data) {
@@ -663,31 +667,5 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         }
         
         return o;
-    }
-    
-    final String getQualifiedURL(String location) {
-        if (location.trim().length() > 0) {
-            WindowRenderer wr = this instanceof WindowRenderer ? (WindowRenderer)this : this.wr;
-            
-            if (location.startsWith("file") || location.startsWith("class") || wr.ai.getRelativeFile(location).exists()) {
-                if (!location.startsWith("class")) {
-                	if (location.startsWith("file:///")) location = location.substring(7);
-                	location = wr.ai.getRelativeFile(location).getAbsolutePath();
-                }
-                if (remoteFiles == null) remoteFiles = new ArrayList<String>(5);
-                remoteFiles.add(location);
-                location = WebApplication.REMOTE_FILE_PREFIX + RemoteFileMap.INSTANCE.add(wr.ai, location);
-            }
-        } else {
-            location = "";
-        }
-
-        return location;
-    }
-    
-    void removeFileFromMap(String location) {
-    	location = location.replaceAll(WebApplication.REMOTE_FILE_PREFIX + "(.*)", "$1");
-		RemoteFileMap.INSTANCE.remove(wr.ai, location);
-    	remoteFiles.remove(location);
     }
 }

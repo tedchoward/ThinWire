@@ -56,7 +56,7 @@ class TabSheetRenderer extends ContainerRenderer {
         setPropertyChangeIgnored(Border.PROPERTY_BORDER_IMAGE, true);
         TabSheet ts = (TabSheet)c;
         addInitProperty(TabSheet.PROPERTY_TEXT, parseRichText(ts.getText()));
-        addInitProperty(TabSheet.PROPERTY_IMAGE, getQualifiedURL(ts.getImage()));
+        addInitProperty(TabSheet.PROPERTY_IMAGE, wr.ai.addResourceMapping(ts.getImage()));
         addInitProperty("tabIndex", ((TabFolder)ts.getParent()).getChildren().indexOf(ts));        
         super.render(wr, c, container);
     }
@@ -66,11 +66,17 @@ class TabSheetRenderer extends ContainerRenderer {
         Object newValue = pce.getNewValue();        
         
         if (name.equals(TabSheet.PROPERTY_IMAGE)) {
-            postClientEvent(SET_IMAGE, getQualifiedURL((String)newValue));
+        	wr.ai.removeResourceMapping((String)pce.getOldValue());
+            postClientEvent(SET_IMAGE, wr.ai.addResourceMapping((String)newValue));
         } else if (name.equals(TabSheet.PROPERTY_TEXT)) {
             postClientEvent(TextComponentRenderer.SET_TEXT, parseRichText((String)newValue));
         } else {
             super.propertyChange(pce);
         }
+    }
+    
+    void destroy() {
+    	wr.ai.removeResourceMapping(((TabSheet)comp).getImage());
+    	super.destroy();
     }
 }

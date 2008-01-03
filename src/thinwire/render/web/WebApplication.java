@@ -32,6 +32,7 @@ package thinwire.render.web;
 
 import java.io.ByteArrayOutputStream;
 import java.io.CharArrayWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
@@ -121,7 +122,7 @@ public final class WebApplication extends Application {
         for (String res : BUILT_IN_RESOURCES) {
             if (!res.endsWith(".js")) {
                 if (!res.startsWith("class:///")) res = classURL + res;
-                RemoteFileMap.INSTANCE.add(null, res);
+                RemoteFileMap.SHARED.add(res);
             }
         }
 
@@ -153,7 +154,7 @@ public final class WebApplication extends Application {
             }
 
             os.close();
-            return RemoteFileMap.INSTANCE.add(null, twPrefix + ".js", baos.toByteArray());
+            return RemoteFileMap.SHARED.add(twPrefix + ".js", baos.toByteArray());
         } catch (Exception e) {
             if (!(e instanceof RuntimeException)) e = new RuntimeException(e);
             throw (RuntimeException)e;
@@ -181,7 +182,6 @@ public final class WebApplication extends Application {
     private Map<String, Class<ComponentRenderer>> nameToRenderer;
     private Map<Window, WindowRenderer> windowToRenderer;
     private Map<Integer, WebComponentListener> webComponentListeners;
-    private Set<String> clientSideIncludes;
     private Map<Component, Object> renderStateListeners;
     private EventProcessor proc;
     private ClassLoader classLoader;
@@ -189,6 +189,7 @@ public final class WebApplication extends Application {
     State state;
     List<Runnable> timers;
     Map<String, Timer> timerMap;
+    RemoteFileMap remoteFileMap;
     WebComponentEvent startupEvent;
     Map<Style, String> styleToStyleClass = new HashMap<Style, String>();
     FileInfo[] fileList = new FileInfo[1];
@@ -201,6 +202,7 @@ public final class WebApplication extends Application {
         timerMap = new HashMap<String, Timer>();
         timers = new LinkedList<Runnable>();
         webComponentListeners = new HashMap<Integer, WebComponentListener>();
+        remoteFileMap = new RemoteFileMap(this);
         classLoader = mainClass.getClassLoader();
      
         setWebComponentListener(ApplicationEventListener.ID, new ApplicationEventListener(this));
@@ -262,7 +264,6 @@ public final class WebApplication extends Application {
             if (nameToRenderer != null) nameToRenderer.clear();
             if (windowToRenderer != null) windowToRenderer.clear();
             if (webComponentListeners != null) webComponentListeners.clear();
-            if (clientSideIncludes != null) clientSideIncludes.clear();
             if (renderStateListeners != null) renderStateListeners.clear();
             if (timerMap != null) timerMap.clear();
             if (styleToStyleClass != null) styleToStyleClass.clear();
@@ -270,12 +271,13 @@ public final class WebApplication extends Application {
             nameToRenderer = null;
             windowToRenderer = null;
             webComponentListeners = null;
-            clientSideIncludes = null;
             renderStateListeners = null;
             timerMap = null;
             styleToStyleClass = null;
             fileList = null;
             classLoader = null;
+            remoteFileMap.destroy();
+            remoteFileMap = null;
             
             state = State.TERMINATED;            
         }
@@ -312,7 +314,7 @@ public final class WebApplication extends Application {
         }
     }
     
-    void sendDefaultComponentStyles(WindowRenderer wr) {
+    void sendDefaultComponentStyles() {
         StringBuilder sb = new StringBuilder();
         sb.append("{");
         
@@ -324,7 +326,7 @@ public final class WebApplication extends Application {
                 Style style = e.getValue();
                 styleToStyleClass.put(style, styleClass);
                 sb.append(styleClass).append(":");
-                getStyleValues(wr, sb, style, null);
+                getStyleValues(sb, style, null);
                 sb.append(',');
             }
         }
@@ -351,8 +353,7 @@ public final class WebApplication extends Application {
             
             for (Map.Entry<String, String> e : getSystemImages().entrySet()) {
                 String value = getSystemFile(e.getValue());
-                value = RemoteFileMap.INSTANCE.add(null, value); //Technically this could be an App level cache item, but it's not necessary for system images.
-                sb.append(e.getKey()).append(":\"").append(REMOTE_FILE_PREFIX).append(value).append("\",");
+                sb.append(e.getKey()).append(":\"").append(addResourceMapping(value)).append("\",");
             }
             
             sb.setCharAt(sb.length() - 1, '}');
@@ -367,7 +368,7 @@ public final class WebApplication extends Application {
         return getSystemColors().get(name);
     }
     
-    StringBuilder getStyleValue(ComponentRenderer cr, StringBuilder sb, String propertyName, Object value) {
+    StringBuilder getStyleValue(StringBuilder sb, String propertyName, Object value) {
         if (propertyName.equals(Border.PROPERTY_BORDER_SIZE)) {
             sb.append(RichTextParser.STYLE_BORDER_WIDTH).append(":\"").append(value).append("px");
         } else if (propertyName.equals(Font.PROPERTY_FONT_SIZE)) {
@@ -378,7 +379,7 @@ public final class WebApplication extends Application {
             String name = ii.getName();
             
             if (name.length() > 0) {
-                sb.append(cr.getQualifiedURL(name));
+                sb.append(addResourceMapping(name));
                 sb.append(',').append(ii.getWidth()).append(',').append(ii.getHeight());
             }
     	} else {
@@ -396,7 +397,7 @@ public final class WebApplication extends Application {
 	            value = value == Boolean.TRUE ? "bold" : "normal";
 	        } else if (propertyName.equals(Background.PROPERTY_BACKGROUND_IMAGE)) {
 	            sb.append(RichTextParser.STYLE_BACKGROUND_IMAGE);
-	            value = cr.getQualifiedURL((String)value);
+	            value = addResourceMapping((String)value);
 	        } else if (value instanceof Color) {
 	        	if (propertyName.equals(Font.PROPERTY_FONT_COLOR)) {
 	        		sb.append(RichTextParser.STYLE_COLOR);
@@ -444,7 +445,7 @@ public final class WebApplication extends Application {
         return sb;
     }
     
-    StringBuilder getStyleValues(ComponentRenderer cr, StringBuilder sb, Style s, Style ds) {
+    StringBuilder getStyleValues(StringBuilder sb, Style s, Style ds) {
         Background background = s.getBackground();
         Color backgroundColor = background.getColor();
         String backgroundImage = background.getImage();
@@ -491,10 +492,10 @@ public final class WebApplication extends Application {
         
         sb.append("{");
         
-        if (backgroundColor != null) getStyleValue(cr, sb, Background.PROPERTY_BACKGROUND_COLOR, backgroundColor);
-        if (backgroundImage != null) getStyleValue(cr, sb, Background.PROPERTY_BACKGROUND_IMAGE, backgroundImage);
-        if (backgroundRepeat != null) getStyleValue(cr, sb, Background.PROPERTY_BACKGROUND_REPEAT, backgroundRepeat);
-        if (backgroundPosition != null) getStyleValue(cr, sb, Background.PROPERTY_BACKGROUND_POSITION, backgroundPosition);
+        if (backgroundColor != null) getStyleValue(sb, Background.PROPERTY_BACKGROUND_COLOR, backgroundColor);
+        if (backgroundImage != null) getStyleValue(sb, Background.PROPERTY_BACKGROUND_IMAGE, backgroundImage);
+        if (backgroundRepeat != null) getStyleValue(sb, Background.PROPERTY_BACKGROUND_REPEAT, backgroundRepeat);
+        if (backgroundPosition != null) getStyleValue(sb, Background.PROPERTY_BACKGROUND_POSITION, backgroundPosition);
         
         if (borderType != null && borderType != Border.Type.IMAGE) {
             if (borderType == Border.Type.NONE) {
@@ -502,18 +503,18 @@ public final class WebApplication extends Application {
                 borderColor = backgroundColor;
             }
 
-            getStyleValue(cr, sb, "borderType", borderType);
+            getStyleValue(sb, "borderType", borderType);
         }
         
-        if (borderImage != null) getStyleValue(cr, sb, Border.PROPERTY_BORDER_IMAGE, s.getBorder().getImageInfo());
-        if (borderColor != null) getStyleValue(cr, sb, Border.PROPERTY_BORDER_COLOR, borderColor);
-        if (borderSize != null) getStyleValue(cr, sb, Border.PROPERTY_BORDER_SIZE, borderSize);
-        if (fontFamily != null) getStyleValue(cr, sb, Font.PROPERTY_FONT_FAMILY, fontFamily);
-        if (fontSize != null) getStyleValue(cr, sb, Font.PROPERTY_FONT_SIZE, fontSize);
-        if (fontColor != null) getStyleValue(cr, sb, Font.PROPERTY_FONT_COLOR, fontColor);
-        if (fontBold != null) getStyleValue(cr, sb, Font.PROPERTY_FONT_BOLD, fontBold); 
-        if (fontItalic != null) getStyleValue(cr, sb, Font.PROPERTY_FONT_ITALIC, fontItalic); 
-        if (fontUnderline != null || fontStrike != null) getStyleValue(cr, sb, Font.PROPERTY_FONT_UNDERLINE, new Boolean[]{fontUnderline, fontStrike}); 
+        if (borderImage != null) getStyleValue(sb, Border.PROPERTY_BORDER_IMAGE, s.getBorder().getImageInfo());
+        if (borderColor != null) getStyleValue(sb, Border.PROPERTY_BORDER_COLOR, borderColor);
+        if (borderSize != null) getStyleValue(sb, Border.PROPERTY_BORDER_SIZE, borderSize);
+        if (fontFamily != null) getStyleValue(sb, Font.PROPERTY_FONT_FAMILY, fontFamily);
+        if (fontSize != null) getStyleValue(sb, Font.PROPERTY_FONT_SIZE, fontSize);
+        if (fontColor != null) getStyleValue(sb, Font.PROPERTY_FONT_COLOR, fontColor);
+        if (fontBold != null) getStyleValue(sb, Font.PROPERTY_FONT_BOLD, fontBold); 
+        if (fontItalic != null) getStyleValue(sb, Font.PROPERTY_FONT_ITALIC, fontItalic); 
+        if (fontUnderline != null || fontStrike != null) getStyleValue(sb, Font.PROPERTY_FONT_UNDERLINE, new Boolean[]{fontUnderline, fontStrike}); 
         
         if (sb.length() > 1) {
             sb.setCharAt(sb.length() - 1, '}');
@@ -574,17 +575,13 @@ public final class WebApplication extends Application {
         throw new RuntimeException("Renderer for component class '" + comp.getClass() + "' not found");        
     }
     
-    public void clientSideIncludeFile(String localName) {
-        if (clientSideIncludes == null) {            
-            clientSideIncludes = new HashSet<String>(3);
-        } else if (clientSideIncludes.contains(localName)) {
-            return;
-        }
-
-        String remoteName = getQualifiedURL(localName);
-        clientSideFunctionCall("tw_include", remoteName);
-        //TODO: The server cache doesn't need to hold onto the included JS after it has been retrieved once.
-        if (remoteName.startsWith(WebApplication.REMOTE_FILE_PREFIX)) clientSideIncludes.add(localName);
+    //NOTE: Remote file includes will always cause a reinsertion of the code since the file cache
+    //      doesn't hold onto a reference of them and it's very possible that remote file content can
+    //      change for each request.
+    public void clientSideIncludeFile(String uri) {
+        if (remoteFileMap.contains(uri)) return;
+        String remoteName = addResourceMapping(uri);
+        clientSideFunctionCallWaitForReturn("tw_include", remoteName);
     }
     
     public void clientSideFunctionCall(String functionName, Object... args) {
@@ -608,7 +605,7 @@ public final class WebApplication extends Application {
     }
     
     public String clientSideMethodCallWaitForReturn(Integer componentId, String methodName, Object... args) {
-        return clientSideCallImpl(true, componentId, methodName, args);   
+        return clientSideCallImpl(true, componentId, methodName, args);
     }
     
     private String clientSideCallImpl(boolean sync, Object objectId, String name, Object[] args) {
@@ -732,7 +729,7 @@ public final class WebApplication extends Application {
             //Force events to be sent to client because dialog show's must be immediate!
             proc.flush();
         } else {
-        	sendDefaultComponentStyles(wr);
+        	sendDefaultComponentStyles();
             wr.render(wr, w, null);
         }
     }
@@ -765,13 +762,42 @@ public final class WebApplication extends Application {
             return fileInfo;
         }
     }
-    
-    protected String getQualifiedURL(String location) {
-    	return windowToRenderer.get(getFrame()).getQualifiedURL(location);
+
+    protected String addResourceMapping(String uri) {
+        if (uri.trim().length() > 0) {
+        	File file = null;
+        	
+            if (uri.startsWith("file") || uri.startsWith("class") || (file = getRelativeFile(uri)).exists()) {
+                if (!uri.startsWith("class")) {
+                	if (uri.startsWith("file:///")) {
+                		file = getRelativeFile(uri.substring(7));
+                		if (!file.exists()) return uri;
+                	}
+                	
+                	uri = file.getAbsolutePath();
+                }
+                
+                uri = remoteFileMap.add(uri);
+                uri = WebApplication.REMOTE_FILE_PREFIX + uri;
+            }
+        } else {
+            uri = "";
+        }
+
+        return uri;
     }
     
-    protected void removeFileFromMap(String location) {
-    	windowToRenderer.get(getFrame()).removeFileFromMap(location);
+    protected void removeResourceMapping(String uri) {
+        if (uri.trim().length() > 0) {
+            if (uri.startsWith("file") || uri.startsWith("class") || getRelativeFile(uri).exists()) {
+                if (!uri.startsWith("class")) {
+                	if (uri.startsWith("file:///")) uri = uri.substring(7);
+                	uri = getRelativeFile(uri).getAbsolutePath();
+                }
+                
+                remoteFileMap.remove(uri);
+            }
+        }
     }
 
     public void addTimerTask(Runnable task, long timeout) {

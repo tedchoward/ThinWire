@@ -40,7 +40,6 @@ var tw_bVer = 0;
 function parseBrowserType(ua) {
     var msg = "This browser is not officially supported";
     var agent = ua.toLowerCase();
-    //alert(agent);
 
     function parseBrowser(browser, ver) {
         var index = agent.indexOf(browser);
@@ -70,29 +69,23 @@ function parseBrowserType(ua) {
 parseBrowserType(navigator.userAgent);
 var tw_isWin = navigator.userAgent.indexOf("Windows") > 0;
 var tw_sizeIncludesBorders = tw_isIE && tw_bVer < 6;
-var tw_useSmartTab = tw_isWin && ((tw_isIE && tw_bVer >= 6) || (tw_isFirefox && tw_bVer >= 1.5));
+var tw_useSmartTab = (tw_isIE && tw_bVer >= 6) || (tw_isFirefox && tw_bVer >= 1.5);
+var tw_useCSSText = typeof document.body.style.cssText != "undefined";
 
 var tw_APP_URL = new String(location);
 if (tw_APP_URL.indexOf("?") >= 0) tw_APP_URL = tw_APP_URL.substring(0, tw_APP_URL.indexOf("?"));
 
-var tw_scriptLoadQueue = [];
-var tw_loadingScript = null;
-
 function tw_include(name) {
-	tw_scriptLoadQueue.push(name);
-	if (tw_loadingScript == null) tw_loadScript();
+	name = tw_Component.expandUrl(name);
+	var script = document.createElement("script");
+	document.body.appendChild(script);
+	tw_addEventListener(script, tw_isIE ? "readystatechange" : "load", tw_includeLoaded);
+	script.src = name;
+	tw_em.manualSyncResponse();
 }
 
-function tw_loadScript() {
-	if (tw_scriptLoadQueue.length > 0) {
-		var name = tw_scriptLoadQueue.shift();
-		name = tw_Component.expandUrl(name);
-		var script = document.createElement("script");
-		document.body.appendChild(script);
-		tw_addEventListener(script, tw_isIE ? "readystatechange" : "load", tw_loadScript);
-		script.src = name;
-		tw_loadingScript = script;
-	} else {
-		tw_loadingScript = null;
-	}
+function tw_includeLoaded(ev) {
+	var script = tw_getEventTarget(ev);
+	tw_removeEventListener(script, tw_isIE ? "readystatechange" : "load", tw_includeLoaded);
+	tw_em.sendSyncResponse("");
 }
