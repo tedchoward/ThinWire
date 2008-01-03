@@ -58,9 +58,7 @@ var tw_DropDown = tw_BaseText.extend({
         this._box.appendChild(buttonBorder);
 
         tw_addEventListener(this._box, "focus", this._focusListener);
-        tw_addEventListener(button, "focus", this._focusListener);
         tw_addEventListener(this._box, "blur", this._blurListener);
-        tw_addEventListener(button, "blur", this._blurListener);
 
         tw_addEventListener(button, "mousedown", this._buttonMouseDownListener.bind(this));
         tw_addEventListener(button, ["mouseup", "mouseout"], this._buttonMouseUpListener.bind(this));

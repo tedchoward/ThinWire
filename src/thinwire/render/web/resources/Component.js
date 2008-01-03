@@ -781,7 +781,8 @@ tw_Component.rtAttrMap = {
     h: "height"
 };
 
-tw_Component.nonBreakingSpace = String.fromCharCode(160);
+tw_Component.nonBreakingSpaceRegEx = /( ) |^ /g;
+tw_Component.nonBreakingSpaceReplace = "$1" + String.fromCharCode(160);
 
 tw_Component.processRichTextNode = function(node, element) {
     if (node instanceof Object) {
@@ -808,7 +809,7 @@ tw_Component.processRichTextNode = function(node, element) {
         if (node.c != undefined) element.appendChild(tw_Component.setRichText(node.c));    
         return element;
     } else {
-        var textNode = document.createTextNode(node.replace(/( ) |^ /g, "$1" + tw_Component.nonBreakingSpace));
+        var textNode = document.createTextNode(node.replace(tw_Component.nonBreakingSpaceRegEx, tw_Component.nonBreakingSpaceReplace));
         if (element != null) element.appendChild(textNode);
         return textNode;
     }
@@ -816,9 +817,14 @@ tw_Component.processRichTextNode = function(node, element) {
 
 tw_Component.setRichText = function(text, element) {
     if (typeof(text) == "string" || text instanceof String) {
-        var textNode = document.createTextNode(text.replace(/( ) |^ /g, "$1" + tw_Component.nonBreakingSpace));
-        if (element != null) element.appendChild(textNode);
-        element = textNode;
+        var textNode = document.createTextNode(text.replace(tw_Component.nonBreakingSpaceRegEx, tw_Component.nonBreakingSpaceReplace));
+    
+        if (element == null) {
+        	return textNode;
+        } else {
+        	element.appendChild(textNode);
+        	return element;
+        }
     } else {
         if (text instanceof Array) {
             if (text.length > 1) {
@@ -833,9 +839,9 @@ tw_Component.setRichText = function(text, element) {
         } else {
             element = tw_Component.processRichTextNode(text, element);
         }
+
+	    return element;
     }
-    
-    return element;
 };
 
 tw_Component.camelCaseRegex = /\-(.)/g;
@@ -843,11 +849,12 @@ tw_Component.camelCaseRegex = /\-(.)/g;
 tw_Component.camelCaseReplaceFunc = function(m, l) { return l.toUpperCase(); };
 
 tw_Component.setCSSText = function(cssText, box) {
-	var s = box.style;
-	if (typeof s.cssText != "undefined") {
-		s.cssText = cssText;
+	if (tw_useCSSText) {
+		box.style.cssText = cssText;
 	} else {
+		var s = box.style;
 		var styleEntries = cssText.split(";");
+		
 		for (var i = 0; i < styleEntries.length; i++) {
 			var entry = styleEntries[i].split(":");
 			if (entry.length == 2) s[entry[0].replace(tw_Component.camelCaseRegex, tw_Component.camelCaseReplaceFunc)] = entry[1];

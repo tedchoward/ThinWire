@@ -112,8 +112,6 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
             if (gb.getHeight() == 0) gb.setHeight(v.getOptimalHeight());
         }
         
-        StringBuilder checkedRows = new StringBuilder();
-        getCheckedRowIndices(checkedRows);
         calcAutoColumnWidth();
         StringBuilder colDefs = new StringBuilder();
         
@@ -155,7 +153,7 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
         addInitProperty("parentIndex", parentIndex);
         Row sr = gb.getSelectedRow();
         addInitProperty("selectedRow", sr == null || colDefs.length() == 2 ? -1 : sr.getIndex());
-        addInitProperty("checkedRows", checkedRows.toString());
+        if (gb.isVisibleCheckBoxes()) addInitProperty("checkedRows", getCheckedRowIndices());
         addInitProperty("columnData", colDefs);
         super.render(wr, c, container);
         List<Row> rows = gb.getRows();
@@ -224,7 +222,7 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
             if (name.equals(GridBox.PROPERTY_VISIBLE_HEADER)) {
                 postClientEvent(SET_VISIBLE_HEADER, newValue);
             } else if (name.equals(GridBox.PROPERTY_VISIBLE_CHECK_BOXES)) {
-                postClientEvent(SET_VISIBLE_CHECK_BOXES, newValue, newValue == Boolean.TRUE ? getCheckedRowIndices(null).toString() : null);
+                postClientEvent(SET_VISIBLE_CHECK_BOXES, newValue, newValue == Boolean.TRUE ? getCheckedRowIndices() : null);
             } else if (name.equals(GridBox.PROPERTY_FULL_ROW_CHECK_BOX)) {
                 postClientEvent(SET_FULL_ROW_CHECK_BOX, newValue);
             } else if (name.equals(Component.PROPERTY_WIDTH)) {
@@ -535,14 +533,14 @@ final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListe
         return sb;
     }
     
-    private StringBuilder getCheckedRowIndices(StringBuilder sb) {
-        if (sb == null) sb = new StringBuilder();
+    private String getCheckedRowIndices() {
+        StringBuilder sb = new StringBuilder();
         sb.append(',');
 
         for (GridBox.Row r : gb.getCheckedRows()) {
             sb.append(r.getIndex()).append(',');                
         }
         
-        return sb;
+        return sb.toString();
     }
 }
