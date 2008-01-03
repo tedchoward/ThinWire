@@ -93,8 +93,10 @@ function tw_setElementFocus(comp, state) {
     try {
         var elem = comp._focusBox;
         if (state && elem.focus) {
-            if (tw_isFirefox) setTimeout(comp._focus, 0);
-            else elem.focus();
+            if (tw_isFirefox) {
+            	clearTimeout(tw_setElementFocus.tw_timerId);
+            	tw_setElementFocus.tw_timerId = setTimeout(comp._focus, 0);
+            } else elem.focus();
         } else if (!state && elem.blur) elem.blur();
     } catch (e) {
         //Firefox sometimes throws an error when attemptting to set focus.
@@ -103,6 +105,8 @@ function tw_setElementFocus(comp, state) {
         //of it's parents is not visible.
     }
 }
+
+tw_setElementFocus.tw_timerId = 0;
 
 //Should be a function of Component
 //Allow buttons in mozilla to get focus, but prevent click noise in IE

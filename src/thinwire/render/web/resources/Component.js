@@ -198,12 +198,7 @@ var tw_Component = Class.extend({
         if (focus) {
             if (tw_Component.currentFocus !== this) {
                 //We don't need to send a false event to the server, because a true event on the current
-                //component will trigger a false event on the prior.
-                if (tw_Component.currentFocus != null) {
-                    tw_Component.currentFocus.setFocus(false);
-                    tw_setElementFocus(tw_Component.currentFocus, false);
-                }
-                
+                //component will trigger a false event on the prior. The same holds true for client code.
                 tw_Component.priorFocus = tw_Component.currentFocus; 
                 tw_Component.currentFocus = this;
                 tw_em.removeQueuedViewStateChange("focus");
