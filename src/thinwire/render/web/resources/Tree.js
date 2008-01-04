@@ -1,7 +1,6 @@
 /*
-#IFNDEF ALT_LICENSE
-                           ThinWire(R) RIA Ajax Framework
-                 Copyright (C) 2003-2007 Custom Credit Systems
+                           ThinWire(R) Ajax RIA Framework
+                        Copyright (C) 2003-2008 ThinWire LLC
 
   This library is free software; you can redistribute it and/or modify it under
   the terms of the GNU Lesser General Public License as published by the Free
@@ -17,15 +16,12 @@
   Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
   Users who would rather have a commercial license, warranty or support should
-  contact the following company who invented, built and supports the technology:
+  contact the following company who supports the technology:
   
-                Custom Credit Systems, Richardson, TX 75081, USA.
-                email: info@thinwire.com    ph: +1 (888) 644-6405
-                            http://www.thinwire.com
-#ENDIF
-#IFDEF ALT_LICENSE
-#LICENSE_HEADER#
-#ENDIF
+            ThinWire LLC, 5919 Greenville #335, Dallas, TX 75206-1906
+   	            email: info@thinwire.com    ph: +1 (214) 295-4859
+ 	                        http://www.thinwire.com
+
 #VERSION_HEADER#
 */
 //FIX: Thier is no logic to handle toggling on/off the display of images in a branch.
