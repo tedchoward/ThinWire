@@ -31,27 +31,28 @@ import java.util.*;
 /**
  * @author Joshua J. Gertzen
  */
-public class MessageBus extends EventBus<MessageBus.Listener, MessageBus.Message, String> {
+public class MessageBus<T> extends EventBus<MessageBus.Listener, MessageBus.Message<T>, T> {
     static interface Listener extends java.util.EventListener {
         public void messageReceived(Message ev);
     }
     
-    static class Message extends java.util.EventObject {
+    static class Message<T> extends java.util.EventObject {
         private Object data;
         private Object reply;
         private boolean replySent;
         
-        public Message(String id) {
+        public Message(T id) {
             this(id, null);
         }
         
-        public Message(String id, Object data) {
+        public Message(T id, Object data) {
         	super(id);
             this.data = data;
         }
         
-        public String getId() {
-            return (String)getSource();
+        @SuppressWarnings("unchecked")
+        public T getId() {
+            return (T)getSource();
         }
         
         public Object getData() {
@@ -65,40 +66,40 @@ public class MessageBus extends EventBus<MessageBus.Listener, MessageBus.Message
         }
     }    
     
-    private List<Message> queue = new LinkedList<Message>();
+    private List<Message<T>> queue = new LinkedList<Message<T>>();
     
-    public Object send(String id, Object data) {
-    	return send(new Message(id, data));
+    public Object send(T id, Object data) {
+    	return send(new Message<T>(id, data));
     }
     
-    public Object send(Message ev) {
+    public Object send(Message<T> ev) {
         queue.add(ev);
         flush();
         return ev.reply;
     }
 
-    public void post(String id, Object data) {
-    	post(new Message(id, data));
+    public void post(T id, Object data) {
+    	post(new Message<T>(id, data));
     }
     
-    public void post(Message ev) {
+    public void post(Message<T> ev) {
     	queue.add(ev);
     	if (queue.size() == 1) flush();
     }
     
     private void flush() {
     	while (queue.size() > 0) {
-    		Message ev = queue.remove(0);
+    		Message<T> ev = queue.remove(0);
     		if (ev == null) throw new IllegalArgumentException("event == null");
     		fireEvent(ev, ev.getId());
     	}
     }
 
-    protected void runListener(Listener el, Message eo) {
+    protected void runListener(Listener el, Message<T> eo) {
 		el.messageReceived(eo);
 	}
 
-	protected String validate(String subType) {
+	protected T validate(T subType) {
 		return subType;
 	}
 }
