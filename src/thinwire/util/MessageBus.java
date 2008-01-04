@@ -31,29 +31,27 @@ import java.util.*;
 /**
  * @author Joshua J. Gertzen
  */
-public class MessageBus {
-    static interface Listener {
-        public void eventOccured(Event ev);
+public class MessageBus extends EventBus<MessageBus.Listener, MessageBus.Message, String> {
+    static interface Listener extends java.util.EventListener {
+        public void messageReceived(Message ev);
     }
     
-    static class Event {
-        private String id;
+    static class Message extends java.util.EventObject {
         private Object data;
         private Object reply;
         private boolean replySent;
         
-        public Event(String id) {
+        public Message(String id) {
             this(id, null);
         }
         
-        public Event(String id, Object data) {
-            if (id == null) throw new IllegalArgumentException("id == null");
-            this.id = id;
+        public Message(String id, Object data) {
+        	super(id);
             this.data = data;
         }
         
         public String getId() {
-            return id;
+            return (String)getSource();
         }
         
         public Object getData() {
@@ -67,55 +65,40 @@ public class MessageBus {
         }
     }    
     
-    private Map<String, Set<Listener>> listeners = new HashMap<String, Set<Listener>>();
-    private List<Event> queue = new LinkedList<Event>();
-    
-    public void addListener(String id, Listener listener) {
-        if (id == null) throw new IllegalArgumentException("id == null");
-        if (listener == null) throw new IllegalArgumentException("listener == null");
-        Set<Listener> set = listeners.get(id);
-        if (set == null) listeners.put(id, set = new HashSet<Listener>());
-        set.add(listener);
-    }
-    
-    public void removeListener(String id, Listener listener) {
-        if (id == null) throw new IllegalArgumentException("id == null");
-        if (listener == null) throw new IllegalArgumentException("listener == null");
-        Set<Listener> set = listeners.get(id);
-        if (set == null) return;
-        set.remove(listener);
-    }
+    private List<Message> queue = new LinkedList<Message>();
     
     public Object send(String id, Object data) {
-    	return send(new Event(id, data));
+    	return send(new Message(id, data));
     }
     
-    public Object send(Event ev) {
+    public Object send(Message ev) {
         queue.add(ev);
         flush();
         return ev.reply;
     }
 
     public void post(String id, Object data) {
-    	post(new Event(id, data));
+    	post(new Message(id, data));
     }
     
-    public void post(Event ev) {
+    public void post(Message ev) {
     	queue.add(ev);
     	if (queue.size() == 1) flush();
     }
     
     private void flush() {
     	while (queue.size() > 0) {
-    		Event ev = queue.remove(0);
+    		Message ev = queue.remove(0);
     		if (ev == null) throw new IllegalArgumentException("event == null");
-            Set<Listener> set = listeners.get(ev.getId());
-            
-            if (set != null) {
-                for (Listener l : set.toArray(new Listener[set.size()])) {
-                    l.eventOccured(ev);
-                }
-            }
+    		fireEvent(ev, ev.getId());
     	}
     }
+
+    protected void runListener(Listener el, Message eo) {
+		el.messageReceived(eo);
+	}
+
+	protected String validate(String subType) {
+		return subType;
+	}
 }
