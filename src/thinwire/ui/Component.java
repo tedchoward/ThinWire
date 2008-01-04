@@ -144,47 +144,6 @@ public interface Component {
      */
     public static final String ACTION_DOUBLE_CLICK = "doubleClick";
     
-    //#IFDEF V1_1_COMPAT
-
-    /**
-     * Adds a specific PropertyChangeListener to the component dependent on this component's type.
-     * This method is DEPRECATED as of v1.2 and should no longer be used because the original design
-     * has the potential of causing performance issues.  The table below
-     * outlines the details of this method so that you can craft the appropriate replacement.
-     * NOTE: This method will throw an exception under all situations unless compat mode is on.
-     * 
-     * <table border="1">
-     *     <tr><td>COMPONENT TYPE(S)</td>
-     *         <td>LISTENS TO</td>
-     *     </tr>
-     *     <tr><td>{@link thinwire.ui.TextField}, 
-     *             {@link thinwire.ui.DropDownGridBox},
-     *             {@link thinwire.ui.TextArea}</td>
-     *         <td>PROPERTY_FOCUS, PROPERTY_TEXT</td>
-     *     </tr>
-     *     <tr><td>{@link thinwire.ui.CheckBox},
-     *             {@link thinwire.ui.RadioButton}</td>
-     *         <td>PROPERTY_CHECKED</td>
-     *     </tr>
-     *     <tr><td>{@link thinwire.ui.GridBox}</td>
-     *         <td>PROPERTY_SELECTED</td>
-     *     </tr>
-     *     <tr><td>{@link thinwire.ui.TabFolder}</td>
-     *         <td>PROPERTY_CURRENT_INDEX</td>
-     *     </tr>
-     *     <tr><td>{@link thinwire.ui.Window}</td>
-     *         <td>PROPERTY_VISIBLE</td>
-     *     </tr>
-     * </table>
-     * @param listener the listener that will receive <code>PropertyChangeEvent</code> objects upon the property changing.
-     * @throws IllegalStateException if compat mode is NOT on, or you invoke this method on a component not listed in the table above.
-     * @throws IllegalArgumentException if <code>listener</code> is null.
-     * @see #addPropertyChangeListener(String, PropertyChangeListener)
-     * @deprecated for performance concerns.  Use {@link #addPropertyChangeListener(String, PropertyChangeListener)} instead.
-     */
-    public void addPropertyChangeListener(PropertyChangeListener listener);    
-    //#ENDIF
-    
     /**
      * Adds a <code>PropertyChangeListener</code> to this component that will be notified when the specified property changes.
      * Adding a property listener to a component allows your code to react to a state change within the component. <br>
@@ -212,8 +171,9 @@ public interface Component {
      *         <code>propertyName</code> is an empty string.
      * @see thinwire.ui.event.PropertyChangeListener
      * @see thinwire.ui.event.PropertyChangeEvent
+     * @return this <code>Component</code> so further may be performed. 
      */
-    void addPropertyChangeListener(String propertyName, PropertyChangeListener listener);
+    Component addPropertyChangeListener(String propertyName, PropertyChangeListener listener);
 
     /**
      * Adds a <code>PropertyChangeListener</code> to this component that will be notified when any of the specified properties
@@ -227,8 +187,9 @@ public interface Component {
      * @see #addPropertyChangeListener(String, PropertyChangeListener)
      * @see thinwire.ui.event.PropertyChangeListener
      * @see thinwire.ui.event.PropertyChangeEvent
+     * @return this <code>Component</code> so further may be performed. 
      */
-    void addPropertyChangeListener(String[] propertyNames, PropertyChangeListener listener);
+    Component addPropertyChangeListener(String[] propertyNames, PropertyChangeListener listener);
 
     /**
      * Removes the specified <code>PropertyChangeListener</code> from the component. If the listener was added for multiple
@@ -244,15 +205,17 @@ public interface Component {
      * Adds a <code>ActionListener</code> to this component that will be notified when the specified action occurs.
      * @param action the action to specifically be notified of.
      * @param listener the event listener that will receive notification.
+     * @return this <code>Component</code> so further may be performed. 
      */
-    void addActionListener(String action, ActionListener listener);
+    Component addActionListener(String action, ActionListener listener);
 
     /**
      * Adds a <code>ActionListener</code> to this component that will be notified when any of the specified actions occur.
      * @param actions the actions to specifically be notified of.
      * @param listener the event listener that will receive notification.
+     * @return this <code>Component</code> so further may be performed. 
      */
-    void addActionListener(String[] actions, ActionListener listener);
+    Component addActionListener(String[] actions, ActionListener listener);
     
     /**
      * Unregister an <code>ActionListener</code> from all action event notifications from this component.
@@ -279,9 +242,9 @@ public interface Component {
      */
     void fireAction(String action, Object source);
     
-    void addDropListener(Component dragSource, DropListener listener);
+    Component addDropListener(Component dragSource, DropListener listener);
     
-    void addDropListener(Component[] dragSources, DropListener listener);
+    Component addDropListener(Component[] dragSources, DropListener listener);
     
     void removeDropListener(DropListener listener);
 
@@ -344,8 +307,9 @@ public interface Component {
      * @see thinwire.ui.event.KeyPressEvent
      * @see thinwire.ui.event.KeyPressEvent#encodeKeyPressCombo(boolean, boolean, boolean, String)
      * @see thinwire.ui.event.KeyPressEvent#normalizeKeyPressCombo(String)
+     * @return this <code>Component</code> so further may be performed. 
      */
-    void addKeyPressListener(String keyPressCombo, KeyPressListener listener);
+    Component addKeyPressListener(String keyPressCombo, KeyPressListener listener);
 
     /**
      * Adds a <code>KeyPressListener</code> that will be notified when any of the specified key press combinations occur.
@@ -367,8 +331,9 @@ public interface Component {
      * @see thinwire.ui.event.KeyPressEvent
      * @see thinwire.ui.event.KeyPressEvent#encodeKeyPressCombo(boolean, boolean, boolean, String)
      * @see thinwire.ui.event.KeyPressEvent#normalizeKeyPressCombo(String)
+     * @return this <code>Component</code> so further may be performed. 
      */
-    void addKeyPressListener(String[] keyPressCombos, KeyPressListener listener);
+    Component addKeyPressListener(String[] keyPressCombos, KeyPressListener listener);
 
     /**
      * Removes the specified <code>KeyPressListener</code> from the component. If the listener was added for multiple

@@ -116,69 +116,15 @@ abstract class AbstractComponent implements Component {
     String getStandardPropertyUnsupportedMsg(String propertyName, boolean read) {
         return this.getClass().getName() + " does not support " + (read ? "reading from" : "writing to") + " the property: " + propertyName;
     }
-    //#IFDEF V1_1_COMPAT
 
-    /**
-     * Adds a specific PropertyChangeListener to the component dependent on this component's type.
-     * This method is DEPRECATED as of v1.2 and should no longer be used because the original design
-     * has the potential of causing performance issues.  The table below
-     * outlines the details of this method so that you can craft the appropriate replacement.
-     * NOTE: This method will throw an exception under all situations unless compat mode is on.
-     * 
-     * <table border="1">
-     *     <tr><td>COMPONENT TYPE(S)</td>
-     *         <td>LISTENS TO</td>
-     *     </tr>
-     *     <tr><td>{@link thinwire.ui.TextField}, 
-     *             {@link thinwire.ui.DropDownGridBox},
-     *             {@link thinwire.ui.TextArea}</td>
-     *         <td>PROPERTY_FOCUS, PROPERTY_TEXT</td>
-     *     </tr>
-     *     <tr><td>{@link thinwire.ui.CheckBox},
-     *             {@link thinwire.ui.RadioButton}</td>
-     *         <td>PROPERTY_CHECKED</td>
-     *     </tr>
-     *     <tr><td>{@link thinwire.ui.GridBox}</td>
-     *         <td>PROPERTY_SELECTED</td>
-     *     </tr>
-     *     <tr><td>{@link thinwire.ui.TabFolder}</td>
-     *         <td>PROPERTY_CURRENT_INDEX</td>
-     *     </tr>
-     *     <tr><td>{@link thinwire.ui.Window}</td>
-     *         <td>PROPERTY_VISIBLE</td>
-     *     </tr>
-     * </table>
-     * @param listener the listener that will receive <code>PropertyChangeEvent</code> objects upon the property changing.
-     * @throws IllegalStateException if compat mode is NOT on, or you invoke this method on a component not listed in the table above.
-     * @throws IllegalArgumentException if <code>listener</code> is null.
-     * @see #addPropertyChangeListener(String, PropertyChangeListener)
-     * @deprecated for performance concerns.  Use {@link #addPropertyChangeListener(String, PropertyChangeListener)} instead.
-     */
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        if (!isCompatModeOn()) {
-            throw new IllegalStateException("this method is deprecated as of v1.2 and cannot be called unless compat mode is on, use the addPropertyChangeListener(propertyName, listener) form instead");
-        } else if (this instanceof TextField || this instanceof DropDownGridBox || this instanceof TextArea) {
-            addPropertyChangeListener(new String[]{PROPERTY_FOCUS, EditorComponent.PROPERTY_TEXT}, listener);
-        } else if (this instanceof CheckBox || this instanceof RadioButton) {
-            addPropertyChangeListener(CheckedComponent.PROPERTY_CHECKED, listener);
-        } else if (this instanceof GridBox) {
-            addPropertyChangeListener(new String[]{GridBox.Row.PROPERTY_ROW_SELECTED, "selected"}, listener);
-        } else if (this instanceof TabFolder) {
-            addPropertyChangeListener(TabFolder.PROPERTY_CURRENT_INDEX, listener);
-        } else if (this instanceof Window) {
-            addPropertyChangeListener(PROPERTY_VISIBLE, listener);
-        } else {
-            throw new IllegalStateException("this method is deprecated as of v1.2; compat mode is on, but you are trying to listen to an unsupported component.  Use the addPropertyChangeListener(propertyName, listener) form instead.");
-        }
-    }
-    //#ENDIF
-
-    public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+    public Component addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
         pcei.addListener(propertyName, listener);
+        return this;
     }
     
-    public void addPropertyChangeListener(String[] propertyNames, PropertyChangeListener listener) {
+    public Component addPropertyChangeListener(String[] propertyNames, PropertyChangeListener listener) {
         pcei.addListener(propertyNames, listener);
+        return this;
     }
     
     public void removePropertyChangeListener(PropertyChangeListener listener) {
@@ -206,12 +152,14 @@ abstract class AbstractComponent implements Component {
         return true;
     }
 
-    public void addActionListener(String action, ActionListener listener) {
+    public Component addActionListener(String action, ActionListener listener) {
         aei.addListener(action, listener);
+        return this;
     }
     
-    public void addActionListener(String[] actions, ActionListener listener) {
+    public Component addActionListener(String[] actions, ActionListener listener) {
         aei.addListener(actions, listener);
+        return this;
     }    
     
     public void removeActionListener(ActionListener listener) {
@@ -230,12 +178,14 @@ abstract class AbstractComponent implements Component {
         fireAction(new ActionEvent(action, this, source));
     }
     
-    public void addDropListener(Component dragComponent, DropListener listener) {
+    public Component addDropListener(Component dragComponent, DropListener listener) {
         dei.addListener(dragComponent, listener);
+        return this;
     }
     
-    public void addDropListener(Component[] dragComponents, DropListener listener) {
+    public Component addDropListener(Component[] dragComponents, DropListener listener) {
         dei.addListener(dragComponents, listener);
+        return this;
     }    
     
     public void removeDropListener(DropListener listener) {
@@ -254,12 +204,14 @@ abstract class AbstractComponent implements Component {
         fireDrop(new DropEvent(this, null, dragComponent, dragObject));
     }
         
-    public void addKeyPressListener(String keyPressCombo, KeyPressListener listener) {
+    public Component addKeyPressListener(String keyPressCombo, KeyPressListener listener) {
         kpei.addListener(keyPressCombo, listener);
+        return this;
     }
     
-    public void addKeyPressListener(String[] keyPressCombos, KeyPressListener listener) {
+    public Component addKeyPressListener(String[] keyPressCombos, KeyPressListener listener) {
         kpei.addListener(keyPressCombos, listener);
+        return this;
     }
     
     public void removeKeyPressListener(KeyPressListener listener) {

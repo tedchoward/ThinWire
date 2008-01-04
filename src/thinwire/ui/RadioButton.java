@@ -125,23 +125,6 @@ public class RadioButton extends AbstractTextComponent implements CheckedCompone
         public int size() {
             return l.size();            
         }
-        //#IFDEF V1_1_COMPAT
-        
-    	/**
-    	 * Adds a PropertyChangeListener to each radio button component in the group.
-    	 * @param listener
-         * @throws IllegalStateException if compat mode is not on
-    	 * @deprecated for performance reasons, this form as been deprecated.  Use the named property form instead.
-    	 */
-    	public final void addPropertyChangeListener(PropertyChangeListener listener) {
-            if (!isCompatModeOn()) throw new IllegalStateException("this method is deprecated as of v1.2 and cannot be called unless compat mode is on, use addPropertyChangeListener(propertyName, listener) instead.");        
-    	    if (listener == null) return;
-            
-            for (RadioButton rb : l) {
-                rb.addPropertyChangeListener(listener);
-            }
-    	}
-        //#ENDIF
     	
         /**
          * Adds a PropertyChangeListener to each radio button component in the group.
