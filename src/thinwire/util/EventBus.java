@@ -109,6 +109,7 @@ public abstract class EventBus<L extends EventListener, E extends EventObject, T
     }
     
     protected void fireEvent(E eo, T eventSubType) {
+    	if (listeners == null) return;
         List<L> l = new ArrayList<L>(listeners.size());
         
         for (Map.Entry<L, Set<Object>> e : listeners.entrySet()) {
