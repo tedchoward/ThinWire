@@ -32,11 +32,11 @@ import java.util.*;
  * @author Joshua J. Gertzen
  */
 public class MessageBus<T> extends EventBus<MessageBus.Listener, MessageBus.Message<T>, T> {
-    static interface Listener extends java.util.EventListener {
+    public static interface Listener extends java.util.EventListener {
         public void messageReceived(Message ev);
     }
     
-    static class Message<T> extends java.util.EventObject {
+    public static class Message<T> extends java.util.EventObject {
         private Object data;
         private Object reply;
         private boolean replySent;
