@@ -51,7 +51,7 @@ package thinwire.ui;
  * </p>
  * @author Joshua J. Gertzen
  */
-public class Divider extends AbstractComponent {    
+public class Divider extends AbstractComponent<Divider> {    
     /**
      * Constructs a new Divider. 
      */

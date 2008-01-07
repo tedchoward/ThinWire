@@ -158,7 +158,7 @@ public class FileChooser extends Panel {
          * @param fileName
          */
         public void saveToFile(String fileName) {
-            saveToFile(Application.current().getRelativeFile(fileName));
+            saveToFile(Application.getRelativeFile(fileName));
         }
         
         /**

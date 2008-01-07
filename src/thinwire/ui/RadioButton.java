@@ -85,7 +85,7 @@ import thinwire.ui.event.PropertyChangeListener;
  * </p>
  * @author Joshua J. Gertzen
  */
-public class RadioButton extends AbstractTextComponent implements CheckedComponent {
+public class RadioButton extends AbstractTextComponent<RadioButton> implements CheckedComponent {
 	public static class Group extends AbstractList<RadioButton> {
 	    private RadioButton checked;
 	    private List<RadioButton> l = new ArrayList<RadioButton>(3);

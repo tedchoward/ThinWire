@@ -60,9 +60,7 @@ import java.io.FileOutputStream;
  * 
  * @author Joshua J. Gertzen
  */
-// TODO Nice to haves on the client side Iframe - Back/Forward/Stop/Refresh.
-// i.e. Browser like functionality.
-public class WebBrowser extends AbstractComponent {
+public class WebBrowser extends AbstractComponent<WebBrowser> {
     public static final String PROPERTY_LOCATION = "location";
     
     private String location = "";

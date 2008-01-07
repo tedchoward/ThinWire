@@ -62,7 +62,7 @@ package thinwire.ui;
  * @author Ted C. Howard
  *
  */
-public class ProgressBar extends AbstractRangeComponent {
+public class ProgressBar extends AbstractRangeComponent<Slider> {
     /**
      * Constructs a new <code>ProgressBar</code> with a length of 100 and a currentIndex of 0.
      *

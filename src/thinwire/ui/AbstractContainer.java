@@ -37,17 +37,19 @@ import thinwire.ui.layout.Layout;
 /**
  * @author Joshua J. Gertzen
  */
-abstract class AbstractContainer<T extends Component> extends AbstractComponent implements Container<T> {
+abstract class AbstractContainer<C extends Container<T>, T extends Component> extends AbstractComponent<C> implements Container<T> {
     private class ChildList extends AbstractList<T> {
         private ArrayList<T> l = new ArrayList<T>();
 
-        private void processRemove(T c) {
+        @SuppressWarnings("unchecked")
+		private void processRemove(T c) {
             ((AbstractComponent)c).setParent(null);
             if (standardButton == c) updateStandardButton((Button)c, false);
             if (childWithFocus == c) AbstractContainer.this.setChildWithFocus(null);            
         }
 
-        private void processAdd(T c) {
+        @SuppressWarnings("unchecked")
+		private void processAdd(T c) {
             ((AbstractComponent)c).setParent(AbstractContainer.this);
             
             if (c instanceof Button && ((Button)c).isStandard()) {                             
@@ -129,6 +131,7 @@ abstract class AbstractContainer<T extends Component> extends AbstractComponent 
         children = new ChildList();
     }
 
+    @SuppressWarnings("unchecked")
     void updateStandardButton(Button button, boolean standard) {
         if (this.standardButton == button) {
             if (!standard) {
@@ -169,6 +172,7 @@ abstract class AbstractContainer<T extends Component> extends AbstractComponent 
         return layout;
     }
     
+    @SuppressWarnings("unchecked")
     public void setLayout(Layout layout) {
         Layout oldLayout = this.layout;
         this.layout = layout;
@@ -177,12 +181,16 @@ abstract class AbstractContainer<T extends Component> extends AbstractComponent 
         firePropertyChange(this, PROPERTY_LAYOUT, oldLayout, layout);
     }
 
-    public void addItemChangeListener(ItemChangeListener listener) {
+    @SuppressWarnings("unchecked")
+    public C addItemChangeListener(ItemChangeListener listener) {
         icei.addListener(listener);
+        return (C)this;
     }
 
-    public void removeItemChangeListener(ItemChangeListener listener) {
+    @SuppressWarnings("unchecked")
+    public C removeItemChangeListener(ItemChangeListener listener) {
         icei.removeListener(listener);
+        return (C)this;
     }
 
     public List<T> getChildren() {
@@ -197,6 +205,7 @@ abstract class AbstractContainer<T extends Component> extends AbstractComponent 
         return childWithFocus;
     }
     
+    @SuppressWarnings("unchecked")
     public T getComponentWithFocus() {
         T ret = null;
         Object root = app != null ? app.getFrame() : this;

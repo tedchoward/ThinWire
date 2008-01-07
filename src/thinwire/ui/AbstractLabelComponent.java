@@ -29,9 +29,9 @@ package thinwire.ui;
 /**
  * @author Joshua J. Gertzen
  */
-abstract class AbstractLabelComponent extends AbstractTextComponent implements LabelComponent {
+abstract class AbstractLabelComponent<C extends LabelComponent> extends AbstractTextComponent<C> implements LabelComponent {
     private AlignX alignX = AlignX.LEFT;
-    private Component labelFor = null;
+	private Component labelFor = null;
     private boolean wrapText;
         
     public AlignX getAlignX() {
@@ -45,11 +45,12 @@ abstract class AbstractLabelComponent extends AbstractTextComponent implements L
         firePropertyChange(this, PROPERTY_ALIGN_X, oldAlignX, alignX);
     }    
         
-    public Component getLabelFor() {
+	public Component getLabelFor() {
         return labelFor;
     }
 
-    public void setLabelFor(Component labelFor) {
+    @SuppressWarnings("unchecked")
+	public void setLabelFor(Component labelFor) {
         Component oldLabelFor = this.labelFor;
         this.labelFor = labelFor;
         if (labelFor != null) ((AbstractComponent)labelFor).setLabel(this);

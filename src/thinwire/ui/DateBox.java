@@ -61,7 +61,7 @@ import thinwire.ui.event.ActionEvent;
  * </p>
  * @author Ted C. Howard
  */
-public class DateBox extends AbstractComponent {
+public class DateBox extends AbstractComponent<DateBox> {
     public static final String PROPERTY_SELECTED_DATE = "selectedDate";
     
     private Date selectedDate;

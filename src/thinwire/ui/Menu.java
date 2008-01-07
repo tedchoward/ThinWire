@@ -76,7 +76,7 @@ import thinwire.ui.event.KeyPressEvent;
  * 
  * @author Joshua J. Gertzen
  */
-public class Menu extends AbstractHierarchyComponent<Menu.Item> {    
+public class Menu extends AbstractHierarchyComponent<Menu, Menu.Item> {    
     /**
      * An object that represents an item in a <code>Menu</code> component.
      */
@@ -239,7 +239,8 @@ public class Menu extends AbstractHierarchyComponent<Menu.Item> {
         super.fireAction(ev);
     }
     
-    public int getHeight() {
+    @SuppressWarnings("unchecked")
+	public int getHeight() {
         Container cont = getContainer();
 
         if (cont instanceof Window && ((Window)cont).getMenu() == this) {
@@ -249,7 +250,8 @@ public class Menu extends AbstractHierarchyComponent<Menu.Item> {
         }
     }    
     
-    public void setHeight(int height) {
+    @SuppressWarnings("unchecked")
+	public void setHeight(int height) {
         Container cont = getContainer();
         
         if (cont instanceof Window && ((Window)cont).getMenu() == this) {
@@ -259,7 +261,8 @@ public class Menu extends AbstractHierarchyComponent<Menu.Item> {
         }        
     }
     
-    public int getWidth() {
+    @SuppressWarnings("unchecked")
+	public int getWidth() {
         Container cont = getContainer();
         
         if (cont instanceof Window && ((Window)cont).getMenu() == this) {
@@ -269,7 +272,8 @@ public class Menu extends AbstractHierarchyComponent<Menu.Item> {
         }
     }
     
-    public void setWidth(int width) {
+    @SuppressWarnings("unchecked")
+	public void setWidth(int width) {
         Container cont = getContainer();
         
         if (cont instanceof Window && ((Window)cont).getMenu() == this) {
@@ -279,7 +283,8 @@ public class Menu extends AbstractHierarchyComponent<Menu.Item> {
         }
     }
     
-    public int getX() {
+    @SuppressWarnings("unchecked")
+	public int getX() {
         Container cont = getContainer();
         
         if (cont instanceof Window && ((Window)cont).getMenu() == this) {
@@ -289,7 +294,8 @@ public class Menu extends AbstractHierarchyComponent<Menu.Item> {
         }
     }    
     
-    public void setX(int x) {
+    @SuppressWarnings("unchecked")
+	public void setX(int x) {
         Container cont = getContainer();
         
         if (cont instanceof Window && ((Window)cont).getMenu() == this) {
@@ -299,7 +305,8 @@ public class Menu extends AbstractHierarchyComponent<Menu.Item> {
         }
     }
     
-    public int getY() {
+    @SuppressWarnings("unchecked")
+	public int getY() {
         Container cont = getContainer();
         
         if (cont instanceof Window && ((Window)cont).getMenu() == this) {
@@ -309,7 +316,8 @@ public class Menu extends AbstractHierarchyComponent<Menu.Item> {
         }
     }    
 
-    public void setY(int y) {
+    @SuppressWarnings("unchecked")
+	public void setY(int y) {
         Container cont = getContainer();
         
         if (cont instanceof Window && ((Window)cont).getMenu() == this) {
@@ -319,7 +327,8 @@ public class Menu extends AbstractHierarchyComponent<Menu.Item> {
         }
     }    
 
-    public boolean isVisible() {
+    @SuppressWarnings("unchecked")
+	public boolean isVisible() {
         Container cont = getContainer();
         
         if (cont instanceof Window && ((Window)cont).getMenu() == this) {
@@ -329,7 +338,8 @@ public class Menu extends AbstractHierarchyComponent<Menu.Item> {
         }
     }        
     
-    public void setVisible(boolean visible) {
+    @SuppressWarnings("unchecked")
+	public void setVisible(boolean visible) {
         Container cont = getContainer();
         
         if (cont instanceof Window && ((Window)cont).getMenu() == this) {

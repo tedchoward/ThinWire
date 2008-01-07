@@ -26,7 +26,7 @@
 */
 package thinwire.ui;
 
-abstract class AbstractRangeComponent extends AbstractComponent implements RangeComponent {
+abstract class AbstractRangeComponent<C extends RangeComponent> extends AbstractComponent<C> implements RangeComponent {
     private int length;
     private int currentIndex;
     

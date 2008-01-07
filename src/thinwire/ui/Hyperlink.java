@@ -26,8 +26,6 @@
 */
 package thinwire.ui;
 
-import java.io.File;
-
 import thinwire.render.web.WebApplication;
 
 /**
@@ -63,7 +61,7 @@ import thinwire.render.web.WebApplication;
  * 
  * @author Joshua J. Gertzen
  */
-public class Hyperlink extends AbstractLabelComponent {    
+public class Hyperlink extends AbstractLabelComponent<Hyperlink> {    
     private static Application.Local<Integer> targetId = new Application.Local<Integer>() {
         protected Integer initialValue() {
             return 0;

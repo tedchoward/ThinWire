@@ -77,7 +77,7 @@ import thinwire.util.ImageInfo;
  * 
  * @author Joshua J. Gertzen
  */
-public class Image extends AbstractComponent implements ImageComponent {
+public class Image extends AbstractComponent<Image> implements ImageComponent {
 	private ImageInfo imageInfo = new ImageInfo(null);
     
 	/**

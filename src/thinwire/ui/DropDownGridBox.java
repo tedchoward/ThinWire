@@ -298,8 +298,7 @@ public class DropDownGridBox extends DropDown<GridBox> {
                 s = sb.toString();
                 sb.setLength(0);
                 
-                for (List l : gb.getRows()) {
-                    GridBox.Row r = (GridBox.Row)l;
+                for (GridBox.Row r : gb.getRows()) {
                     sb.append(delimiter).append(r.get(columnIndex)).append(delimiter);
                     r.setChecked(s.indexOf(sb.toString()) != -1);
                     sb.setLength(0);
@@ -307,9 +306,7 @@ public class DropDownGridBox extends DropDown<GridBox> {
             } else {
                 List<GridBox.Row> rows = gb.getRows();
                 
-                for (List l : rows) {
-                    GridBox.Row r = (GridBox.Row)l;
-                    
+                for (GridBox.Row r : rows) {
                     if (r.getChild() == null) {
                         value = r.get(columnIndex);
                         
@@ -437,71 +434,4 @@ public class DropDownGridBox extends DropDown<GridBox> {
         ((DefaultView)getView()).init(this, this.getComponent());
 	    if (text != null) setText(text);        
 	}	
-    //#IFDEF V1_1_COMPAT
-
-    /**
-	 * Returns the GridBox part of the drop down.
-	 * @return a GridBox
-     * @deprecated use getComponent instead
-	 */
-	public GridBox getGridBox() {
-        if (!isCompatModeOn()) throw new IllegalStateException("this method is deprecated as of v1.2 and cannot be called unless compat mode is on, use getComponent() instead.");
-	    return getComponent();
-    }
-	
-    /**
-     * Sets the gridBox for the dropdown to a differnt gridBox.
-     * @param gridBox the new gridbox.
-     * @deprecated use setComponent instead
-     */
-    public void setGridBox(GridBox gridBox) {
-        if (!isCompatModeOn()) throw new IllegalStateException("this method is deprecated as of v1.2 and cannot be called unless compat mode is on, use setComponent() instead.");
-        setComponent(gridBox);
-    }
-
-    /**
-     * Get the delimiter separating values in the text field in cases where multiple
-     * values have been selected.
-	 * @return the delimiter separating values in the text field 
-     * @deprecated switch to getGridBox().getView().getDelimiter(), this will be removed in a future update.
-	 */
-	public String getTextDelimiter() {
-        if (!isCompatModeOn()) throw new IllegalStateException("this method is deprecated as of v1.2 and cannot be called unless compat mode is on, use getView().getDelimiter() instead.");
-	    return ((DefaultView)getView()).getDelimiter();
-    }
-	
-	/**
-	 * When checkboxes are turned on, if multiple values are selected, the delimiter is placed 
-	 * 	between the selected values when they appear in the text field.
-	 * @param textDelimiter the delimiter (Default: comma ',')
-	 * @throws IllegalArgumentException if textDelimiter is null or empty
-     * @deprecated switch to getGridBox().getView().setDelimiter(), this will be removed in a future update.
-	 */
-	public void setTextDelimiter(String textDelimiter) {
-        if (!isCompatModeOn()) throw new IllegalStateException("this method is deprecated as of v1.2 and cannot be called unless compat mode is on, use getView().setDelimiter() instead.");
-        ((DefaultView)getView()).setDelimiter(textDelimiter);        
-	}
-	
-	/**
-     * Get the number of the column whose value is displayed in the text field.
-	 * @return the number of the displayed column
-     * @deprecated switch to getGridBox().getView().getColumnIndex(), this will be removed in a future update.
-	 */
-	public int getTextColumnIndex() {
-        if (!isCompatModeOn()) throw new IllegalStateException("this method is deprecated as of v1.2 and cannot be called unless compat mode is on, use getView().getColumnIndex() instead.");
-	    return ((DefaultView)getView()).getColumnIndex();
-	}
-
-	/**
-	 * Chooses which column's value will be displayed in the text field.
-	 * @param textColumnIndex Default: 0 (first column)
-     * @throws IllegalArgumentException if testColumnIndex > the number of
-     *   columns in the GridBox.
-     * @deprecated switch to getGridBox().getView().setColumnIndex(), this will be removed in a future update.
-	 */
-    public void setTextColumnIndex(int textColumnIndex) {
-        if (!isCompatModeOn()) throw new IllegalStateException("this method is deprecated as of v1.2 and cannot be called unless compat mode is on, use getView().setColumnIndex() instead.");
-        ((DefaultView)getView()).setColumnIndex(textColumnIndex);
-	}
-    //#ENDIF
 }

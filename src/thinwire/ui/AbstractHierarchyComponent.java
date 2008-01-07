@@ -30,7 +30,6 @@ import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;
 
-import thinwire.ui.event.ActionEvent;
 import thinwire.ui.event.ActionListener;
 import thinwire.ui.event.ItemChangeListener;
 import thinwire.ui.event.ItemChangeEvent.Type;
@@ -39,7 +38,7 @@ import thinwire.util.ImageInfo;
 /**
  * @author Joshua J. Gertzen
  */
-abstract class AbstractHierarchyComponent<HI extends AbstractHierarchyComponent.Item> extends AbstractComponent implements HierarchyComponent<HI> {        
+abstract class AbstractHierarchyComponent<C extends HierarchyComponent<HI>, HI extends AbstractHierarchyComponent.Item> extends AbstractComponent<C> implements HierarchyComponent<HI> {        
     private static class ChildList<I extends Item> extends AbstractList<I> {
         private List<I> l = new ArrayList<I>(3);
         private Item parent;
@@ -220,12 +219,16 @@ abstract class AbstractHierarchyComponent<HI extends AbstractHierarchyComponent.
         return rootItem;
     }
 
-    public void addItemChangeListener(ItemChangeListener listener) {
+    @SuppressWarnings("unchecked")
+	public C addItemChangeListener(ItemChangeListener listener) {
         icei.addListener(listener);
+        return (C)this;
     }
 
-    public void removeItemChangeListener(ItemChangeListener listener) {
+    @SuppressWarnings("unchecked")
+	public C removeItemChangeListener(ItemChangeListener listener) {
         icei.removeListener(listener);
+        return (C)this;
     }    
     //#IFDEF V1_1_COMPAT
     

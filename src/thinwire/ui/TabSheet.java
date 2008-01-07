@@ -79,7 +79,8 @@ import thinwire.util.ImageInfo;
  * 
  * @author Joshua J. Gertzen
  */
-public class TabSheet extends AbstractContainer<Component> implements TextComponent, ImageComponent {
+@SuppressWarnings("unchecked")
+public class TabSheet extends AbstractContainer<TabSheet, Component> implements TextComponent, ImageComponent {
 	private String text = "";
     private boolean allowBoundsChange;
 	private ImageInfo imageInfo = new ImageInfo(null);
@@ -256,7 +257,7 @@ public class TabSheet extends AbstractContainer<Component> implements TextCompon
      * This property is unsupported by the TabSheet component.
      * @throws UnsupportedOperationException indicating this property is not supported by TabSheet.
      */
-    public Component setLimit(Object limit) {
+    public TabSheet setLimit(Object limit) {
         throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_LIMIT, false));        
     }
 }

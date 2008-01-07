@@ -29,7 +29,7 @@ package thinwire.ui;
 /**
  * @author Joshua J. Gertzen
  */
-abstract class AbstractMaskEditorComponent extends AbstractEditorComponent implements MaskEditorComponent {
+abstract class AbstractMaskEditorComponent<C extends MaskEditorComponent> extends AbstractEditorComponent<C> implements MaskEditorComponent {
     private static final String MASK_CHARS = "9#MdyAaXxhmp";
 
     private String editMask = "";

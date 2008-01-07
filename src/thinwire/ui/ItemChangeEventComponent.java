@@ -36,11 +36,11 @@ public interface ItemChangeEventComponent extends Component {
      * Adds a listener which executes a method when something is changed.
      * @param listener the listener to add
      */
-    public void addItemChangeListener(ItemChangeListener listener);
+    public Component addItemChangeListener(ItemChangeListener listener);
 
     /**
      * Removes an existing itemChangeListener.
      * @param listener the listener to remove
      */
-    public void removeItemChangeListener(ItemChangeListener listener);
+    public Component removeItemChangeListener(ItemChangeListener listener);
 }

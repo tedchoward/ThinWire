@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
 /**
  * @author Joshua J. Gertzen
  */
-abstract class AbstractTextComponent extends AbstractComponent implements TextComponent {
+abstract class AbstractTextComponent<C extends TextComponent> extends AbstractComponent<C> implements TextComponent {
     private static final Pattern NEW_LINE_PATTERN = Pattern.compile("(?<!\\r)\\n|\\r(?!\\n)");
 
     private String text = "";

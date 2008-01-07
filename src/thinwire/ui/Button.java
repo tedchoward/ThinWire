@@ -79,7 +79,7 @@ import thinwire.util.ImageInfo;
  * </p>
  * @author Joshua J. Gertzen
  */
-public class Button extends AbstractTextComponent implements ImageComponent {
+public class Button extends AbstractTextComponent<Button> implements ImageComponent {
     public static final String PROPERTY_STANDARD = "standard";
 
     private boolean standard;
@@ -140,6 +140,7 @@ public class Button extends AbstractTextComponent implements ImageComponent {
 	 * @param standard true to make this the standard button, false otherwise.
 	 * @throws UnsupportedOperationException if this Button's parent is not a Container.
 	 */
+	@SuppressWarnings("unchecked")
 	public final void setStandard(boolean standard) {
         boolean oldStandard = this.standard;
 	    this.standard = standard;	        

@@ -70,7 +70,7 @@ package thinwire.ui;
  * </p>
  * @author Joshua J. Gertzen
  */
-public class CheckBox extends AbstractTextComponent implements CheckedComponent {
+public class CheckBox extends AbstractTextComponent<CheckBox> implements CheckedComponent {
     public static final String PROPERTY_CHECKED = "checked";
     
     private boolean checked;

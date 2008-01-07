@@ -76,7 +76,7 @@ package thinwire.ui;
  * 
  * @author Joshua J. Gertzen
  */
-public class TextField extends AbstractMaskEditorComponent {
+public class TextField extends AbstractMaskEditorComponent<TextField> {
     public static final String PROPERTY_INPUT_HIDDEN = "inputHidden";
        
 	private boolean inputHidden = false;	

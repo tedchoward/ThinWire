@@ -38,6 +38,7 @@ import thinwire.ui.layout.Layout;
  * is placed in a <code>Container</code> with an X value of 10, will actually be positioned at X coordinate 15.
  * @author Joshua J. Gertzen
  */
+@SuppressWarnings("unchecked")
 public interface Container<T extends Component> extends ItemChangeEventComponent {
     public enum ScrollType {NONE, AS_NEEDED, ALWAYS}
     

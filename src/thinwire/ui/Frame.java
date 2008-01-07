@@ -58,7 +58,7 @@ import java.util.List;
  * 
  * @author Joshua J. Gertzen
  */
-public final class Frame extends AbstractWindow {
+public final class Frame extends AbstractWindow<Frame> {
     private List<Dialog> children = new ArrayList<Dialog>();
     private List<Dialog> roChildren = Collections.unmodifiableList(children);
     private int innerHeight;

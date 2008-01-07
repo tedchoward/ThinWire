@@ -35,11 +35,12 @@ import thinwire.ui.event.KeyPressEvent;
 import thinwire.ui.event.PropertyChangeListener;
 import thinwire.ui.event.KeyPressListener;
 import thinwire.ui.style.*;
+import thinwire.util.Reflector;
 
 /**
  * @author Joshua J. Gertzen
  */
-abstract class AbstractComponent implements Component {
+abstract class AbstractComponent<C extends Component> implements Component {
     //#IFDEF V1_1_COMPAT    
     private static final String COMPAT_MODE_PROP = Application.class.getName() + ".compatMode";
     static boolean isCompatModeOn() {
@@ -68,6 +69,7 @@ abstract class AbstractComponent implements Component {
     private Object limit;
     private boolean visible;
     private boolean ignoreFirePropertyChange;
+    private Reflector reflector;
     
     AbstractComponent() {
         this(EventListenerImpl.ACTION_VALIDATOR);
@@ -117,14 +119,16 @@ abstract class AbstractComponent implements Component {
         return this.getClass().getName() + " does not support " + (read ? "reading from" : "writing to") + " the property: " + propertyName;
     }
 
-    public Component addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+    @SuppressWarnings("unchecked")
+	public C addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
         pcei.addListener(propertyName, listener);
-        return this;
+        return (C)this;
     }
     
-    public Component addPropertyChangeListener(String[] propertyNames, PropertyChangeListener listener) {
+    @SuppressWarnings("unchecked")
+	public C addPropertyChangeListener(String[] propertyNames, PropertyChangeListener listener) {
         pcei.addListener(propertyNames, listener);
-        return this;
+        return (C)this;
     }
     
     public void removePropertyChangeListener(PropertyChangeListener listener) {
@@ -152,14 +156,16 @@ abstract class AbstractComponent implements Component {
         return true;
     }
 
-    public Component addActionListener(String action, ActionListener listener) {
+    @SuppressWarnings("unchecked")
+	public C addActionListener(String action, ActionListener listener) {
         aei.addListener(action, listener);
-        return this;
+        return (C)this;
     }
     
-    public Component addActionListener(String[] actions, ActionListener listener) {
+    @SuppressWarnings("unchecked")
+	public C addActionListener(String[] actions, ActionListener listener) {
         aei.addListener(actions, listener);
-        return this;
+        return (C)this;
     }    
     
     public void removeActionListener(ActionListener listener) {
@@ -178,14 +184,16 @@ abstract class AbstractComponent implements Component {
         fireAction(new ActionEvent(action, this, source));
     }
     
-    public Component addDropListener(Component dragComponent, DropListener listener) {
+    @SuppressWarnings("unchecked")
+	public C addDropListener(Component dragComponent, DropListener listener) {
         dei.addListener(dragComponent, listener);
-        return this;
+        return (C)this;
     }
     
-    public Component addDropListener(Component[] dragComponents, DropListener listener) {
+    @SuppressWarnings("unchecked")
+	public C addDropListener(Component[] dragComponents, DropListener listener) {
         dei.addListener(dragComponents, listener);
-        return this;
+        return (C)this;
     }    
     
     public void removeDropListener(DropListener listener) {
@@ -196,22 +204,26 @@ abstract class AbstractComponent implements Component {
         dei.fireDrop(ev);
     }
     
-    public void fireDrop(Component dragComponent) {
+    @SuppressWarnings("unchecked")
+	public void fireDrop(Component dragComponent) {
         fireDrop(new DropEvent(this, dragComponent));
     }
     
-    public void fireDrop(Component dragComponent, Object dragObject) {
+    @SuppressWarnings("unchecked")
+	public void fireDrop(Component dragComponent, Object dragObject) {
         fireDrop(new DropEvent(this, null, dragComponent, dragObject));
     }
         
-    public Component addKeyPressListener(String keyPressCombo, KeyPressListener listener) {
+    @SuppressWarnings("unchecked")
+	public C addKeyPressListener(String keyPressCombo, KeyPressListener listener) {
         kpei.addListener(keyPressCombo, listener);
-        return this;
+        return (C)this;
     }
     
-    public Component addKeyPressListener(String[] keyPressCombos, KeyPressListener listener) {
+    @SuppressWarnings("unchecked")
+	public C addKeyPressListener(String[] keyPressCombos, KeyPressListener listener) {
         kpei.addListener(keyPressCombos, listener);
-        return this;
+        return (C)this;
     }
     
     public void removeKeyPressListener(KeyPressListener listener) {
@@ -234,7 +246,8 @@ abstract class AbstractComponent implements Component {
         this.parent = parent;
     }    
     
-    public Container getContainer() {
+    @SuppressWarnings("unchecked")
+	public Container<Component> getContainer() {
         Container c = null;        
         Object o = this.getParent();
         
@@ -296,7 +309,8 @@ abstract class AbstractComponent implements Component {
         return focus;
     }
 
-    public void setFocus(boolean focus) {
+    @SuppressWarnings("unchecked")
+	public void setFocus(boolean focus) {
         if (!this.isFocusCapable()) throw new IllegalStateException(this.getClass().getSimpleName() + ": !this.isFocusCapable()");
             
         if (parent instanceof Container || parent == null) {
@@ -387,7 +401,8 @@ abstract class AbstractComponent implements Component {
         firePropertyChange(this, PROPERTY_Y, oldY, y);
     }
         
-    public Component setPosition(int x, int y) {
+    @SuppressWarnings("unchecked")
+	public C setPosition(int x, int y) {
         rangeCheck(PROPERTY_X, x, Short.MIN_VALUE, Short.MAX_VALUE);
         rangeCheck(PROPERTY_Y, y, Short.MIN_VALUE, Short.MAX_VALUE);
         int oX = -1, oY = -1;
@@ -417,7 +432,7 @@ abstract class AbstractComponent implements Component {
             }
         }
         
-        return this;
+        return (C)this;
     }    
 
     public int getWidth() {
@@ -442,7 +457,8 @@ abstract class AbstractComponent implements Component {
         firePropertyChange(this, PROPERTY_HEIGHT, oldHeight, height);
     }
     
-    public Component setSize(int width, int height) {
+    @SuppressWarnings("unchecked")
+	public C setSize(int width, int height) {
         rangeCheck(PROPERTY_WIDTH, width, 0, Short.MAX_VALUE);
         rangeCheck(PROPERTY_HEIGHT, height, 0, Short.MAX_VALUE);
         int oWidth = -1, oHeight = -1;
@@ -472,10 +488,11 @@ abstract class AbstractComponent implements Component {
             }
         }
         
-        return this;
+        return (C)this;
     }
     
-    public Component setBounds(int x, int y, int width, int height) {
+    @SuppressWarnings("unchecked")
+	public C setBounds(int x, int y, int width, int height) {
         rangeCheck(PROPERTY_X, x, Short.MIN_VALUE, Short.MAX_VALUE);
         rangeCheck(PROPERTY_Y, y, Short.MIN_VALUE, Short.MAX_VALUE);
         rangeCheck(PROPERTY_WIDTH, width, 0, Short.MAX_VALUE);
@@ -514,18 +531,19 @@ abstract class AbstractComponent implements Component {
                 firePropertyChange(this, PROPERTY_HEIGHT, oHeight, height);                
             }
         }
-        return this;
+        return (C)this;
     }
     
     public Object getLimit() {
         return limit;
     }
     
-    public Component setLimit(Object limit) {
+    @SuppressWarnings("unchecked")
+	public C setLimit(Object limit) {
         Object oldLimit = this.limit;
         this.limit = limit;
         firePropertyChange(this, PROPERTY_LIMIT, oldLimit, limit);
-        return this;
+        return (C)this;
     }
     
     public boolean isVisible() {
@@ -536,5 +554,17 @@ abstract class AbstractComponent implements Component {
         boolean oldVisible = this.visible;
         this.visible = visible;
         firePropertyChange(this, PROPERTY_VISIBLE, oldVisible, visible);
+    }
+    
+    @SuppressWarnings("unchecked")
+	public C set(String name, Object value) throws Reflector.NotFoundException, Reflector.CallException {
+    	if (reflector == null) reflector = Reflector.getReflector(this.getClass());
+    	reflector.set(this, name, value);
+    	return (C)this;
+    }
+    
+    public Object get(String name) throws Reflector.NotFoundException, Reflector.CallException {
+    	if (reflector == null) reflector = Reflector.getReflector(this.getClass());
+    	return reflector.get(this, name);
     }
 }

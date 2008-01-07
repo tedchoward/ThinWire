@@ -96,7 +96,7 @@ package thinwire.ui;
  * 
  * @author Ted C. Howard
  */
-public class Slider extends AbstractRangeComponent {     
+public class Slider extends AbstractRangeComponent<Slider> {     
     /**
      * Constructs a new <code>Slider</code> with a length of 100 and initial currentIndex of 0.
      *

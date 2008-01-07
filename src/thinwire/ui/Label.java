@@ -73,7 +73,7 @@ package thinwire.ui;
  * 
  * @author Joshua J. Gertzen
  */
-public class Label extends AbstractLabelComponent {
+public class Label extends AbstractLabelComponent<Label> {
     /**
      * Constructs a new Label with no text.
      */

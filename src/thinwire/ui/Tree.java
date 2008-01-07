@@ -29,8 +29,6 @@ package thinwire.ui;
 import java.util.List;
 
 import thinwire.ui.event.ActionEvent;
-import thinwire.ui.event.ItemChangeEvent;
-import thinwire.ui.event.ItemChangeListener;
 
 /**
  * A component that displays a set of hierarchical data as an outline.
@@ -121,7 +119,7 @@ import thinwire.ui.event.ItemChangeListener;
  * 
  * @author Joshua J. Gertzen
  */
-public class Tree extends AbstractHierarchyComponent<Tree.Item> {    
+public class Tree extends AbstractHierarchyComponent<Tree, Tree.Item> {    
     /**
      * An object that represents an item in a <code>Tree</code> component.
      */

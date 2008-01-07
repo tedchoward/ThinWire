@@ -26,12 +26,11 @@
 */
 package thinwire.ui;
 
-import java.util.List;
-
 /**
  * @author Joshua J. Gertzen
  */
-abstract class AbstractWindow extends AbstractContainer<Component> implements Window {
+@SuppressWarnings("unchecked")
+abstract class AbstractWindow<C extends Window> extends AbstractContainer<C, Component> implements Window {
     static final int MENU_BAR_HEIGHT = 23;
     
     String title = "";

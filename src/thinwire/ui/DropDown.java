@@ -31,10 +31,8 @@ import thinwire.render.RenderStateListener;
 import thinwire.render.web.WebApplication;
 import thinwire.ui.event.PropertyChangeEvent;
 import thinwire.ui.event.PropertyChangeListener;
-import thinwire.ui.style.Background;
 import thinwire.ui.style.Border;
 import thinwire.ui.style.Color;
-import thinwire.ui.style.FX;
 import thinwire.ui.style.Font;
 import thinwire.ui.style.Style;
 
@@ -50,7 +48,7 @@ import thinwire.ui.style.Style;
  * @author Joshua J. Gertzen
  * @author Ted C. Howard
  */
-public class DropDown<T extends Component> extends AbstractMaskEditorComponent {
+public class DropDown<T extends Component> extends AbstractMaskEditorComponent<DropDown<T>> {
     public static final String PROPERTY_EDIT_ALLOWED = "editAllowed";
     public static final String PROPERTY_VIEW = "view";
     public static final String PROPERTY_COMPONENT = "component";
@@ -59,7 +57,8 @@ public class DropDown<T extends Component> extends AbstractMaskEditorComponent {
         Font.PROPERTY_FONT_ITALIC, Font.PROPERTY_FONT_SIZE, Font.PROPERTY_FONT_UNDERLINE, Font.PROPERTY_FONT_STRIKE
     };
 
-    static void copyDropDownStyle(Component parent, Component child, boolean copyBackground) {
+    @SuppressWarnings("unchecked")
+	static void copyDropDownStyle(Component parent, Component child, boolean copyBackground) {
         Style cs = child.getStyle();
         Style ps = parent.getStyle();
         Border csb = cs.getBorder();
@@ -95,7 +94,8 @@ public class DropDown<T extends Component> extends AbstractMaskEditorComponent {
             }
     	}
     	
-    	protected void addCloseComponent(final Component comp) {
+    	@SuppressWarnings("unchecked")
+		protected void addCloseComponent(final Component comp) {
             if (dd == null) throw new IllegalStateException("dd == null");
             
             final WebApplication app = (WebApplication) Application.current();
@@ -174,7 +174,8 @@ public class DropDown<T extends Component> extends AbstractMaskEditorComponent {
      * Assigns the component that is displayed upon clicking the drop down button.
      * @param comp the component to display upon clicking the drop down button.
      */
-    public void setComponent(T comp) {
+    @SuppressWarnings("unchecked")
+	public void setComponent(T comp) {
         if (comp == null) throw new IllegalArgumentException("comp == null");
         if (comp.getParent() != null) throw new IllegalStateException("comp.getParent() != null");
         T oldComp = getComponent();

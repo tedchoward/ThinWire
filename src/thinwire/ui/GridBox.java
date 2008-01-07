@@ -33,13 +33,11 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.logging.Logger;
 
 import thinwire.ui.AlignTextComponent.AlignX;
 import thinwire.ui.DropDownGridBox;
 import thinwire.ui.DropDownGridBox.DefaultView;
 import thinwire.ui.event.ActionEvent;
-import thinwire.ui.event.ActionListener;
 import thinwire.ui.event.ItemChangeEvent;
 import thinwire.ui.event.ItemChangeListener;
 import thinwire.ui.event.PropertyChangeEvent;
@@ -127,9 +125,7 @@ import thinwire.util.Grid;
  * 
  * @author Joshua J. Gertzen
  */
-public class GridBox extends AbstractComponent implements Grid<GridBox.Row, GridBox.Column>, ItemChangeEventComponent {
-    private static Logger log = Logger.getLogger(GridBox.class.getName());
-    
+public class GridBox extends AbstractComponent<GridBox> implements Grid<GridBox.Row, GridBox.Column>, ItemChangeEventComponent {
     public static final class Range {
         private String stringValue;
         private GridBox gridBox;
@@ -275,12 +271,7 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
         		if (oldChecked) gb.checkedRows.remove(this); 
                 this.checked = checked;
                 if (checked) gb.checkedRows.add(this);
-        		
-                if (gb.firePropertyChange(this, PROPERTY_ROW_CHECKED, oldChecked, checked)) {
-                    //#IFDEF V1_1_COMPAT                    
-                    if (gb.compatModeOn) gb.firePropertyChange(this, "checked", oldChecked, checked);
-                    //#ENDIF
-                }
+                gb.firePropertyChange(this, PROPERTY_ROW_CHECKED, oldChecked, checked);
             }
         }
                 
@@ -373,7 +364,7 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
             public Object format(Object value);
         }    
         
-        public static final Comparator DEFAULT_SORT_COMPARATOR = new Comparator() {
+		public static final Comparator<Object> DEFAULT_SORT_COMPARATOR = new Comparator<Object>() {
             public int compare(Object o1, Object o2) {
                 if (o1 == null) o1 = "";
                 if (o2 == null) o2 = "";
@@ -389,7 +380,7 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
         private int width = -1;
         private AlignX alignX = AlignX.LEFT;
         private Format displayFormat;
-        private Comparator sortComparator = DEFAULT_SORT_COMPARATOR;
+		private Comparator<? super Object> sortComparator = DEFAULT_SORT_COMPARATOR;
 
         /**
          * Construct a Column.
@@ -566,7 +557,7 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
          * Get this Column's Comparator.
          * @return this Column's Comparator
          */
-        public Comparator getSortComparator() {
+		public Comparator<? super Object> getSortComparator() {
             return sortComparator;
         }
 
@@ -575,9 +566,9 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
          * @see java.util.Comparator
          * @param sortComparator this Column's Comparator.
          */
-        public void setSortComparator(Comparator sortComparator) {
+		public void setSortComparator(Comparator<? super Object> sortComparator) {
             if (sortComparator == null) sortComparator = DEFAULT_SORT_COMPARATOR;
-            Comparator oldSortComparator = this.sortComparator;
+            Comparator<? super Object> oldSortComparator = this.sortComparator;
             GridBox gb = (GridBox) getParent();
             this.sortComparator = sortComparator;            
             if (gb != null) gb.firePropertyChange(this, PROPERTY_COLUMN_SORT_COMPARATOR, oldSortComparator, sortComparator);                
@@ -674,9 +665,6 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
     private boolean visibleCheckBoxes;
     private boolean fullRowCheckBox;
     private boolean sortAllowed = true;
-    //#IFDEF V1_1_COMPAT
-    private boolean compatModeOn;
-    //#ENDIF
     private Row selectedRow;
     private Row priorSelectedRow;
     private Column sortedColumn;
@@ -801,16 +789,13 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
         roCheckedRows = Collections.unmodifiableSortedSet(checkedRows);
         rowsWithChildren = new TreeSet<Row>(indexOrder);
         roRowsWithChildren = Collections.unmodifiableSortedSet(rowsWithChildren);
-        //#IFDEF V1_1_COMPAT
-        compatModeOn = isCompatModeOn();
-        //#ENDIF
 	}
     
     private void sort() {
         if (sortedColumnOrder == GridBox.Column.SortOrder.NONE || sortedColumn == null) return;
         sorting = true;
         final int index = sortedColumn.getIndex();
-        final Comparator<Object> sortComparator = sortedColumn.getSortComparator();
+        final Comparator<? super Object> sortComparator = sortedColumn.getSortComparator();
         
         if (sortedColumnOrder == GridBox.Column.SortOrder.DESC) {               
             Collections.sort(getRows(), new Comparator<Row>() {
@@ -829,26 +814,15 @@ public class GridBox extends AbstractComponent implements Grid<GridBox.Row, Grid
         sorting = false;
     }       
         
-	public void addItemChangeListener(ItemChangeListener listener) {
+	public GridBox addItemChangeListener(ItemChangeListener listener) {
         icei.addListener(listener);
+        return this;
 	}
 	
-	public void removeItemChangeListener(ItemChangeListener listener) {
+	public GridBox removeItemChangeListener(ItemChangeListener listener) {
         icei.removeListener(listener);
+        return this;
 	}	
-    //#IFDEF V1_1_COMPAT
-	
-    /**
-     * Adds a listener which will perform a certain action when a specific action occurs
-     * (ex: click).
-     * @param listener the listener to add
-     * @deprecated for performance reasons, this form as been deprecated.  Use the named action form instead. 
-     */
-    public void addActionListener(ActionListener listener) {
-        if (!isCompatModeOn()) throw new IllegalStateException("this method is deprecated as of v1.2 and cannot be called unless compat mode is on, use addActionListener(action, listener) instead.");        
-        addActionListener(ACTION_CLICK, listener);
-    }
-    //#ENDIF
     
     public void fireAction(ActionEvent ev) {
         if (ev == null) throw new IllegalArgumentException("ev == null");

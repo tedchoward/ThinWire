@@ -29,7 +29,7 @@ package thinwire.ui;
 /**
  * @author Joshua J. Gertzen
  */
-abstract class AbstractEditorComponent extends AbstractTextComponent implements EditorComponent {    
+abstract class AbstractEditorComponent<C extends EditorComponent> extends AbstractTextComponent<C> implements EditorComponent {    
     private int maxLength = 0;    
     private int selectionBeginIndex;
     private int selectionEndIndex;

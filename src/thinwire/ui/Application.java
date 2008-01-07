@@ -90,8 +90,10 @@ public abstract class Application {
         }
     }            
     
+    @SuppressWarnings("unchecked")
     private Map<Local, Object> appLocal = new WeakHashMap<Local, Object>();
     
+    @SuppressWarnings("unchecked")
     public static class Local<T> {
         public void set(T value) {
             Map<Local, Object> map = Application.current().appLocal;
@@ -193,9 +195,8 @@ public abstract class Application {
         			return false;
         		}
             } else {
-                Application app = Application.current();
                 if (url.startsWith("file:///")) url = url.substring(7);
-                File file = app == null ? new File(url) : app.getRelativeFile(url);
+                File file = Application.getRelativeFile(url);
                 return file.exists();
             }
  		} else {
@@ -323,11 +324,13 @@ public abstract class Application {
     }
 
     //XXX: This method exposes a "potential" security issue because it expose the ClassLoader & Classes of the app to non-app libraries.
+    @SuppressWarnings("unchecked")
     public static Class getApplicationContextClass(String className) throws ClassNotFoundException {
         Application app = current();
         return (app == null ? Application.class.getClassLoader() : app.getClassLoader()).loadClass(className);
     }
     
+    @SuppressWarnings("unchecked")
     public static Style getDefaultStyle(Class<? extends Component> clazz) {
         if (clazz == null) throw new IllegalArgumentException("clazz == null");
         Map<Class<? extends Component>, Style> map = current() != null ? current().compTypeToStyle : defaultStyleMap;
@@ -362,6 +365,7 @@ public abstract class Application {
         return style;
     }
     
+    @SuppressWarnings("unchecked")
     private static Map<Class<? extends Component>, Style> buildStyleMap(ClassLoader classLoader, XOD props) {
     	Map<Class<? extends Component>, Style> styleMap = new HashMap<Class<? extends Component>, Style>();
     	
@@ -389,6 +393,7 @@ public abstract class Application {
     }
         
     private List<ExceptionListener> exceptionListeners;
+    @SuppressWarnings("unchecked")
     private Map<Class, EventListenerImpl> globalListeners;
     private WeakReference<Component> priorFocus;
     private Frame frame;
@@ -404,6 +409,7 @@ public abstract class Application {
         exceptionListeners = new ArrayList<ExceptionListener>();
     }   
         
+    @SuppressWarnings("unchecked")
     <T extends EventListener> EventListenerImpl<T> getGlobalListenerSet(Class<T> type, boolean createIfNull) {
     	if (globalListeners == null) {
     		if (createIfNull) {
@@ -863,6 +869,7 @@ public abstract class Application {
         return ret;
     }
         
+    @SuppressWarnings("unchecked")
     protected Object setPackagePrivateMember(String memberName, Component comp, Object value) {
         if (memberName.equals("renderer")) {
             ((AbstractComponent)comp).setRenderer((Renderer)value);

@@ -94,7 +94,7 @@ package thinwire.ui;
  * <p>
  * @author Joshua J. Gertzen
  */
-public class Dialog extends AbstractWindow {
+public class Dialog extends AbstractWindow<Dialog> {
     public static final String PROPERTY_RESIZE_ALLOWED = "resizeAllowed";
     public static final String PROPERTY_REPOSITION_ALLOWED = "repositionAllowed";
     public static final String PROPERTY_MODAL = "modal";
