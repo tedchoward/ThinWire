@@ -54,6 +54,7 @@ abstract class AbstractLabelComponent<C extends LabelComponent> extends Abstract
         Component oldLabelFor = this.labelFor;
         this.labelFor = labelFor;
         if (labelFor != null) ((AbstractComponent)labelFor).setLabel(this);
+        if (oldLabelFor != null) ((AbstractComponent) oldLabelFor).setLabel(null);
         firePropertyChange(this, PROPERTY_LABEL_FOR, oldLabelFor, labelFor);
     }
     
