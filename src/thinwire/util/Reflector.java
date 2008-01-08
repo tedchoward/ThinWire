@@ -7,7 +7,7 @@ import java.util.concurrent.*;
 
 public class Reflector {
 	private static final Logger log = Logger.getLogger(Reflector.class.getName());
-	private static final Level LEVEL = Level.INFO;
+	private static final Level LEVEL = Level.FINER;
 	
     private interface Converter {
         Object toType(Class type, Object value);
