@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.AbstractList;
 
 import thinwire.ui.event.ItemChangeEvent.Type;
+import thinwire.util.Grid.Column;
+import thinwire.util.Grid.Row;
 
 /**
  * ArrayGrid is an implementation of the Grid interface which provides a disconnected dataset.<p>
@@ -106,13 +108,13 @@ import thinwire.ui.event.ItemChangeEvent.Type;
  * </pre>
  * @author Joshua J. Gertzen
  */
-public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> implements Grid<R, C> {
-    private Class<? extends Row> rowType;
-    private Class<? extends Column> columnType;
-    private List<R> rows;
-    private List<C> columns;
+public class ArrayGrid<T> implements Grid<T> {
+    private Class<? extends Row<T>> rowType;
+    private Class<? extends Column<T>> columnType;
     private boolean ensuringSymmetry;
-    private Grid<R, C> table;
+    private Grid<T> table;
+    private List<Grid.Row<T>> rows;
+    private List<Grid.Column<T>> columns;
 
     /**
      * Construct an ArrayGrid.
@@ -125,10 +127,9 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
      * Constructs an ArrayGrid based on another grid.
      * @param g a grid that should be copied into this grid.
      */
-    public ArrayGrid(Grid<R, C> g) {
-        this(null, Row.class, Column.class);   
-        if(g != null)
-            columns.addAll(g.getColumns());
+    public ArrayGrid(Grid<T> g) {
+        this(null, Row.class, Column.class);
+        if(g != null) columns.addAll(g.getColumns());
     }
     
     /**
@@ -141,39 +142,33 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
      * @throws ClassCastException if rowType does not extend Grid.Row or columnType does
      *   not extend Grid.Column.
      */
-    protected ArrayGrid(Grid<R, C> grid, Class<? extends Row> rowType, Class<? extends Column> columnType) {
-        if (!(Row.class.isAssignableFrom(rowType) && Column.class.isAssignableFrom(columnType)))
-            throw new ClassCastException("the rowType must be a subclass of Grid.Row and the columnType must be a subclass of Grid.Column");
-        
-        this.rowType = rowType;
-        this.columnType = columnType;
+    @SuppressWarnings("unchecked")
+    protected ArrayGrid(Grid<T> grid, Class<? extends Row> rowType, Class<? extends Column> columnType) {
+        this.rowType = (Class<? extends Row<T>>)rowType;
+        this.columnType = (Class<? extends Column<T>>)columnType;
         
         if (grid == null)
             this.table = this;
         else
             this.table = grid;
         
-        rows = new RowList();
-        columns = new ColumnList();
+        rows = new RowList<T>(this);
+        columns = new ColumnList<T>(this);
     }
     
-	/**
-	 * @see thinwire.util.Grid#getColumns
-	 */
-    public List<C> getColumns() {
-        return columns;
+    @SuppressWarnings("unchecked")
+    public <C extends Grid.Column<T>> List<C> getColumns() {
+        return (List<C>)columns;
     }
 
-    /**
-     * @see thinwire.util.Grid#getRows
-     */
-    public List<R> getRows() {
-        return rows;
+    @SuppressWarnings("unchecked")
+    public <R extends Grid.Row<T>> List<R> getRows() {
+        return (List<R>)rows;
     }
     
-    private C newColumnInstance() {
+    private Column<T> newColumnInstance() {
         try {
-            return (C)columnType.newInstance();
+            return columnType.newInstance();
         } catch (InstantiationException e) {
             throw new RuntimeException(e);
         } catch (IllegalAccessException e) {
@@ -181,9 +176,9 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
         }        
     }
     
-    private R newRowInstance() {
+    private Row<T> newRowInstance() {
         try {
-            return (R)rowType.newInstance();
+            return rowType.newInstance();
         } catch (InstantiationException e) {
             throw new RuntimeException(e);
         } catch (IllegalAccessException e) {
@@ -191,7 +186,7 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
         }        
     }
 
-    private void ensureSymmetry(Row r, int addAtIndex) {
+    private void ensureSymmetry(Row<T> r, int addAtIndex) {
         if (ensuringSymmetry) return;
         ensuringSymmetry = true;        
         
@@ -206,7 +201,7 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
 	            r.add(null);
         }
         
-        for (Grid.Row row : rows) {            
+        for (Grid.Row<T> row : rows) {            
             if (row.size() < columns.size()) {
                 row.set(columns.size() - 1, null); //force the row to expand
                 
@@ -228,10 +223,10 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
      * @see AbstractList
      * @see thinwire.util.Grid.Row
      */
-    public static class Row extends AbstractList<Object> implements Grid.Row {
-        private ArrayGrid<? extends Row, ? extends Column> arrayGrid;
-        private Grid<? extends Grid.Row, ? extends Grid.Column> parent;       
-        private List<Object> l;
+    public static class Row<T> extends AbstractList<T> implements Grid.Row<T> {
+        private ArrayGrid<T> arrayGrid;
+        private Grid<T> parent;       
+        private List<T> l;
         private int rowIndex;
         private Object userObject;
         
@@ -239,14 +234,14 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
          * Construct a Row.
          */
         public Row() {
-            l = new ArrayList<Object>(3);
+            l = new ArrayList<T>(3);
         }
         
         /**
          * Construct a Row that contains the values of the specified Collection.
          * @param c the new Row's values.
          */
-        public Row(Collection<? extends Object> c) {
+        public Row(Collection<? extends T> c) {
             this();
             addAll(c);
         }
@@ -255,29 +250,29 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
          * Construct a Row that contains the values of the specified Array.
          * @param a the new Row's values.
          */
-        public Row(Object... a) {
+        public Row(T... a) {
             this();
             
-            for (Object o : a)
+            for (T o : a)
                 add(o);
         }
                 
-        private void setParent(Grid<? extends Grid.Row, ? extends Grid.Column> parent, ArrayGrid<? extends Row, ? extends Column> arrayGrid) {
+        private void setParent(Grid<T> parent, ArrayGrid<T> arrayGrid) {
             this.parent = parent;
             this.arrayGrid = arrayGrid;
             if (parent == null) rowIndex = -1;
         }
 
-        public Grid getParent() {
+        public Grid<T> getParent() {
             return parent;
         }
         
         private int getColumnIndexByName(String columnName) {
             if (parent == null) throw new IllegalStateException("cannot access a row column by name before the row is added to a grid");            
-            List<? extends Grid.Column> columns = parent.getColumns();
+            List<? extends Grid.Column<T>> columns = parent.getColumns();
             
             for (int i = columns.size() - 1; i >= 0; i--) {
-                if (((Column)columns.get(i)).getName().equalsIgnoreCase(columnName)) {
+                if (columns.get(i).getName().equalsIgnoreCase(columnName)) {
                     return i;
                 }
             }
@@ -303,38 +298,38 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
         	this.userObject = value;
         }
         
-        public Object get(String columnName) {
+        public T get(String columnName) {
             return get(getColumnIndexByName(columnName));
         }
         
-        public Object get(int index) {
+        public T get(int index) {
             return l.get(index);
         }
         
-        public Object set(int index, Object o) {            
+        public T set(int index, T o) {            
             if (parent != null) {
                 while (l.size() < parent.getColumns().size())
                     l.add(null);                
             }
 
-            Object ret = l.set(index, o);            
+            T ret = l.set(index, o);            
             if (arrayGrid != null && !arrayGrid.ensuringSymmetry) arrayGrid.fireItemChange(Type.SET, rowIndex, index, ret, o);                    
             return ret;
         }
         
-        public Object set(String columnName, Object o) {
+        public T set(String columnName, T o) {
             return set(getColumnIndexByName(columnName), o);
         }
         
-        public void add(int index, Object o) {
+        public void add(int index, T o) {
             if (parent != null) throw new UnsupportedOperationException("you cannot add an item to a row, you must instead add a column and then set the cell's value");
             l.add(index, o);
             modCount++;
         }
         
-        public Object remove(int index) {
+        public T remove(int index) {
             if (parent != null) throw new UnsupportedOperationException("you cannot remove an item from a row, you must instead remove a column or set this cell's value to a new value");
-            Object o = l.remove(index);
+            T o = l.remove(index);
             modCount++;
             return o;
         }
@@ -349,9 +344,9 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
      * @see java.util.AbstractList
      * @see thinwire.util.Grid.Column
      */
-    public static class Column extends AbstractList<Object> implements Grid.Column {
-        private Grid<? extends Grid.Row, ? extends Grid.Column> parent;
-        private List<Object> l;
+    public static class Column<T> extends AbstractList<T> implements Grid.Column<T> {
+        private Grid<T> parent;
+        private List<T> l;
         private int columnIndex;
         private String name = "";
         private Object userObject;
@@ -368,7 +363,7 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
          *   as the Column's values.
          * @param c the new Column's values
          */
-        public Column(Collection<? extends Object> c) {
+        public Column(Collection<? extends T> c) {
             this();
             addAll(c);
         }
@@ -377,10 +372,10 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
          * Construct a Column that contains the values of the specified Array.
          * @param a the new Column's values
          */
-        public Column(Object... a) {
+        public Column(T... a) {
             this();
             
-            for (Object o : a)
+            for (T o : a)
                 add(o);
         }        
         
@@ -397,14 +392,14 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
          * @param parent The Grid interface
          * @param arrayGrid the ArrayGrid object
          */
-        private void setParent(Grid<? extends Grid.Row, ? extends Grid.Column> parent, ArrayGrid<? extends Row, ? extends Column> arrayGrid) {            
+        private void setParent(Grid<T> parent, ArrayGrid<T> arrayGrid) {            
             this.parent = parent;
             this.l = null;            
             if (parent == null) columnIndex = -1;            
             modCount++;
         }
         
-        public Grid getParent() {
+        public Grid<T> getParent() {
             return parent;
         }
 
@@ -430,40 +425,40 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
         	this.userObject = value;
         }
         
-        public Object get(int index) {            
+        public T get(int index) {            
             if (parent == null) {
                 if (index < 0 || index >= size() || l == null) throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size());
                 return l.get(index);
             } else {
                 if (index < 0 || index >= size()) throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size());
-                return ((Row)parent.getRows().get(index)).get(columnIndex);
+                return parent.getRows().get(index).get(columnIndex);
             }
         }
         
-        public Object set(int index, Object o) {            
+        public T set(int index, T o) {            
             if (parent == null) {
                 if (index < 0 || index >= size() || l == null) throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size());
                 return l.set(index, o);
             } else {
                 if (index < 0 || index >= size()) throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size());
-                Row row = (Row)parent.getRows().get(index);
-                Object ret = row.set(columnIndex, o);
+                Row<T> row = (Row<T>)parent.getRows().get(index);
+                T ret = row.set(columnIndex, o);
                 return ret;
             }
         }
                 
-        public void add(int index, Object o) {
+        public void add(int index, T o) {
             if (parent != null) throw new UnsupportedOperationException("you cannot add an item to a column, you must instead add a row and then set the cell's value");            
             if (index < 0 || index > size()) throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size());
-            if (l == null) l = new ArrayList<Object>(3);
+            if (l == null) l = new ArrayList<T>(3);
             l.add(index, o);            
             modCount++;
         }
 
-        public Object remove(int index) {
+        public T remove(int index) {
             if (parent != null) throw new UnsupportedOperationException("you cannot remove an item from a column, you must instead remove a row or set this cell's value to a new value");            
             if (index < 0 || index > size() || l == null) throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size());            
-            Object o = l.remove(index);
+            T o = l.remove(index);
             modCount++;
             return o;
         }
@@ -476,27 +471,29 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
         }
     }    
         
-    private class RowList extends AbstractList<R> {
-        private List<R> l;
+    private static class RowList<T> extends AbstractList<Grid.Row<T>> {
+    	private ArrayGrid<T> grid;
+        private List<Row<T>> l;
         
-        private RowList() {
-            l = new ArrayList<R>();
+        private RowList(ArrayGrid<T> grid) {
+        	this.grid = grid;
+            l = new ArrayList<Row<T>>();
         }
         
-        private R prepareRow(List<Object> o) {
-            R r;
+        private Row<T> prepareRow(List<T> o) {
+            Row<T> r;
             
-            if (o instanceof ArrayGrid.Row) {
-                r = (R)o;
-                Grid t = r.getParent();
+            if (o instanceof Row) {
+                r = (Row<T>)o;
+                Grid<T> t = r.getParent();
                 
-                if (t != null && t != table) {
-                    R nr = newRowInstance();
+                if (t != null && t != grid.table) {
+                    Row<T> nr = grid.newRowInstance();
                     nr.addAll(r);
                     r = nr;
                 }
             } else {
-                R nr = newRowInstance();
+                Row<T> nr = grid.newRowInstance();
                 nr.addAll(o);
                 r = nr;
             }
@@ -504,7 +501,7 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
             return r;
         }
         
-        public R get(int index) {
+        public Grid.Row<T> get(int index) {
             return l.get(index);
         }
 
@@ -513,59 +510,55 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
          * Note:  The returned Row is not an ordinary List.  It
          * Any calls to get(int) on the Row will return an
          * Object formatted by the ArrayGrid's policy.  
-         * 
-         * @see java.util.List#set(int, java.lang.Object)
          */
-        public R set(int index, R o) {
-            if (!(o instanceof List)) throw new ClassCastException("unsupported type");
-            R ret = l.get(index);
-            R r = prepareRow(o);
-            ensureSymmetry(r, r.size());            
+        public Grid.Row<T> set(int index, Grid.Row<T> o) {
+            Row<T> ret = l.get(index);
+            Row<T> r = prepareRow(o);
+            grid.ensureSymmetry(r, r.size());            
             l.set(index, r);
             //If the parent is set to null during a call to Collections.sort,
             //problems arise.  djv 12/08/2004
             //ret.setParent(null, null);
-            r.setParent(table, ArrayGrid.this);
+            r.setParent(grid.table, grid);
             r.setIndex(index);
-            fireItemChange(Type.SET, index, -1, ret, r);            
+            grid.fireItemChange(Type.SET, index, -1, ret, r);            
             return ret;
         }
         
-        public void add(int index, R o) {
-            if (!(o instanceof List)) throw new ClassCastException("unsupported type");
-            R r = prepareRow(o);
-            ensureSymmetry(r, r.size());
+        public void add(int index, Grid.Row<T> o) {
+            Row<T> r = prepareRow(o);
+            grid.ensureSymmetry(r, r.size());
             l.add(index, r);
             
             for (int i = index + 1, cnt = l.size(); i < cnt; i++)
-                ((Row)l.get(i)).setIndex(i);
+                l.get(i).setIndex(i);
             
-            r.setParent(table, ArrayGrid.this);
+            r.setParent(grid.table, grid);
             r.setIndex(index);
             modCount++;
-            fireItemChange(Type.ADD, index, -1, null, r);
+            grid.fireItemChange(Type.ADD, index, -1, null, r);
         }
         
-        public R remove(int index) {
-            R r = l.get(index);
+        public Grid.Row<T> remove(int index) {
+            Row<T> r = l.get(index);
             l.remove(index);
             r.setParent(null, null);
             
             for (int i = index, cnt = l.size(); i < cnt; i++)
-                ((Row)l.get(i)).setIndex(i);
+                l.get(i).setIndex(i);
             
             modCount++;
-            fireItemChange(Type.REMOVE, index, -1, r, null);            
+            grid.fireItemChange(Type.REMOVE, index, -1, r, null);            
             return r;
         }
         
         public void clear() {
-            List<R> ol = l;
-            l = new ArrayList<R>();
+            List<Row<T>> ol = l;
+            l = new ArrayList<Row<T>>();
             modCount++;
 
             for (int i = 0, cnt = ol.size(); i < cnt; i++) {
-                fireItemChange(Type.REMOVE, i, -1, ol.get(i), null);            
+                grid.fireItemChange(Type.REMOVE, i, -1, ol.get(i), null);            
             }
         }
 
@@ -574,31 +567,33 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
         }
     }    
 
-    private class ColumnList extends AbstractList<C> {
-        private List<C> l;
-        private List<Object> values;
+    private static class ColumnList<T> extends AbstractList<Grid.Column<T>> {
+    	private ArrayGrid<T> grid;
+        private List<Column<T>> l;
+        private List<T> values;
         
-        private ColumnList() {
-            l = new ArrayList<C>();
+        private ColumnList(ArrayGrid<T> grid) {
+        	this.grid = grid;
+            l = new ArrayList<Column<T>>();
         }
         
-        private C prepareColumn(List<Object> o) {
-            C c;
+        private Column<T> prepareColumn(List<T> o) {
+            Column<T> c;
             values = null;
             
-            if (o instanceof ArrayGrid.Column) {
-                c = (C)o;
-                Grid t = c.getParent();
+            if (o instanceof Column) {
+                c = (Column<T>)o;
+                Grid<T> t = c.getParent();
                 
-                if (t != null && t != table) {
+                if (t != null && t != grid.table) {
                     values = c;
-                    c = newColumnInstance();
-                    c.setName(((Column)values).getName());
+                    c = grid.newColumnInstance();
+                    c.setName(((Column<T>)values).getName());
                 } else
-                    values = new ArrayList<Object>(c);
+                    values = new ArrayList<T>(c);
             } else {
                 values = o;
-                c = (C)newColumnInstance();
+                c = grid.newColumnInstance();
             }
             
             return c;
@@ -607,57 +602,55 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
         private void loadValues(int index) {
             if (values != null) {
                 for (int i = 0, cnt = values.size(); i < cnt; i++) {
-                    if (i >= rows.size()) rows.add(newRowInstance());
-                    ((Row)rows.get(i)).set(index, values.get(i));
+                    if (i >= grid.rows.size()) grid.rows.add(grid.newRowInstance());
+                    grid.rows.get(i).set(index, values.get(i));
                 }
                 
                 values = null;
             }            
         }
         
-        private void saveValues(C c, int index) {
-            for (int i = 0, cnt = rows.size(); i < cnt; i++) {
-                c.add(((Row)rows.get(i)).get(index));
+        private void saveValues(Column<T> c, int index) {
+            for (int i = 0, cnt = grid.rows.size(); i < cnt; i++) {
+                c.add(grid.rows.get(i).get(index));
             }
         }
         
-        public C get(int index) {
+        public Grid.Column<T> get(int index) {
             return l.get(index);
         }
 
-        public C set(int index, C o) {
-            if (!(o instanceof List)) throw new ClassCastException("unsupported type");            
-            C ret = l.get(index);
-            C c = prepareColumn(o);
+        public Grid.Column<T> set(int index, Grid.Column<T> o) {
+            Column<T> ret = l.get(index);
+            Column<T> c = prepareColumn(o);
             l.set(index, c);
             ret.setParent(null, null);
             saveValues(ret, index);
-            c.setParent(table, ArrayGrid.this);
+            c.setParent(grid.table, grid);
             c.setIndex(index);
-            ensureSymmetry(null, index);            
+            grid.ensureSymmetry(null, index);            
             loadValues(index);
-            fireItemChange(Type.SET, -1, index, ret, c);
+            grid.fireItemChange(Type.SET, -1, index, ret, c);
             return ret;
         }
         
-        public void add(int index, C o) {
-            if (!(o instanceof List)) throw new ClassCastException("unsupported type");
-            C c = prepareColumn(o);
+        public void add(int index, Grid.Column<T> o) {
+            Column<T> c = prepareColumn(o);
             l.add(index, c);
-            c.setParent(table, ArrayGrid.this);
+            c.setParent(grid.table, grid);
             c.setIndex(index);
-            ensureSymmetry(null, index);
+            grid.ensureSymmetry(null, index);
 
             for (int i = index + 1, cnt = l.size(); i < cnt; i++)
                 l.get(i).setIndex(i);
 
             loadValues(index);
             modCount++;
-            fireItemChange(Type.ADD, -1, index, null, c);
+            grid.fireItemChange(Type.ADD, -1, index, null, c);
         }
         
-        public C remove(int index) {
-            C c = l.remove(index);
+        public Grid.Column<T> remove(int index) {
+            Column<T> c = l.remove(index);
             c.setParent(null, null);            
             saveValues(c, index);
             
@@ -665,7 +658,7 @@ public class ArrayGrid<R extends ArrayGrid.Row, C extends ArrayGrid.Column> impl
                 l.get(i).setIndex(i);
 
             modCount++;
-            fireItemChange(Type.REMOVE, -1, index, c, null);            
+            grid.fireItemChange(Type.REMOVE, -1, index, c, null);            
             return c;
         }
 

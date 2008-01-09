@@ -125,7 +125,7 @@ import thinwire.util.Grid;
  * 
  * @author Joshua J. Gertzen
  */
-public class GridBox extends AbstractComponent<GridBox> implements Grid<GridBox.Row, GridBox.Column>, ItemChangeEventComponent {
+public class GridBox extends AbstractComponent<GridBox> implements Grid<Object>, ItemChangeEventComponent {
     public static final class Range {
         private String stringValue;
         private GridBox gridBox;
@@ -189,7 +189,7 @@ public class GridBox extends AbstractComponent<GridBox> implements Grid<GridBox.
         }
     }
     	
-    public static final class Row extends ArrayGrid.Row {
+    public static final class Row extends ArrayGrid.Row<Object> {
         public static final String PROPERTY_ROW_SELECTED = "rowSelected";
         public static final String PROPERTY_ROW_CHECKED = "rowChecked";
         public static final String PROPERTY_ROW_CHILD = "rowChild";    
@@ -349,7 +349,7 @@ public class GridBox extends AbstractComponent<GridBox> implements Grid<GridBox.
         }
     }
     
-    public static final class Column extends ArrayGrid.Column {
+    public static final class Column extends ArrayGrid.Column<Object> {
         public static final String PROPERTY_COLUMN_NAME = "columnName";
         public static final String PROPERTY_COLUMN_ALIGN_X = "columnAlignX";
         public static final String PROPERTY_COLUMN_WIDTH = "columnWidth";
@@ -649,10 +649,27 @@ public class GridBox extends AbstractComponent<GridBox> implements Grid<GridBox.
         }
     }
     
+    private static final Comparator<Row> INDEX_ORDER_COMPARATOR = new Comparator<Row>() {
+        public int compare(Row r1, Row r2) {
+            int index1 = r1.getIndex();
+            int index2 = r2.getIndex();
+            
+            if (index1 < index2) {
+                return -1;
+            } else if (index1 == index2){
+                return 0;
+            } else {
+                return 1;
+            }
+        }            
+    };
+    
     public static final String PROPERTY_VISIBLE_HEADER = "visibleHeader";
     public static final String PROPERTY_VISIBLE_CHECK_BOXES = "visibleCheckBoxes";
     public static final String PROPERTY_FULL_ROW_CHECK_BOX = "fullRowCheckBox";
     public static final String PROPERTY_SORT_ALLOWED = "sortAllowed";
+    
+    
     
     private static final String[] STYLE_PROPERTIES = {Font.PROPERTY_FONT_BOLD, Font.PROPERTY_FONT_COLOR, Font.PROPERTY_FONT_FAMILY,
         Font.PROPERTY_FONT_ITALIC, Font.PROPERTY_FONT_SIZE, Font.PROPERTY_FONT_UNDERLINE, Font.PROPERTY_FONT_STRIKE,
@@ -671,13 +688,13 @@ public class GridBox extends AbstractComponent<GridBox> implements Grid<GridBox.
     private Column.SortOrder sortedColumnOrder = GridBox.Column.SortOrder.NONE; 
     
     private EventListenerImpl<ItemChangeListener> icei;
-    private ArrayGrid<Row, Column> grid;
+    private ArrayGrid<Object> grid;
     private SortedSet<Row> checkedRows;
     private SortedSet<Row> roCheckedRows;
     private SortedSet<Row> rowsWithChildren;
     private SortedSet<Row> roRowsWithChildren;
     
-    boolean sorting = false;
+    private boolean sorting = false;
             
 	/**
 	 * Constructs a new GridBox.
@@ -686,7 +703,7 @@ public class GridBox extends AbstractComponent<GridBox> implements Grid<GridBox.
     	EventListenerImpl<ItemChangeListener> gicei = app == null ? null : app.getGlobalListenerSet(ItemChangeListener.class, false);
     	icei = new EventListenerImpl<ItemChangeListener>(this, ItemChangeListener.class, null, gicei);
 		
-		this.grid = new ArrayGrid<GridBox.Row, GridBox.Column>(this, GridBox.Row.class, GridBox.Column.class) {
+		this.grid = new ArrayGrid<Object>(this, GridBox.Row.class, GridBox.Column.class) {
 		    protected void fireItemChange(Type type, int rowIndex, int columnIndex, Object oldValue, Object newValue) {
                 if (rowIndex >= 0 && columnIndex == -1) {
                     List<GridBox.Row> rows = GridBox.this.getRows();
@@ -755,23 +772,6 @@ public class GridBox extends AbstractComponent<GridBox> implements Grid<GridBox.
                 icei.fireItemChange(type, columnIndex, rowIndex, oldValue, newValue);
 			}
 		};
-		
-        Comparator<Row> indexOrder = new Comparator<Row>() {
-            public int compare(Row r1, Row r2) {
-                int index1 = r1.getIndex();
-                int index2 = r2.getIndex();
-                
-                if (index1 < index2) {
-                    return -1;
-                } else if (index1 == index2){
-                    return 0;
-                } else {
-                    return 1;
-                }
-            }            
-        };
-      
-        
         
         addPropertyChangeListener(STYLE_PROPERTIES, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent ev) {
@@ -785,9 +785,9 @@ public class GridBox extends AbstractComponent<GridBox> implements Grid<GridBox.
             }
         });
         
-        checkedRows = new TreeSet<Row>(indexOrder);
+        checkedRows = new TreeSet<Row>(INDEX_ORDER_COMPARATOR);
         roCheckedRows = Collections.unmodifiableSortedSet(checkedRows);
-        rowsWithChildren = new TreeSet<Row>(indexOrder);
+        rowsWithChildren = new TreeSet<Row>(INDEX_ORDER_COMPARATOR);
         roRowsWithChildren = Collections.unmodifiableSortedSet(rowsWithChildren);
 	}
     
@@ -832,10 +832,12 @@ public class GridBox extends AbstractComponent<GridBox> implements Grid<GridBox.
         super.fireAction(ev);
     }
     
+    @SuppressWarnings("unchecked")
 	public List<GridBox.Column> getColumns() {
 		return grid.getColumns();
 	}
 	
+    @SuppressWarnings("unchecked")
 	public List<GridBox.Row> getRows() {
 		return grid.getRows();
 	}

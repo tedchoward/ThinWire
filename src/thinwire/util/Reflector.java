@@ -497,19 +497,20 @@ public class Reflector {
     	}
     }
     
-    public static void throwException(Exception ex) {
+    public static RuntimeException throwException(Exception ex) {
     	if (ex instanceof RuntimeException) throw (RuntimeException)ex;
     	
     	try {
     		synchronized (CheckedExceptionThrower.class) {
     			CheckedExceptionThrower.exception = ex;
     			CheckedExceptionThrower.class.newInstance();
+    			return null; //unreached
     		}
 		} catch (InstantiationException e) {
 			throw new RuntimeException(e);
 		} catch (IllegalAccessException e) {
 			throw new RuntimeException(e);
-		}
+		} 
     }
     
     private static class CheckedExceptionThrower {

@@ -79,7 +79,7 @@ import thinwire.util.Grid;
  * @author Joshua J. Gertzen
  * @author Ted C. Howard
  */
-public final class TableLayout extends AbstractLayout implements Grid<TableLayout.Row, TableLayout.Column> {
+public final class TableLayout extends AbstractLayout implements Grid<Object> {
     private static final Logger log = Logger.getLogger(TableLayout.class.getName());
 
     public enum Justify {
@@ -263,7 +263,7 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
         }
     }
     
-    public static final class Row extends ArrayGrid.Row {
+    public static final class Row extends ArrayGrid.Row<Object> {
         private double height;
         private boolean visible;
 
@@ -309,7 +309,7 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
         }
     }
     
-    public static final class Column extends ArrayGrid.Column {
+    public static final class Column extends ArrayGrid.Column<Object> {
         private double width;
         private boolean visible;
 
@@ -354,7 +354,7 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
         }
     }
 
-    private ArrayGrid<Row, Column> grid;
+    private ArrayGrid<Object> grid;
     private SortedSet<Row> visibleRows;
     private SortedSet<Row> roVisibleRows;
     private SortedSet<Column> visibleColumns;
@@ -389,7 +389,7 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
         super(Component.PROPERTY_LIMIT);
         
         ignoreSet = true;
-        this.grid = new ArrayGrid<TableLayout.Row, TableLayout.Column>(this, TableLayout.Row.class, TableLayout.Column.class) {
+        this.grid = new ArrayGrid<Object>(this, TableLayout.Row.class, TableLayout.Column.class) {
             @Override
             protected void fireItemChange(Type type, int rowIndex, int columnIndex, Object oldValue, Object newValue) {
                 List<Component> kids = TableLayout.this.getContainer() == null ? null : TableLayout.this.getContainer().getChildren();
@@ -452,9 +452,8 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
                         TableLayout.Row oldRow = (TableLayout.Row) oldValue;
                         if (oldRow.isVisible()) TableLayout.this.visibleRows.remove(oldRow);
                         
-                        for(Iterator i = oldRow.iterator(); i.hasNext();) {
-                            Component c = (Component) i.next();
-                            kids.remove(c);
+                        for(Object o : oldRow) {
+                            kids.remove(o);
                         }
                         
                         //TODO: Bug, for some reason the new row has nothing in it.
@@ -523,9 +522,10 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
                         TableLayout.Column oldColumn = (TableLayout.Column) oldValue;
                         if (oldColumn.isVisible()) TableLayout.this.visibleColumns.remove(oldColumn);
                         
-                        for(Iterator i = oldColumn.iterator(); i.hasNext();) {
-                            Component c = (Component) i.next();
-                            if (kids != null) kids.remove(c);
+                        if (kids != null) {
+	                        for(Object o : oldColumn) {
+	                            kids.remove(o);
+	                        }
                         }
                         
                         TableLayout.Column newColumn = (TableLayout.Column)newValue;
@@ -859,10 +859,12 @@ public final class TableLayout extends AbstractLayout implements Grid<TableLayou
 		if (width >= 0 && height >= 0) c.setBounds(x, y, width, height);
     }
 
+    @SuppressWarnings("unchecked")
     public List<Column> getColumns() {
         return grid.getColumns();
     }
 
+    @SuppressWarnings("unchecked")
     public List<Row> getRows() {
         return grid.getRows();
     }
