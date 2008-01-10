@@ -79,7 +79,7 @@ import thinwire.util.Grid;
  * @author Joshua J. Gertzen
  * @author Ted C. Howard
  */
-public final class TableLayout extends AbstractLayout implements Grid<Object> {
+public final class TableLayout extends AbstractLayout implements Grid {
     private static final Logger log = Logger.getLogger(TableLayout.class.getName());
 
     public enum Justify {
@@ -263,7 +263,7 @@ public final class TableLayout extends AbstractLayout implements Grid<Object> {
         }
     }
     
-    public static final class Row extends ArrayGrid.Row<Object> {
+    public static final class Row extends ArrayGrid.Row {
         private double height;
         private boolean visible;
 
@@ -309,7 +309,7 @@ public final class TableLayout extends AbstractLayout implements Grid<Object> {
         }
     }
     
-    public static final class Column extends ArrayGrid.Column<Object> {
+    public static final class Column extends ArrayGrid.Column {
         private double width;
         private boolean visible;
 
@@ -354,7 +354,7 @@ public final class TableLayout extends AbstractLayout implements Grid<Object> {
         }
     }
 
-    private ArrayGrid<Object> grid;
+    private ArrayGrid grid;
     private SortedSet<Row> visibleRows;
     private SortedSet<Row> roVisibleRows;
     private SortedSet<Column> visibleColumns;
@@ -389,7 +389,7 @@ public final class TableLayout extends AbstractLayout implements Grid<Object> {
         super(Component.PROPERTY_LIMIT);
         
         ignoreSet = true;
-        this.grid = new ArrayGrid<Object>(this, TableLayout.Row.class, TableLayout.Column.class) {
+        this.grid = new ArrayGrid(true, TableLayout.this) {
             @Override
             protected void fireItemChange(Type type, int rowIndex, int columnIndex, Object oldValue, Object newValue) {
                 List<Component> kids = TableLayout.this.getContainer() == null ? null : TableLayout.this.getContainer().getChildren();
@@ -858,6 +858,16 @@ public final class TableLayout extends AbstractLayout implements Grid<Object> {
 		
 		if (width >= 0 && height >= 0) c.setBounds(x, y, width, height);
     }
+
+    @SuppressWarnings("unchecked")
+    public Row newRow() {
+    	return new TableLayout.Row();
+    }
+    
+    @SuppressWarnings("unchecked")
+	public Column newColumn() {
+		return new TableLayout.Column();
+	}
 
     @SuppressWarnings("unchecked")
     public List<Column> getColumns() {

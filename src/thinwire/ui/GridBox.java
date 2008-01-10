@@ -125,7 +125,7 @@ import thinwire.util.Grid;
  * 
  * @author Joshua J. Gertzen
  */
-public class GridBox extends AbstractComponent<GridBox> implements Grid<Object>, ItemChangeEventComponent {
+public class GridBox extends AbstractComponent<GridBox> implements Grid, ItemChangeEventComponent {
     public static final class Range {
         private String stringValue;
         private GridBox gridBox;
@@ -189,7 +189,7 @@ public class GridBox extends AbstractComponent<GridBox> implements Grid<Object>,
         }
     }
     	
-    public static final class Row extends ArrayGrid.Row<Object> {
+    public static final class Row extends ArrayGrid.Row {
         public static final String PROPERTY_ROW_SELECTED = "rowSelected";
         public static final String PROPERTY_ROW_CHECKED = "rowChecked";
         public static final String PROPERTY_ROW_CHILD = "rowChild";    
@@ -349,7 +349,7 @@ public class GridBox extends AbstractComponent<GridBox> implements Grid<Object>,
         }
     }
     
-    public static final class Column extends ArrayGrid.Column<Object> {
+    public static final class Column extends ArrayGrid.Column {
         public static final String PROPERTY_COLUMN_NAME = "columnName";
         public static final String PROPERTY_COLUMN_ALIGN_X = "columnAlignX";
         public static final String PROPERTY_COLUMN_WIDTH = "columnWidth";
@@ -688,7 +688,7 @@ public class GridBox extends AbstractComponent<GridBox> implements Grid<Object>,
     private Column.SortOrder sortedColumnOrder = GridBox.Column.SortOrder.NONE; 
     
     private EventListenerImpl<ItemChangeListener> icei;
-    private ArrayGrid<Object> grid;
+    private ArrayGrid grid;
     private SortedSet<Row> checkedRows;
     private SortedSet<Row> roCheckedRows;
     private SortedSet<Row> rowsWithChildren;
@@ -703,7 +703,7 @@ public class GridBox extends AbstractComponent<GridBox> implements Grid<Object>,
     	EventListenerImpl<ItemChangeListener> gicei = app == null ? null : app.getGlobalListenerSet(ItemChangeListener.class, false);
     	icei = new EventListenerImpl<ItemChangeListener>(this, ItemChangeListener.class, null, gicei);
 		
-		this.grid = new ArrayGrid<Object>(this, GridBox.Row.class, GridBox.Column.class) {
+		this.grid = new ArrayGrid(true, GridBox.this) {
 		    protected void fireItemChange(Type type, int rowIndex, int columnIndex, Object oldValue, Object newValue) {
                 if (rowIndex >= 0 && columnIndex == -1) {
                     List<GridBox.Row> rows = GridBox.this.getRows();
@@ -831,14 +831,24 @@ public class GridBox extends AbstractComponent<GridBox> implements Grid<Object>,
         if (row != null) row.setSelected(true);        
         super.fireAction(ev);
     }
+
+    @SuppressWarnings("unchecked")
+    public Row newRow() {
+    	return new Row();
+    }
     
     @SuppressWarnings("unchecked")
-	public List<GridBox.Column> getColumns() {
+	public Column newColumn() {
+		return new Column();
+	}
+    
+    @SuppressWarnings("unchecked")
+	public List<Column> getColumns() {
 		return grid.getColumns();
 	}
 	
     @SuppressWarnings("unchecked")
-	public List<GridBox.Row> getRows() {
+	public List<Row> getRows() {
 		return grid.getRows();
 	}
 	
