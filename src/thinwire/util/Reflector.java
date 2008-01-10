@@ -62,32 +62,28 @@ public class Reflector {
     
     private static final Converter DEFAULT_CONVERTER = new DefaultConverter();
     
-	private static abstract class CallTarget {
+    public static interface CallTarget {
+    	String getName();
+    	Object call(Object obj, Object...args) throws CallException;
+    }
+    
+	private static abstract class AbstractCallTarget implements CallTarget {
 		final Reflector reflector;
-        final boolean complexType;
         final String name;
         Class type;
         
-        private CallTarget(Reflector reflector, String name, Class type) {
+        private AbstractCallTarget(Reflector reflector, String name, Class type) {
         	this.reflector = reflector;
         	this.type = type;
         	this.name = name;
-        	complexType = !(type == String.class ||
-                    type == Boolean.class || type == boolean.class ||
-                    type == Integer.class || type == int.class ||
-                    type == Long.class || type == long.class ||
-                    type == Short.class || type == short.class ||
-                    type == Byte.class || type == byte.class ||
-                    type == Float.class || type == float.class ||
-                    type == Double.class || type == double.class ||
-                    type == Character.class || type == char.class ||
-                    type == Void.class || type == void.class);
         }
         
-        abstract Object call(Object obj, Object...args) throws CallException;
+        public String getName() {
+        	return name;
+        }
 	}
 	
-    private static class PropertyTarget extends CallTarget {
+    public static class PropertyTarget extends AbstractCallTarget {
         private final boolean readable;
         private final boolean writable;
         
@@ -127,8 +123,16 @@ public class Reflector {
                 readable = getter != null;
             }
         }
+        
+        public boolean isReadable() {
+        	return readable;
+        }
+        
+        public boolean isWritable() {
+        	return writable;
+        }
 
-        void setValue(Object obj, Object value) throws CallException {
+        public void set(Object obj, Object value) throws CallException {
         	if (!writable) throw new CallException(reflector.className, name, false, "property is not writable");
     		if (log.isLoggable(LEVEL)) log.log(LEVEL, "Set property " + name + "='" + value + "' for object '" + obj + "'");
         	
@@ -151,7 +155,7 @@ public class Reflector {
     		}
         }
         
-        Object getValue(Object obj) throws CallException {
+        public Object get(Object obj) throws CallException {
         	if (!readable) throw new CallException(reflector.className, name, false, "property is not readable");
     		Object ret;
     		
@@ -174,11 +178,11 @@ public class Reflector {
     		return ret;
         }
     	
-    	Object call(Object obj, Object...args) throws CallException {
+    	public Object call(Object obj, Object...args) throws CallException {
     		if (args == null || args.length == 0) {
-    			return getValue(obj);
+    			return get(obj);
     		} else if (args.length == 1) {
-    			setValue(obj, args[0]);
+    			set(obj, args[0]);
                 return null;
     		} else {
     			throw new CallException(reflector.className, name, false, "number of arguments '" + args.length + "' not appropriate for a setter or getter.");
@@ -186,7 +190,7 @@ public class Reflector {
     	}
     }
     
-    private static class MethodTarget extends CallTarget {
+    private static class MethodTarget extends AbstractCallTarget {
     	private static class MethodSignature {
             Method method;
         	Class[] argTypes;
@@ -240,7 +244,7 @@ public class Reflector {
     	}
     	
     	//@SuppressWarnings("unchecked")
-    	Object call(Object obj, Object...args) throws CallException {
+    	public Object call(Object obj, Object...args) throws CallException {
     		if (log.isLoggable(LEVEL)) log.log(LEVEL, "Call method " + name + " with " + args.length + " arguments for object '" + obj + "'");
 
     		MethodSignature sig;
@@ -351,21 +355,94 @@ public class Reflector {
     	return reflector;
     }
     
+    private static class CaseInsensitiveMap<V> implements Map<String, V> {
+    	private HashMap<String, V> map = new HashMap<String, V>();
+    	private HashMap<String, V> lmap = new HashMap<String, V>();
+
+		public void clear() {
+			map.clear();
+			lmap.clear();
+		}
+
+		public boolean containsKey(Object key) {
+			if (map.containsKey(key)) {
+				return true;
+			} else {
+				return lmap.containsKey(key);
+			}
+		}
+
+		public boolean containsValue(Object value) {
+			return map.containsValue(value);
+		}
+
+		public Set<java.util.Map.Entry<String, V>> entrySet() {
+			return map.entrySet();
+		}
+
+		public V get(Object key) {
+			V ret = map.get(key);
+			
+			if (ret == null && key instanceof String) {
+				ret = lmap.get(((String)key).toLowerCase());
+			}
+			
+			return ret;
+		}
+
+		public boolean isEmpty() {
+			return map.isEmpty();
+		}
+
+		public Set<String> keySet() {
+			return map.keySet();
+		}
+
+		public V put(String key, V value) {
+			lmap.put(key.toLowerCase(), value);
+			return map.put(key, value);
+		}
+
+		public void putAll(Map<? extends String, ? extends V> t) {
+			map.putAll(t);
+			
+			for (Map.Entry<? extends String, ? extends V> e : t.entrySet()) {
+				lmap.put(e.getKey().toLowerCase(), e.getValue());
+			}
+		}
+
+		public V remove(Object key) {
+			if (key instanceof String) lmap.remove(((String)key).toLowerCase());
+			return map.remove(key);
+		}
+
+		public int size() {
+			return map.size();
+		}
+
+		public Collection<V> values() {
+			return map.values();
+		}
+    	
+    }
+    
     private String className;
+    
     private Reflector superClass;
     private Converter converter = DEFAULT_CONVERTER;
-    private Map<String, PropertyTarget> nameToProperty = new HashMap<String, PropertyTarget>();
-    private Map<String, PropertyTarget> lowerNameToProperty = new HashMap<String, PropertyTarget>();
-    private Map<String, MethodTarget> nameToMethod = new HashMap<String, MethodTarget>();
-    private Map<String, MethodTarget> lowerNameToMethod = new HashMap<String, MethodTarget>();
+    private Map<String, PropertyTarget> nameToProperty = new CaseInsensitiveMap<PropertyTarget>();
+    private Map<String, PropertyTarget> roNameToProperty;
+    private Map<String, MethodTarget> nameToMethod = new CaseInsensitiveMap<MethodTarget>();
+    private Map<String, MethodTarget> roNameToMethod;
 
     private Reflector(Class clazz) throws CovariantTypeException {
     	if (clazz.isInterface()) throw new UnsupportedOperationException("reflecting over interfaces is currently unsupported");
+    	boolean isLoggable = log.isLoggable(LEVEL);
     	className = clazz.getName();
     	Class[] interfaces = clazz.getInterfaces();
     	Class superClass = clazz.getSuperclass();
 
-    	if (log.isLoggable(LEVEL)) {
+    	if (isLoggable) {
     		log.log(LEVEL, "Reflecting over declared methods of " + (clazz.isInterface() ? "interface " : "class ") + clazz.getName());
     		if (superClass != null) log.log(LEVEL, "Extends class " + superClass.getName());
     		log.log(LEVEL, (clazz.isInterface() ? "Extends " : "Implements ") + interfaces.length + " interfaces");
@@ -389,11 +466,11 @@ public class Reflector {
     		if (!descToMethod.containsKey(desc)) descToMethod.put(desc, m);
     	}
     	
-		if (log.isLoggable(LEVEL)) log.log(LEVEL, "Found " + descToMethod.size() + " methods directly declared or implemented from " + interfaces.length + " interfaces for class " + className);
+		if (isLoggable) log.log(LEVEL, "Found " + descToMethod.size() + " methods directly declared or implemented from " + interfaces.length + " interfaces for class " + className);
 
     	for (Method m : descToMethod.values()) {
             String name = m.getName();
-        	if (log.isLoggable(LEVEL)) log.log(LEVEL, "Analyzing " + Modifier.toString(m.getModifiers()) + " method " + m.getName() + " with declaring " + Modifier.toString(m.getDeclaringClass().getModifiers()) + " class " + m.getDeclaringClass().getName());
+        	if (isLoggable) log.log(LEVEL, "Analyzing " + Modifier.toString(m.getModifiers()) + " method " + m.getName() + " with declaring " + Modifier.toString(m.getDeclaringClass().getModifiers()) + " class " + m.getDeclaringClass().getName());
             int len = name.length();
             Class retType = m.getReturnType();
             Class[] argTypes = m.getParameterTypes();
@@ -402,8 +479,6 @@ public class Reflector {
             if (method == null) {
 	            method = new MethodTarget(this, name, m, retType, argTypes);
 	            nameToMethod.put(name, method);
-	            String lower = name.toLowerCase();
-	            if (!lowerNameToMethod.containsKey(lower)) lowerNameToMethod.put(lower, method);
             } else {
             	if (retType == method.type) {
             		method.addSignature(m, argTypes);
@@ -420,8 +495,6 @@ public class Reflector {
                 if (property == null) {
                 	property = new PropertyTarget(this, m, propName, argTypes[0], false);
                 	nameToProperty.put(propName, property);
-                	String lowerPropName = propName.toLowerCase();
-                	if (!lowerNameToProperty.containsKey(lowerPropName)) lowerNameToProperty.put(lowerPropName, property);
                 } else if (property.type != argTypes[0]) {
                 	throw new CovariantTypeException(className, propName, property.type, argTypes[0]);
                 }
@@ -433,8 +506,6 @@ public class Reflector {
                 if (property == null) {
                 	property = new PropertyTarget(this, m, propName, retType, true);
                 	nameToProperty.put(propName, property);
-                	String lowerPropName = propName.toLowerCase();
-                	if (!lowerNameToProperty.containsKey(lowerPropName)) lowerNameToProperty.put(lowerPropName, property);
                 } else if (property.type != retType) {
                 	throw new CovariantTypeException(className, propName, property.type, retType);
                 }
@@ -455,11 +526,20 @@ public class Reflector {
 	    return sb;
     }
     
+    public Map<String, PropertyTarget> getProperties() {
+    	if (roNameToProperty == null) roNameToProperty = Collections.unmodifiableMap(nameToProperty);
+    	return roNameToProperty;
+    }
+    
+    public Map<String, MethodTarget> getMethods() {
+    	if (roNameToMethod == null) roNameToMethod = Collections.unmodifiableMap(nameToMethod);
+    	return roNameToMethod;
+    }
+    
     public Object call(Object target, String methodName, Object...args) throws NotFoundException, CallException {
     	if (target == null) throw new IllegalArgumentException("target == null");
     	if (methodName == null || methodName.length() == 0) throw new IllegalArgumentException("propertyName == null || propertyName.length() == 0");
     	MethodTarget method = nameToMethod.get(methodName);
-    	if (method == null) method = lowerNameToMethod.get(methodName.toLowerCase());    	
     	
     	if (method == null) {
     		if (superClass == null) throw new NotFoundException(className, methodName, true);
@@ -473,13 +553,12 @@ public class Reflector {
     	if (target == null) throw new IllegalArgumentException("target == null");
     	if (propertyName == null || propertyName.length() == 0) throw new IllegalArgumentException("propertyName == null || propertyName.length() == 0");
     	PropertyTarget property = nameToProperty.get(propertyName);
-    	if (property == null) property = lowerNameToProperty.get(propertyName.toLowerCase());
     	
     	if (property == null) {
     		if (superClass == null) throw new NotFoundException(className, propertyName, false);
     		superClass.set(target, propertyName, value);
     	} else {
-    		property.setValue(target, value);
+    		property.set(target, value);
     	}
     }
     
@@ -487,14 +566,26 @@ public class Reflector {
     	if (target == null) throw new IllegalArgumentException("target == null");
     	if (propertyName == null || propertyName.length() == 0) throw new IllegalArgumentException("propertyName == null || propertyName.length() == 0");
     	PropertyTarget property = nameToProperty.get(propertyName);
-    	if (property == null) property = lowerNameToProperty.get(propertyName.toLowerCase());
     	
     	if (property == null) {
     		if (superClass == null) throw new NotFoundException(className, propertyName, false);
     		return superClass.get(target, propertyName);
     	} else {
-    		return property.getValue(target);
+    		return property.get(target);
     	}
+    }
+    
+    public static boolean isComplexType(Class type) {
+    	return !(type == String.class ||
+                type == Boolean.class || type == boolean.class ||
+                type == Integer.class || type == int.class ||
+                type == Long.class || type == long.class ||
+                type == Short.class || type == short.class ||
+                type == Byte.class || type == byte.class ||
+                type == Float.class || type == float.class ||
+                type == Double.class || type == double.class ||
+                type == Character.class || type == char.class ||
+                type == Void.class || type == void.class);
     }
     
     public static RuntimeException throwException(Exception ex) {

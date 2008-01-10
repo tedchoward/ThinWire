@@ -32,8 +32,6 @@ import java.util.List;
 import java.util.AbstractList;
 
 import thinwire.ui.event.ItemChangeEvent.Type;
-import thinwire.util.Grid.Column;
-import thinwire.util.Grid.Row;
 
 /**
  * ArrayGrid is an implementation of the Grid interface which provides a disconnected dataset.<p>
@@ -639,5 +637,47 @@ public class ArrayGrid implements Grid {
         public int size() {
             return l.size();
         }
-    }        
+    }
+    
+    public String toString() {
+    	StringBuilder sb = new StringBuilder();
+    	int columnCount = getColumns().size();
+    	sb.append("[[").append(columnCount).append(',');
+    	
+    	for (Grid.Column c : getColumns()) {
+    		sb.append('"').append(c.getName()).append('"').append(',');
+    	}
+    	
+    	if (columnCount > 0) {
+    		sb.setCharAt(sb.length() - 1, ']');
+    		sb.append(",\n");
+    		
+    		for (int i = 0, cnt = getRows().size(); i < cnt; i++) {
+	    		sb.append('[').append(i).append(',');
+	    		
+    			Grid.Row r = getRows().get(i);
+	    		
+	    		for (Object o : r) {
+	    			if (o == null || o instanceof Boolean || o instanceof Number) {
+	    				sb.append(o);
+	    			} else if (o instanceof Character) {
+	    				sb.append('\'').append(o).append('\'');
+	    			} else {
+		    			sb.append('"').append(o).append('"');
+	    			}
+	    			
+	    			sb.append(',');
+	    		}
+	    		
+				sb.setCharAt(sb.length() - 1, ']');
+				sb.append(",\n");
+	    	}
+    		
+    		sb.setCharAt(sb.length() - 2, ']');
+    	} else {
+    		sb.append("]]");
+    	}
+	    	
+    	return sb.toString();
+    }
 }

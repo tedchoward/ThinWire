@@ -1010,6 +1010,11 @@ public class GridBox extends AbstractComponent<GridBox> implements Grid, ItemCha
         if (parent != null && !(parent instanceof Container)) throw new UnsupportedOperationException(getStandardPropertyUnsupportedMsg(PROPERTY_Y, false));
         super.setY(y);
     }
+    
+    public String toString() {
+    	return grid.toString();
+    }
+    
     //#IFDEF V1_1_COMPAT
     
     DropDown.View<GridBox> view;     

@@ -888,7 +888,7 @@ public final class TableLayout extends AbstractLayout implements Grid {
     }
     
     public String toString() {
-        return "TableLayout@" + System.identityHashCode(this) + "{columns.size=" + grid.getColumns().size() + ",rows.size=" + grid.getRows().size() + "}";
+    	return grid.toString();
     }
     
     private int calculateInnerWidth() {
