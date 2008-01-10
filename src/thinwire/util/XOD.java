@@ -620,46 +620,43 @@ public final class XOD {
                         String attrName = attr.getNodeName();
                         String attrValue = attr.getNodeValue();
                         
-                        if (attrName.equals("id")) {
-                            id = attrValue;
-                        } else {
-                            String setter = "set" + Character.toUpperCase(attrName.charAt(0)) + attrName.substring(1);
-                            boolean found = false;
-                            
-                            for (Method m : c.getMethods()) {
-                                String methodName = m.getName();
+                        if (attrName.equals("id")) id = attrValue;
+                        String setter = "set" + Character.toUpperCase(attrName.charAt(0)) + attrName.substring(1);
+                        boolean found = false;
+                        
+                        for (Method m : c.getMethods()) {
+                            String methodName = m.getName();
 
-                                if (methodName.equals(attrName) || methodName.equals(setter)) {
-                                    Class[] args = m.getParameterTypes();
+                            if (methodName.equals(attrName) || methodName.equals(setter)) {
+                                Class[] args = m.getParameterTypes();
+                                
+                                if (args.length == 1) {
+                                    found = true;
+                                    Object arg = getObjectForTypeFromString(args[0], attrValue, true);
                                     
-                                    if (args.length == 1) {
-                                        found = true;
-                                        Object arg = getObjectForTypeFromString(args[0], attrValue, true);
+                                    if (Modifier.isStatic(m.getModifiers())) {
+                                        ret = invoke(null, m, arg);
                                         
-                                        if (Modifier.isStatic(m.getModifiers())) {
-                                            ret = invoke(null, m, arg);
-                                            
-                                            if (!c.isInstance(ret)) {
-                                                if (log.isLoggable(LEVEL)) log.log(LEVEL, "invoked static id=" + id + ":" + c.getName() + "." + methodName + "('" + attrValue + "')");
-                                                ret = null;
-                                            } else {
-                                                if (log.isLoggable(LEVEL)) log.log(LEVEL, "static factory new id=" + id + ":" + c.getName() + "." + methodName + "('" + attrValue + "')");
-                                            }
+                                        if (!c.isInstance(ret)) {
+                                            if (log.isLoggable(LEVEL)) log.log(LEVEL, "invoked static id=" + id + ":" + c.getName() + "." + methodName + "('" + attrValue + "')");
+                                            ret = null;
                                         } else {
-                                            if (nonStatic == null) nonStatic = new ArrayList<Object[]>(3);
-                                            
-                                            if (methodName.equals(attrName)) {
-                                                nonStatic.add(0, new Object[]{m, arg});
-                                            } else {
-                                                nonStatic.add(new Object[]{m, arg});
-                                            }
+                                            if (log.isLoggable(LEVEL)) log.log(LEVEL, "static factory new id=" + id + ":" + c.getName() + "." + methodName + "('" + attrValue + "')");
+                                        }
+                                    } else {
+                                        if (nonStatic == null) nonStatic = new ArrayList<Object[]>(3);
+                                        
+                                        if (methodName.equals(attrName)) {
+                                            nonStatic.add(0, new Object[]{m, arg});
+                                        } else {
+                                            nonStatic.add(new Object[]{m, arg});
                                         }
                                     }
                                 }
                             }
-                            
-                            if (!found) throw new DOMException(DOMException.NOT_FOUND_ERR, "no target method found id=" + id + ":" + c.getName() + "." + attrName + "('" + attrValue + "')");
                         }
+                        
+                        if (!found && !attrName.equals("id")) throw new DOMException(DOMException.NOT_FOUND_ERR, "no target method found id=" + id + ":" + c.getName() + "." + attrName + "('" + attrValue + "')");
                     }
 
                     if (ret == null) {
