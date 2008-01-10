@@ -355,47 +355,65 @@ public class Reflector {
     	return reflector;
     }
     
-    private static class CaseInsensitiveMap<V> implements Map<String, V> {
-    	private HashMap<String, V> map = new HashMap<String, V>();
-    	private HashMap<String, V> lmap = new HashMap<String, V>();
+    private static class CaseInsensitiveChainMap<V> implements Map<String, V> {
+    	private Map<String, V> parent;
+    	private Map<String, V> map = new HashMap<String, V>();
+    	private Map<String, V> lmap = new HashMap<String, V>();
 
+    	CaseInsensitiveChainMap(Map<String, V> parent) {
+    		this.parent = parent;
+    	}
+    	
 		public void clear() {
 			map.clear();
 			lmap.clear();
 		}
 
 		public boolean containsKey(Object key) {
-			if (map.containsKey(key)) {
+			if (map.containsKey(key) || lmap.containsKey(key)) {
 				return true;
+			} else if (parent == null) {
+				return false;
 			} else {
-				return lmap.containsKey(key);
+				return parent.containsKey(key);
 			}
 		}
 
 		public boolean containsValue(Object value) {
-			return map.containsValue(value);
+			if (map.containsValue(value)) {
+				return true;
+			} else if (parent == null) {
+				return false;
+			} else {
+				return parent.containsValue(value);
+			}
 		}
 
-		public Set<java.util.Map.Entry<String, V>> entrySet() {
-			return map.entrySet();
+		public Set<Map.Entry<String, V>> entrySet() {
+			if (parent == null) {
+				return map.entrySet();
+			} else {
+				return new JoinedSet<Map.Entry<String, V>>(map.entrySet(), parent.entrySet());
+			}
 		}
 
 		public V get(Object key) {
 			V ret = map.get(key);
-			
-			if (ret == null && key instanceof String) {
-				ret = lmap.get(((String)key).toLowerCase());
-			}
-			
+			if (ret == null && key instanceof String) ret = lmap.get(((String)key).toLowerCase());
+			if (ret == null && parent != null) ret = parent.get(key); 
 			return ret;
 		}
 
 		public boolean isEmpty() {
-			return map.isEmpty();
+			return map.isEmpty() && (parent == null || parent.isEmpty());
 		}
 
 		public Set<String> keySet() {
-			return map.keySet();
+			if (parent == null) {
+				return map.keySet();
+			} else {
+				return new JoinedSet<String>(map.keySet(), parent.keySet());
+			}
 		}
 
 		public V put(String key, V value) {
@@ -417,22 +435,70 @@ public class Reflector {
 		}
 
 		public int size() {
-			return map.size();
+			if (parent == null) {
+				return map.size();
+			} else {
+				return map.size() + parent.size();
+			}
 		}
 
 		public Collection<V> values() {
-			return map.values();
+			if (parent == null) {
+				return map.values();
+			} else {
+				return new JoinedSet<V>(map.values(), parent.values());
+			}
 		}
+    }
+    
+    private static class JoinedSet<T> extends AbstractSet<T> {
+    	private Collection<T> c1;
+    	private Collection<T> c2;
     	
+    	private JoinedSet(Collection<T> c1, Collection<T> c2) {
+    		this.c1 = c1;
+    		this.c2 = c2;
+    	}
+    	
+		public Iterator<T> iterator() {
+			return new Iterator<T>() {
+				boolean iteratingSecond;
+				Iterator<T> it = c1.iterator();
+				
+				public boolean hasNext() {
+					if (it.hasNext()) {
+						return true;
+					} else if (iteratingSecond) {
+						return false;
+					} else {
+						iteratingSecond = true;
+						it = c2.iterator();
+						return it.hasNext();
+					}
+				}
+
+				public T next() {
+					hasNext();
+					return it.next();
+				}
+
+				public void remove() {
+					throw new UnsupportedOperationException();
+				}
+			};
+		}
+
+		public int size() {
+			return c1.size() + c2.size(); 
+		}
     }
     
     private String className;
     
-    private Reflector superClass;
     private Converter converter = DEFAULT_CONVERTER;
-    private Map<String, PropertyTarget> nameToProperty = new CaseInsensitiveMap<PropertyTarget>();
+    private Map<String, PropertyTarget> nameToProperty;
     private Map<String, PropertyTarget> roNameToProperty;
-    private Map<String, MethodTarget> nameToMethod = new CaseInsensitiveMap<MethodTarget>();
+    private Map<String, MethodTarget> nameToMethod;
     private Map<String, MethodTarget> roNameToMethod;
 
     private Reflector(Class clazz) throws CovariantTypeException {
@@ -448,8 +514,7 @@ public class Reflector {
     		log.log(LEVEL, (clazz.isInterface() ? "Extends " : "Implements ") + interfaces.length + " interfaces");
     	}
     	
-    	if (superClass != null) this.superClass = getReflector(superClass); 
-
+    	Reflector superReflector = superClass == null ? null : getReflector(superClass); 
     	Map<String, Method> descToMethod = new HashMap<String, Method>();
     	StringBuilder sbDesc = new StringBuilder();
     	
@@ -467,49 +532,62 @@ public class Reflector {
     	}
     	
 		if (isLoggable) log.log(LEVEL, "Found " + descToMethod.size() + " methods directly declared or implemented from " + interfaces.length + " interfaces for class " + className);
+		
+    	if (descToMethod.size() == 0) {
+    		nameToProperty = superReflector.nameToProperty;
+    		nameToMethod = superReflector.nameToMethod;
+    	} else {
+    		if (superReflector == null) {
+	        	nameToProperty = new CaseInsensitiveChainMap<PropertyTarget>(null);
+	        	nameToMethod = new CaseInsensitiveChainMap<MethodTarget>(null);
+    		} else {
+	        	nameToProperty = new CaseInsensitiveChainMap<PropertyTarget>(superReflector.nameToProperty);
+	        	nameToMethod = new CaseInsensitiveChainMap<MethodTarget>(superReflector.nameToMethod);
+    		}
 
-    	for (Method m : descToMethod.values()) {
-            String name = m.getName();
-        	if (isLoggable) log.log(LEVEL, "Analyzing " + Modifier.toString(m.getModifiers()) + " method " + m.getName() + " with declaring " + Modifier.toString(m.getDeclaringClass().getModifiers()) + " class " + m.getDeclaringClass().getName());
-            int len = name.length();
-            Class retType = m.getReturnType();
-            Class[] argTypes = m.getParameterTypes();
-            MethodTarget method = nameToMethod.get(name);
-            
-            if (method == null) {
-	            method = new MethodTarget(this, name, m, retType, argTypes);
-	            nameToMethod.put(name, method);
-            } else {
-            	if (retType == method.type) {
-            		method.addSignature(m, argTypes);
-            	} else {
-            		throw new IllegalStateException("illegal covariant return type!");
-            	}
-            }
-            
-            if (name.startsWith("set") && len > 3 && argTypes.length == 1) {
-                String propName = name.substring(3);
-                propName = Character.toLowerCase(propName.charAt(0)) + (propName.length() > 1 ? propName.substring(1) : "");
-                PropertyTarget property = nameToProperty.get(propName);
-                
-                if (property == null) {
-                	property = new PropertyTarget(this, m, propName, argTypes[0], false);
-                	nameToProperty.put(propName, property);
-                } else if (property.type != argTypes[0]) {
-                	throw new CovariantTypeException(className, propName, property.type, argTypes[0]);
-                }
-            } else if (retType != void.class && argTypes.length == 0 && ((name.startsWith("get") && len > 3) || (name.startsWith("is") && len > 2))) {
-                String propName = name.substring(name.charAt(0) == 'i' ? 2 : 3);
-                propName = Character.toLowerCase(propName.charAt(0)) + (propName.length() > 1 ? propName.substring(1) : "");
-                PropertyTarget property = nameToProperty.get(propName);
-                
-                if (property == null) {
-                	property = new PropertyTarget(this, m, propName, retType, true);
-                	nameToProperty.put(propName, property);
-                } else if (property.type != retType) {
-                	throw new CovariantTypeException(className, propName, property.type, retType);
-                }
-            }
+	    	for (Method m : descToMethod.values()) {
+	            String name = m.getName();
+	        	if (isLoggable) log.log(LEVEL, "Analyzing " + Modifier.toString(m.getModifiers()) + " method " + m.getName() + " with declaring " + Modifier.toString(m.getDeclaringClass().getModifiers()) + " class " + m.getDeclaringClass().getName());
+	            int len = name.length();
+	            Class retType = m.getReturnType();
+	            Class[] argTypes = m.getParameterTypes();
+	            MethodTarget method = nameToMethod.get(name);
+	            
+	            if (method == null) {
+		            method = new MethodTarget(this, name, m, retType, argTypes);
+		            nameToMethod.put(name, method);
+	            } else {
+	            	if (retType == method.type) {
+	            		method.addSignature(m, argTypes);
+	            	} else {
+	            		throw new IllegalStateException("illegal covariant return type!");
+	            	}
+	            }
+	            
+	            if (name.startsWith("set") && len > 3 && argTypes.length == 1) {
+	                String propName = name.substring(3);
+	                propName = Character.toLowerCase(propName.charAt(0)) + (propName.length() > 1 ? propName.substring(1) : "");
+	                PropertyTarget property = nameToProperty.get(propName);
+	                
+	                if (property == null) {
+	                	property = new PropertyTarget(this, m, propName, argTypes[0], false);
+	                	nameToProperty.put(propName, property);
+	                } else if (property.type != argTypes[0]) {
+	                	throw new CovariantTypeException(className, propName, property.type, argTypes[0]);
+	                }
+	            } else if (retType != void.class && argTypes.length == 0 && ((name.startsWith("get") && len > 3) || (name.startsWith("is") && len > 2))) {
+	                String propName = name.substring(name.charAt(0) == 'i' ? 2 : 3);
+	                propName = Character.toLowerCase(propName.charAt(0)) + (propName.length() > 1 ? propName.substring(1) : "");
+	                PropertyTarget property = nameToProperty.get(propName);
+	                
+	                if (property == null) {
+	                	property = new PropertyTarget(this, m, propName, retType, true);
+	                	nameToProperty.put(propName, property);
+	                } else if (property.type != retType) {
+	                	throw new CovariantTypeException(className, propName, property.type, retType);
+	                }
+	            }
+	    	}
         }
     }
     
@@ -540,39 +618,53 @@ public class Reflector {
     	if (target == null) throw new IllegalArgumentException("target == null");
     	if (methodName == null || methodName.length() == 0) throw new IllegalArgumentException("propertyName == null || propertyName.length() == 0");
     	MethodTarget method = nameToMethod.get(methodName);
-    	
-    	if (method == null) {
-    		if (superClass == null) throw new NotFoundException(className, methodName, true);
-    		return superClass.call(target, methodName, args);
-    	} else {
-    		return method.call(target, args);
-    	}
+		if (method == null) throw new NotFoundException(className, methodName, true);
+		return method.call(target, args);
     }
     
     public void set(Object target, String propertyName, Object value) throws NotFoundException, CallException {
     	if (target == null) throw new IllegalArgumentException("target == null");
     	if (propertyName == null || propertyName.length() == 0) throw new IllegalArgumentException("propertyName == null || propertyName.length() == 0");
     	PropertyTarget property = nameToProperty.get(propertyName);
-    	
-    	if (property == null) {
-    		if (superClass == null) throw new NotFoundException(className, propertyName, false);
-    		superClass.set(target, propertyName, value);
-    	} else {
-    		property.set(target, value);
-    	}
+    	if (property == null) throw new NotFoundException(className, propertyName, false);
+		property.set(target, value);
     }
     
     public Object get(Object target, String propertyName) throws NotFoundException, CallException {
     	if (target == null) throw new IllegalArgumentException("target == null");
     	if (propertyName == null || propertyName.length() == 0) throw new IllegalArgumentException("propertyName == null || propertyName.length() == 0");
     	PropertyTarget property = nameToProperty.get(propertyName);
+    	if (property == null) throw new NotFoundException(className, propertyName, false);
+		return property.get(target);
+    }
+    
+    public static String toString(Object obj) {
+    	if (obj == null) throw new IllegalArgumentException("obj == null");
+    	StringBuilder sb = new StringBuilder();
+    	sb.append('{');
     	
-    	if (property == null) {
-    		if (superClass == null) throw new NotFoundException(className, propertyName, false);
-    		return superClass.get(target, propertyName);
-    	} else {
-    		return property.get(target);
+    	for (PropertyTarget prop : getReflector(obj.getClass()).getProperties().values()) {
+    		sb.append(prop.getName()).append(':');
+			Object value = prop.get(obj);
+			
+    		if (value == null || value instanceof Boolean || value instanceof Number) {
+				sb.append(value);
+			} else if (value instanceof Character) {
+				sb.append('\'').append(value).append('\'');
+			} else {
+				sb.append('"').append(value).append('"');
+			}
+			
+			sb.append(',');
     	}
+    	
+    	if (sb.length() == 1) {
+    		sb.append('}');
+    	} else {
+    		sb.setCharAt(sb.length() - 1, '}');
+    	}
+    	
+    	return sb.toString();
     }
     
     public static boolean isComplexType(Class type) {
