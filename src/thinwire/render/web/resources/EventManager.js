@@ -91,13 +91,17 @@ var tw_EventManager = Class.extend({
 					} catch (e) {
 						var eAry = ["ERROR INVOKING call ", i, " of ", cnt, ": ", call.m, "\n"];
 						
-						for (var item in e)
-							eAry.push("error:" + item + "=" + (e[item].length > 100 ? e[item].substring(0, 100) : e[item]) + "\n");
-					    
-						for (var ai = 0; ai < call.a.length; ai++)
-							eAry.push("arg" + ai + "=" + call.a[ai] + "\n");
+						if (e instanceof String || typeof e == "string") {
+							eAry.push("error:" + e);
+						} else {
+							for (var item in e)
+								eAry.push("error:" + item + "=" + (e[item].length > 100 ? e[item].substring(0, 100) : e[item]) + "\n");
+						    
+							for (var ai = 0; ai < call.a.length; ai++)
+								eAry.push("arg" + ai + "=" + call.a[ai] + "\n");
+						}
 							
-						alert(eAry.join(""));
+						if (!confirm(eAry.join(""))) throw e;	
 					}
 	            }            
             } catch (e) {
@@ -111,7 +115,7 @@ var tw_EventManager = Class.extend({
 				}
 
 				eAry.push("calls=" + (calls != null && calls.length > 250 ? calls.substring(0, 250) : calls))
-				alert(eAry.join(""));
+				if (!confirm(eAry.join(""))) throw e;	
             } 
         }        
         
