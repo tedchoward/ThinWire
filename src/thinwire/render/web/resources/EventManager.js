@@ -74,7 +74,7 @@ var tw_EventManager = Class.extend({
     },
     
     _inboundEventListener: function(message) {
-        if (calls.length > 0) {
+        if (message.length > 0) {
             try {
                 var calls = eval(message);
 
