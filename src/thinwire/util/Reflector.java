@@ -226,7 +226,7 @@ public class Reflector {
     	}
     }
     
-    private static class MethodTarget extends AbstractCallTarget {
+    public static class MethodTarget extends AbstractCallTarget {
     	private static class MethodSignature {
             Method method;
         	Class[] argTypes;
