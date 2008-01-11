@@ -38,7 +38,7 @@ public class Reflector {
 	private static final Logger log = Logger.getLogger(Reflector.class.getName());
 	private static final Level LEVEL = Level.FINER;
 	
-    private interface Converter {
+    interface Converter {
         Object toType(Class type, Object value);
     }    
 
@@ -47,8 +47,8 @@ public class Reflector {
             if (value == null) return null;
             if (type.isInstance(value)) return value;
     		if (log.isLoggable(LEVEL)) log.log(LEVEL, "Convert value from type '" + value.getClass().getName() + "' to '" + type.getName() + "'");
-            String str = value.toString();
-            if (str.equals("null")) str = null;
+            String str = value instanceof String ? (String)value : value.toString();
+            if (str.equals("null")) return null;
             
             if (type == String.class) {
                 value = str;
@@ -89,7 +89,7 @@ public class Reflector {
         }
     }
     
-    private static final Converter DEFAULT_CONVERTER = new DefaultConverter();
+    static final Converter DEFAULT_CONVERTER = new DefaultConverter();
     
     public static interface CallTarget {
     	boolean isStatic();

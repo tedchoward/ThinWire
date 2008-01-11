@@ -26,11 +26,17 @@
 */
 package thinwire.util;
 
+import java.math.BigDecimal;
 import java.sql.*;
+import java.sql.Date;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * @author Joshua J. Gertzen
@@ -120,9 +126,8 @@ public final class SQL {
 					columns.put(columnName, new Column(columnName, Column.Type.valueOf(rs.getInt(5)), rs.getInt("ORDINAL_POSITION") - 1)); //5=DATA_TYPE, 17=ORDINAL_POSITION
 				}
 				
-				roColumns = Collections.unmodifiableMap(columns);
-				
 				rs.close();
+				roColumns = Collections.unmodifiableMap(columns);
 				rs = dmd.getPrimaryKeys(catalog, schema, name);
 				List<Column> primaryKeys = new ArrayList<Column>(3);
 				
@@ -144,10 +149,12 @@ public final class SQL {
 	
 	public static final class Column {
 	    public static enum Type {
-	        BIT(-7), TINYINT(-6), SMALLINT(5), INTEGER(4), BIGINT(-5), FLOAT(6), REAL(7), DOUBLE(8), NUMERIC(2),
-	        DECIMAL(3), CHAR(1), VARCHAR(12), LONGVARCHAR(-1), DATE(91), TIME(92), TIMESTAMP(93), BINARY(-2),
-	        VARBINARY(-3), LONGVARBINARY(-4), NULL(0), OTHER(1111), JAVA_OBJECT(2000), DISTINCT(2001), STRUCT(2002),
-	        ARRAY(2003), BLOB(2004), CLOB(2005), REF(2006), DATALINK(70), BOOLEAN(16);
+	        BIT(-7, boolean.class), TINYINT(-6, short.class), SMALLINT(5, short.class), INTEGER(4, int.class), BIGINT(-5, long.class), 
+	        FLOAT(6, double.class), REAL(7, float.class), DOUBLE(8, float.class), NUMERIC(2, BigDecimal.class),
+	        DECIMAL(3, BigDecimal.class), CHAR(1, String.class), VARCHAR(12, String.class), LONGVARCHAR(-1, String.class),
+	        DATE(91, Date.class), TIME(92, Time.class), TIMESTAMP(93, Timestamp.class), BINARY(-2, byte[].class),
+	        VARBINARY(-3, byte[].class), LONGVARBINARY(-4, byte[].class), NULL(0), OTHER(1111), JAVA_OBJECT(2000, Object.class), DISTINCT(2001),
+	        STRUCT(2002, Struct.class), ARRAY(2003, Array.class), BLOB(2004, Blob.class), CLOB(2005, Clob.class), REF(2006), DATALINK(70), BOOLEAN(16, boolean.class);
 
 	        public static final Type valueOf(int code) {
 	            for (Type type : values()) {
@@ -158,9 +165,19 @@ public final class SQL {
 	        }
 
 	        private int code;
+	        private Class mapType;
 
 	        Type(int code) {
 	            this.code = code;
+	        }
+
+	        Type(int code, Class mapType) {
+	            this.code = code;
+	            this.mapType = mapType;
+	        }
+	        
+	        public Class getMapType() {
+	        	return mapType;
 	        }
 	        
 	        public int getCode() {
@@ -196,6 +213,7 @@ public final class SQL {
 		}
 	}
 	
+    private static final Pattern ENCODE = Pattern.compile("([^']*)'([^']*)");
 	private static final int MAX_RESULT_SEARCH = 20;
 	private Map<String, Table> roTables;
 	private DataSource ds;
@@ -203,6 +221,9 @@ public final class SQL {
 	private int lastResultCount;
 	private String lastStatement;
 	private StringBuilder sb = new StringBuilder();
+	private SimpleDateFormat dateFormat;
+	private SimpleDateFormat timeFormat;
+	private SimpleDateFormat timestampFormat;
 	
 	public SQL(String url, Map<String, String> info) {
 		try {
@@ -544,6 +565,137 @@ public final class SQL {
 		}
 	}
 	
+	private void executeUpdate(String statement, Grid grid, int[] gridIndices, Column columns[], int count) {
+		Connection con = null;
+		PreparedStatement stmt = null;
+		
+		try {
+			con = getConnection();
+			stmt = con.prepareStatement(statement);
+			int resultCount = 0;
+
+			for (Grid.Row r : grid.getRows()) {
+	            for (int i = 0, pos = 1; i < count; i++) {
+	            	Column c = columns[i];
+
+	            	if (c != null) {
+	            		mapValue(stmt, pos, c.type, r.get(gridIndices[i]));
+		            	pos++;
+	            	}
+	            }
+	            
+	            resultCount += stmt.executeUpdate();
+			}
+			
+			lastStatement = statement;
+			lastResultCount = resultCount;
+		} catch (SQLException e) {
+			throw Reflector.throwException(e);
+		} finally {
+			cleanup(con, stmt, null);
+		}
+	}
+	
+	private void executeUpdate(String statement, List<? extends Object> objects, Reflector.PropertyTarget[] objProps, Column columns[], int count) {
+		Connection con = null;
+		PreparedStatement stmt = null;
+		
+		try {
+			con = getConnection();
+			stmt = con.prepareStatement(statement);
+			int resultCount = 0;
+
+			for (Object obj : objects) {
+	            for (int i = 0, pos = 1; i < count; i++) {
+	            	Column c = columns[i];
+
+	            	if (c != null) {
+	            		mapValue(stmt, pos, c.type, objProps[i].get(obj));
+		            	pos++;
+	            	}
+	            }
+	            
+	            resultCount += stmt.executeUpdate();
+			}
+			
+			lastStatement = statement;
+			lastResultCount = resultCount;
+		} catch (SQLException e) {
+			throw Reflector.throwException(e);
+		} finally {
+			cleanup(con, stmt, null);
+		}
+	}
+
+	private static void mapValue(PreparedStatement stmt, int pos, Column.Type type, Object value) throws SQLException {
+    	Class mapType = type.mapType;
+    	value = Reflector.DEFAULT_CONVERTER.toType(mapType, value);
+    	
+    	if (value == null) {
+    		stmt.setNull(pos, type.code);
+    	} else if (mapType == String.class) {
+    		stmt.setString(pos, (String)value);
+    	} else if (mapType == int.class) {
+    		stmt.setInt(pos, (Integer)value);
+    	} else if (mapType == boolean.class) {
+    		stmt.setBoolean(pos, (Boolean)value);
+    	} else if (mapType == short.class) {
+    		stmt.setShort(pos, (Short)value);
+    	} else if (mapType == long.class) {
+    		stmt.setLong(pos, (Long)value);
+    	} else if (mapType == float.class) {
+    		stmt.setFloat(pos, (Float)value);
+    	} else if (mapType == double.class) {
+    		stmt.setDouble(pos, (Double)value);
+    	} else if (mapType == BigDecimal.class) {
+    		stmt.setBigDecimal(pos, (BigDecimal)value);
+    	} else if (mapType == Date.class) {
+    		stmt.setDate(pos, (Date)value);
+    	} else if (mapType == Time.class) {
+    		stmt.setTime(pos, (Time)value);
+    	} else if (mapType == Timestamp.class) {
+    		stmt.setTimestamp(pos, (Timestamp)value);
+    	} else {
+    		throw new IllegalArgumentException("unsupported target type: " + mapType);
+    	}
+	}
+	
+	private void mapValue(StringBuilder sb, Column.Type type, Object value) {
+		Class mapType = type.mapType;
+    	value = Reflector.DEFAULT_CONVERTER.toType(mapType, value);
+    	
+    	if (value == null) {
+    		sb.append("null");
+    	} else if (mapType == String.class) {
+    		sb.append("'").append(ENCODE.matcher((String)value).replaceAll("$1''$2")).append("'");
+    	} else if (mapType == int.class) {
+    		sb.append((Integer)value);
+    	} else if (mapType == boolean.class) {
+    		sb.append((Boolean)value);
+    	} else if (mapType == short.class) {
+    		sb.append((Short)value);
+    	} else if (mapType == long.class) {
+    		sb.append((Long)value);
+    	} else if (mapType == float.class) {
+    		sb.append((Float)value);
+    	} else if (mapType == double.class) {
+    		sb.append((Double)value);
+    	} else if (mapType == BigDecimal.class) {
+    		sb.append(((BigDecimal)value).toPlainString());
+    	} else if (mapType == Date.class) {
+    		if (dateFormat == null) dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    		sb.append("{d '").append(dateFormat.format((java.util.Date)value)).append("'}");
+    	} else if (mapType == Time.class) {
+    		if (timeFormat == null) timeFormat = new SimpleDateFormat("HH:mm:ss");
+    		sb.append("{t '").append(timeFormat.format((java.util.Date)value)).append("'}");
+    	} else if (mapType == Timestamp.class) {
+    		if (timestampFormat == null) timestampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+    		sb.append("{ts '").append(timestampFormat.format((java.util.Date)value)).append("'}");
+    	} else {
+    		throw new IllegalArgumentException("unsupported target type: " + mapType);
+    	}
+	}
+
 	/**
 	 * Executes the <code>statement</code>, returning the results as a <code>List</code> of new objects of the class <code>type</code>.
 	 * For every row returned by the specified <code>statement</code> a new instance of the class <code>type</code> will be
@@ -691,77 +843,524 @@ public final class SQL {
 	
 	//The 'setRows' and 'setSingleRow' methods require the map/grid/objects to have primary key values matching the specified table.
 	public void setRowGrid(String table, Grid grid) {
+		if (table == null || table.length() == 0) throw new IllegalArgumentException("table == null || table.length() == 0");
+		if (grid == null || grid.getRows().size() == 0) throw new IllegalArgumentException("grid == null || grid.getRows().size() == 0");
+		
 		Table t = getTables().get(table);
 		if (t == null) throw new IllegalArgumentException("No table named '" + table + "' was found");
+
+		final int keyCount = t.getPrimaryKeys().size();
+		if (keyCount == 0) throw new IllegalArgumentException("Cannot modify table '" + table + "' since it has no primary key(s)");
+
 		Map<String, Column> cols = t.getColumns();
-		List<Column> keys = t.getPrimaryKeys();
+		final int count = cols.size();
 		
-		for (Column c : keys) {
-			if (grid.getColumnByName(c.getName()) == null) throw new IllegalArgumentException("Grid does not contain a column for every primary key");
-		}
-		
-		Map<Integer, String> indexToName = new HashMap<Integer, String>();
+		//Build the properly ordered column array and grid column index lookup table
+		int foundCount = 0;
+		int foundKeys = 0;
+        int[] gridIndicies = new int[count];
+        Column[] columns = new Column[count];
 		List<Grid.Column> gridCols = grid.getColumns();
 		
-        //int index = 0;
-        //int[] columnForProperty = new int[count];
-        //Reflector.PropertyTarget[] foundProps = new Reflector.PropertyTarget[count]; 
-
-		
-		for (int i = gridCols.size(); --i >= 0;) {
-			//cols.get(key)
-			indexToName.put(i, gridCols.get(i).getName());
-		}
-		
-		sb.setLength(0);
-		
-		for (Grid.Row r : grid.getRows()) {
+		for (int i = 0, cnt = gridCols.size(); i < cnt; i++) {
+			Column c = cols.get(gridCols.get(i).getName());
 			
+			if (c != null) {
+				int index;
+				
+				if (c.primaryKey) {
+					index = count - foundKeys - 1;
+					foundKeys++;
+				} else {
+					index = foundCount;
+					foundCount++;
+				}
+				
+				gridIndicies[index] = i;
+				columns[index] = c;
+			}
 		}
+		
+		if (keyCount != foundKeys) throw new IllegalArgumentException("Grid does not contain a column for every primary key in table '" + table + "'");
+		if (foundCount == 0) throw new IllegalArgumentException("Grid does not contain any non-key values that map to the table '" + table + "'");
+		
+		//Shuffle the primary keys to end of data columns
+		int start = count - keyCount;
+		System.arraycopy(gridIndicies, start, gridIndicies, foundCount, keyCount);
+		System.arraycopy(columns, start, columns, foundCount, keyCount);
+		
+		//Build prepared updated statement
+		sb.setLength(0);
+		sb.append("UPDATE ").append(table).append(" SET ");
+		
+        for (int i = 0; i < count; i++) {
+        	Column col = columns[i];
+        	sb.append(col.name).append('=').append('?').append(',');
+        }
+            
+        sb.setCharAt(sb.length() - 1, ' ');
+        sb.append("WHERE ");
+        
+        for (int i = count, cnt = count + keyCount; i < cnt; i++) {
+        	Column col = columns[i];
+        	sb.append(col.name).append("=? AND ");
+        }
+
+        sb.setLength(sb.length() - 5);
+        
+        //Execute the update against the value set
+        executeUpdate(sb.toString(), grid, gridIndicies, columns, foundCount + keyCount);
 	}
 	
-	public void setRows(String table, List<? extends Object> lst) {
+	public void setRows(String table, List<? extends Object> objects) {
+		if (table == null || table.length() == 0) throw new IllegalArgumentException("table == null || table.length() == 0");
+		if (objects == null || objects.size() == 0 || objects.get(0) == null) throw new IllegalArgumentException("objects == null || objects.size() == 0 || objects.get(0) == null");
 		
+		Table t = getTables().get(table);
+		if (t == null) throw new IllegalArgumentException("No table named '" + table + "' was found");
+
+		final int keyCount = t.getPrimaryKeys().size();
+		if (keyCount == 0) throw new IllegalArgumentException("Cannot modify table '" + table + "' since it has no primary key(s)");
+
+		Map<String, Column> cols = t.getColumns();
+		final int count = cols.size();
+		
+		//Build the properly ordered column array and grid column index lookup table
+		int foundCount = 0;
+		int foundKeys = 0;
+		Reflector.PropertyTarget[] objProps = new Reflector.PropertyTarget[count];
+        Column[] columns = new Column[count];
+        Map<String, Reflector.PropertyTarget> props = Reflector.getReflector(objects.get(0).getClass()).getProperties();
+		
+		for (Reflector.PropertyTarget prop : props.values()) {
+			if (!prop.isReadable()) continue;
+			Column c = cols.get(prop.getName());
+			
+			if (c != null) {
+				int index;
+				
+				if (c.primaryKey) {
+					index = count - foundKeys - 1;
+					foundKeys++;
+				} else {
+					index = foundCount;
+					foundCount++;
+				}
+				
+				objProps[index] = prop;
+				columns[index] = c;
+			}
+		}
+		
+		if (keyCount != foundKeys) throw new IllegalArgumentException("Objects in List do not contain a property for every primary key in table '" + table + "'");
+		if (foundCount == 0) throw new IllegalArgumentException("Objects in List do not contain any non-key properties that map to the table '" + table + "'");
+		
+		//Shuffle the primary keys to end of data columns
+		int start = count - keyCount;
+		System.arraycopy(objProps, start, objProps, foundCount, keyCount);
+		System.arraycopy(columns, start, columns, foundCount, keyCount);
+		
+		//Build prepared updated statement
+		sb.setLength(0);
+		sb.append("UPDATE ").append(table).append(" SET ");
+		
+        for (int i = 0; i < count; i++) {
+        	Column col = columns[i];
+        	sb.append(col.name).append('=').append('?').append(',');
+        }
+            
+        sb.setCharAt(sb.length() - 1, ' ');
+        sb.append("WHERE ");
+        
+        for (int i = count, cnt = count + keyCount; i < cnt; i++) {
+        	Column col = columns[i];
+        	sb.append(col.name).append("=? AND ");
+        }
+
+        sb.setLength(sb.length() - 5);
+        
+        //Execute the update against the value set
+        executeUpdate(sb.toString(), objects, objProps, columns, foundCount + keyCount);
 	}
 	
 	public void setSingleRow(String table, Object obj) {
+		if (table == null || table.length() == 0) throw new IllegalArgumentException("table == null || table.length() == 0");
+		if (obj == null) throw new IllegalArgumentException("obj == null");
 		
+		Table t = getTables().get(table);
+		if (t == null) throw new IllegalArgumentException("No table named '" + table + "' was found");
+
+		final int keyCount = t.getPrimaryKeys().size();
+		if (keyCount == 0) throw new IllegalArgumentException("Cannot modify table '" + table + "' since it has no primary key(s)");
+		Map<String, Column> cols = t.getColumns();
+		
+		int foundCount = 0;
+		int foundKeys = 0;
+        Map<String, Reflector.PropertyTarget> props = Reflector.getReflector(obj.getClass()).getProperties();
+
+        sb.setLength(0);
+		sb.append("UPDATE ").append(table).append(" SET ");
+		StringBuilder sbWhere = new StringBuilder();
+		sbWhere.append("WHERE ");
+		
+		for (Reflector.PropertyTarget prop : props.values()) {
+			if (!prop.isReadable()) continue;
+			Column c = cols.get(prop.getName());
+			
+			if (c != null) {
+				if (c.primaryKey) {
+		        	sbWhere.append(c.name).append('=');
+		        	mapValue(sbWhere, c.type, prop.get(obj));
+		        	sbWhere.append(" AND ");
+					foundKeys++;
+				} else {
+		        	sb.append(c.name).append('=');
+		        	mapValue(sb, c.type, prop.get(obj));
+		        	sb.append(',');
+					foundCount++;
+				}
+			}
+		}
+		
+		if (keyCount != foundKeys) throw new IllegalArgumentException("Object '" + obj.getClass().getName() + "' does not contain a property for every primary key in table '" + table + "'");
+		if (foundCount == 0) throw new IllegalArgumentException("Object '" + obj.getClass().getName() + "' does not contain any non-key properties that map to the table '" + table + "'");
+
+        sb.setCharAt(sb.length() - 1, ' ');
+        sbWhere.setLength(sbWhere.length() - 5);
+        sb.append(sbWhere);
+        queryStatement(null, sb.toString());
 	}
 	
 	public void setSingleRowMap(String table, Map<String, ? super Object> map) {
+		if (table == null || table.length() == 0) throw new IllegalArgumentException("table == null || table.length() == 0");
+		if (map == null || map.size() == 0) throw new IllegalArgumentException("map == null || map.size() == 0");
 		
+		Table t = getTables().get(table);
+		if (t == null) throw new IllegalArgumentException("No table named '" + table + "' was found");
+
+		final int keyCount = t.getPrimaryKeys().size();
+		if (keyCount == 0) throw new IllegalArgumentException("Cannot modify table '" + table + "' since it has no primary key(s)");
+		Map<String, Column> cols = t.getColumns();
+		
+		int foundCount = 0;
+		int foundKeys = 0;
+
+        sb.setLength(0);
+		sb.append("UPDATE ").append(table).append(" SET ");
+		StringBuilder sbWhere = new StringBuilder();
+		sbWhere.append("WHERE ");
+		
+		for (Map.Entry<String, ? extends Object> e : map.entrySet()) {
+			Column c = cols.get(e.getKey());
+			
+			if (c != null) {
+				if (c.primaryKey) {
+		        	sbWhere.append(c.name).append('=');
+		        	mapValue(sbWhere, c.type, e.getValue());
+		        	sbWhere.append(" AND ");
+					foundKeys++;
+				} else {
+		        	sb.append(c.name).append('=');
+		        	mapValue(sb, c.type, e.getValue());
+		        	sb.append(',');
+					foundCount++;
+				}
+			}
+		}
+		
+		if (keyCount != foundKeys) throw new IllegalArgumentException("Map does not contain a value for every primary key in table '" + table + "'");
+		if (foundCount == 0) throw new IllegalArgumentException("Map does not contain any non-key values that map to the table '" + table + "'");
+
+        sb.setCharAt(sb.length() - 1, ' ');
+        sbWhere.setLength(sbWhere.length() - 5);
+        sb.append(sbWhere);
+        queryStatement(null, sb.toString());
 	}
 	
 	public void addRowGrid(String table, Grid grid) {
+		if (table == null || table.length() == 0) throw new IllegalArgumentException("table == null || table.length() == 0");
+		if (grid == null || grid.getRows().size() == 0) throw new IllegalArgumentException("grid == null || grid.getRows().size() == 0");
 		
+		Table t = getTables().get(table);
+		if (t == null) throw new IllegalArgumentException("No table named '" + table + "' was found");
+
+		final int keyCount = t.getPrimaryKeys().size();
+		Map<String, Column> cols = t.getColumns();
+		final int count = cols.size();
+		
+		//Build the properly ordered column array and grid column index lookup table
+		int foundKeys = 0;
+		Column[] columns = new Column[count];
+        int[] gridIndicies = new int[count];
+		sb.setLength(0);
+		sb.append("INSERT INTO ").append(table).append(" VALUES(");
+		
+		for (Column c : cols.values()) {
+			columns[c.index] = c;
+		}
+		
+		for (int i = 0, cnt = columns.length; i < cnt; i++) {
+			Column c = columns[i];
+			Grid.Column col = grid.getColumnByName(c.name);
+
+			if (col == null) {
+				sb.append("NULL,");
+				columns[i] = null;
+			} else {
+				if (c.primaryKey) foundKeys++;
+				sb.append("?,");
+				gridIndicies[i] = col.getIndex();
+			}
+		}
+		
+		sb.setCharAt(sb.length() - 1, ')');
+		if (keyCount != foundKeys) throw new IllegalArgumentException("Grid does not contain a column for every primary key in table '" + table + "'");
+        
+        //Execute the update against the value set
+        executeUpdate(sb.toString(), grid, gridIndicies, columns, count);
 	}
 
-	public void addRows(String table, List<Object> obj) {
+	public void addRows(String table, List<Object> objects) {
+		if (table == null || table.length() == 0) throw new IllegalArgumentException("table == null || table.length() == 0");
+		if (objects == null || objects.size() == 0 || objects.get(0) == null) throw new IllegalArgumentException("objects == null || objects.size() == 0 || objects.get(0) == null");
 		
+		Table t = getTables().get(table);
+		if (t == null) throw new IllegalArgumentException("No table named '" + table + "' was found");
+
+		final int keyCount = t.getPrimaryKeys().size();
+		Map<String, Column> cols = t.getColumns();
+		final int count = cols.size();
+		
+		//Build the properly ordered column array and grid column index lookup table
+		int foundKeys = 0;
+		Column[] columns = new Column[count];
+        Reflector.PropertyTarget[] objProps = new Reflector.PropertyTarget[count];
+		sb.setLength(0);
+		sb.append("INSERT INTO ").append(table).append(" VALUES(");
+		
+		for (Column c : cols.values()) {
+			columns[c.index] = c;
+		}
+		
+        Map<String, Reflector.PropertyTarget> props = Reflector.getReflector(objects.get(0).getClass()).getProperties();
+		
+		for (int i = 0, cnt = columns.length; i < cnt; i++) {
+			Column c = columns[i];
+			Reflector.PropertyTarget prop = props.get(c.name);
+
+			if (prop == null || !prop.isReadable()) {
+				sb.append("NULL,");
+				columns[i] = null;
+			} else {
+				if (c.primaryKey) foundKeys++;
+				sb.append("?,");
+				objProps[i] = prop;
+			}
+		}
+		
+		sb.setCharAt(sb.length() - 1, ')');
+		if (keyCount != foundKeys) throw new IllegalArgumentException("Objects in List do not contain a readable property for every primary key in table '" + table + "'");
+        
+        //Execute the update against the value set
+        executeUpdate(sb.toString(), objects, objProps, columns, count);
 	}
 	
 	public void addSingleRow(String table, Object obj) {
+		if (table == null || table.length() == 0) throw new IllegalArgumentException("table == null || table.length() == 0");
+		if (obj == null) throw new IllegalArgumentException("obj == null");
 		
-	}
+		Table t = getTables().get(table);
+		if (t == null) throw new IllegalArgumentException("No table named '" + table + "' was found");
+
+		final int keyCount = t.getPrimaryKeys().size();
+		Map<String, Column> cols = t.getColumns();
+		final int count = cols.size();
+		
+		//Build the properly ordered column array and grid column index lookup table
+		int foundKeys = 0;
+		Column[] columns = new Column[count];
+		sb.setLength(0);
+		sb.append("INSERT INTO ").append(table).append(" VALUES(");
+		
+		for (Column c : cols.values()) {
+			columns[c.index] = c;
+		}
+		
+        Map<String, Reflector.PropertyTarget> props = Reflector.getReflector(obj.getClass()).getProperties();
+		
+		for (int i = 0, cnt = columns.length; i < cnt; i++) {
+			Column c = columns[i];
+			Reflector.PropertyTarget prop = props.get(c.name);
+
+			if (prop == null || !prop.isReadable()) {
+				sb.append("NULL,");
+			} else {
+				if (c.primaryKey) foundKeys++;
+				mapValue(sb, c.type, prop.get(obj));
+				sb.append(",");
+			}
+		}
+		
+		sb.setCharAt(sb.length() - 1, ')');
+		if (keyCount != foundKeys) throw new IllegalArgumentException("Object '" + obj.getClass().getName() + "' does not contain a readable property for every primary key in table '" + table + "'");
+		queryStatement(null, sb.toString());
+ 	}
 	
 	public void addSingleRowMap(String table, Map<String, ? super Object> map) {
+		if (table == null || table.length() == 0) throw new IllegalArgumentException("table == null || table.length() == 0");
+		if (map == null || map.size() == 0) throw new IllegalArgumentException("map == null || map.size() == 0");
 		
+		Table t = getTables().get(table);
+		if (t == null) throw new IllegalArgumentException("No table named '" + table + "' was found");
+
+		final int keyCount = t.getPrimaryKeys().size();
+		Map<String, Column> cols = t.getColumns();
+		final int count = cols.size();
+		
+		//Build the properly ordered column array and grid column index lookup table
+		int foundKeys = 0;
+		Column[] columns = new Column[count];
+		sb.setLength(0);
+		sb.append("INSERT INTO ").append(table).append(" VALUES(");
+		
+		for (Column c : cols.values()) {
+			columns[c.index] = c;
+		}
+		
+		for (int i = 0, cnt = columns.length; i < cnt; i++) {
+			Column c = columns[i];
+
+			if (!map.containsKey(c.name)) {
+				sb.append("NULL,");
+			} else {
+				if (c.primaryKey) foundKeys++;
+				mapValue(sb, c.type, map.get(c.name));
+				sb.append(",");
+			}
+		}
+		
+		sb.setCharAt(sb.length() - 1, ')');
+		if (keyCount != foundKeys) throw new IllegalArgumentException("Map does not contain a value for every primary key in table '" + table + "'");
+		queryStatement(null, sb.toString());
 	}
 	
 	public void removeRowGrid(String table, Grid grid) {
+		if (table == null || table.length() == 0) throw new IllegalArgumentException("table == null || table.length() == 0");
+		if (grid == null || grid.getRows().size() == 0) throw new IllegalArgumentException("grid == null || grid.getRows().size() == 0");
 		
+		Table t = getTables().get(table);
+		if (t == null) throw new IllegalArgumentException("No table named '" + table + "' was found");
+
+		List<Column> cols = t.getPrimaryKeys();
+		final int count = cols.size();
+		if (count == 0) throw new IllegalArgumentException("Cannot modify table '" + table + "' since it has no primary key(s)");
+		
+		//Build the properly ordered column array and grid column index lookup table
+		Column[] columns = new Column[count];
+        int[] gridIndicies = new int[count];
+		sb.setLength(0);
+		sb.append("DELETE FROM ").append(table).append(" WHERE ");
+		
+		for (int i = 0; i < count; i++) {
+			Column c = cols.get(i);
+			columns[i] = c;
+			Grid.Column col = grid.getColumnByName(c.name);
+			if (col == null)  throw new IllegalArgumentException("Grid does not contain a column for every primary key in table '" + table + "'");
+			gridIndicies[i] = col.getIndex();
+			sb.append(c.name).append("=? AND ");
+		}
+
+		sb.setLength(sb.length() - 5);
+
+        //Execute the update against the value set
+        executeUpdate(sb.toString(), grid, gridIndicies, columns, count);
 	}
 
-	public void removeRows(String table, List<Object> obj) {
+	public void removeRows(String table, List<Object> objects) {
+		if (table == null || table.length() == 0) throw new IllegalArgumentException("table == null || table.length() == 0");
+		if (objects == null || objects.size() == 0 || objects.get(0) == null) throw new IllegalArgumentException("objects == null || objects.size() == 0 || objects.get(0) == null");
 		
+		Table t = getTables().get(table);
+		if (t == null) throw new IllegalArgumentException("No table named '" + table + "' was found");
+
+		List<Column> cols = t.getPrimaryKeys();
+		final int count = cols.size();
+		if (count == 0) throw new IllegalArgumentException("Cannot modify table '" + table + "' since it has no primary key(s)");
+		
+		//Build the properly ordered column array and grid column index lookup table
+		Column[] columns = new Column[count];
+        Reflector.PropertyTarget[] objProps = new Reflector.PropertyTarget[count];
+		sb.setLength(0);
+		sb.append("DELETE FROM ").append(table).append(" WHERE ");
+		Map<String, Reflector.PropertyTarget> props = Reflector.getReflector(objects.get(0).getClass()).getProperties();
+		
+		for (int i = 0; i < count; i++) {
+			Column c = cols.get(i);
+			columns[i] = c;
+			Reflector.PropertyTarget prop = props.get(c.name);
+			if (prop == null)  throw new IllegalArgumentException("Objects in List do not contain a property for every primary key in table '" + table + "'");
+			objProps[i] = prop;
+			sb.append(c.name).append("=? AND ");
+		}
+
+		sb.setLength(sb.length() - 5);
+
+        //Execute the update against the value set
+        executeUpdate(sb.toString(), objects, objProps, columns, count);
 	}
 	
 	public void removeSingleRow(String table, Object obj) {
+		if (table == null || table.length() == 0) throw new IllegalArgumentException("table == null || table.length() == 0");
+		if (obj == null) throw new IllegalArgumentException("obj == null");
 		
+		Table t = getTables().get(table);
+		if (t == null) throw new IllegalArgumentException("No table named '" + table + "' was found");
+
+		List<Column> cols = t.getPrimaryKeys();
+		final int count = cols.size();
+		if (count == 0) throw new IllegalArgumentException("Cannot modify table '" + table + "' since it has no primary key(s)");
+		
+		sb.setLength(0);
+		sb.append("DELETE FROM ").append(table).append(" WHERE ");
+		Map<String, Reflector.PropertyTarget> props = Reflector.getReflector(obj.getClass()).getProperties();
+		
+		for (int i = 0; i < count; i++) {
+			Column c = cols.get(i);
+			Reflector.PropertyTarget prop = props.get(c.name);
+			if (prop == null)  throw new IllegalArgumentException("Object '" + obj.getClass() + "' does not contain a property for every primary key in table '" + table + "'");
+			sb.append(c.name).append('=');
+			mapValue(sb, c.type, prop.get(obj));
+			sb.append(" AND ");
+		}
+
+		sb.setLength(sb.length() - 5);
+		queryStatement(null, sb.toString());
 	}
 	
 	public void removeSingleRowMap(String table, Map<String, ? super Object> map) {
+		if (table == null || table.length() == 0) throw new IllegalArgumentException("table == null || table.length() == 0");
+		if (map == null || map.size() == 0) throw new IllegalArgumentException("map == null || map.size() == 0");
 		
+		Table t = getTables().get(table);
+		if (t == null) throw new IllegalArgumentException("No table named '" + table + "' was found");
+
+		List<Column> cols = t.getPrimaryKeys();
+		final int count = cols.size();
+		if (count == 0) throw new IllegalArgumentException("Cannot modify table '" + table + "' since it has no primary key(s)");
+		
+		sb.setLength(0);
+		sb.append("DELETE FROM ").append(table).append(" WHERE ");
+		
+		for (int i = 0; i < count; i++) {
+			Column c = cols.get(i);
+			if (!map.containsKey(c.name)) throw new IllegalArgumentException("Map does not contain a value for every primary key in table '" + table + "'");
+			sb.append(c.name).append('=');
+			mapValue(sb, c.type, map.get(c.name));
+			sb.append(" AND ");
+		}
+
+		sb.setLength(sb.length() - 5);
+		queryStatement(null, sb.toString());
 	}
 	
 	/**
