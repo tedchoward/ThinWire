@@ -95,6 +95,7 @@ public class Reflector {
     public static interface CallTarget {
     	boolean isStatic();
     	String getName();
+    	Class getType();
     	Object call(Object obj, Object...args) throws CallException;
     }
     
@@ -117,6 +118,10 @@ public class Reflector {
         
         public String getName() {
         	return name;
+        }
+        
+        public Class getType() {
+        	return type;
         }
 	}
 	
