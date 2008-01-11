@@ -89,7 +89,7 @@ var tw_EventManager = Class.extend({
 		                    if (call.s && this._autoSyncResponse) this.sendSyncResponse(ret, true);
 		                }
 					} catch (e) {
-						var eAry = ["ERROR INVOKING call ", i, " of ", cnt, ": ", call.m, "\n"];
+						var eAry = ["ERROR INVOKING call ", i, " of ", cnt, ": ", call.m, " on id ", call.i, " of ", call.n, "\n"];
 						
 						if (e instanceof String || typeof e == "string") {
 							eAry.push("error:" + e);
@@ -114,7 +114,7 @@ var tw_EventManager = Class.extend({
 						eAry.push("error:" + item + "=" + (e[item].length > 100 ? e[item].substring(0, 100) : e[item]) + "\n");
 				}
 
-				eAry.push("message=" + (message != null && message.length > 250 ? message.substring(0, 250) : calls))
+				eAry.push("message=" + (message != null && message.length > 100 ? message.substring(0, 100) : calls))
 				if (!confirm(eAry.join(""))) throw e;	
             } 
         }        
