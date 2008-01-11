@@ -1,3 +1,29 @@
+/*
+                           ThinWire(R) Ajax RIA Framework
+                        Copyright (C) 2003-2008 ThinWire LLC
+
+  This library is free software; you can redistribute it and/or modify it under
+  the terms of the GNU Lesser General Public License as published by the Free
+  Software Foundation; either version 2.1 of the License, or (at your option) any
+  later version.
+
+  This library is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+  PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public License along
+  with this library; if not, write to the Free Software Foundation, Inc., 59
+  Temple Place, Suite 330, Boston, MA 02111-1307 USA
+
+  Users who would rather have a commercial license, warranty or support should
+  contact the following company who supports the technology:
+  
+            ThinWire LLC, 5919 Greenville #335, Dallas, TX 75206-1906
+   	            email: info@thinwire.com    ph: +1 (214) 295-4859
+ 	                        http://www.thinwire.com
+
+#VERSION_HEADER#
+*/
 package thinwire.util;
 
 import java.lang.reflect.*;
@@ -5,6 +31,9 @@ import java.util.*;
 import java.util.logging.*;
 import java.util.concurrent.*;
 
+/**
+ * @author Joshua J. Gertzen
+ */
 public class Reflector {
 	private static final Logger log = Logger.getLogger(Reflector.class.getName());
 	private static final Level LEVEL = Level.FINER;
@@ -355,10 +384,12 @@ public class Reflector {
     	return reflector;
     }
     
-    private static class CaseInsensitiveChainMap<V> implements Map<String, V> {
+    static class CaseInsensitiveChainMap<V> implements Map<String, V> {
     	private Map<String, V> parent;
     	private Map<String, V> map = new HashMap<String, V>();
     	private Map<String, V> lmap = new HashMap<String, V>();
+
+    	CaseInsensitiveChainMap() { }
 
     	CaseInsensitiveChainMap(Map<String, V> parent) {
     		this.parent = parent;
@@ -538,8 +569,8 @@ public class Reflector {
     		nameToMethod = superReflector.nameToMethod;
     	} else {
     		if (superReflector == null) {
-	        	nameToProperty = new CaseInsensitiveChainMap<PropertyTarget>(null);
-	        	nameToMethod = new CaseInsensitiveChainMap<MethodTarget>(null);
+	        	nameToProperty = new CaseInsensitiveChainMap<PropertyTarget>();
+	        	nameToMethod = new CaseInsensitiveChainMap<MethodTarget>();
     		} else {
 	        	nameToProperty = new CaseInsensitiveChainMap<PropertyTarget>(superReflector.nameToProperty);
 	        	nameToMethod = new CaseInsensitiveChainMap<MethodTarget>(superReflector.nameToMethod);
