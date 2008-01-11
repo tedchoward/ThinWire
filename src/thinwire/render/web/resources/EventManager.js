@@ -103,8 +103,12 @@ var tw_EventManager = Class.extend({
             } catch (e) {
 				var eAry = ["SYNTAX ERROR WITH eval(calls):\n"];
 
-			    for (var item in e)
-					eAry.push("error:" + item + "=" + (e[item].length > 100 ? e[item].substring(0, 100) : e[item]) + "\n");
+				if (e instanceof String || typeof e == "string") {
+					eAray.push("error:" + e);
+				} else { 
+				    for (var item in e)
+						eAry.push("error:" + item + "=" + (e[item].length > 100 ? e[item].substring(0, 100) : e[item]) + "\n");
+				}
 
 				eAry.push("calls=" + (calls != null && calls.length > 250 ? calls.substring(0, 250) : calls))
 				alert(eAry.join(""));
