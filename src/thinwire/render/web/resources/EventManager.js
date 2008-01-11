@@ -73,10 +73,10 @@ var tw_EventManager = Class.extend({
         if (this._activityInd != null) this._activityInd.style.display = "none";        
     },
     
-    _inboundEventListener: function(calls) {
+    _inboundEventListener: function(message) {
         if (calls.length > 0) {
             try {
-                eval("calls = " + calls);
+                var calls = eval(message);
 
 	            for (var i = 0, cnt = calls.length; i < cnt; i++) {
 	                var call = calls[i];
@@ -105,7 +105,7 @@ var tw_EventManager = Class.extend({
 					}
 	            }            
             } catch (e) {
-				var eAry = ["SYNTAX ERROR WITH eval(calls):\n"];
+				var eAry = ["SYNTAX ERROR WITH eval(message):\n"];
 
 				if (e instanceof String || typeof e == "string") {
 					eAry.push("error:" + e);
@@ -114,7 +114,7 @@ var tw_EventManager = Class.extend({
 						eAry.push("error:" + item + "=" + (e[item].length > 100 ? e[item].substring(0, 100) : e[item]) + "\n");
 				}
 
-				eAry.push("calls=" + (calls != null && calls.length > 250 ? calls.substring(0, 250) : calls))
+				eAry.push("message=" + (message != null && message.length > 250 ? message.substring(0, 250) : calls))
 				if (!confirm(eAry.join(""))) throw e;	
             } 
         }        
