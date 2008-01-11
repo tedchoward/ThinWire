@@ -843,6 +843,11 @@ public class GridBox extends AbstractComponent<GridBox> implements Grid, ItemCha
 	}
     
     @SuppressWarnings("unchecked")
+    public Column getColumnByName(String name) {
+    	return grid.getColumnByName(name);
+    }
+    
+    @SuppressWarnings("unchecked")
 	public List<Column> getColumns() {
 		return grid.getColumns();
 	}

@@ -868,6 +868,11 @@ public final class TableLayout extends AbstractLayout implements Grid {
 	public Column newColumn() {
 		return new TableLayout.Column();
 	}
+    
+    @SuppressWarnings("unchecked")
+    public Column getColumnByName(String name) {
+    	return grid.getColumnByName(name);
+    }
 
     @SuppressWarnings("unchecked")
     public List<Column> getColumns() {

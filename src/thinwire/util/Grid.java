@@ -118,6 +118,8 @@ public interface Grid {
          */
         public void setUserObject(Object value);
     }
+    
+    public <C extends Column> C getColumnByName(String name);
 
     public <R extends Row> R newRow();
 

@@ -92,6 +92,7 @@ public class Reflector {
     private static final Converter DEFAULT_CONVERTER = new DefaultConverter();
     
     public static interface CallTarget {
+    	boolean isStatic();
     	String getName();
     	Object call(Object obj, Object...args) throws CallException;
     }
@@ -100,11 +101,17 @@ public class Reflector {
 		final Reflector reflector;
         final String name;
         Class type;
+        boolean statik;
         
-        private AbstractCallTarget(Reflector reflector, String name, Class type) {
+        private AbstractCallTarget(Reflector reflector, String name, boolean statik, Class type) {
         	this.reflector = reflector;
         	this.type = type;
         	this.name = name;
+        	this.statik = statik;
+        }
+        
+        public boolean isStatic() {
+        	return statik;
         }
         
         public String getName() {
@@ -120,7 +127,7 @@ public class Reflector {
         private Method setter;
 
         private PropertyTarget(Reflector reflector, Method m, String name, Class type, boolean isGetter) {
-        	super(reflector, name, type);
+        	super(reflector, name, false, type);
             name = name.length() == 1 ? String.valueOf(Character.toUpperCase(name.charAt(0))) : Character.toUpperCase(name.charAt(0)) + name.substring(1);
             
             if (isGetter) {
@@ -233,12 +240,14 @@ public class Reflector {
     	private Object sigs;
 
     	private MethodTarget(Reflector reflector, String name, Method method, Class retType, Class[] argTypes) {
-    		super(reflector, name, retType);
+    		super(reflector, name, Modifier.isStatic(method.getModifiers()), retType);
     		addSignature(method, argTypes);
     	}
     	
     	@SuppressWarnings("unchecked")
     	void addSignature(Method method, Class[] argTypes) {
+    		if (Modifier.isStatic(method.getModifiers()) != isStatic()) throw new CovariantTypeException(reflector.className, name);
+    			
     		if (this.sigs == null) {
     			sigs = new MethodSignature(method, argTypes);
     		} else {
@@ -366,6 +375,11 @@ public class Reflector {
     	private CovariantTypeException(String className, String name, Class firstType, Class secondType) {
     		super("Reflection collision on class '" + className + "' for the property named '" + name + "': " +
     				"covariant value types not supported, found '" + firstType.getName() + "' and '" + secondType.getName() + "'");
+    	}
+
+    	private CovariantTypeException(String className, String methodName) {
+    		super("Reflection collision on class '" + className + "' for the method named '" + methodName + "': " +
+    				"both a static and non-static exist that differ only by there arguments");
     	}
     }
     

@@ -28,8 +28,10 @@ package thinwire.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.AbstractList;
+import java.util.Map;
 
 import thinwire.ui.event.ItemChangeEvent.Type;
 
@@ -108,8 +110,8 @@ import thinwire.ui.event.ItemChangeEvent.Type;
  */
 public class ArrayGrid implements Grid {
     private boolean ensuringSymmetry;
-    private List<Grid.Row> rows;
-    private List<Grid.Column> columns;
+    private RowList rows;
+    private ColumnList columns;
 
     /**
      * Construct an ArrayGrid.
@@ -147,6 +149,12 @@ public class ArrayGrid implements Grid {
     @SuppressWarnings("unchecked")
     public <R extends Grid.Row> List<R> getRows() {
         return (List<R>)rows;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public <C extends Grid.Column> C getColumnByName(String name) {
+    	if (name == null) throw new IllegalArgumentException("name == null");
+    	return (C)columns.nameToColumn.get(name);
     }
     
     @SuppressWarnings("unchecked")
@@ -543,6 +551,7 @@ public class ArrayGrid implements Grid {
     	private Grid parent;
         private List<Column> l;
         private List<Object> values;
+        private Map<String, Column> nameToColumn = new Reflector.CaseInsensitiveChainMap<Column>();
         
         private ColumnList(Grid parent) {
         	this.parent = parent;
@@ -594,7 +603,9 @@ public class ArrayGrid implements Grid {
 
         public Grid.Column set(int index, Grid.Column o) {
         	Column ret = l.get(index);
+        	nameToColumn.remove(ret.getName());
         	Column c = prepareColumn(o);
+        	nameToColumn.put(c.getName(), c);
             l.set(index, c);
             ret.setParent(null);
             saveValues(ret, index);
@@ -608,6 +619,7 @@ public class ArrayGrid implements Grid {
         
         public void add(int index, Grid.Column o) {
         	Column c = prepareColumn(o);
+        	nameToColumn.put(c.getName(), c);
             l.add(index, c);
             c.setParent(parent);
             c.setIndex(index);
@@ -623,6 +635,7 @@ public class ArrayGrid implements Grid {
         
         public Grid.Column remove(int index) {
         	Column c = l.remove(index);
+        	nameToColumn.remove(c.getName());
             c.setParent(null);            
             saveValues(c, index);
             

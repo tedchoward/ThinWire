@@ -469,7 +469,7 @@ public final class SQL {
 		}
 	}
 	
-	private Object executeStatement(Object handler, Object...statement) {
+	private Object queryStatement(Object value, Object...statement) {
 		if (statement == null || statement.length == 0) throw new IllegalArgumentException("statement == null || statement.length == 0");
 		if (!(statement[0] instanceof String)) throw new IllegalArgumentException("!(statement[0] instanceof String)");
 		Connection con = null;
@@ -496,7 +496,7 @@ public final class SQL {
 			
 			Object result;
 			
-			if (handler == null) {
+			if (value == null) {
 				lastResultCount = stmt.executeUpdate(query);
 				result = null;
 			} else {
@@ -513,21 +513,21 @@ public final class SQL {
 				} while ((moreResults || stmt.getUpdateCount() >= 0) && ++cnt < MAX_RESULT_SEARCH);
 				
 				if (rs == null) {
-					result = handler;
+					result = value;
 				} else {
-					if (handler instanceof Grid) {
-						result = populateGrid((Grid)handler, rs);
-					} else if (handler instanceof Class) {
-						result = populateObjectList((Class)handler, rs);
+					if (value instanceof Grid) {
+						result = populateGrid((Grid)value, rs);
+					} else if (value instanceof Class) {
+						result = populateObjectList((Class)value, rs);
 					} else {
 						if (!rs.next()) throw new SQLException("Single result query did not return any results: " + query);
 
-						if (handler instanceof Map) {
-							result = populateSingleResultMap((Map<String, Object>)handler, rs);
-						} else if (handler instanceof List) {
-							result = populateSingleResultList((List<Object>)handler, rs);
+						if (value instanceof Map) {
+							result = populateSingleResultMap((Map<String, Object>)value, rs);
+						} else if (value instanceof List) {
+							result = populateSingleResultList((List<Object>)value, rs);
 						} else {
-							result = populateSingleResultObject(handler, rs);
+							result = populateSingleResultObject(value, rs);
 						}
 
 						if (rs.next()) throw new SQLException("Single result query returned multiple results: " + query);
@@ -558,7 +558,7 @@ public final class SQL {
 	 */
 	@SuppressWarnings("unchecked")
 	public <T extends Object> List<T> getResults(Class<T> type, Object...statement) {
-		return (List<T>)executeStatement(type, statement);
+		return (List<T>)queryStatement(type, statement);
 	}
 	
 	/**
@@ -572,7 +572,7 @@ public final class SQL {
 	 */
 	@SuppressWarnings("unchecked")
 	public Grid getResultGrid(Object...statement) {
-		return (Grid)executeStatement(new ArrayGrid(), statement);
+		return (Grid)queryStatement(new ArrayGrid(), statement);
 	}
 	
 	/**
@@ -590,7 +590,7 @@ public final class SQL {
 	@SuppressWarnings("unchecked")
 	public Grid getResultGrid(Grid grid, Object...statement) {
 		if (grid == null) throw new IllegalArgumentException("grid == null");
-		return (Grid)executeStatement(grid, statement);
+		return (Grid)queryStatement(grid, statement);
 	}
 	
 	/**
@@ -614,7 +614,7 @@ public final class SQL {
 	@SuppressWarnings("unchecked")
 	public <T extends Object> T getSingleResult(Class<T> type, Object...statement) {
 		try {
-			return (T)executeStatement(type.newInstance(), statement);
+			return (T)queryStatement(type.newInstance(), statement);
 		} catch (Exception e) {
 			throw Reflector.throwException(e);
 		}
@@ -633,7 +633,7 @@ public final class SQL {
 	@SuppressWarnings("unchecked")
 	public <T extends Object> T getSingleResult(T object, Object...statement) {
 		if (object == null) throw new IllegalArgumentException("object == null");
-		return (T)executeStatement(object, statement);
+		return (T)queryStatement(object, statement);
 	}
 	
 	/**
@@ -645,7 +645,7 @@ public final class SQL {
 	 */
 	@SuppressWarnings("unchecked")
 	public Map<String, Object> getSingleResultMap(Object...statement) {
-		return (Map<String, Object>)executeStatement(new HashMap<String, Object>(), statement);
+		return (Map<String, Object>)queryStatement(new HashMap<String, Object>(), statement);
 	}
 	
 	/**
@@ -659,7 +659,7 @@ public final class SQL {
 	@SuppressWarnings("unchecked")
 	public Map<String, Object> getSingleResultMap(Map<String, ? super Object> map, Object...statement) {
 		if (map == null) throw new IllegalArgumentException("map == null");
-		return (Map<String, Object>)executeStatement(map, statement);
+		return (Map<String, Object>)queryStatement(map, statement);
 	}
 	
 	/**
@@ -672,7 +672,7 @@ public final class SQL {
 	 */
 	@SuppressWarnings("unchecked")
 	public List<Object> getSingleResultValues(Object...statement) {
-		return (List<Object>)executeStatement(new ArrayList<Object>(), statement);
+		return (List<Object>)queryStatement(new ArrayList<Object>(), statement);
 	}
 
 	/**
@@ -686,14 +686,41 @@ public final class SQL {
 	@SuppressWarnings("unchecked")
 	public List<Object> getSingleResultValues(List<? super Object> list, Object...statement) {
 		if (list == null) throw new IllegalArgumentException("values == null");
-		return (List<Object>)executeStatement(list, statement);
+		return (List<Object>)queryStatement(list, statement);
 	}
 	
 	//The 'setRows' and 'setSingleRow' methods require the map/grid/objects to have primary key values matching the specified table.
 	public void setRowGrid(String table, Grid grid) {
+		Table t = getTables().get(table);
+		if (t == null) throw new IllegalArgumentException("No table named '" + table + "' was found");
+		Map<String, Column> cols = t.getColumns();
+		List<Column> keys = t.getPrimaryKeys();
+		
+		for (Column c : keys) {
+			if (grid.getColumnByName(c.getName()) == null) throw new IllegalArgumentException("Grid does not contain a column for every primary key");
+		}
+		
+		Map<Integer, String> indexToName = new HashMap<Integer, String>();
+		List<Grid.Column> gridCols = grid.getColumns();
+		
+        //int index = 0;
+        //int[] columnForProperty = new int[count];
+        //Reflector.PropertyTarget[] foundProps = new Reflector.PropertyTarget[count]; 
+
+		
+		for (int i = gridCols.size(); --i >= 0;) {
+			//cols.get(key)
+			indexToName.put(i, gridCols.get(i).getName());
+		}
+		
+		sb.setLength(0);
+		
+		for (Grid.Row r : grid.getRows()) {
+			
+		}
 	}
 	
-	public void setRows(String table, List<Object> lst) {
+	public void setRows(String table, List<? extends Object> lst) {
 		
 	}
 	
@@ -744,7 +771,7 @@ public final class SQL {
 	 * @return the result count for INSERT, UPDATE or DELETE, or 0 for statements that do not return a result. 
 	 */
 	public int execute(Object...statement) {
-		executeStatement(null, statement);
+		queryStatement(null, statement);
 		return lastResultCount;
 	}
 	

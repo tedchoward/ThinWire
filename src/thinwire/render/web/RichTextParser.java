@@ -451,8 +451,9 @@ class RichTextParser extends DefaultHandler {
 	@Override
 	public void characters(char[] ch, int start, int length) throws SAXException {
 		depth.add();
-		if (log.isLoggable(LEVEL)) log.log(LEVEL, "depth=" + depth + ",characters=" + new String(ch, start, length));
-		sb.append("\"").append(ch, start, length).append("\",");
+		String str = renderer.getEscapedText(new String(ch, start, length), true);
+		if (log.isLoggable(LEVEL)) log.log(LEVEL, "depth=" + depth + ",characters=" + str);
+		sb.append("\"").append(str).append("\",");
 		depth.remove();
 	}
 
