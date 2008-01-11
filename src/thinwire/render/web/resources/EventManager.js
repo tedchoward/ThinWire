@@ -104,7 +104,7 @@ var tw_EventManager = Class.extend({
 				var eAry = ["SYNTAX ERROR WITH eval(calls):\n"];
 
 				if (e instanceof String || typeof e == "string") {
-					eAray.push("error:" + e);
+					eAry.push("error:" + e);
 				} else { 
 				    for (var item in e)
 						eAry.push("error:" + item + "=" + (e[item].length > 100 ? e[item].substring(0, 100) : e[item]) + "\n");
