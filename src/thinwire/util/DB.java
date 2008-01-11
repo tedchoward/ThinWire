@@ -41,35 +41,13 @@ import java.util.regex.Pattern;
 /**
  * @author Joshua J. Gertzen
  */
-public final class SQL {
-    private static final class ColumnIndexComparator implements Comparator<String> {
-    	private Map<String, Column> columns;
-    	
-    	ColumnIndexComparator(Map<String, Column> columns) {
-    		this.columns = columns;
-    	}
-    	
-        public int compare(String r1, String r2) {
-        	if (columns == null) throw new IllegalStateException("attempt to compare columns without reference to columns");
-            int index1 = columns.get(r1).getIndex();
-            int index2 = columns.get(r2).getIndex();
-            
-            if (index1 < index2) {
-                return -1;
-            } else if (index1 == index2){
-                return 0;
-            } else {
-                return 1;
-            }
-        }
-    };
-
+public final class DB {
 	public static final class Table {
 	    public static enum Type {
 	    	TABLE, VIEW, SYSTEM_TABLE, GLOBAL_TEMPORARY, LOCAL_TEMPORARY, ALIAS, SYNONYM;
 	    }
 
-	    private SQL sql;
+	    private DB sql;
 		private String catalog;
 		private String schema;
 		private String name;
@@ -77,7 +55,7 @@ public final class SQL {
 		private Map<String, Column> roColumns;
 		private List<Column> roPrimaryKeys;
 		
-		private Table(SQL sql, String catalog, String schema, String name, Type type) {
+		private Table(DB sql, String catalog, String schema, String name, Type type) {
 			this.sql = sql;
 			this.catalog = catalog;
 			this.schema = schema;
@@ -225,7 +203,7 @@ public final class SQL {
 	private SimpleDateFormat timeFormat;
 	private SimpleDateFormat timestampFormat;
 	
-	public SQL(String url, Map<String, String> info) {
+	public DB(String url, Map<String, String> info) {
 		try {
 			Properties props = new Properties();
 			props.putAll(info);
@@ -235,7 +213,7 @@ public final class SQL {
 		}
 	}
 	
-	public SQL(String url, Properties info) {
+	public DB(String url, Properties info) {
 		try {
 			init(null, DriverManager.getConnection(url, info));
 		} catch (SQLException e) {
@@ -243,7 +221,7 @@ public final class SQL {
 		}
 	}
 	
-	public SQL(String url, String userName, String password) {
+	public DB(String url, String userName, String password) {
 		try {
 			if ((userName == null || userName.length() == 0) && (password == null || password.length() == 0)) {
 				init(null, DriverManager.getConnection(url));
@@ -255,7 +233,7 @@ public final class SQL {
 		}
 	}
 	
-	public SQL(String jndiName) {
+	public DB(String jndiName) {
 		try {
 			init((DataSource)new InitialContext().lookup(jndiName), null);
 		} catch (NamingException e) {
@@ -263,12 +241,12 @@ public final class SQL {
 		}
 	}
 	
-	public SQL(DataSource ds) {
+	public DB(DataSource ds) {
 		if (ds == null) throw new IllegalArgumentException("ds == null");
 		init(ds, null);
 	}
 	
-	public SQL(Connection con) {
+	public DB(Connection con) {
 		if (con == null) throw new IllegalArgumentException("con == null");
 		init(null, con);
 	}
