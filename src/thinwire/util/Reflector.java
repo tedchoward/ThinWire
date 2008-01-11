@@ -26,7 +26,8 @@
 */
 package thinwire.util;
 
-import java.lang.reflect.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.logging.*;
 import java.util.concurrent.*;
@@ -74,7 +75,7 @@ public class Reflector {
                     value = f.get(null);
                 } catch (NoSuchFieldException e) {
                     try {
-                        Method m = type.getMethod("valueOf", String.class);
+                    	java.lang.reflect.Method m = type.getMethod("valueOf", String.class);
                         if (m.getReturnType() != type) throw new NotFoundException(type.getName(), "valueOf", true);
                         value = m.invoke(null, value);
                     } catch (Exception e2) {
@@ -119,14 +120,14 @@ public class Reflector {
         }
 	}
 	
-    public static class PropertyTarget extends AbstractCallTarget {
+    public static class Property extends AbstractCallTarget {
         private final boolean readable;
         private final boolean writable;
         
-        private Method getter;
-        private Method setter;
+        private java.lang.reflect.Method getter;
+        private java.lang.reflect.Method setter;
 
-        private PropertyTarget(Reflector reflector, Method m, String name, Class type, boolean isGetter) {
+        private Property(Reflector reflector, java.lang.reflect.Method m, String name, Class type, boolean isGetter) {
         	super(reflector, name, false, type);
             name = name.length() == 1 ? String.valueOf(Character.toUpperCase(name.charAt(0))) : Character.toUpperCase(name.charAt(0)) + name.substring(1);
             
@@ -226,12 +227,12 @@ public class Reflector {
     	}
     }
     
-    public static class MethodTarget extends AbstractCallTarget {
+    public static class Method extends AbstractCallTarget {
     	private static class MethodSignature {
-            Method method;
+            java.lang.reflect.Method method;
         	Class[] argTypes;
     		
-    		MethodSignature(Method method, Class[] argTypes) {
+    		MethodSignature(java.lang.reflect.Method method, Class[] argTypes) {
     			this.method = method;
     			this.argTypes = argTypes;
     		}
@@ -239,14 +240,14 @@ public class Reflector {
     	
     	private Object sigs;
 
-    	private MethodTarget(Reflector reflector, String name, Method method, Class retType, Class[] argTypes) {
+    	private Method(Reflector reflector, String name, java.lang.reflect.Method method, Class retType, Class[] argTypes) {
     		super(reflector, name, Modifier.isStatic(method.getModifiers()), retType);
     		addSignature(method, argTypes);
     	}
     	
     	@SuppressWarnings("unchecked")
-    	void addSignature(Method method, Class[] argTypes) {
-    		if (Modifier.isStatic(method.getModifiers()) != isStatic()) throw new CovariantTypeException(reflector.className, name);
+    	void addSignature(java.lang.reflect.Method method, Class[] argTypes) {
+    		if (Modifier.isStatic(method.getModifiers()) != isStatic()) throw new CovariantException(reflector.className, name);
     			
     		if (this.sigs == null) {
     			sigs = new MethodSignature(method, argTypes);
@@ -371,13 +372,13 @@ public class Reflector {
     	}
     }
     
-    public static class CovariantTypeException extends RuntimeException {
-    	private CovariantTypeException(String className, String name, Class firstType, Class secondType) {
+    public static class CovariantException extends RuntimeException {
+    	private CovariantException(String className, String name, Class firstType, Class secondType) {
     		super("Reflection collision on class '" + className + "' for the property named '" + name + "': " +
     				"covariant value types not supported, found '" + firstType.getName() + "' and '" + secondType.getName() + "'");
     	}
 
-    	private CovariantTypeException(String className, String methodName) {
+    	private CovariantException(String className, String methodName) {
     		super("Reflection collision on class '" + className + "' for the method named '" + methodName + "': " +
     				"both a static and non-static exist that differ only by there arguments");
     	}
@@ -386,7 +387,7 @@ public class Reflector {
     private static ConcurrentMap<Class, Reflector> REFLECTORS = new ConcurrentHashMap<Class, Reflector>(50);
     private static final int MAX_REFLECTORS = 512;
     
-    public static Reflector getReflector(Class clazz) throws CovariantTypeException {
+    public static Reflector getInstance(Class clazz) throws CovariantException {
     	Reflector reflector = REFLECTORS.get(clazz);
 
     	if (reflector == null) {
@@ -541,12 +542,12 @@ public class Reflector {
     private String className;
     
     private Converter converter = DEFAULT_CONVERTER;
-    private Map<String, PropertyTarget> nameToProperty;
-    private Map<String, PropertyTarget> roNameToProperty;
-    private Map<String, MethodTarget> nameToMethod;
-    private Map<String, MethodTarget> roNameToMethod;
+    private Map<String, Property> nameToProperty;
+    private Map<String, Property> roNameToProperty;
+    private Map<String, Method> nameToMethod;
+    private Map<String, Method> roNameToMethod;
 
-    private Reflector(Class clazz) throws CovariantTypeException {
+    private Reflector(Class clazz) throws CovariantException {
     	if (clazz.isInterface()) throw new UnsupportedOperationException("reflecting over interfaces is currently unsupported");
     	boolean isLoggable = log.isLoggable(LEVEL);
     	className = clazz.getName();
@@ -559,19 +560,19 @@ public class Reflector {
     		log.log(LEVEL, (clazz.isInterface() ? "Extends " : "Implements ") + interfaces.length + " interfaces");
     	}
     	
-    	Reflector superReflector = superClass == null ? null : getReflector(superClass); 
-    	Map<String, Method> descToMethod = new HashMap<String, Method>();
+    	Reflector superReflector = superClass == null ? null : getInstance(superClass); 
+    	Map<String, java.lang.reflect.Method> descToMethod = new HashMap<String, java.lang.reflect.Method>();
     	StringBuilder sbDesc = new StringBuilder();
     	
     	//Gather up all interface methods first
     	for (Class inf : interfaces) {
-    		for (Method m : inf.getMethods()) {
+    		for (java.lang.reflect.Method m : inf.getMethods()) {
     			String desc = getDescriptor(sbDesc, m).toString();
     			if (!descToMethod.containsKey(desc)) descToMethod.put(desc, m);
     		}
     	}
     	
-    	for (Method m : clazz.getDeclaredMethods()) {
+    	for (java.lang.reflect.Method m : clazz.getDeclaredMethods()) {
     		String desc = getDescriptor(sbDesc, m).toString();
     		if (!descToMethod.containsKey(desc)) descToMethod.put(desc, m);
     	}
@@ -583,23 +584,23 @@ public class Reflector {
     		nameToMethod = superReflector.nameToMethod;
     	} else {
     		if (superReflector == null) {
-	        	nameToProperty = new CaseInsensitiveChainMap<PropertyTarget>();
-	        	nameToMethod = new CaseInsensitiveChainMap<MethodTarget>();
+	        	nameToProperty = new CaseInsensitiveChainMap<Property>();
+	        	nameToMethod = new CaseInsensitiveChainMap<Method>();
     		} else {
-	        	nameToProperty = new CaseInsensitiveChainMap<PropertyTarget>(superReflector.nameToProperty);
-	        	nameToMethod = new CaseInsensitiveChainMap<MethodTarget>(superReflector.nameToMethod);
+	        	nameToProperty = new CaseInsensitiveChainMap<Property>(superReflector.nameToProperty);
+	        	nameToMethod = new CaseInsensitiveChainMap<Method>(superReflector.nameToMethod);
     		}
 
-	    	for (Method m : descToMethod.values()) {
+	    	for (java.lang.reflect.Method m : descToMethod.values()) {
 	            String name = m.getName();
 	        	if (isLoggable) log.log(LEVEL, "Analyzing " + Modifier.toString(m.getModifiers()) + " method " + m.getName() + " with declaring " + Modifier.toString(m.getDeclaringClass().getModifiers()) + " class " + m.getDeclaringClass().getName());
 	            int len = name.length();
 	            Class retType = m.getReturnType();
 	            Class[] argTypes = m.getParameterTypes();
-	            MethodTarget method = nameToMethod.get(name);
+	            Method method = nameToMethod.get(name);
 	            
 	            if (method == null) {
-		            method = new MethodTarget(this, name, m, retType, argTypes);
+		            method = new Method(this, name, m, retType, argTypes);
 		            nameToMethod.put(name, method);
 	            } else {
 	            	if (retType == method.type) {
@@ -612,24 +613,24 @@ public class Reflector {
 	            if (name.startsWith("set") && len > 3 && argTypes.length == 1) {
 	                String propName = name.substring(3);
 	                propName = Character.toLowerCase(propName.charAt(0)) + (propName.length() > 1 ? propName.substring(1) : "");
-	                PropertyTarget property = nameToProperty.get(propName);
+	                Property property = nameToProperty.get(propName);
 	                
 	                if (property == null) {
-	                	property = new PropertyTarget(this, m, propName, argTypes[0], false);
+	                	property = new Property(this, m, propName, argTypes[0], false);
 	                	nameToProperty.put(propName, property);
 	                } else if (property.type != argTypes[0]) {
-	                	throw new CovariantTypeException(className, propName, property.type, argTypes[0]);
+	                	throw new CovariantException(className, propName, property.type, argTypes[0]);
 	                }
 	            } else if (retType != void.class && argTypes.length == 0 && ((name.startsWith("get") && len > 3) || (name.startsWith("is") && len > 2))) {
 	                String propName = name.substring(name.charAt(0) == 'i' ? 2 : 3);
 	                propName = Character.toLowerCase(propName.charAt(0)) + (propName.length() > 1 ? propName.substring(1) : "");
-	                PropertyTarget property = nameToProperty.get(propName);
+	                Property property = nameToProperty.get(propName);
 	                
 	                if (property == null) {
-	                	property = new PropertyTarget(this, m, propName, retType, true);
+	                	property = new Property(this, m, propName, retType, true);
 	                	nameToProperty.put(propName, property);
 	                } else if (property.type != retType) {
-	                	throw new CovariantTypeException(className, propName, property.type, retType);
+	                	throw new CovariantException(className, propName, property.type, retType);
 	                }
 	            }
 	    	}
@@ -637,7 +638,7 @@ public class Reflector {
     }
     
     //NOTE: This excludes the return parameter because we don't use it for matching
-    private StringBuilder getDescriptor(StringBuilder sb, Method m) {
+    private StringBuilder getDescriptor(StringBuilder sb, java.lang.reflect.Method m) {
 		sb.setLength(0);
 	    sb.append(m.getName()).append(':');
 	    Class[] params = m.getParameterTypes();
@@ -649,12 +650,12 @@ public class Reflector {
 	    return sb;
     }
     
-    public Map<String, PropertyTarget> getProperties() {
+    public Map<String, Property> getProperties() {
     	if (roNameToProperty == null) roNameToProperty = Collections.unmodifiableMap(nameToProperty);
     	return roNameToProperty;
     }
     
-    public Map<String, MethodTarget> getMethods() {
+    public Map<String, Method> getMethods() {
     	if (roNameToMethod == null) roNameToMethod = Collections.unmodifiableMap(nameToMethod);
     	return roNameToMethod;
     }
@@ -662,7 +663,7 @@ public class Reflector {
     public Object call(Object target, String methodName, Object...args) throws NotFoundException, CallException {
     	if (target == null) throw new IllegalArgumentException("target == null");
     	if (methodName == null || methodName.length() == 0) throw new IllegalArgumentException("propertyName == null || propertyName.length() == 0");
-    	MethodTarget method = nameToMethod.get(methodName);
+    	Method method = nameToMethod.get(methodName);
 		if (method == null) throw new NotFoundException(className, methodName, true);
 		return method.call(target, args);
     }
@@ -670,7 +671,7 @@ public class Reflector {
     public void set(Object target, String propertyName, Object value) throws NotFoundException, CallException {
     	if (target == null) throw new IllegalArgumentException("target == null");
     	if (propertyName == null || propertyName.length() == 0) throw new IllegalArgumentException("propertyName == null || propertyName.length() == 0");
-    	PropertyTarget property = nameToProperty.get(propertyName);
+    	Property property = nameToProperty.get(propertyName);
     	if (property == null) throw new NotFoundException(className, propertyName, false);
 		property.set(target, value);
     }
@@ -678,7 +679,7 @@ public class Reflector {
     public Object get(Object target, String propertyName) throws NotFoundException, CallException {
     	if (target == null) throw new IllegalArgumentException("target == null");
     	if (propertyName == null || propertyName.length() == 0) throw new IllegalArgumentException("propertyName == null || propertyName.length() == 0");
-    	PropertyTarget property = nameToProperty.get(propertyName);
+    	Property property = nameToProperty.get(propertyName);
     	if (property == null) throw new NotFoundException(className, propertyName, false);
 		return property.get(target);
     }
@@ -688,7 +689,7 @@ public class Reflector {
     	StringBuilder sb = new StringBuilder();
     	sb.append('{');
     	
-    	for (PropertyTarget prop : getReflector(obj.getClass()).getProperties().values()) {
+    	for (Property prop : getInstance(obj.getClass()).getProperties().values()) {
     		sb.append(prop.getName()).append(':');
 			Object value = prop.get(obj);
 			

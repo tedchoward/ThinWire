@@ -558,13 +558,13 @@ abstract class AbstractComponent<C extends Component> implements Component {
     
     @SuppressWarnings("unchecked")
 	public C set(String name, Object value) throws Reflector.NotFoundException, Reflector.CallException {
-    	if (reflector == null) reflector = Reflector.getReflector(this.getClass());
+    	if (reflector == null) reflector = Reflector.getInstance(this.getClass());
     	reflector.set(this, name, value);
     	return (C)this;
     }
     
     public Object get(String name) throws Reflector.NotFoundException, Reflector.CallException {
-    	if (reflector == null) reflector = Reflector.getReflector(this.getClass());
+    	if (reflector == null) reflector = Reflector.getInstance(this.getClass());
     	return reflector.get(this, name);
     }
 }

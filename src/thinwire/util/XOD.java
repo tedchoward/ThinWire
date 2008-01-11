@@ -50,8 +50,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import thinwire.ui.Application;
-import thinwire.util.Reflector.MethodTarget;
-import thinwire.util.Reflector.PropertyTarget;
+import thinwire.util.Reflector.Method;
+import thinwire.util.Reflector.Property;
 
 /**
  * Xml Object Document (XOD) generates objects from the XML file, and associates them with a Map.
@@ -398,7 +398,7 @@ public final class XOD {
         }
     }
     
-    private Object processBranch(Object parent, NodeList nl, int level, Map<String, PropertyTarget> propTargets) { 
+    private Object processBranch(Object parent, NodeList nl, int level, Map<String, Property> propTargets) { 
     	Object ret = null;
         for (int i = 0, cnt = nl.getLength(); i < cnt; i++) {
             Node n = nl.item(i);
@@ -426,7 +426,7 @@ public final class XOD {
         return ret;
     }           
     
-    private Object evaluateNode(Object parent, Node n, int level, Map<String, PropertyTarget> propTargets) {
+    private Object evaluateNode(Object parent, Node n, int level, Map<String, Property> propTargets) {
         Object ret = null;
         String name = n.getNodeName();
 
@@ -515,8 +515,8 @@ public final class XOD {
                 if (propertyAlias != null)
                     name = (String)propertyAlias[0];
                 
-                if (propTargets == null) propTargets = Reflector.getReflector(parent.getClass()).getProperties();
-                PropertyTarget prop = propTargets.get(name);
+                if (propTargets == null) propTargets = Reflector.getInstance(parent.getClass()).getProperties();
+                Property prop = propTargets.get(name);
               
                 if (prop.isReadable()) {
                 	if (!prop.isWritable()) {
@@ -586,9 +586,9 @@ public final class XOD {
                 Class c = aliases.get(name);
                 if (c == null) c = getClassForName(name, name);
                 
-                Reflector ref = Reflector.getReflector(c);
-                Map<String, PropertyTarget> properties = ref.getProperties();
-                Map<String, MethodTarget> methods = ref.getMethods();
+                Reflector ref = Reflector.getInstance(c);
+                Map<String, Property> properties = ref.getProperties();
+                Map<String, Method> methods = ref.getMethods();
 
                 NodeList children = n.getChildNodes();
                 
@@ -604,7 +604,7 @@ public final class XOD {
                         
                         if (attrName.equals("id")) id = attrValue;
                         boolean found = false;
-                        MethodTarget mt = methods.get(attrName);
+                        Method mt = methods.get(attrName);
                         if (mt != null) {
                         	found = true;
                         	Object value = replaceProperties(attrValue);
@@ -621,7 +621,7 @@ public final class XOD {
                         		nonStatic.add(new Object[] {mt, value});
                         	}
                         } else {
-                        	PropertyTarget pt = properties.get(attrName);
+                        	Property pt = properties.get(attrName);
                         	if (pt != null && pt.isWritable()) {
                         		Object value = replaceProperties(attrValue);
                             	value = replaceParentCall((String) value);
@@ -652,7 +652,7 @@ public final class XOD {
                         		}
                         	}
                         	
-                            if (log.isLoggable(LEVEL)) log.log(LEVEL, "invoked id=" + id + ":" + c.getName() + "." + ((MethodTarget)callMeth[0]).getName() + "(" + callMeth[1] + ")");
+                            if (log.isLoggable(LEVEL)) log.log(LEVEL, "invoked id=" + id + ":" + c.getName() + "." + ((Method)callMeth[0]).getName() + "(" + callMeth[1] + ")");
                         }
                     }
                     
