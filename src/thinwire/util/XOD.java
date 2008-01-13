@@ -277,6 +277,7 @@ public final class XOD {
     private List<String> uriStack;
     private boolean processingInclude;
     private List<Object> parentStack;
+    private ClassLoader classLoader;
     
     /**
      * Create a new XOD.
@@ -290,13 +291,23 @@ public final class XOD {
      * @param uri the name of the XML Object Document file to execute.
      */
     public XOD(String uri) {
-        rootObjects = new ArrayList<Object>();
+    	this(uri, null);
+    }
+    
+    /**
+     * Create a new XOD.
+     * @param uri the name of the XML Object Document file to execute.
+     * @param classLoader the classLoader instance to use (if null, use the app's)
+     */
+    public XOD(String uri, ClassLoader classLoader) {
+    	rootObjects = new ArrayList<Object>();
         objectMap = new HashMap<String, Object>();
         objects = new ArrayList<Object>();
         aliases = new HashMap<String, Class>();
         properties = new HashMap<String, String>();
         uriStack = new ArrayList<String>();
         parentStack = new ArrayList<Object>();
+        this.classLoader = classLoader;
         if (uri != null) execute(uri);
     }
     
@@ -747,7 +758,12 @@ public final class XOD {
         
     private Class getClassForName(String name, String className) {
         try {
-        	Class c = Application.getApplicationContextClass(className);
+        	Class c;
+        	if (classLoader != null) {
+        		c = classLoader.loadClass(className);
+        	} else {
+        		c = Application.getApplicationContextClass(className);
+        	}
             if (name != null) aliases.put(name, c);
             return c;
         } catch (ClassNotFoundException e) {

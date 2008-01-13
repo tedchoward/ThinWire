@@ -359,8 +359,7 @@ public class Reflector {
         			throw new CallException(reflector.className, name, true, e2.getMessage());
         		}
     		} catch (Exception e) {
-    			if (e instanceof RuntimeException) throw (RuntimeException)e;
-    			throw new CallException(reflector.className, name, true, e.getMessage());
+    			throw throwException(e);
     		}
     	}
     }
