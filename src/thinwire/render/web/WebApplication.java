@@ -223,7 +223,7 @@ public final class WebApplication extends Application {
     	state = State.REPAINT;
     }
     
-    void shutdown() {
+    protected void shutdown() {
         if (state == State.TERMINATED) return;
         if (state != State.SHUTDOWN) state = State.SHUTDOWN;
         if (log.isLoggable(LEVEL)) log.log(LEVEL, Thread.currentThread().getName() + ": initiating application instance shutdown");        
@@ -274,7 +274,7 @@ public final class WebApplication extends Application {
             classLoader = null;
             remoteFileMap.destroy();
             remoteFileMap = null;
-            
+            super.shutdown(); //Clear Application references
             state = State.TERMINATED;            
         }
     }

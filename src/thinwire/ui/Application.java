@@ -90,27 +90,18 @@ public abstract class Application {
         }
     }            
     
-    @SuppressWarnings("unchecked")
-    private Map<Local, Object> appLocal = new WeakHashMap<Local, Object>();
-    
-    @SuppressWarnings("unchecked")
     public static class Local<T> {
         public void set(T value) {
-            Map<Local, Object> map = Application.current().appLocal;
-            
-            synchronized (map) {
-                map.put(this, value);
-            }
+            Map<Local<?>, Object> map = Application.current().appLocal;
+            map.put(this, value);
         }
         
+        @SuppressWarnings("unchecked")
         public T get() {
-            Map<Local, Object> map = Application.current().appLocal;
-
-            synchronized (map) {
-                T value = (T)map.get(this);
-                if (value == null && !map.containsKey(this)) map.put(this, value = initialValue());
-                return value;
-            }
+            Map<Local<?>, Object> map = Application.current().appLocal;
+            T value = (T)map.get(this);
+            if (value == null && !map.containsKey(this)) map.put(this, value = initialValue());
+            return value;
         }
         
         protected T initialValue() {
@@ -160,7 +151,7 @@ public abstract class Application {
             sb.append(e.getKey()).append("=").append(e.getValue()).append('\n');
         }
 
-        final java.awt.Frame frame = new java.awt.Frame("ThinWire(R) RIA Ajax Framework v" + getPlatformVersionInfo().get("productVersion"));
+        final java.awt.Frame frame = new java.awt.Frame("ThinWire(R) Ajax RIA Framework v" + getPlatformVersionInfo().get("productVersion"));
         final java.awt.TextArea ta = new java.awt.TextArea(sb.toString());
         ta.setEditable(false);
         frame.add(ta);
@@ -391,35 +382,52 @@ public abstract class Application {
     	
     	return styleMap;
     }
-        
-    private List<ExceptionListener> exceptionListeners;
-    @SuppressWarnings("unchecked")
-    private Map<Class, EventListenerImpl> globalListeners;
-    private WeakReference<Component> priorFocus;
-    private Frame frame;
     
-    //#IFDEF V1_1_COMPAT    
-    private Map<String, String> fileMap;
-    //#ENDIF
+    private List<ExceptionListener> exceptionListeners;
+    private Map<Class<?>, EventListenerImpl<?>> globalListeners;
+    private Frame frame;
+    private Map<Local<?>, Object> appLocal;
     private Map<String, Color> systemColors;
     private Map<String, String> systemImages;
     private Map<Class<? extends Component>, Style> compTypeToStyle;
+    private WeakReference<Component> priorFocus;
     
     protected Application() {
+    	appLocal = new HashMap<Local<?>, Object>();
         exceptionListeners = new ArrayList<ExceptionListener>();
-    }   
+        systemColors = new HashMap<String, Color>();
+        systemImages = new HashMap<String, String>();
+    }
+    
+    protected void shutdown() {
+    	appLocal.clear();
+    	exceptionListeners.clear();
+    	systemColors.clear();
+    	systemImages.clear();
+        if (compTypeToStyle != null) compTypeToStyle.clear();
+        if (globalListeners != null) globalListeners.clear();
+        if (priorFocus != null) priorFocus.clear();
+    	appLocal = null;
+    	exceptionListeners = null;
+    	systemColors = null;
+    	systemImages = null;
+    	compTypeToStyle = null;
+    	globalListeners = null;
+    	frame = null;
+    	priorFocus = null;
+    }
         
     @SuppressWarnings("unchecked")
     <T extends EventListener> EventListenerImpl<T> getGlobalListenerSet(Class<T> type, boolean createIfNull) {
     	if (globalListeners == null) {
     		if (createIfNull) {
-    			globalListeners = new HashMap<Class, EventListenerImpl>();
+    			globalListeners = new HashMap<Class<?>, EventListenerImpl<?>>();
     		} else {
     			return null;
     		}
     	}
     	
-        EventListenerImpl<T> set = globalListeners.get(type);
+        EventListenerImpl<T> set = (EventListenerImpl<T>)globalListeners.get(type);
     	if (set == null && createIfNull) globalListeners.put(type, set = new EventListenerImpl<T>(null, type));
     	return set;
     }
@@ -731,8 +739,8 @@ public abstract class Application {
         if (!sheet.endsWith(".xml")) sheet += "/Style.xml";
         props.execute(sheet);        
         compTypeToStyle = buildStyleMap(getClassLoader(), props);
-        systemColors = new HashMap<String, Color>();
-        systemImages = new HashMap<String, String>();
+        systemColors.clear();
+        systemImages.clear();
 
         for (Map.Entry<String, Object> e : props.getObjectMap().entrySet()) {
             String name = e.getKey();
@@ -798,27 +806,8 @@ public abstract class Application {
 	 * @return the base folder of the system
 	 */
 	public abstract String getBaseFolder();
-    
-    //#IFDEF V1_1_COMPAT    
-    /**
-     * @return
-     * @deprecated there is no replacement for this method, instead use String constant variables.
-     */
-    public Map<String, String> getFileMap() {
-        return fileMap;
-    }
-    
-    /**
-     * All keys in the file map must be upper case
-     * @param fileMap
-     * @deprecated there is no replacement for this method, instead use String constant variables.
-     */
-    public void setFileMap(Map<String, String> fileMap) {
-        this.fileMap = fileMap;
-    }
 
-    //#ENDIF
-    /**
+	/**
      * 
      * @param pathname
      * @return
@@ -838,41 +827,10 @@ public abstract class Application {
         Application app = Application.current();
         return app == null ? new File(parent, child) : new File(app.appendBaseFolder(parent), child);
     }
-    
-    private String appendBaseFolder(String s) {
-        String ret = null;
-
-        if (s != null && !s.matches("^\\w?:?[\\\\|/].*")) {
-            //#IFDEF V1_1_COMPAT
-            //Limit the keys in the map to UPPER-CASE letters or underscores.
-            //This lowers the chance of someone using this resourceMap to override a valid
-            //file path.  i.e.  map.put("C:\\WORK\\CUSTOMERFILE.DOC", "C:\\TEMP\\HACK.TXT")
-            //would make new Resource("C:\\WORK\\CUSTOMERFILE.DOC") return a file reference
-            //to "C:\\TEMP\\HACK.TXT" instead of "C:\\WORK\\CUSTOMERFILE.DOC".
-            if (s.matches("^[A-Z_]+$")) {            
-                if (fileMap != null) {
-                    String m = fileMap.get(s);
-                
-                    if (m != null) {
-                        if (m.matches("^\\w?:?[\\\\|/].*"))
-                            ret = m;
-                        else
-                            ret = getBaseFolder() + File.separator + m;
-                    }
-                }
-            }
-            //#ENDIF
-            if (ret == null) ret = getBaseFolder() + File.separator + s;
-        }
         
-        ret = (ret == null ? s : ret);
-        return ret;
-    }
-        
-    @SuppressWarnings("unchecked")
     protected Object setPackagePrivateMember(String memberName, Component comp, Object value) {
         if (memberName.equals("renderer")) {
-            ((AbstractComponent)comp).setRenderer((Renderer)value);
+            ((AbstractComponent<?>)comp).setRenderer((Renderer)value);
         } else if (memberName.equals("innerWidth")) {
             ((Frame)comp).setInnerWidth((Integer)value);
         } else if (memberName.equals("innerHeight")) {
@@ -922,5 +880,57 @@ public abstract class Application {
      * 
      * @param task
      */
-    public abstract void removeTimerTask(Runnable task);    
+    public abstract void removeTimerTask(Runnable task);
+
+    
+    private String appendBaseFolder(String s) {
+        String ret = null;
+
+        if (s != null && !s.matches("^\\w?:?[\\\\|/].*")) {
+            //#IFDEF V1_1_COMPAT
+            //Limit the keys in the map to UPPER-CASE letters or underscores.
+            //This lowers the chance of someone using this resourceMap to override a valid
+            //file path.  i.e.  map.put("C:\\WORK\\CUSTOMERFILE.DOC", "C:\\TEMP\\HACK.TXT")
+            //would make new Resource("C:\\WORK\\CUSTOMERFILE.DOC") return a file reference
+            //to "C:\\TEMP\\HACK.TXT" instead of "C:\\WORK\\CUSTOMERFILE.DOC".
+            if (s.matches("^[A-Z_]+$")) {            
+                if (fileMap != null) {
+                    String m = fileMap.get(s);
+                
+                    if (m != null) {
+                        if (m.matches("^\\w?:?[\\\\|/].*"))
+                            ret = m;
+                        else
+                            ret = getBaseFolder() + File.separator + m;
+                    }
+                }
+            }
+            //#ENDIF
+            if (ret == null) ret = getBaseFolder() + File.separator + s;
+        }
+        
+        ret = (ret == null ? s : ret);
+        return ret;
+    }
+    //#IFDEF V1_1_COMPAT    
+
+    private Map<String, String> fileMap;
+    
+    /**
+     * @return
+     * @deprecated there is no replacement for this method, instead use String constant variables.
+     */
+    public Map<String, String> getFileMap() {
+        return fileMap;
+    }
+    
+    /**
+     * All keys in the file map must be upper case
+     * @param fileMap
+     * @deprecated there is no replacement for this method, instead use String constant variables.
+     */
+    public void setFileMap(Map<String, String> fileMap) {
+        this.fileMap = fileMap;
+    }
+    //#ENDIF
 }

@@ -519,17 +519,19 @@ public final class DB {
 					} else if (value instanceof Class) {
 						result = populateObjectList((Class)value, rs);
 					} else {
-						if (!rs.next()) throw new SQLException("Single result query did not return any results: " + query);
+						if (rs.next()) {
+							if (value instanceof Map) {
+								result = populateSingleResultMap((Map<String, Object>)value, rs);
+							} else if (value instanceof List) {
+								result = populateSingleResultList((List<Object>)value, rs);
+							} else {
+								result = populateSingleResultObject(value, rs);
+							}
 
-						if (value instanceof Map) {
-							result = populateSingleResultMap((Map<String, Object>)value, rs);
-						} else if (value instanceof List) {
-							result = populateSingleResultList((List<Object>)value, rs);
+							if (rs.next()) throw new SQLException("Single result query returned multiple results: " + query);
 						} else {
-							result = populateSingleResultObject(value, rs);
+							result = null;
 						}
-
-						if (rs.next()) throw new SQLException("Single result query returned multiple results: " + query);
 					}
 				}
 			}
