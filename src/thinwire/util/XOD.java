@@ -311,6 +311,18 @@ public final class XOD {
         if (uri != null) execute(uri);
     }
     
+    public XOD(InputStream is, String workingDir, ClassLoader classLoader) {
+    	rootObjects = new ArrayList<Object>();
+        objectMap = new HashMap<String, Object>();
+        objects = new ArrayList<Object>();
+        aliases = new HashMap<String, Class>();
+        properties = new HashMap<String, String>();
+        uriStack = new ArrayList<String>();
+        parentStack = new ArrayList<Object>();
+        this.classLoader = classLoader;
+        processInputStream(null, is, workingDir, 0);
+    }
+    
     public Map<String, Class> getAliasMap() {
         return aliases;
     }
@@ -365,6 +377,27 @@ public final class XOD {
      */
     public void execute(String uri) {
         processFile(null, uri, 0);
+    }
+    
+    private Object processInputStream(Object parent, InputStream is, String workingDir, int level) {
+    	Object ret = null;
+    	
+    	try {
+    		DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            workingDir = workingDir.replace('\\', '/');
+            uriStack.add(workingDir);
+            setUriVariables(workingDir);
+            Document doc = builder.parse(is);
+            is.close();
+            ret = processBranch(parent, doc.getChildNodes(), level, null);
+    	} catch (Exception e) {
+            throw new RuntimeException("processing InputStream in workingDir: '" + workingDir + "'", e);
+        } finally {
+            uriStack.remove(uriStack.size() - 1);
+            if (uriStack.size() > 0) setUriVariables(uriStack.get(uriStack.size() - 1));
+        }
+        
+        return ret;
     }
     
     private Object processFile(Object parent, String uri, int level) {
