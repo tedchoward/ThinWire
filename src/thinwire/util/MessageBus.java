@@ -31,9 +31,9 @@ import java.util.*;
 /**
  * @author Joshua J. Gertzen
  */
-public class MessageBus<T> extends EventBus<MessageBus.Listener, MessageBus.Message<T>, T> {
-    public static interface Listener extends java.util.EventListener {
-        public void messageReceived(Message ev);
+public class MessageBus<T> extends EventBus<MessageBus.Listener<T>, MessageBus.Message<T>, T> {
+    public static interface Listener<E> extends java.util.EventListener {
+        public void messageReceived(Message<E> ev);
     }
     
     public static class Message<T> extends java.util.EventObject {
@@ -68,8 +68,8 @@ public class MessageBus<T> extends EventBus<MessageBus.Listener, MessageBus.Mess
     
     private List<Message<T>> queue = new LinkedList<Message<T>>();
     
-    public Object send(T id, Object data) {
-    	return send(new Message<T>(id, data));
+    public Object send(T id, Object...data) {
+    	return send(new Message<T>(id, data.length == 0 ? null : (data.length == 1 ? data[0] : data)));
     }
     
     public Object send(Message<T> ev) {
@@ -78,8 +78,8 @@ public class MessageBus<T> extends EventBus<MessageBus.Listener, MessageBus.Mess
         return ev.reply;
     }
 
-    public void post(T id, Object data) {
-    	post(new Message<T>(id, data));
+    public void post(T id, Object...data) {
+    	post(new Message<T>(id, data.length == 0 ? null : (data.length == 1 ? data[0] : data)));
     }
     
     public void post(Message<T> ev) {
@@ -95,7 +95,7 @@ public class MessageBus<T> extends EventBus<MessageBus.Listener, MessageBus.Mess
     	}
     }
 
-    protected void runListener(Listener el, Message<T> eo) {
+    protected void runListener(Listener<T> el, Message<T> eo) {
 		el.messageReceived(eo);
 	}
 
