@@ -175,7 +175,7 @@ public class ArrayGrid implements Grid {
         	//NOTE: Only one of the two following loops will actually execute, never both
         	//Grow number of columns to match row size
             while (columns.size() < r.size())
-                columns.add(newColumn());
+                columns.add(columns.parent.newColumn());
 
             //Grow row as necessary to match number of columns
 	        while (r.size() < columns.size())
