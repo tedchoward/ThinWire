@@ -387,7 +387,6 @@ public final class DB {
 	
 	        for (int i = 1; i <= count; i++) {
 	        	String columnName = rsmd.getColumnName(i);
-	            if (columnName.indexOf('_') != -1) columnName = columnName.replaceAll("(.*?)_(.*?)", "$1$2");
 	            Reflector.Property prop = props.get(columnName);
 	            
 	            if (prop != null) {
@@ -442,7 +441,6 @@ public final class DB {
 
         for (int i = 1; i <= columnCount; i++) {
         	String columnName = rsmd.getColumnName(i);
-            if (columnName.indexOf('_') != -1) columnName = columnName.replaceAll("(.*?)_(.*?)", "$1$2");
             Reflector.Property prop = props.get(columnName);
             if (prop != null) prop.set(obj, rs.getObject(i));
         }
@@ -465,6 +463,35 @@ public final class DB {
 			if (con != null && ds != null) con.close();
 		} catch (SQLException e) {
 			throw Reflector.throwException(e);
+		}
+	}
+	
+	private Object insertStatement(String statement, boolean genKey) {
+		Connection con = null;
+		Statement stmt = null;
+		ResultSet rs = null;
+		
+		try {
+			con = getConnection();
+			stmt = con.createStatement();
+			lastResultCount = stmt.executeUpdate(statement, genKey ? Statement.RETURN_GENERATED_KEYS : Statement.NO_GENERATED_KEYS);
+			lastStatement = statement;
+			
+			if (genKey) {
+				rs = stmt.getGeneratedKeys();
+				
+				if (rs.next()) {
+					return rs.getObject(1);
+				} else {
+					return -1;
+				}
+			} else {
+				return -1;
+			}
+		} catch (SQLException e) {
+			throw Reflector.throwException(e);
+		} finally {
+			cleanup(con, stmt, rs);
 		}
 	}
 	
@@ -642,7 +669,12 @@ public final class DB {
 	
 	private void mapValue(StringBuilder sb, Column.Type type, Object value) {
 		Class mapType = type.mapType;
-    	value = Reflector.DEFAULT_CONVERTER.toType(mapType, value);
+		
+		if (mapType == Date.class || mapType == Time.class || mapType == Timestamp.class) {
+			value = Reflector.DEFAULT_CONVERTER.toType(java.util.Date.class, value);
+		} else {
+			value = Reflector.DEFAULT_CONVERTER.toType(mapType, value);
+		}
     	
     	if (value == null) {
     		sb.append("null");
@@ -1156,7 +1188,7 @@ public final class DB {
 		Map<String, Column> cols = t.getColumns();
 		final int count = cols.size();
 		
-		//Build the properly ordered column array and grid column index lookup table
+		//Build the properly ordered column array
 		int foundKeys = 0;
 		Column[] columns = new Column[count];
 		sb.setLength(0);
@@ -1167,7 +1199,8 @@ public final class DB {
 		}
 		
         Map<String, Reflector.Property> props = Reflector.getInstance(obj.getClass()).getProperties();
-		
+        Reflector.Property idProp = null;
+        
 		for (int i = 0, cnt = columns.length; i < cnt; i++) {
 			Column c = columns[i];
 			Reflector.Property prop = props.get(c.name);
@@ -1175,15 +1208,28 @@ public final class DB {
 			if (prop == null || !prop.isReadable()) {
 				sb.append("NULL,");
 			} else {
-				if (c.primaryKey) foundKeys++;
-				mapValue(sb, c.type, prop.get(obj));
+				Object value = prop.get(obj);
+
+				if (c.primaryKey) {
+					foundKeys++;
+					if (value.toString().endsWith("0") || value.toString().equals("")) idProp = prop;
+				}
+				
+				mapValue(sb, c.type, value);
 				sb.append(",");
 			}
 		}
 		
 		sb.setCharAt(sb.length() - 1, ')');
 		if (keyCount != foundKeys) throw new IllegalArgumentException("Object '" + obj.getClass().getName() + "' does not contain a readable property for every primary key in table '" + table + "'");
-		queryStatement(null, sb.toString());
+		
+		//TODO: only handles a single int key column, but that's 95% of all cases, so we're cool for now
+		if (idProp != null) {
+			Object id = insertStatement(sb.toString(), true);
+			if (id != null) idProp.set(obj, id);
+		} else {
+			insertStatement(sb.toString(), false);
+		}
  	}
 	
 	public void addSingleRowMap(String table, Map<String, ? super Object> map) {
@@ -1207,21 +1253,36 @@ public final class DB {
 			columns[c.index] = c;
 		}
 		
+		String idKey = null;
+		
 		for (int i = 0, cnt = columns.length; i < cnt; i++) {
 			Column c = columns[i];
 
 			if (!map.containsKey(c.name)) {
 				sb.append("NULL,");
 			} else {
-				if (c.primaryKey) foundKeys++;
-				mapValue(sb, c.type, map.get(c.name));
+				Object value = map.get(c.name);
+				
+				if (c.primaryKey) {
+					foundKeys++;
+					if (value.toString().endsWith("0") || value.toString().equals("")) idKey = c.name; 
+				}
+				
+				mapValue(sb, c.type, value);
 				sb.append(",");
 			}
 		}
 		
 		sb.setCharAt(sb.length() - 1, ')');
 		if (keyCount != foundKeys) throw new IllegalArgumentException("Map does not contain a value for every primary key in table '" + table + "'");
-		queryStatement(null, sb.toString());
+		
+		//TODO: only handles a single autogen key column, but that's 95% of all cases, so we're cool for now
+		if (idKey != null) {
+			Object id = insertStatement(sb.toString(), true);
+			if (id != null) map.put(idKey, id);
+		} else {
+			insertStatement(sb.toString(), false);
+		}
 	}
 	
 	public void removeRowGrid(String table, Grid grid) {
