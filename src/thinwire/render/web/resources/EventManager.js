@@ -47,11 +47,11 @@ var tw_EventManager = Class.extend({
     _setActivityIndVisible: function(state) {
 		if (this._activityInd == null && window.tw_IMAGE_ACTIVITYINDICATOR != undefined) {
 			this._activityInd = document.createElement("img");
-			tw_Component.setCSSText("position:absolute;right:1px;top:1px;display:none;", this._activityInd);
+			tw_Component.setCSSText("position:absolute;right:18px;top:2px;display:none;", this._activityInd);
 	        document.body.appendChild(this._activityInd);                
             this._activityInd.src = tw_IMAGE_ACTIVITYINDICATOR;
 		}
-	
+		
         if (this._activityInd != null) {
             if (state) {
                 if (this._activityIndTimer != 0) {
