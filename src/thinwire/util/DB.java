@@ -191,17 +191,37 @@ public final class DB {
 		}
 	}
 	
+	public static class Context {
+		private int lastResultCount;
+		private String lastStatement;
+		private StringBuilder sb = new StringBuilder();
+		private SimpleDateFormat dateFormat;
+		private SimpleDateFormat timeFormat;
+		private SimpleDateFormat timestampFormat;
+		
+		/**
+		 * Retrieves the complete last statement that was executed against the database from any method of this object.
+		 * @return the last statement executed by this object.
+		 */
+		public String getLastStatement() {
+			return lastStatement;
+		}
+		
+		/**
+		 * Retrieves the last count of rows that was read or the last count of rows that was modified as a result of the last statement.
+		 * This value changes in tandem with the statement returned by <code>getLastStatement</code>.
+		 * @return the last count of results that was read from the database.
+		 */
+		public int getLastResultCount() {
+			return lastResultCount;
+		}
+	}
+	
     private static final Pattern ENCODE = Pattern.compile("([^']*)'([^']*)");
 	private static final int MAX_RESULT_SEARCH = 20;
 	private Map<String, Table> roTables;
 	private DataSource ds;
 	private Connection con;
-	private int lastResultCount;
-	private String lastStatement;
-	private StringBuilder sb = new StringBuilder();
-	private SimpleDateFormat dateFormat;
-	private SimpleDateFormat timeFormat;
-	private SimpleDateFormat timestampFormat;
 	
 	public DB(String url, Map<String, String> info) {
 		try {
@@ -259,50 +279,55 @@ public final class DB {
 	
 	public Map<String, Table> getTables() {
 		if (roTables == null) {
-			Map<String, Table> tables = new Reflector.CaseInsensitiveChainMap<Table>();
-			
-			Connection con = null;
-			ResultSet rs = null;
-			
-			try {
-				con = getConnection();
-				DatabaseMetaData dmd = con.getMetaData();
-				String catalog = con.getCatalog(); //null means no default catalog, empty string means tables wihout a catalog
-				String schema = dmd.getUserName();
-				
-				//Determine if user name is a valid schema
-				rs = dmd.getSchemas();
-				boolean foundSchema = false;
-				
-				while (rs.next()) {
-					String tableSchema = rs.getString(1); //TABLE_SCHEM
-					String tableCatalog = rs.getString(2); //TABLE_CATALOG
+			synchronized (this) {
+				//Yes this is double-check locking and yes, it's not fool-proof, but it doesn't need to be for this.
+				if (roTables == null) {
+					Map<String, Table> tables = new Reflector.CaseInsensitiveChainMap<Table>();
 					
-					if ((catalog == null || tableCatalog == null || catalog.equals(tableCatalog)) && tableSchema.equals(schema)) {
-						foundSchema = true;
-						break;
-					}
-				}
-				
-				rs.close();
-				if (!foundSchema) schema = null;
-				rs = dmd.getTables(catalog, schema, null, null);
-				
-				while (rs.next()) {
-					String tableCatalog = rs.getString(1); //TABLE_CAT 
-					String tableSchema = rs.getString(2); //TABLE_SCHEM
+					Connection con = null;
+					ResultSet rs = null;
 					
-					if ((catalog == null || catalog.equals(tableCatalog)) && (schema == null || schema.equals(tableSchema))) {
-						String tableName = rs.getString(3); //TABLE_NAME
-						String tableType = rs.getString(4); //TABLE_TYPE
-						tables.put(tableName, new Table(this, tableCatalog, tableSchema, tableName, Table.Type.valueOf(tableType)));
+					try {
+						con = getConnection();
+						DatabaseMetaData dmd = con.getMetaData();
+						String catalog = con.getCatalog(); //null means no default catalog, empty string means tables wihout a catalog
+						String schema = dmd.getUserName();
+						
+						//Determine if user name is a valid schema
+						rs = dmd.getSchemas();
+						boolean foundSchema = false;
+						
+						while (rs.next()) {
+							String tableSchema = rs.getString(1); //TABLE_SCHEM
+							String tableCatalog = rs.getString(2); //TABLE_CATALOG
+							
+							if ((catalog == null || tableCatalog == null || catalog.equals(tableCatalog)) && tableSchema.equals(schema)) {
+								foundSchema = true;
+								break;
+							}
+						}
+						
+						rs.close();
+						if (!foundSchema) schema = null;
+						rs = dmd.getTables(catalog, schema, null, null);
+						
+						while (rs.next()) {
+							String tableCatalog = rs.getString(1); //TABLE_CAT 
+							String tableSchema = rs.getString(2); //TABLE_SCHEM
+							
+							if ((catalog == null || catalog.equals(tableCatalog)) && (schema == null || schema.equals(tableSchema))) {
+								String tableName = rs.getString(3); //TABLE_NAME
+								String tableType = rs.getString(4); //TABLE_TYPE
+								tables.put(tableName, new Table(this, tableCatalog, tableSchema, tableName, Table.Type.valueOf(tableType)));
+							}
+						}
+					} catch (SQLException e) {
+						Reflector.throwException(e);
 					}
+					
+					roTables = Collections.unmodifiableMap(tables);
 				}
-			} catch (SQLException e) {
-				Reflector.throwException(e);
 			}
-			
-			roTables = Collections.unmodifiableMap(tables);
 		}
 		
 		return roTables;
@@ -457,16 +482,12 @@ public final class DB {
 	}
 	
 	private void cleanup(Connection con, Statement stmt, ResultSet rs) {
-		try {
-			if (rs != null) rs.close();
-			if (stmt != null) stmt.close();
-			if (con != null && ds != null) con.close();
-		} catch (SQLException e) {
-			throw Reflector.throwException(e);
-		}
+		if (rs != null) try { rs.close(); } catch (SQLException e) { e.printStackTrace(); }
+		if (stmt != null) try { stmt.close(); } catch (SQLException e) { e.printStackTrace(); }
+		if (con != null && ds != null) try { con.close(); } catch (SQLException e) { e.printStackTrace(); }
 	}
 	
-	private Object insertStatement(String statement, boolean genKey) {
+	private Object insertStatement(Context context, String statement, boolean genKey) {
 		Connection con = null;
 		Statement stmt = null;
 		ResultSet rs = null;
@@ -474,8 +495,8 @@ public final class DB {
 		try {
 			con = getConnection();
 			stmt = con.createStatement();
-			lastResultCount = stmt.executeUpdate(statement, genKey ? Statement.RETURN_GENERATED_KEYS : Statement.NO_GENERATED_KEYS);
-			lastStatement = statement;
+			context.lastResultCount = stmt.executeUpdate(statement, genKey ? Statement.RETURN_GENERATED_KEYS : Statement.NO_GENERATED_KEYS);
+			context.lastStatement = statement;
 			
 			if (genKey) {
 				rs = stmt.getGeneratedKeys();
@@ -495,7 +516,7 @@ public final class DB {
 		}
 	}
 	
-	private Object queryStatement(Object value, Object...statement) {
+	private Object queryStatement(Context context, Object value, Object...statement) {
 		if (statement == null || statement.length == 0) throw new IllegalArgumentException("statement == null || statement.length == 0");
 		if (!(statement[0] instanceof String)) throw new IllegalArgumentException("!(statement[0] instanceof String)");
 		Connection con = null;
@@ -505,6 +526,7 @@ public final class DB {
 		try {
 			con = getConnection();
 			String query;
+			StringBuilder sb = context.sb;
 			
 			if (statement.length == 1) {
 				query = (String)statement[0];
@@ -523,7 +545,7 @@ public final class DB {
 			Object result;
 			
 			if (value == null) {
-				lastResultCount = stmt.executeUpdate(query);
+				context.lastResultCount = stmt.executeUpdate(query);
 				result = null;
 			} else {
 				boolean moreResults = stmt.execute(query);
@@ -563,7 +585,7 @@ public final class DB {
 				}
 			}
 			
-			lastStatement = query;
+			context.lastStatement = query;
 			return result;
 		} catch (SQLException e) {
 			throw Reflector.throwException(e);
@@ -572,7 +594,7 @@ public final class DB {
 		}
 	}
 	
-	private void executeUpdate(String statement, Grid grid, int[] gridIndices, Column columns[], int count) {
+	private void executeUpdate(Context context, String statement, Grid grid, int[] gridIndices, Column columns[], int count) {
 		Connection con = null;
 		PreparedStatement stmt = null;
 		
@@ -594,8 +616,8 @@ public final class DB {
 	            resultCount += stmt.executeUpdate();
 			}
 			
-			lastStatement = statement;
-			lastResultCount = resultCount;
+			context.lastStatement = statement;
+			context.lastResultCount = resultCount;
 		} catch (SQLException e) {
 			throw Reflector.throwException(e);
 		} finally {
@@ -603,7 +625,7 @@ public final class DB {
 		}
 	}
 	
-	private void executeUpdate(String statement, List<? extends Object> objects, Reflector.Property[] objProps, Column columns[], int count) {
+	private void executeUpdate(Context context, String statement, List<? extends Object> objects, Reflector.Property[] objProps, Column columns[], int count) {
 		Connection con = null;
 		PreparedStatement stmt = null;
 		
@@ -625,8 +647,8 @@ public final class DB {
 	            resultCount += stmt.executeUpdate();
 			}
 			
-			lastStatement = statement;
-			lastResultCount = resultCount;
+			context.lastStatement = statement;
+			context.lastResultCount = resultCount;
 		} catch (SQLException e) {
 			throw Reflector.throwException(e);
 		} finally {
@@ -667,7 +689,7 @@ public final class DB {
     	}
 	}
 	
-	private void mapValue(StringBuilder sb, Column.Type type, Object value) {
+	private void mapValue(Context context, StringBuilder sb, Column.Type type, Object value) {
 		Class mapType = type.mapType;
 		
 		if (mapType == Date.class || mapType == Time.class || mapType == Timestamp.class) {
@@ -679,7 +701,7 @@ public final class DB {
     	if (value == null) {
     		sb.append("null");
     	} else if (mapType == String.class) {
-    		sb.append("'").append(ENCODE.matcher((String)value).replaceAll("$1''$2")).append("'");
+    		sb.append("'").append(escape((String)value)).append("'");
     	} else if (mapType == int.class) {
     		sb.append((Integer)value);
     	} else if (mapType == boolean.class) {
@@ -695,17 +717,21 @@ public final class DB {
     	} else if (mapType == BigDecimal.class) {
     		sb.append(((BigDecimal)value).toPlainString());
     	} else if (mapType == Date.class) {
-    		if (dateFormat == null) dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-    		sb.append("{d '").append(dateFormat.format((java.util.Date)value)).append("'}");
+    		if (context.dateFormat == null) context.dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    		sb.append("{d '").append(context.dateFormat.format((java.util.Date)value)).append("'}");
     	} else if (mapType == Time.class) {
-    		if (timeFormat == null) timeFormat = new SimpleDateFormat("HH:mm:ss");
-    		sb.append("{t '").append(timeFormat.format((java.util.Date)value)).append("'}");
+    		if (context.timeFormat == null) context.timeFormat = new SimpleDateFormat("HH:mm:ss");
+    		sb.append("{t '").append(context.timeFormat.format((java.util.Date)value)).append("'}");
     	} else if (mapType == Timestamp.class) {
-    		if (timestampFormat == null) timestampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-    		sb.append("{ts '").append(timestampFormat.format((java.util.Date)value)).append("'}");
+    		if (context.timestampFormat == null) context.timestampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+    		sb.append("{ts '").append(context.timestampFormat.format((java.util.Date)value)).append("'}");
     	} else {
     		throw new IllegalArgumentException("unsupported target type: " + mapType);
     	}
+	}
+	
+	public static String escape(String value) {
+		return ENCODE.matcher(value).replaceAll("$1''$2");
 	}
 
 	/**
@@ -722,7 +748,12 @@ public final class DB {
 	 */
 	@SuppressWarnings("unchecked")
 	public <T extends Object> List<T> getResults(Class<T> type, Object...statement) {
-		return (List<T>)queryStatement(type, statement);
+		return (List<T>)queryStatement(new Context(), type, statement);
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T extends Object> List<T> getResults(Context context, Class<T> type, Object...statement) {
+		return (List<T>)queryStatement(context, type, statement);
 	}
 	
 	/**
@@ -736,7 +767,12 @@ public final class DB {
 	 */
 	@SuppressWarnings("unchecked")
 	public Grid getResultGrid(Object...statement) {
-		return (Grid)queryStatement(new ArrayGrid(), statement);
+		return (Grid)queryStatement(new Context(), new ArrayGrid(), statement);
+	}
+
+	@SuppressWarnings("unchecked")
+	public Grid getResultGrid(Context context, Object...statement) {
+		return (Grid)queryStatement(context, new ArrayGrid(), statement);
 	}
 	
 	/**
@@ -754,9 +790,15 @@ public final class DB {
 	@SuppressWarnings("unchecked")
 	public Grid getResultGrid(Grid grid, Object...statement) {
 		if (grid == null) throw new IllegalArgumentException("grid == null");
-		return (Grid)queryStatement(grid, statement);
+		return (Grid)queryStatement(new Context(), grid, statement);
 	}
 	
+	@SuppressWarnings("unchecked")
+	public Grid getResultGrid(Context context, Grid grid, Object...statement) {
+		if (grid == null) throw new IllegalArgumentException("grid == null");
+		return (Grid)queryStatement(context, grid, statement);
+	}
+
 	/**
 	 * Executes the <code>statement</code>, returning the single row result as a new object of the class <code>type</code>.
 	 * The values for the single row are mapped to the object using the appropriate <code>Reflector</code> for the <code>type</code>.
@@ -778,7 +820,16 @@ public final class DB {
 	@SuppressWarnings("unchecked")
 	public <T extends Object> T getSingleResult(Class<T> type, Object...statement) {
 		try {
-			return (T)queryStatement(type.newInstance(), statement);
+			return (T)queryStatement(new Context(), type.newInstance(), statement);
+		} catch (Exception e) {
+			throw Reflector.throwException(e);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T extends Object> T getSingleResult(Context context, Class<T> type, Object...statement) {
+		try {
+			return (T)queryStatement(context, type.newInstance(), statement);
 		} catch (Exception e) {
 			throw Reflector.throwException(e);
 		}
@@ -797,7 +848,13 @@ public final class DB {
 	@SuppressWarnings("unchecked")
 	public <T extends Object> T getSingleResult(T object, Object...statement) {
 		if (object == null) throw new IllegalArgumentException("object == null");
-		return (T)queryStatement(object, statement);
+		return (T)queryStatement(new Context(), object, statement);
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T extends Object> T getSingleResult(Context context, T object, Object...statement) {
+		if (object == null) throw new IllegalArgumentException("object == null");
+		return (T)queryStatement(context, object, statement);
 	}
 	
 	/**
@@ -809,7 +866,12 @@ public final class DB {
 	 */
 	@SuppressWarnings("unchecked")
 	public Map<String, Object> getSingleResultMap(Object...statement) {
-		return (Map<String, Object>)queryStatement(new HashMap<String, Object>(), statement);
+		return (Map<String, Object>)queryStatement(new Context(), new HashMap<String, Object>(), statement);
+	}
+
+	@SuppressWarnings("unchecked")
+	public Map<String, Object> getSingleResultMap(Context context, Object...statement) {
+		return (Map<String, Object>)queryStatement(context, new HashMap<String, Object>(), statement);
 	}
 	
 	/**
@@ -823,7 +885,13 @@ public final class DB {
 	@SuppressWarnings("unchecked")
 	public Map<String, Object> getSingleResultMap(Map<String, ? super Object> map, Object...statement) {
 		if (map == null) throw new IllegalArgumentException("map == null");
-		return (Map<String, Object>)queryStatement(map, statement);
+		return (Map<String, Object>)queryStatement(new Context(), map, statement);
+	}
+
+	@SuppressWarnings("unchecked")
+	public Map<String, Object> getSingleResultMap(Context context, Map<String, ? super Object> map, Object...statement) {
+		if (map == null) throw new IllegalArgumentException("map == null");
+		return (Map<String, Object>)queryStatement(context,map, statement);
 	}
 	
 	/**
@@ -836,7 +904,12 @@ public final class DB {
 	 */
 	@SuppressWarnings("unchecked")
 	public List<Object> getSingleResultValues(Object...statement) {
-		return (List<Object>)queryStatement(new ArrayList<Object>(), statement);
+		return (List<Object>)queryStatement(new Context(), new ArrayList<Object>(), statement);
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Object> getSingleResultValues(Context context, Object...statement) {
+		return (List<Object>)queryStatement(context, new ArrayList<Object>(), statement);
 	}
 
 	/**
@@ -850,11 +923,22 @@ public final class DB {
 	@SuppressWarnings("unchecked")
 	public List<Object> getSingleResultValues(List<? super Object> list, Object...statement) {
 		if (list == null) throw new IllegalArgumentException("values == null");
-		return (List<Object>)queryStatement(list, statement);
+		return (List<Object>)queryStatement(new Context(), list, statement);
 	}
+
+	@SuppressWarnings("unchecked")
+	public List<Object> getSingleResultValues(Context context, List<? super Object> list, Object...statement) {
+		if (list == null) throw new IllegalArgumentException("values == null");
+		return (List<Object>)queryStatement(context, list, statement);
+	}
+
+	public void setRowGrid(String table, Grid grid) {
+		setRowGrid(new Context(), table, grid);
+	}
+
 	
 	//The 'setRows' and 'setSingleRow' methods require the map/grid/objects to have primary key values matching the specified table.
-	public void setRowGrid(String table, Grid grid) {
+	public void setRowGrid(Context context, String table, Grid grid) {
 		if (table == null || table.length() == 0) throw new IllegalArgumentException("table == null || table.length() == 0");
 		if (grid == null || grid.getRows().size() == 0) throw new IllegalArgumentException("grid == null || grid.getRows().size() == 0");
 		
@@ -902,6 +986,7 @@ public final class DB {
 		System.arraycopy(columns, start, columns, foundCount, keyCount);
 		
 		//Build prepared updated statement
+		StringBuilder sb = context.sb;
 		sb.setLength(0);
 		sb.append("UPDATE ").append(table).append(" SET ");
 		
@@ -921,10 +1006,14 @@ public final class DB {
         sb.setLength(sb.length() - 5);
         
         //Execute the update against the value set
-        executeUpdate(sb.toString(), grid, gridIndicies, columns, foundCount + keyCount);
+        executeUpdate(context, sb.toString(), grid, gridIndicies, columns, foundCount + keyCount);
 	}
 	
 	public void setRows(String table, List<? extends Object> objects) {
+		setRows(new Context(), table, objects);
+	}
+	
+	public void setRows(Context context, String table, List<? extends Object> objects) {
 		if (table == null || table.length() == 0) throw new IllegalArgumentException("table == null || table.length() == 0");
 		if (objects == null || objects.size() == 0 || objects.get(0) == null) throw new IllegalArgumentException("objects == null || objects.size() == 0 || objects.get(0) == null");
 		
@@ -973,6 +1062,7 @@ public final class DB {
 		System.arraycopy(columns, start, columns, foundCount, keyCount);
 		
 		//Build prepared updated statement
+		StringBuilder sb = context.sb;
 		sb.setLength(0);
 		sb.append("UPDATE ").append(table).append(" SET ");
 		
@@ -992,10 +1082,14 @@ public final class DB {
         sb.setLength(sb.length() - 5);
         
         //Execute the update against the value set
-        executeUpdate(sb.toString(), objects, objProps, columns, foundCount + keyCount);
+        executeUpdate(context, sb.toString(), objects, objProps, columns, foundCount + keyCount);
 	}
 	
 	public void setSingleRow(String table, Object obj) {
+		setSingleRow(new Context(), table, obj);
+	}
+	
+	public void setSingleRow(Context context, String table, Object obj) {
 		if (table == null || table.length() == 0) throw new IllegalArgumentException("table == null || table.length() == 0");
 		if (obj == null) throw new IllegalArgumentException("obj == null");
 		
@@ -1010,6 +1104,7 @@ public final class DB {
 		int foundKeys = 0;
         Map<String, Reflector.Property> props = Reflector.getInstance(obj.getClass()).getProperties();
 
+        StringBuilder sb = context.sb;
         sb.setLength(0);
 		sb.append("UPDATE ").append(table).append(" SET ");
 		StringBuilder sbWhere = new StringBuilder();
@@ -1022,12 +1117,12 @@ public final class DB {
 			if (c != null) {
 				if (c.primaryKey) {
 		        	sbWhere.append(c.name).append('=');
-		        	mapValue(sbWhere, c.type, prop.get(obj));
+		        	mapValue(context, sbWhere, c.type, prop.get(obj));
 		        	sbWhere.append(" AND ");
 					foundKeys++;
 				} else {
 		        	sb.append(c.name).append('=');
-		        	mapValue(sb, c.type, prop.get(obj));
+		        	mapValue(context, sb, c.type, prop.get(obj));
 		        	sb.append(',');
 					foundCount++;
 				}
@@ -1040,10 +1135,14 @@ public final class DB {
         sb.setCharAt(sb.length() - 1, ' ');
         sbWhere.setLength(sbWhere.length() - 5);
         sb.append(sbWhere);
-        queryStatement(null, sb.toString());
+        queryStatement(context, null, sb.toString());
+	}
+
+	public void setSingleRowMap(String table, Map<String, ? super Object> map) {
+		setSingleRowMap(new Context(), table, map);
 	}
 	
-	public void setSingleRowMap(String table, Map<String, ? super Object> map) {
+	public void setSingleRowMap(Context context, String table, Map<String, ? super Object> map) {
 		if (table == null || table.length() == 0) throw new IllegalArgumentException("table == null || table.length() == 0");
 		if (map == null || map.size() == 0) throw new IllegalArgumentException("map == null || map.size() == 0");
 		
@@ -1056,7 +1155,7 @@ public final class DB {
 		
 		int foundCount = 0;
 		int foundKeys = 0;
-
+		StringBuilder sb = context.sb;
         sb.setLength(0);
 		sb.append("UPDATE ").append(table).append(" SET ");
 		StringBuilder sbWhere = new StringBuilder();
@@ -1068,12 +1167,12 @@ public final class DB {
 			if (c != null) {
 				if (c.primaryKey) {
 		        	sbWhere.append(c.name).append('=');
-		        	mapValue(sbWhere, c.type, e.getValue());
+		        	mapValue(context, sbWhere, c.type, e.getValue());
 		        	sbWhere.append(" AND ");
 					foundKeys++;
 				} else {
 		        	sb.append(c.name).append('=');
-		        	mapValue(sb, c.type, e.getValue());
+		        	mapValue(context, sb, c.type, e.getValue());
 		        	sb.append(',');
 					foundCount++;
 				}
@@ -1086,10 +1185,14 @@ public final class DB {
         sb.setCharAt(sb.length() - 1, ' ');
         sbWhere.setLength(sbWhere.length() - 5);
         sb.append(sbWhere);
-        queryStatement(null, sb.toString());
+        queryStatement(context, null, sb.toString());
 	}
-	
+
 	public void addRowGrid(String table, Grid grid) {
+		addRowGrid(new Context(), table, grid);
+	}
+
+	public void addRowGrid(Context context, String table, Grid grid) {
 		if (table == null || table.length() == 0) throw new IllegalArgumentException("table == null || table.length() == 0");
 		if (grid == null || grid.getRows().size() == 0) throw new IllegalArgumentException("grid == null || grid.getRows().size() == 0");
 		
@@ -1104,6 +1207,7 @@ public final class DB {
 		int foundKeys = 0;
 		Column[] columns = new Column[count];
         int[] gridIndicies = new int[count];
+        StringBuilder sb = context.sb;
 		sb.setLength(0);
 		sb.append("INSERT INTO ").append(table).append(" VALUES(");
 		
@@ -1129,10 +1233,14 @@ public final class DB {
 		if (keyCount != foundKeys) throw new IllegalArgumentException("Grid does not contain a column for every primary key in table '" + table + "'");
         
         //Execute the update against the value set
-        executeUpdate(sb.toString(), grid, gridIndicies, columns, count);
+        executeUpdate(context, sb.toString(), grid, gridIndicies, columns, count);
 	}
 
 	public void addRows(String table, List<Object> objects) {
+		addRows(table, objects);
+	}
+
+	public void addRows(Context context, String table, List<Object> objects) {
 		if (table == null || table.length() == 0) throw new IllegalArgumentException("table == null || table.length() == 0");
 		if (objects == null || objects.size() == 0 || objects.get(0) == null) throw new IllegalArgumentException("objects == null || objects.size() == 0 || objects.get(0) == null");
 		
@@ -1147,6 +1255,7 @@ public final class DB {
 		int foundKeys = 0;
 		Column[] columns = new Column[count];
         Reflector.Property[] objProps = new Reflector.Property[count];
+        StringBuilder sb = context.sb;
 		sb.setLength(0);
 		sb.append("INSERT INTO ").append(table).append(" VALUES(");
 		
@@ -1174,10 +1283,14 @@ public final class DB {
 		if (keyCount != foundKeys) throw new IllegalArgumentException("Objects in List do not contain a readable property for every primary key in table '" + table + "'");
         
         //Execute the update against the value set
-        executeUpdate(sb.toString(), objects, objProps, columns, count);
+        executeUpdate(context, sb.toString(), objects, objProps, columns, count);
+	}
+
+	public void addSingleRow(String table, Object obj) {
+		addSingleRow(new Context(), table, obj);
 	}
 	
-	public void addSingleRow(String table, Object obj) {
+	public void addSingleRow(Context context, String table, Object obj) {
 		if (table == null || table.length() == 0) throw new IllegalArgumentException("table == null || table.length() == 0");
 		if (obj == null) throw new IllegalArgumentException("obj == null");
 		
@@ -1191,6 +1304,7 @@ public final class DB {
 		//Build the properly ordered column array
 		int foundKeys = 0;
 		Column[] columns = new Column[count];
+		StringBuilder sb = context.sb;
 		sb.setLength(0);
 		sb.append("INSERT INTO ").append(table).append(" VALUES(");
 		
@@ -1215,7 +1329,7 @@ public final class DB {
 					if (value.toString().endsWith("0") || value.toString().equals("")) idProp = prop;
 				}
 				
-				mapValue(sb, c.type, value);
+				mapValue(context, sb, c.type, value);
 				sb.append(",");
 			}
 		}
@@ -1225,14 +1339,18 @@ public final class DB {
 		
 		//TODO: only handles a single int key column, but that's 95% of all cases, so we're cool for now
 		if (idProp != null) {
-			Object id = insertStatement(sb.toString(), true);
+			Object id = insertStatement(context, sb.toString(), true);
 			if (id != null) idProp.set(obj, id);
 		} else {
-			insertStatement(sb.toString(), false);
+			insertStatement(context, sb.toString(), false);
 		}
  	}
 	
 	public void addSingleRowMap(String table, Map<String, ? super Object> map) {
+		addSingleRowMap(new Context(), table, map);
+	}
+	
+	public void addSingleRowMap(Context context, String table, Map<String, ? super Object> map) {
 		if (table == null || table.length() == 0) throw new IllegalArgumentException("table == null || table.length() == 0");
 		if (map == null || map.size() == 0) throw new IllegalArgumentException("map == null || map.size() == 0");
 		
@@ -1246,6 +1364,7 @@ public final class DB {
 		//Build the properly ordered column array and grid column index lookup table
 		int foundKeys = 0;
 		Column[] columns = new Column[count];
+		StringBuilder sb = context.sb;
 		sb.setLength(0);
 		sb.append("INSERT INTO ").append(table).append(" VALUES(");
 		
@@ -1268,7 +1387,7 @@ public final class DB {
 					if (value.toString().endsWith("0") || value.toString().equals("")) idKey = c.name; 
 				}
 				
-				mapValue(sb, c.type, value);
+				mapValue(context, sb, c.type, value);
 				sb.append(",");
 			}
 		}
@@ -1278,14 +1397,18 @@ public final class DB {
 		
 		//TODO: only handles a single autogen key column, but that's 95% of all cases, so we're cool for now
 		if (idKey != null) {
-			Object id = insertStatement(sb.toString(), true);
+			Object id = insertStatement(context, sb.toString(), true);
 			if (id != null) map.put(idKey, id);
 		} else {
-			insertStatement(sb.toString(), false);
+			insertStatement(context, sb.toString(), false);
 		}
 	}
-	
+
 	public void removeRowGrid(String table, Grid grid) {
+		removeRowGrid(new Context(), table, grid);
+	}
+
+	public void removeRowGrid(Context context, String table, Grid grid) {
 		if (table == null || table.length() == 0) throw new IllegalArgumentException("table == null || table.length() == 0");
 		if (grid == null || grid.getRows().size() == 0) throw new IllegalArgumentException("grid == null || grid.getRows().size() == 0");
 		
@@ -1299,6 +1422,7 @@ public final class DB {
 		//Build the properly ordered column array and grid column index lookup table
 		Column[] columns = new Column[count];
         int[] gridIndicies = new int[count];
+        StringBuilder sb = context.sb;
 		sb.setLength(0);
 		sb.append("DELETE FROM ").append(table).append(" WHERE ");
 		
@@ -1314,10 +1438,14 @@ public final class DB {
 		sb.setLength(sb.length() - 5);
 
         //Execute the update against the value set
-        executeUpdate(sb.toString(), grid, gridIndicies, columns, count);
+        executeUpdate(context, sb.toString(), grid, gridIndicies, columns, count);
 	}
 
 	public void removeRows(String table, List<Object> objects) {
+		removeRows(new Context(), table, objects);
+	}
+	
+	public void removeRows(Context context, String table, List<Object> objects) {
 		if (table == null || table.length() == 0) throw new IllegalArgumentException("table == null || table.length() == 0");
 		if (objects == null || objects.size() == 0 || objects.get(0) == null) throw new IllegalArgumentException("objects == null || objects.size() == 0 || objects.get(0) == null");
 		
@@ -1331,6 +1459,7 @@ public final class DB {
 		//Build the properly ordered column array and grid column index lookup table
 		Column[] columns = new Column[count];
         Reflector.Property[] objProps = new Reflector.Property[count];
+        StringBuilder sb = context.sb;
 		sb.setLength(0);
 		sb.append("DELETE FROM ").append(table).append(" WHERE ");
 		Map<String, Reflector.Property> props = Reflector.getInstance(objects.get(0).getClass()).getProperties();
@@ -1347,10 +1476,14 @@ public final class DB {
 		sb.setLength(sb.length() - 5);
 
         //Execute the update against the value set
-        executeUpdate(sb.toString(), objects, objProps, columns, count);
+        executeUpdate(context, sb.toString(), objects, objProps, columns, count);
 	}
 	
 	public void removeSingleRow(String table, Object obj) {
+		removeSingleRow(new Context(), table, obj);
+	}
+	
+	public void removeSingleRow(Context context, String table, Object obj) {
 		if (table == null || table.length() == 0) throw new IllegalArgumentException("table == null || table.length() == 0");
 		if (obj == null) throw new IllegalArgumentException("obj == null");
 		
@@ -1361,6 +1494,7 @@ public final class DB {
 		final int count = cols.size();
 		if (count == 0) throw new IllegalArgumentException("Cannot modify table '" + table + "' since it has no primary key(s)");
 		
+		StringBuilder sb = context.sb;
 		sb.setLength(0);
 		sb.append("DELETE FROM ").append(table).append(" WHERE ");
 		Map<String, Reflector.Property> props = Reflector.getInstance(obj.getClass()).getProperties();
@@ -1370,7 +1504,7 @@ public final class DB {
 			Reflector.Property prop = props.get(c.name);
 			if (prop == null)  throw new IllegalArgumentException("Object '" + obj.getClass() + "' does not contain a property for every primary key in table '" + table + "'");
 			sb.append(c.name).append('=');
-			mapValue(sb, c.type, prop.get(obj));
+			mapValue(context, sb, c.type, prop.get(obj));
 			sb.append(" AND ");
 		}
 
@@ -1379,6 +1513,10 @@ public final class DB {
 	}
 	
 	public void removeSingleRowMap(String table, Map<String, ? super Object> map) {
+		removeSingleRowMap(new Context(), table, map);
+	}
+	
+	public void removeSingleRowMap(Context context, String table, Map<String, ? super Object> map) {
 		if (table == null || table.length() == 0) throw new IllegalArgumentException("table == null || table.length() == 0");
 		if (map == null || map.size() == 0) throw new IllegalArgumentException("map == null || map.size() == 0");
 		
@@ -1389,6 +1527,7 @@ public final class DB {
 		final int count = cols.size();
 		if (count == 0) throw new IllegalArgumentException("Cannot modify table '" + table + "' since it has no primary key(s)");
 		
+		StringBuilder sb = context.sb;
 		sb.setLength(0);
 		sb.append("DELETE FROM ").append(table).append(" WHERE ");
 		
@@ -1396,12 +1535,12 @@ public final class DB {
 			Column c = cols.get(i);
 			if (!map.containsKey(c.name)) throw new IllegalArgumentException("Map does not contain a value for every primary key in table '" + table + "'");
 			sb.append(c.name).append('=');
-			mapValue(sb, c.type, map.get(c.name));
+			mapValue(context, sb, c.type, map.get(c.name));
 			sb.append(" AND ");
 		}
 
 		sb.setLength(sb.length() - 5);
-		queryStatement(null, sb.toString());
+		queryStatement(context, null, sb.toString());
 	}
 	
 	/**
@@ -1411,24 +1550,11 @@ public final class DB {
 	 * @return the result count for INSERT, UPDATE or DELETE, or 0 for statements that do not return a result. 
 	 */
 	public int execute(Object...statement) {
-		queryStatement(null, statement);
-		return lastResultCount;
+		return execute(new Context(), statement);
 	}
-	
-	/**
-	 * Retrieves the complete last statement that was executed against the database from any method of this object.
-	 * @return the last statement executed by this object.
-	 */
-	public String getLastStatement() {
-		return lastStatement;
-	}
-	
-	/**
-	 * Retrieves the last count of rows that was read or the last count of rows that was modified as a result of the last statement.
-	 * This value changes in tandem with the statement returned by <code>getLastStatement</code>.
-	 * @return the last count of results that was read from the database.
-	 */
-	public int getLastResultCount() {
-		return lastResultCount;
+
+	public int execute(Context context, Object...statement) {
+		queryStatement(context, null, statement);
+		return context.lastResultCount;
 	}
 }
