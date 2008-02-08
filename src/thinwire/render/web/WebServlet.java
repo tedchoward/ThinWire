@@ -109,14 +109,7 @@ public class WebServlet extends HttpServlet {
             String resource = request.getParameter("_twr_");
             
             if (resource == null) {
-            	String path = request.getServletPath();
-            	
-            	if (path == null || path.equals("") || path.equals("/")) {
-            		handleStart(request, response);
-            	} else {
-                	if (log.isLoggable(Level.WARNING)) log.log(Level.WARNING, "invalid GET request with servletPath of '" + path + "', possible cause is an invalid resource reference in your application");
-                    response.sendError(HttpServletResponse.SC_NOT_FOUND);
-            	}
+        		handleStart(request, response);
             } else {
                 handleResource(request, response, resource);
             }
