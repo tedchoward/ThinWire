@@ -551,7 +551,7 @@ public class ArrayGrid implements Grid {
     	private Grid parent;
         private List<Column> l;
         private List<Object> values;
-        private Map<String, Column> nameToColumn = new Reflector.CaseInsensitiveChainMap<Column>();
+        private Map<String, Column> nameToColumn = new HashMap<String, Column>();
         
         private ColumnList(Grid parent) {
         	this.parent = parent;
