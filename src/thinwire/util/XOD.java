@@ -28,7 +28,12 @@ package thinwire.util;
 
 import java.io.File;
 import java.io.InputStream;
-
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.net.URISyntaxException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -50,8 +55,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import thinwire.ui.Application;
-import thinwire.util.Reflector.Method;
-import thinwire.util.Reflector.Property;
 
 /**
  * Xml Object Document (XOD) generates objects from the XML file, and associates them with a Map.
@@ -277,7 +280,6 @@ public final class XOD {
     private List<String> uriStack;
     private boolean processingInclude;
     private List<Object> parentStack;
-    private ClassLoader classLoader;
     
     /**
      * Create a new XOD.
@@ -291,36 +293,14 @@ public final class XOD {
      * @param uri the name of the XML Object Document file to execute.
      */
     public XOD(String uri) {
-    	this(uri, null);
-    }
-    
-    /**
-     * Create a new XOD.
-     * @param uri the name of the XML Object Document file to execute.
-     * @param classLoader the classLoader instance to use (if null, use the app's)
-     */
-    public XOD(String uri, ClassLoader classLoader) {
-    	rootObjects = new ArrayList<Object>();
+        rootObjects = new ArrayList<Object>();
         objectMap = new HashMap<String, Object>();
         objects = new ArrayList<Object>();
         aliases = new HashMap<String, Class>();
         properties = new HashMap<String, String>();
         uriStack = new ArrayList<String>();
         parentStack = new ArrayList<Object>();
-        this.classLoader = classLoader;
         if (uri != null) execute(uri);
-    }
-    
-    public XOD(InputStream is, String workingDir, ClassLoader classLoader) {
-    	rootObjects = new ArrayList<Object>();
-        objectMap = new HashMap<String, Object>();
-        objects = new ArrayList<Object>();
-        aliases = new HashMap<String, Class>();
-        properties = new HashMap<String, String>();
-        uriStack = new ArrayList<String>();
-        parentStack = new ArrayList<Object>();
-        this.classLoader = classLoader;
-        processInputStream(null, is, workingDir, 0);
     }
     
     public Map<String, Class> getAliasMap() {
@@ -379,27 +359,6 @@ public final class XOD {
         processFile(null, uri, 0);
     }
     
-    private Object processInputStream(Object parent, InputStream is, String workingDir, int level) {
-    	Object ret = null;
-    	
-    	try {
-    		DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            workingDir = workingDir.replace('\\', '/');
-            uriStack.add(workingDir);
-            setUriVariables(workingDir);
-            Document doc = builder.parse(is);
-            is.close();
-            ret = processBranch(parent, doc.getChildNodes(), level, null);
-    	} catch (Exception e) {
-            throw new RuntimeException("processing InputStream in workingDir: '" + workingDir + "'", e);
-        } finally {
-            uriStack.remove(uriStack.size() - 1);
-            if (uriStack.size() > 0) setUriVariables(uriStack.get(uriStack.size() - 1));
-        }
-        
-        return ret;
-    }
-    
     private Object processFile(Object parent, String uri, int level) {
         Object ret = null;
         
@@ -412,7 +371,7 @@ public final class XOD {
             setUriVariables(uri);
             Document doc = builder.parse(is);
             is.close();
-            ret = processBranch(parent, doc.getChildNodes(), level, null);
+            ret = processBranch(parent, doc.getChildNodes(), level);
         } catch (Exception e) {
             throw new RuntimeException("processing file '" + uri + "'", e);
         } finally {
@@ -442,7 +401,7 @@ public final class XOD {
         }
     }
     
-    private Object processBranch(Object parent, NodeList nl, int level, Map<String, Property> propTargets) { 
+    private Object processBranch(Object parent, NodeList nl, int level) { 
     	Object ret = null;
         for (int i = 0, cnt = nl.getLength(); i < cnt; i++) {
             Node n = nl.item(i);
@@ -458,7 +417,7 @@ public final class XOD {
             	    break;
             	
             	case Node.ELEMENT_NODE:
-            	    Object o = evaluateNode(parent, n, level, propTargets);
+            	    Object o = evaluateNode(parent, n, level);
             	    if (ret == null) ret = o;
             	    break;
             	    
@@ -470,7 +429,7 @@ public final class XOD {
         return ret;
     }           
     
-    private Object evaluateNode(Object parent, Node n, int level, Map<String, Property> propTargets) {
+    private Object evaluateNode(Object parent, Node n, int level) {
         Object ret = null;
         String name = n.getNodeName();
 
@@ -478,7 +437,7 @@ public final class XOD {
             if (n.getChildNodes().getLength() == 0) throw new DOMException(DOMException.NOT_SUPPORTED_ERR, name + ":n.getChildNodes().getLength() == 0");
             if (level != 0 && !processingInclude) throw new DOMException(DOMException.INVALID_STATE_ERR, "level != 0");            
             if (log.isLoggable(LEVEL)) log.log(LEVEL, "xod");
-            processBranch(parent, n.getChildNodes(), level + 1, null);
+            processBranch(parent, n.getChildNodes(), level + 1);
         } else if (name.equals("property") && parent == null) {
             if (n.getAttributes().getLength() != 2) throw new DOMException(DOMException.NOT_SUPPORTED_ERR, name + ":n.getAttributes().getLength() != 2");
             String key = (String)n.getAttributes().getNamedItem("name").getNodeValue();
@@ -488,10 +447,11 @@ public final class XOD {
             if (log.isLoggable(LEVEL)) log.log(LEVEL, "property[name:" + key + ",value:" + value + "]");
         } else if (name.equals("alias")) {
             if (n.getAttributes().getLength() != 2) throw new DOMException(DOMException.NOT_SUPPORTED_ERR, name + ":n.getAttributes().getLength() != 2");
+            //if (n.getChildNodes().getLength() != 0) throw new DOMException(DOMException.NOT_SUPPORTED_ERR, name + ":n.getChildNodes().getLength() != 0");
             String aliasName = (String)n.getAttributes().getNamedItem("name").getNodeValue();
             String className = this.replaceProperties((String)n.getAttributes().getNamedItem("class").getNodeValue());
             Class clazz = getClassForName(aliasName, className);
-            if (n.hasChildNodes()) processBranch(clazz, n.getChildNodes(), level + 1, null);            
+            if (n.hasChildNodes()) processBranch(clazz, n.getChildNodes(), level + 1);            
             if (log.isLoggable(LEVEL)) log.log(LEVEL, "alias[name:" + aliasName + ",class:" + className + "]");
         } else if (name.equals("property") && parent instanceof Class) {
             if (n.getAttributes().getLength() != 2 && n.getAttributes().getLength() != 3) throw new DOMException(DOMException.NOT_SUPPORTED_ERR, name + ":n.getAttributes().getLength() != 2 && n.getAttributes().getLength() != 3");
@@ -553,73 +513,91 @@ public final class XOD {
             
             //If there is a parent and the tag name does not contain a period and the first character is lowerCase, then this might be a property
             if (parent != null && name.indexOf('.') == -1 && Character.isLowerCase(name.charAt(0))) {
+                //if (n.getAttributes().getLength() != 0) throw new DOMException(DOMException.NOT_SUPPORTED_ERR, name + ":n.getAttributes().getLength() != 0");
 
                 //Check to see if this property has an Alias.
                 Object[] propertyAlias = getPropertyAlias(parent.getClass(), name);                
                 if (propertyAlias != null)
                     name = (String)propertyAlias[0];
                 
-                if (propTargets == null) propTargets = Reflector.getInstance(parent.getClass()).getProperties();
-                Property prop = propTargets.get(name);
-              
-                if (prop.isReadable()) {
-                	if (!prop.isWritable()) {
-                		Object subObject = prop.get(parent);
+                //Search for a set method for the property
+                String setter = Character.toUpperCase(name.charAt(0)) + name.substring(1);
+                String getter = "get" + setter;
+                String istter = "is" + setter;
+                setter = "set" + setter;
+                
+                Method setMethod = null;
+                Method getMethod = null;
+
+                for (Method m : parent.getClass().getMethods()) {
+                    if (setMethod != null && getMethod != null) break; 
+                    String methodName = m.getName();
+                    
+                    if (methodName.equals(setter)) {
+                        setMethod = m;
+                    } else if (methodName.equals(getter) || methodName.equals(istter)) {
+                        getMethod = m;
+                    }
+                }
+                                
+                if (getMethod != null) {
+                    if (setMethod == null) {
+                        Object subObject = invoke(parent, getMethod, (Object[])null);    
                         appendAttributes(n);
                         parentStack.add(subObject);
-                        processBranch(subObject, n.getChildNodes(), level + 1, null);
+                        processBranch(subObject, n.getChildNodes(), level + 1);
                         parentStack.remove(parentStack.size() - 1);
                         property = true;
                     } else {
-                        NodeList propNodes = n.getChildNodes();
-                        
-                        Node node = null;
-                        
-                        if (propNodes.getLength() == 1) 
-                            node = propNodes.item(0);
-                        else {
-                            for (int i = propNodes.getLength() - 1; i >= 0; i--) {
-                                Node item = propNodes.item(i);
-                                
-                                if (item.getNodeType() == Node.ELEMENT_NODE || item.getNodeType() == Node.CDATA_SECTION_NODE) {
-                                    node = item;
-                                    break;
-                                }
-                            }                                                    
-                        }
-                        
-                        if (node != null) {
-                            short nodeType = node.getNodeType();
-                            Object value;
+                        Class[] params = setMethod.getParameterTypes();
+                                            
+                        if (params.length == 1) {                        
+                            NodeList propNodes = n.getChildNodes();
                             
-                            //If there is only one property then this is a simple value assignment
-                            //Else if there is three then there is a tag being set as the value
-                            if (nodeType == Node.TEXT_NODE || nodeType == Node.CDATA_SECTION_NODE) {                            
-                            	value = replaceProperties(node.getNodeValue());
-                            	value = replaceParentCall((String) value);
-                            	try {
-                            		prop.set(parent, value); 
-                            	} catch (Exception e) {
-                            		if (e instanceof NoSuchMethodException) {
-                                		value = objectMap.get(value);
-                                		prop.set(parent, value); 
-                            		} else {
-                            			throw Reflector.throwException(e);
-                            		}
-                            	}
-                            } else if (nodeType == Node.ELEMENT_NODE) {
-                                value = evaluateNode(null, node, level + 1, null);
-                                prop.set(parent, replaceProperties(value.toString()));
-                            } else {
-                                throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "a property tag can only contain a value or a single tag");
+                            Node node = null;
+                            
+                            if (propNodes.getLength() == 1) 
+                                node = propNodes.item(0);
+                            else {
+                                for (int i = propNodes.getLength() - 1; i >= 0; i--) {
+                                    Node item = propNodes.item(i);
+                                    
+                                    if (item.getNodeType() == Node.ELEMENT_NODE || item.getNodeType() == Node.CDATA_SECTION_NODE) {
+                                        node = item;
+                                        break;
+                                    }
+                                }                                                    
                             }
                             
-                            if (value == null) throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "the property tag's value resolved to null which is not valid");
-                                               
-                            if (log.isLoggable(LEVEL)) log.log(LEVEL, "set property " + name + " = " + value);
+                            if (node != null) {
+                                short nodeType = node.getNodeType();
+                                Class paramClass = propertyAlias != null ? (Class)propertyAlias[1] : params[0];
+                                Object value;
+                                
+                                //If there is only one property then this is a simple value assignment
+                                //Else if there is three then there is a tag being set as the value
+                                if (nodeType == Node.TEXT_NODE || nodeType == Node.CDATA_SECTION_NODE) {                            
+                                    value = getObjectForTypeFromString(paramClass, (String)node.getNodeValue(), true);
+                                } else if (nodeType == Node.ELEMENT_NODE) {
+                                    value = evaluateNode(null, node, level + 1);
+                                    Class valueClass = value.getClass();
+                                    
+                                    if (!paramClass.isAssignableFrom(valueClass)) {
+                                        value = getObjectForTypeFromString(paramClass, value.toString(), false);
+                                        if (value == null) throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "no conversion from " + valueClass + " to " + paramClass + " is known");
+                                    }
+                                } else {
+                                    throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "a property tag can only contain a value or a single tag");
+                                }
+                                
+                                if (value == null) throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "the property tag's value resolved to null which is not valid");
+                                
+                                invoke(parent, setMethod, value);                        
+                                if (log.isLoggable(LEVEL)) log.log(LEVEL, "set property " + name + " = " + value);
+                            }
+                            
+                            property = true;
                         }
-                        
-                        property = true;
                     }
                 }
             }
@@ -629,17 +607,13 @@ public final class XOD {
             	parentStack.add(null); // adds the placeholder for the new class instance
                 Class c = aliases.get(name);
                 if (c == null) c = getClassForName(name, name);
-                
-                Reflector ref = Reflector.getInstance(c);
-                Map<String, Property> properties = ref.getProperties();
-                Map<String, Method> methods = ref.getMethods();
 
                 NodeList children = n.getChildNodes();
                 
                 try {
                     String id = null;
                     NamedNodeMap attrs = n.getAttributes();
-                    List<Object[]> nonStatic = new ArrayList<Object[]>();
+                    List<Object[]> nonStatic = null;
                     
                     for (int cnt = attrs.getLength(); --cnt >=0;) {
                         Node attr = attrs.item(cnt);
@@ -647,33 +621,41 @@ public final class XOD {
                         String attrValue = attr.getNodeValue();
                         
                         if (attrName.equals("id")) id = attrValue;
+                        String setter = "set" + Character.toUpperCase(attrName.charAt(0)) + attrName.substring(1);
                         boolean found = false;
-                        Method mt = methods.get(attrName);
-                        if (mt != null) {
-                        	found = true;
-                        	Object value = replaceProperties(attrValue);
-                        	value = replaceParentCall((String) value);
-                        	if (mt.isStatic()) {
-                        		ret = mt.call(null, value);
-                        		if (!c.isInstance(ret)) {
-                        			ret = null;
-                        			if (log.isLoggable(LEVEL)) log.log(LEVEL, "invoked static id=" + id + ":" + c.getName() + "." + attrName + "('" + attrValue + "')");
-                        		} else {
-                        			if (log.isLoggable(LEVEL)) log.log(LEVEL, "static factory new id=" + id + ":" + c.getName() + "." + attrName + "('" + attrValue + "')");
-                        		}
-                        	} else {
-                        		nonStatic.add(new Object[] {mt, value});
-                        	}
-                        } else {
-                        	Property pt = properties.get(attrName);
-                        	if (pt != null && pt.isWritable()) {
-                        		Object value = replaceProperties(attrValue);
-                            	value = replaceParentCall((String) value);
-                        		found = true;
-                        		nonStatic.add(new Object[] {pt, value});
-                        	}
-                        }
+                        
+                        for (Method m : c.getMethods()) {
+                            String methodName = m.getName();
 
+                            if (methodName.equals(attrName) || methodName.equals(setter)) {
+                                Class[] args = m.getParameterTypes();
+                                
+                                if (args.length == 1) {
+                                    found = true;
+                                    Object arg = getObjectForTypeFromString(args[0], attrValue, true);
+                                    
+                                    if (Modifier.isStatic(m.getModifiers())) {
+                                        ret = invoke(null, m, arg);
+                                        
+                                        if (!c.isInstance(ret)) {
+                                            if (log.isLoggable(LEVEL)) log.log(LEVEL, "invoked static id=" + id + ":" + c.getName() + "." + methodName + "('" + attrValue + "')");
+                                            ret = null;
+                                        } else {
+                                            if (log.isLoggable(LEVEL)) log.log(LEVEL, "static factory new id=" + id + ":" + c.getName() + "." + methodName + "('" + attrValue + "')");
+                                        }
+                                    } else {
+                                        if (nonStatic == null) nonStatic = new ArrayList<Object[]>(3);
+                                        
+                                        if (methodName.equals(attrName)) {
+                                            nonStatic.add(0, new Object[]{m, arg});
+                                        } else {
+                                            nonStatic.add(new Object[]{m, arg});
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
                         if (!found && !attrName.equals("id")) throw new DOMException(DOMException.NOT_FOUND_ERR, "no target method found id=" + id + ":" + c.getName() + "." + attrName + "('" + attrValue + "')");
                     }
 
@@ -686,16 +668,7 @@ public final class XOD {
                     
                     if (nonStatic != null) {
                         for (Object[] callMeth : nonStatic) {
-                        	try {
-                        		((Reflector.CallTarget) callMeth[0]).call(ret, callMeth[1]);
-                        	} catch (Exception e) {
-                        		if (e instanceof NoSuchMethodException) {
-                        			((Reflector.CallTarget) callMeth[0]).call(ret, objectMap.get(callMeth[1]));
-                        		} else {
-                        			throw Reflector.throwException(e);
-                        		}
-                        	}
-                        	
+                            invoke(ret, (Method)callMeth[0], callMeth[1]);
                             if (log.isLoggable(LEVEL)) log.log(LEVEL, "invoked id=" + id + ":" + c.getName() + "." + ((Method)callMeth[0]).getName() + "(" + callMeth[1] + ")");
                         }
                     }
@@ -709,12 +682,12 @@ public final class XOD {
                         ((Collection)parent).add(ret);
                     }
 
-                    processBranch(ret, children, level + 1, properties);
+                    processBranch(ret, children, level + 1);
                     parentStack.remove(parentStack.size() - 1);
                 } catch (IllegalAccessException e) {
-                    throw Reflector.throwException(e);
+                    throw new RuntimeException(e);
                 } catch (InstantiationException e) {
-                	throw Reflector.throwException(e);
+                    throw new RuntimeException(e);
                 }
             }
         }
@@ -759,20 +732,77 @@ public final class XOD {
     
     private static final Pattern REGEX_PARENT_METHOD = Pattern.compile("\\$\\{xod\\.parent\\((\\d)\\)\\}");
     
-    private Object replaceParentCall(String str) {
-    	Object value;
-    	Matcher m = REGEX_PARENT_METHOD.matcher(str);
+    private Object getObjectForTypeFromString(Class type, String str, boolean performObjectFieldLookup) {
+        Object value;
+        
+        Matcher m = REGEX_PARENT_METHOD.matcher(str);
         
         if (m.matches()) {
         	int level = Integer.parseInt(m.group(1));
         	value = parent(level);
         } else {
-        	value = str;
+        
+	        str = replaceProperties(str);
+	        
+	        if (type == String.class) {
+	            value = str;
+	    	} else if (type == boolean.class || type == Boolean.class) {
+	            value = Boolean.valueOf(str);
+	        } else if (type == int.class || type == Integer.class) {                            
+	            value = new Integer(Double.valueOf(str).intValue());
+	        } else if (type == long.class || type == Long.class) {                            
+	            value = new Long(Double.valueOf(str).longValue());
+	        } else if (type == short.class || type == Short.class) {
+	            value = new Short(Double.valueOf(str).shortValue());
+	        } else if (type == byte.class || type == Byte.class) {
+	            value = new Byte(Double.valueOf(str).byteValue());
+	        } else if (type == float.class || type == Float.class) {
+	            value = new Float(Double.valueOf(str).floatValue());
+	        } else if (type == double.class || type == Double.class) {
+	            value = Double.valueOf(str);                                
+	        } else if (type == char.class || type == Character.class) {                                
+	            value = new Character(str.charAt(0));
+	        } else if (performObjectFieldLookup) {
+	            //See if there is a constant with the name specified
+	            try {
+	                Method method = type.getMethod("valueOf", String.class);
+	                value = method.invoke(null, str);
+	            } catch (Exception e) {
+	                String upperStr = str.toUpperCase();
+	                value = null;
+	                
+	                for (Field f : type.getFields()) {
+	                    if (f.getName().toUpperCase().equals(upperStr)) {
+	                        try {
+	                            value = f.get(null);
+	                        } catch (IllegalAccessException e2) {
+	                            value = null;
+	                        }
+	
+	                        break;
+	                    }
+	                }
+	                
+	                if (value == null) value = objectMap.get(str);
+	            }
+	        } else
+	            value = null;
         }
         
-        return value;
+        return value == null ? str : value;
     }
-
+    
+    private Object invoke(Object object, Method method, Object... params) {
+        try {             
+            if (!method.isAccessible()) method.setAccessible(true);
+            return method.invoke(object, params);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException("[" + object.getClass().getName() + "." + method.getName() + "]", e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException("[" + object.getClass().getName() + "." + method.getName() + "]", e);
+        }        
+    }
+    
     private void setPropertyAlias(Class clazz, String propertyName, String aliasName, Class aliasClass) {
         if (propertyAliases == null) propertyAliases = new HashMap<Class, Map<String, Object[]>>(3);
         Map<String, Object[]> map = propertyAliases.get(clazz);        
@@ -791,16 +821,11 @@ public final class XOD {
         
     private Class getClassForName(String name, String className) {
         try {
-        	Class c;
-        	if (classLoader != null) {
-        		c = classLoader.loadClass(className);
-        	} else {
-        		c = Application.getApplicationContextClass(className);
-        	}
+        	Class c = Application.getApplicationContextClass(className);
             if (name != null) aliases.put(name, c);
             return c;
         } catch (ClassNotFoundException e) {
-            throw Reflector.throwException(e);
+            throw new RuntimeException(e);
         }        
     }
 }
