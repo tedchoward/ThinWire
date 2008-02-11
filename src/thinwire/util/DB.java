@@ -400,7 +400,7 @@ public final class DB {
 			if (!rs.next()) return lst;
 	        ResultSetMetaData rsmd = rs.getMetaData();
 	        int count = rsmd.getColumnCount();
-	        Map<String, Reflector.Property> props = Reflector.getInstance(type).getProperties();
+	        Map<String, Reflector.Attribute> props = Reflector.getInstance(type).getAttributes();
 	        
 	        //When queries are used properly to map to in a one-to-one manner against an object, all the
 	        //results will be meaningful, and therefore this is the fastest way to perform lookups.  Even
@@ -408,11 +408,11 @@ public final class DB {
 	        //that I can think of that would be faster than this lookup method.
 	        int index = 0;
 	        int[] columnForProperty = new int[count];
-	        Reflector.Property[] foundProps = new Reflector.Property[count]; 
+	        Reflector.Attribute[] foundProps = new Reflector.Attribute[count]; 
 	
 	        for (int i = 1; i <= count; i++) {
 	        	String columnName = rsmd.getColumnName(i);
-	            Reflector.Property prop = props.get(columnName);
+	            Reflector.Attribute prop = props.get(columnName);
 	            
 	            if (prop != null) {
 	            	foundProps[index] = prop;
@@ -427,7 +427,7 @@ public final class DB {
 	        	Object obj = type.newInstance();
 	            
 	            for (index = 0; index < count; index++) {
-	            	Reflector.Property prop = foundProps[index];
+	            	Reflector.Attribute prop = foundProps[index];
 	            	int pos = columnForProperty[index];
 	            	prop.set(obj, rs.getObject(pos));
 	            }
@@ -462,11 +462,11 @@ public final class DB {
 	private Object populateSingleResultObject(Object obj, ResultSet rs) throws SQLException {
         ResultSetMetaData rsmd = rs.getMetaData();
         int columnCount = rsmd.getColumnCount();
-        Map<String, Reflector.Property> props = Reflector.getInstance(obj.getClass()).getProperties();
+        Map<String, Reflector.Attribute> props = Reflector.getInstance(obj.getClass()).getAttributes();
 
         for (int i = 1; i <= columnCount; i++) {
         	String columnName = rsmd.getColumnName(i);
-            Reflector.Property prop = props.get(columnName);
+            Reflector.Attribute prop = props.get(columnName);
             if (prop != null) prop.set(obj, rs.getObject(i));
         }
 		
@@ -625,7 +625,7 @@ public final class DB {
 		}
 	}
 	
-	private void executeUpdate(Context context, String statement, List<? extends Object> objects, Reflector.Property[] objProps, Column columns[], int count) {
+	private void executeUpdate(Context context, String statement, List<? extends Object> objects, Reflector.Attribute[] objProps, Column columns[], int count) {
 		Connection con = null;
 		PreparedStatement stmt = null;
 		
@@ -1029,11 +1029,11 @@ public final class DB {
 		//Build the properly ordered column array and grid column index lookup table
 		int foundCount = 0;
 		int foundKeys = 0;
-		Reflector.Property[] objProps = new Reflector.Property[count];
+		Reflector.Attribute[] objProps = new Reflector.Attribute[count];
         Column[] columns = new Column[count];
-        Map<String, Reflector.Property> props = Reflector.getInstance(objects.get(0).getClass()).getProperties();
+        Map<String, Reflector.Attribute> props = Reflector.getInstance(objects.get(0).getClass()).getAttributes();
 		
-		for (Reflector.Property prop : props.values()) {
+		for (Reflector.Attribute prop : props.values()) {
 			if (!prop.isReadable()) continue;
 			Column c = cols.get(prop.getName());
 			
@@ -1102,7 +1102,7 @@ public final class DB {
 		
 		int foundCount = 0;
 		int foundKeys = 0;
-        Map<String, Reflector.Property> props = Reflector.getInstance(obj.getClass()).getProperties();
+        Map<String, Reflector.Attribute> props = Reflector.getInstance(obj.getClass()).getAttributes();
 
         StringBuilder sb = context.sb;
         sb.setLength(0);
@@ -1110,7 +1110,7 @@ public final class DB {
 		StringBuilder sbWhere = new StringBuilder();
 		sbWhere.append("WHERE ");
 		
-		for (Reflector.Property prop : props.values()) {
+		for (Reflector.Attribute prop : props.values()) {
 			if (!prop.isReadable()) continue;
 			Column c = cols.get(prop.getName());
 			
@@ -1254,7 +1254,7 @@ public final class DB {
 		//Build the properly ordered column array and grid column index lookup table
 		int foundKeys = 0;
 		Column[] columns = new Column[count];
-        Reflector.Property[] objProps = new Reflector.Property[count];
+        Reflector.Attribute[] objProps = new Reflector.Attribute[count];
         StringBuilder sb = context.sb;
 		sb.setLength(0);
 		sb.append("INSERT INTO ").append(table).append(" VALUES(");
@@ -1263,11 +1263,11 @@ public final class DB {
 			columns[c.index] = c;
 		}
 		
-        Map<String, Reflector.Property> props = Reflector.getInstance(objects.get(0).getClass()).getProperties();
+        Map<String, Reflector.Attribute> props = Reflector.getInstance(objects.get(0).getClass()).getAttributes();
 		
 		for (int i = 0, cnt = columns.length; i < cnt; i++) {
 			Column c = columns[i];
-			Reflector.Property prop = props.get(c.name);
+			Reflector.Attribute prop = props.get(c.name);
 
 			if (prop == null || !prop.isReadable()) {
 				sb.append("NULL,");
@@ -1312,12 +1312,12 @@ public final class DB {
 			columns[c.index] = c;
 		}
 		
-        Map<String, Reflector.Property> props = Reflector.getInstance(obj.getClass()).getProperties();
-        Reflector.Property idProp = null;
+        Map<String, Reflector.Attribute> props = Reflector.getInstance(obj.getClass()).getAttributes();
+        Reflector.Attribute idProp = null;
         
 		for (int i = 0, cnt = columns.length; i < cnt; i++) {
 			Column c = columns[i];
-			Reflector.Property prop = props.get(c.name);
+			Reflector.Attribute prop = props.get(c.name);
 
 			if (prop == null || !prop.isReadable()) {
 				sb.append("NULL,");
@@ -1458,16 +1458,16 @@ public final class DB {
 		
 		//Build the properly ordered column array and grid column index lookup table
 		Column[] columns = new Column[count];
-        Reflector.Property[] objProps = new Reflector.Property[count];
+        Reflector.Attribute[] objProps = new Reflector.Attribute[count];
         StringBuilder sb = context.sb;
 		sb.setLength(0);
 		sb.append("DELETE FROM ").append(table).append(" WHERE ");
-		Map<String, Reflector.Property> props = Reflector.getInstance(objects.get(0).getClass()).getProperties();
+		Map<String, Reflector.Attribute> props = Reflector.getInstance(objects.get(0).getClass()).getAttributes();
 		
 		for (int i = 0; i < count; i++) {
 			Column c = cols.get(i);
 			columns[i] = c;
-			Reflector.Property prop = props.get(c.name);
+			Reflector.Attribute prop = props.get(c.name);
 			if (prop == null)  throw new IllegalArgumentException("Objects in List do not contain a property for every primary key in table '" + table + "'");
 			objProps[i] = prop;
 			sb.append(c.name).append("=? AND ");
@@ -1497,11 +1497,11 @@ public final class DB {
 		StringBuilder sb = context.sb;
 		sb.setLength(0);
 		sb.append("DELETE FROM ").append(table).append(" WHERE ");
-		Map<String, Reflector.Property> props = Reflector.getInstance(obj.getClass()).getProperties();
+		Map<String, Reflector.Attribute> props = Reflector.getInstance(obj.getClass()).getAttributes();
 		
 		for (int i = 0; i < count; i++) {
 			Column c = cols.get(i);
-			Reflector.Property prop = props.get(c.name);
+			Reflector.Attribute prop = props.get(c.name);
 			if (prop == null)  throw new IllegalArgumentException("Object '" + obj.getClass() + "' does not contain a property for every primary key in table '" + table + "'");
 			sb.append(c.name).append('=');
 			mapValue(context, sb, c.type, prop.get(obj));

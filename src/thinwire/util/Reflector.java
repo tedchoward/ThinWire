@@ -71,7 +71,7 @@ public class Reflector {
                 value = new Character(str.charAt(0));
             } else {
                 try {
-                    Field f = type.getField(str.toUpperCase().replace('-', '_'));                        
+                    java.lang.reflect.Field f = type.getField(str.toUpperCase().replace('-', '_'));                        
                     value = f.get(null);
                 } catch (NoSuchFieldException e) {
                     try {
@@ -97,6 +97,13 @@ public class Reflector {
     	String getName();
     	Class getType();
     	Object call(Object obj, Object...args) throws CallException;
+    }
+    
+    public static interface Attribute extends CallTarget {
+		boolean isReadable();
+		boolean isWritable();
+    	void set(Object obj, Object value) throws CallException;
+    	Object get(Object obj) throws CallException;
     }
     
 	private static abstract class AbstractCallTarget implements CallTarget {
@@ -125,10 +132,109 @@ public class Reflector {
         }
 	}
 	
-    public static class Property extends AbstractCallTarget {
-        private final boolean readable;
-        private final boolean writable;
+	private static abstract class AbstractAttributeTarget extends AbstractCallTarget implements Attribute {
+        boolean readable;
+        boolean writable;
+
+		AbstractAttributeTarget(Reflector reflector, String name, boolean statik, Class type) {
+			super(reflector, name, statik, type);
+		}
+		
+		abstract void doSet(Object obj, Object value) throws Exception;
+		abstract Object doGet(Object obj) throws Exception;
+		abstract void makeAccessible(boolean forWriting) throws Exception;
         
+        public boolean isReadable() {
+        	return readable;
+        }
+        
+        public boolean isWritable() {
+        	return writable;
+        }
+		
+		public void set(Object obj, Object value) throws CallException {
+        	if (!writable) throw new CallException(reflector.className, name, false, "attribute is not writable");
+    		if (log.isLoggable(LEVEL)) log.log(LEVEL, "Set attribute " + name + "='" + value + "' for object '" + obj + "'");
+        	
+    		value = reflector.converter.toType(type, value);
+        	
+        	try {
+        		doSet(obj, value);
+        	} catch (IllegalAccessException e) {
+        		try {
+	        		makeAccessible(true);
+	        		doSet(obj, value);
+        		} catch (Exception e2) {
+        			if (e2 instanceof RuntimeException) throw (RuntimeException)e2;
+        			throw new CallException(reflector.className, name, false, e2.getMessage());
+        		}
+    		} catch (Exception e) {
+    			if (e instanceof RuntimeException || e instanceof CallException || e instanceof NotFoundException) throw (RuntimeException)e;
+    			//throw new CallException(reflector.className, name, false, e.getMessage());
+    			throw new RuntimeException(e);
+    		}
+        }
+        
+        public Object get(Object obj) throws CallException {
+        	if (!readable) throw new CallException(reflector.className, name, false, "attribute is not readable");
+
+    		Object ret;
+    		
+        	try {
+    			ret = doGet(obj);
+        	} catch (IllegalAccessException e) {
+        		try {
+	        		makeAccessible(false);
+	        		ret = doGet(obj);
+        		} catch (Exception e2) {
+        			if (e2 instanceof RuntimeException) throw (RuntimeException)e2;
+        			throw new CallException(reflector.className, name, false, e2.getMessage());
+        		}
+    		} catch (Exception e) {
+    			if (e instanceof RuntimeException) throw (RuntimeException)e;
+    			throw new CallException(reflector.className, name, false, e.getMessage());
+    		}
+
+    		if (log.isLoggable(LEVEL)) log.log(LEVEL, "Get attribute " + name + "='" + ret + "' for object '" + obj + "'");
+    		return ret;
+        }
+    	
+    	public Object call(Object obj, Object...args) throws CallException {
+    		if (args == null || args.length == 0) {
+    			return get(obj);
+    		} else if (args.length == 1) {
+    			set(obj, args[0]);
+                return null;
+    		} else {
+    			throw new CallException(reflector.className, name, false, "number of arguments '" + args.length + "' not appropriate for attribute.");
+    		}
+    	}
+	}
+	
+    public static class Field extends AbstractAttributeTarget {
+        private java.lang.reflect.Field field;
+
+        private Field(Reflector reflector, java.lang.reflect.Field field) {
+        	super(reflector, field.getName(), false, field.getType());
+        	this.field = field;
+        	readable = true;
+        	writable = true;
+        }
+
+        void doSet(Object obj, Object value) throws Exception {
+        	field.set(obj, value);
+        }
+
+        Object doGet(Object obj) throws Exception {
+        	return field.get(obj);
+        }
+        
+        void makeAccessible(boolean forWriting) throws Exception {
+        	field.setAccessible(true);
+        }
+    }
+	
+    public static class Property extends AbstractAttributeTarget {
         private java.lang.reflect.Method getter;
         private java.lang.reflect.Method setter;
 
@@ -165,71 +271,18 @@ public class Reflector {
                 readable = getter != null;
             }
         }
-        
-        public boolean isReadable() {
-        	return readable;
-        }
-        
-        public boolean isWritable() {
-        	return writable;
+
+        void doSet(Object obj, Object value) throws Exception {
+        	setter.invoke(obj, value);
         }
 
-        public void set(Object obj, Object value) throws CallException {
-        	if (!writable) throw new CallException(reflector.className, name, false, "property is not writable");
-    		if (log.isLoggable(LEVEL)) log.log(LEVEL, "Set property " + name + "='" + value + "' for object '" + obj + "'");
-        	
-    		value = reflector.converter.toType(type, value);
-        	
-        	try {
-    			setter.invoke(obj, value);
-        	} catch (IllegalAccessException e) {
-        		try {
-	        		setter.setAccessible(true);
-	        		setter.invoke(obj, value);
-        		} catch (Exception e2) {
-        			if (e2 instanceof RuntimeException) throw (RuntimeException)e2;
-        			throw new CallException(reflector.className, name, false, e2.getMessage());
-        		}
-    		} catch (Exception e) {
-    			if (e instanceof RuntimeException || e instanceof CallException || e instanceof NotFoundException) throw (RuntimeException)e;
-    			//throw new CallException(reflector.className, name, false, e.getMessage());
-    			throw new RuntimeException(e);
-    		}
+        Object doGet(Object obj) throws Exception {
+        	return getter.invoke(obj);
         }
         
-        public Object get(Object obj) throws CallException {
-        	if (!readable) throw new CallException(reflector.className, name, false, "property is not readable");
-    		Object ret;
-    		
-        	try {
-    			ret = getter.invoke(obj);
-        	} catch (IllegalAccessException e) {
-        		try {
-	        		getter.setAccessible(true);
-	        		ret = getter.invoke(obj);
-        		} catch (Exception e2) {
-        			if (e2 instanceof RuntimeException) throw (RuntimeException)e2;
-        			throw new CallException(reflector.className, name, false, e2.getMessage());
-        		}
-    		} catch (Exception e) {
-    			if (e instanceof RuntimeException) throw (RuntimeException)e;
-    			throw new CallException(reflector.className, name, false, e.getMessage());
-    		}
-
-    		if (log.isLoggable(LEVEL)) log.log(LEVEL, "Get property " + name + "='" + ret + "' for object '" + obj + "'");
-    		return ret;
+        void makeAccessible(boolean forWriting) throws Exception {
+        	(forWriting ? setter : getter).setAccessible(true);
         }
-    	
-    	public Object call(Object obj, Object...args) throws CallException {
-    		if (args == null || args.length == 0) {
-    			return get(obj);
-    		} else if (args.length == 1) {
-    			set(obj, args[0]);
-                return null;
-    		} else {
-    			throw new CallException(reflector.className, name, false, "number of arguments '" + args.length + "' not appropriate for a setter or getter.");
-    		}
-    	}
     }
     
     public static class Method extends AbstractCallTarget {
@@ -543,17 +596,24 @@ public class Reflector {
 		}
     }
     
+    private Class clazz;
     private String className;
+    private Reflector superReflector;
     
     private Converter converter = DEFAULT_CONVERTER;
+    private Map<String, Field> nameToField;
+    private Map<String, Field> roNameToField;
     private Map<String, Property> nameToProperty;
     private Map<String, Property> roNameToProperty;
+    private Map<String, Attribute> nameToAttribute;
+    private Map<String, Attribute> roNameToAttribute;
     private Map<String, Method> nameToMethod;
     private Map<String, Method> roNameToMethod;
 
     private Reflector(Class clazz) throws CovariantException {
     	if (clazz.isInterface()) throw new UnsupportedOperationException("reflecting over interfaces is currently unsupported");
     	boolean isLoggable = log.isLoggable(LEVEL);
+    	this.clazz = clazz;
     	className = clazz.getName();
     	Class[] interfaces = clazz.getInterfaces();
     	Class superClass = clazz.getSuperclass();
@@ -564,7 +624,7 @@ public class Reflector {
     		log.log(LEVEL, (clazz.isInterface() ? "Extends " : "Implements ") + interfaces.length + " interfaces");
     	}
     	
-    	Reflector superReflector = superClass == null ? null : getInstance(superClass); 
+    	superReflector = superClass == null ? null : getInstance(superClass); 
     	Map<String, java.lang.reflect.Method> descToMethod = new HashMap<String, java.lang.reflect.Method>();
     	StringBuilder sbDesc = new StringBuilder();
     	
@@ -654,9 +714,35 @@ public class Reflector {
 	    return sb;
     }
     
+    public Map<String, Field> getFields() {
+    	if (roNameToField == null) {
+			nameToField = new CaseInsensitiveChainMap<Field>(superReflector == null ? null : superReflector.getFields());
+
+			for (java.lang.reflect.Field f : clazz.getDeclaredFields()) {
+				nameToField.put(f.getName(), new Field(this, f));
+			}
+			
+			roNameToField = Collections.unmodifiableMap(nameToField);
+    	}
+    	
+    	return roNameToField;
+    }
+    
     public Map<String, Property> getProperties() {
     	if (roNameToProperty == null) roNameToProperty = Collections.unmodifiableMap(nameToProperty);
     	return roNameToProperty;
+    }
+    
+    public Map<String, Attribute> getAttributes() {
+    	if (roNameToAttribute == null) {
+    		nameToAttribute = new CaseInsensitiveChainMap<Attribute>(superReflector == null ? null : superReflector.getAttributes());
+    		getFields(); //Generates field map
+    		nameToAttribute.putAll(nameToField);
+    		nameToAttribute.putAll(nameToProperty); //Properties supercede fields, so we overwrite any
+    		roNameToAttribute = Collections.unmodifiableMap(nameToAttribute);
+    	}
+    	
+    	return roNameToAttribute;
     }
     
     public Map<String, Method> getMethods() {
