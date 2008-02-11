@@ -825,25 +825,4 @@ public interface Component {
      * @see thinwire.ui.event.PropertyChangeEvent
      */
     void setVisible(boolean visible);
-    
-    /**
-     * Sets the value of the specified property dynamically using a <code>Reflector</code>.
-     * Property names exclude "set", "get" or "is" prefixes and have the character following the prefix
-     * lower-cased. For example, to call 'setLimit' the property name would just be 'limit'.
-     * @param name the name of the property you want to set. 
-     * @param value the value you want to set the property to.
-     * @return this <code>Component</code> so that further operations may be performed.
-     * @see thinwire.util.Reflector
-     */
-    Component set(String name, Object value);
-    
-    /**
-     * Gets the value of the specified property dynamically using a <code>Reflector</code>.
-     * Property names exclude "set", "get" or "is" prefixes and have the character following the prefix
-     * lower-cased. For example, to call 'setLimit' the property name would just be 'limit'.
-     * @param name the name of the property you want to set. 
-     * @return the value that the property is currently set to.
-     * @see thinwire.util.Reflector
-     */
-    Object get(String name);
 }

@@ -35,7 +35,6 @@ import thinwire.ui.event.KeyPressEvent;
 import thinwire.ui.event.PropertyChangeListener;
 import thinwire.ui.event.KeyPressListener;
 import thinwire.ui.style.*;
-import thinwire.util.Reflector;
 
 /**
  * @author Joshua J. Gertzen
@@ -69,7 +68,6 @@ abstract class AbstractComponent<C extends Component> implements Component {
     private Object limit;
     private boolean visible;
     private boolean ignoreFirePropertyChange;
-    private Reflector reflector;
     
     AbstractComponent() {
         this(EventListenerImpl.ACTION_VALIDATOR);
@@ -554,17 +552,5 @@ abstract class AbstractComponent<C extends Component> implements Component {
         boolean oldVisible = this.visible;
         this.visible = visible;
         firePropertyChange(this, PROPERTY_VISIBLE, oldVisible, visible);
-    }
-    
-    @SuppressWarnings("unchecked")
-	public C set(String name, Object value) throws Reflector.NotFoundException, Reflector.CallException {
-    	if (reflector == null) reflector = Reflector.getInstance(this.getClass());
-    	reflector.set(this, name, value);
-    	return (C)this;
-    }
-    
-    public Object get(String name) throws Reflector.NotFoundException, Reflector.CallException {
-    	if (reflector == null) reflector = Reflector.getInstance(this.getClass());
-    	return reflector.get(this, name);
     }
 }
