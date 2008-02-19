@@ -287,6 +287,8 @@ function tw_getFontMetrics(family, size, bold, italic, underline) {
     return metrics.join(",");
 }
 
+var tw_LF = String.fromCharCode(10);
+
 var tw_fontChars = [];
 for (var i = 32; i < 256; i++) tw_fontChars.push(String.fromCharCode(i));
 

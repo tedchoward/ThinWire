@@ -194,11 +194,11 @@ var tw_BaseText = tw_Component.extend({
         if (tw_Component.currentFocus === this) {
             var comp = this._editor;
             //NOTE: We have to do this because the text range does not count CRLF as two characters.
-            beginIndex -= this._getStringCount(comp.value, "\n", 0, beginIndex);
-            endIndex -= this._getStringCount(comp.value, "\n", 0, endIndex);        
+            beginIndex -= this._getStringCount(comp.value, tw_LF, 0, beginIndex);
+            endIndex -= this._getStringCount(comp.value, tw_LF, 0, endIndex);        
             
             if (tw_isIE) {
-                endIndex = -(comp.value.length - this._getStringCount(comp.value, "\n") - endIndex);
+                endIndex = -(comp.value.length - this._getStringCount(comp.value, tw_LF) - endIndex);
                 var r = comp.createTextRange();
                 var movedStart = r.moveStart("character", beginIndex);
                 var movedEnd = r.moveEnd("character", endIndex);        
@@ -217,7 +217,7 @@ var tw_BaseText = tw_Component.extend({
             var start = this._getIESelectionIndexToRange(comp, r, "StartToStart");
             var end = this._getIESelectionIndexToRange(comp, r, "EndToStart");
             if (start == -1 || end == -1) return [-1, -1];
-            var value = comp.value.replace(/\r\n/g, "\n");        
+            var value = comp.value.replace(/\r\n/g, tw_LF);        
             if (start > value.length) start = value.length;
             if (end > value.length) end = value.length;
         } else {           
@@ -230,8 +230,8 @@ var tw_BaseText = tw_Component.extend({
             }
         }
         
-        start += this._getStringCount(value, "\n", 0, start);
-        end += this._getStringCount(value, "\n", 0, end);       
+        start += this._getStringCount(value, tw_LF, 0, start);
+        end += this._getStringCount(value, tw_LF, 0, end);       
         return [start, end];
     },
 

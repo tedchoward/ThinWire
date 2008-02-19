@@ -89,22 +89,22 @@ var tw_EventManager = Class.extend({
 		                    if (call.s && this._autoSyncResponse) this.sendSyncResponse(ret, true);
 		                }
 					} catch (e) {
-						var eAry = ["ERROR INVOKING call ", i, " of ", cnt, ": ", call.m, "\n"];
+						var eAry = ["ERROR INVOKING call ", i, " of ", cnt, ": ", call.m, tw_LF];
 						
 						for (var item in e)
-							eAry.push("error:" + item + "=" + (e[item].length > 100 ? e[item].substring(0, 100) : e[item]) + "\n");
+							eAry.push("error:" + item + "=" + (e[item].length > 100 ? e[item].substring(0, 100) : e[item]) + tw_LF);
 					    
 						for (var ai = 0; ai < call.a.length; ai++)
-							eAry.push("arg" + ai + "=" + call.a[ai] + "\n");
+							eAry.push("arg" + ai + "=" + call.a[ai] + tw_LF);
 							
 						alert(eAry.join(""));
 					}
 	            }            
             } catch (e) {
-				var eAry = ["SYNTAX ERROR WITH eval(calls):\n"];
+				var eAry = ["SYNTAX ERROR WITH eval(calls):", tw_LF];
 
 			    for (var item in e)
-					eAry.push("error:" + item + "=" + (e[item].length > 100 ? e[item].substring(0, 100) : e[item]) + "\n");
+					eAry.push("error:" + item + "=" + (e[item].length > 100 ? e[item].substring(0, 100) : e[item]) + tw_LF);
 
 				eAry.push("calls=" + (calls != null && calls.length > 250 ? calls.substring(0, 250) : calls))
 				alert(eAry.join(""));

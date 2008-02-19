@@ -59,7 +59,7 @@ function parseBrowserType(ua) {
     else if (tw_isFirefox = tw_isGecko = parseBrowser("firefox", 1)) {}
     else if (tw_isIE = parseBrowser("msie", 6)) {}
     else if (tw_isGecko = parseBrowser("gecko", 20050512)) {};
-    if (msg != null) alert(msg + ":\n" + ua);
+    if (msg != null) alert(msg + ":" + tw_LF + ua);
 }
 
 parseBrowserType(navigator.userAgent);
