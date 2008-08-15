@@ -141,6 +141,7 @@ class EventProcessor extends Thread {
         } else {
             active = false;
             waitToRespond = false;
+            if( app.userActionListener != null) app.userActionListener.finishedProcessing();
             queue.notify();
             if (log.isLoggable(LEVEL)) log.log(LEVEL, Thread.currentThread().getName() + ": Notified request handler thread so it returns if it is currently blocking");
 
@@ -166,7 +167,7 @@ class EventProcessor extends Thread {
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-            
+            if( app.userActionListener != null) app.userActionListener.startProcessing();
             active = true;
         }
     }

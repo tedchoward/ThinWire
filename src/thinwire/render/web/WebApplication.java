@@ -189,6 +189,7 @@ public final class WebApplication extends Application {
     WebComponentEvent startupEvent;
     Map<Style, String> styleToStyleClass = new HashMap<Style, String>();
     FileInfo[] fileList = new FileInfo[1];
+	protected UserActionListener userActionListener;
     
     WebApplication(String baseFolder, Class mainClass, String styleSheet, String[] args, String initialFrameTitle) throws IOException {
         this.baseFolder = baseFolder;
@@ -843,4 +844,11 @@ public final class WebApplication extends Application {
     protected void finalize() {
         if (log.isLoggable(LEVEL)) log.log(LEVEL, Thread.currentThread().getName() + ": finalizing app");
     }
+
+    /**One and only one {@link UserActionListener} can be added. 
+     */
+	public void setUserActionListener(UserActionListener userActionListener) {
+		this.userActionListener = userActionListener;
+		
+	}
 }
