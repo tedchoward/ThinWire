@@ -26,6 +26,13 @@
 */
 package thinwire.ui;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import thinwire.ui.event.WindowEvent;
+import thinwire.ui.event.WindowListener;
+import thinwire.ui.event.WindowEvent.EventType;
+
 /**
  * @author Joshua J. Gertzen
  */
@@ -35,6 +42,7 @@ abstract class AbstractWindow<C extends Window> extends AbstractContainer<C, Com
     
     String title = "";
     Menu menu;
+    Set<WindowListener> windowListeners=new HashSet<WindowListener>();
 
     AbstractWindow() {
         super.setVisible(false);
@@ -55,6 +63,23 @@ abstract class AbstractWindow<C extends Window> extends AbstractContainer<C, Com
         return menu;
     }
     
+    public void addWindowListener(WindowListener listener){
+    	if(listener!=null){
+    		windowListeners.add(listener);
+    	}
+    }
+    
+    public void removeWindowListener(WindowListener listener){
+    	if(listener!=null){
+    		windowListeners.remove(listener);
+    	}
+    }
+    
+    private void fireWindowEvent(WindowEvent event) {
+		for (WindowListener listener : windowListeners) {
+			listener.handleEvent(event);
+		}
+	}
     public void setMenu(Menu menu) {
         Menu oldMenu = this.menu;
         this.menu = menu;
@@ -62,4 +87,11 @@ abstract class AbstractWindow<C extends Window> extends AbstractContainer<C, Com
         if (menu != null) menu.setParent(this);
         firePropertyChange(this, PROPERTY_MENU, oldMenu, menu);
     }
+
+	@Override
+	public void setVisible(boolean visible) {
+		super.setVisible(visible);
+		fireWindowEvent(new WindowEvent(this,
+				((visible) ? EventType.WINDOW_SHOWN : EventType.WINDOW_CLOSED)));
+	}
 }
