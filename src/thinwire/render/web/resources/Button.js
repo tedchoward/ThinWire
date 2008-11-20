@@ -68,14 +68,35 @@ var tw_Button = tw_Component.extend({
     },
     
     _mouseDownListener: function(ev) {
-        if (!this._enabled || tw_getEventButton(ev) != 1) return;
+        if (!this._enabled ) return; 
         this._borderBox.style.borderStyle = "inset";
+    	  var now=new Date();
+    	  var milliseconds=now.getMinutes()*60*1000+now.getSeconds()*1000+now.getMilliseconds();
+       	this._down=milliseconds;
     },
     
     _mouseUpListener: function(ev) {
-        if (this._enabled && tw_getEventButton(ev) == 1 || ev.type == "mouseout") {
+        if (this._enabled || ev.type == "mouseout") {
             this._borderBox.style.borderStyle = this._borderType;
         }
+  	  var now=new Date();
+	  var milliseconds=now.getMinutes()*60*1000+now.getSeconds()*1000+now.getMilliseconds();
+	  var diff=milliseconds-this._down;
+	
+	   	if(ev.type=="mouseup"&&diff <400&&this._enabled) // <700 milliseconds represents a click
+	  {
+		var type="click";
+		if(this._clickTime&&milliseconds-this._clickTime<400)
+		{
+			type="dblclick";
+			this._clickTime=null;
+		}
+		else{
+			this._clickTime=milliseconds;
+		}
+		  this.fireAction(ev, type, this);
+	  }
+        
     },
 
     //TODO: Will simply returning false from click when disabled, work in Gecko?

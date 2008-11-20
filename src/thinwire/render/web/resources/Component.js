@@ -46,6 +46,7 @@ var tw_Component = Class.extend({
     _parentIndex: -1,
     _x: 0,
     _y: 0,
+    _down:-1,
     _width: 0,
     _height: 0,
     _enabled: true,
@@ -79,6 +80,8 @@ var tw_Component = Class.extend({
         tw_Component.instances[id] = this;
         this._parent = containerId instanceof Class ? containerId : tw_Component.instances[containerId];
         this._focus = this._focus.bind(this);
+        tw_addEventListener(this._box, "mousedown", this._mouseDownListener.bind(this));    
+        tw_addEventListener(this._box, ["mouseup", "mouseout"], this._mouseUpListener.bind(this));    
     },
             
     setX: function(x) {
@@ -124,6 +127,34 @@ var tw_Component = Class.extend({
         this._box.style.display = opacity > 0 && this._visible ? "block" : "none";
     },
     
+// MouseDown and MouseUp Listeners added to simulate "click" events for different mouse buttons
+    _mouseDownListener: function(ev) {
+    	//TODO add real processing
+  	  var now=new Date();
+	  var milliseconds=now.getMinutes()*60*1000+now.getSeconds()*1000+now.getMilliseconds();
+   	this._down=milliseconds;
+    	
+  },
+  _mouseUpListener: function(ev) {
+	  var now=new Date();
+	  var milliseconds=now.getMinutes()*60*1000+now.getSeconds()*1000+now.getMilliseconds();
+	  var diff=milliseconds-this._down;
+	
+	   	if(ev.type=="mouseup"&&diff <400&&this._enabled) // <700 milliseconds represents a click
+	  {
+		var type="click";
+		if(this._clickTime&&milliseconds-this._clickTime<400)
+		{
+			type="dblclick";
+			this._clickTime=null;
+		}
+		else{
+			this._clickTime=milliseconds;
+		}
+		  this.fireAction(ev, type, this);
+	  }
+		  this._down=-1;
+  },    
     setFocusCapable: function(focusCapable) {
         this._focusCapable = focusCapable;
     },
@@ -212,7 +243,11 @@ var tw_Component = Class.extend({
                     if (sButton != null && this !== sButton) sButton._setStandardStyle(false);
                 }
             }
+            if(this.scrollIntoView!=null){
+            	this.scrollIntoView();
+            }
         }
+        
     },
     
     _focus: function() {
@@ -223,6 +258,13 @@ var tw_Component = Class.extend({
         for (var name in styles) {
             this.setStyle(tw_Component.rtStyleMap[name], styles[name]); 
         }
+    },
+    
+    scrollTo: function(){
+    	if(this.scrollIntoView!=null)
+    	{
+    		scrollIntoView();
+    	}
     },
     
     setStyle: function(name, value) {
@@ -369,7 +411,8 @@ var tw_Component = Class.extend({
             
             if (actions != undefined && actions[action] === true) {
                 var x = 0, y = 0;
-                
+                var btn=0;
+                btn=tw_getEventButton(ev);
                 if (ev != null) {
                     var clickBox = this.getClickBox();
                     x = tw_getEventOffsetX(ev, clickBox.className);
@@ -379,7 +422,7 @@ var tw_Component = Class.extend({
                 }
                 
                 if (source == null) source = "";
-                tw_em.sendViewStateChanged(this._id, action, x + "," + y + "," + source);
+                tw_em.sendViewStateChanged(this._id, action, x + "," + y + ","+btn+"," + source);
             }
         }
     },

@@ -167,7 +167,7 @@ class EventProcessor extends Thread {
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-            if( app.userActionListener != null) app.userActionListener.startProcessing();
+            if( app!=null&&app.userActionListener != null) app.userActionListener.startProcessing();
             active = true;
         }
     }

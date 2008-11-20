@@ -41,24 +41,27 @@ public final class ActionEvent extends EventObject {
     private int sourceComponentY;
     private int sourceX;
     private int sourceY;
-
+    private int button;
     public ActionEvent(String action, Component sourceComponent) {
-        this(action, sourceComponent, null, -1, -1, -1, -1, true);
+        this(action, sourceComponent, null, -1, -1, -1, -1, true,1);
     }
 
     public ActionEvent(String action, Component sourceComponent, int sourceComponentX, int sourceComponentY) {
-        this(action, sourceComponent, null, sourceComponentX, sourceComponentY, -1, -1, true);
+        this(action, sourceComponent, null, sourceComponentX, sourceComponentY, -1, -1, true,1);
     }
     
     public ActionEvent(String action, Component sourceComponent, Object source) {
-        this(action, sourceComponent, source, -1, -1, -1, -1, true);
+        this(action, sourceComponent, source, -1, -1, -1, -1, true,1);
     }
     
     public ActionEvent(String action, Component sourceComponent, Object source, int sourceComponentX, int sourceComponentY, int sourceX, int sourceY) {
-        this(action, sourceComponent, source, sourceComponentX, sourceComponentY, sourceX, sourceY, true);
+        this(action, sourceComponent, source, sourceComponentX, sourceComponentY, sourceX, sourceY, true,1);
     }
-    
-    private ActionEvent(String action, Component sourceComponent, Object source, int sourceComponentX, int sourceComponentY, int sourceX, int sourceY, boolean init) {
+    public ActionEvent(String action, Component sourceComponent, Object source, int sourceComponentX, int sourceComponentY, int sourceX, int sourceY,int button) {
+        this(action, sourceComponent, source, sourceComponentX, sourceComponentY, sourceX, sourceY, true,button);
+    }
+   
+    private ActionEvent(String action, Component sourceComponent, Object source, int sourceComponentX, int sourceComponentY, int sourceX, int sourceY, boolean init,int button) {
         super(source == null ? sourceComponent : source);
         if (sourceComponent == null) throw new IllegalArgumentException("sourceComponent == null");
         if (init && sourceComponentX == -1) sourceComponentX = 0;
@@ -77,6 +80,7 @@ public final class ActionEvent extends EventObject {
         this.sourceComponentY = sourceComponentY;
         this.sourceX = sourceX;
         this.sourceY = sourceY;
+        this.button=button;
     }
     
     public String getAction() {
@@ -119,4 +123,8 @@ public final class ActionEvent extends EventObject {
             ",sourceX:" + sourceX + ",sourceY:" + sourceY + "}";
         return stringValue;
     }
+
+	public int getButton() {
+		return button;
+	}
 }

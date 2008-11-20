@@ -307,7 +307,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         }
     }    
     
-    public int getInt(String value) {
+    public static int getInt(String value) {
         try {
             return Integer.parseInt(value);
         } catch (NumberFormatException e) {
@@ -335,6 +335,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
             String[] vals = value.split(",", -1);
             int x = getInt(vals[0]);
             int y = getInt(vals[1]);
+            int button=getInt(vals[2]);
             int srcX = x;
             int srcY = y;
             
@@ -372,7 +373,7 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
             }
             
             if (actionIgnoreProperty != null) setPropertyChangeIgnored(actionIgnoreProperty, true);
-            comp.fireAction(new ActionEvent(name, comp, evObj, x, y, srcX, srcY));
+            comp.fireAction(new ActionEvent(name, comp, evObj, x, y, srcX, srcY,button));
             if (actionIgnoreProperty != null) setPropertyChangeIgnored(actionIgnoreProperty, false);
         } else if (event.getName().equals(CLIENT_EVENT_DROP)) {
             String[] parts = ((String)event.getValue()).split(",", -1);
