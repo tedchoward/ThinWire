@@ -120,6 +120,7 @@ public class EventProcessor extends Thread {
     private void processUserActionEvent() {
     	if(app==null){
     		///  application has shut down, ignore this action
+    		while(queue.size()>0)queue.remove(0);// remove any events...   they have nowhere to go anyhow.
     		return;
     	}
         if (queue.size() > 0) {
