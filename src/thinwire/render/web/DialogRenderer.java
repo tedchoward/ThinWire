@@ -54,6 +54,9 @@ public final class DialogRenderer extends WindowRenderer {
         }
         
         addInitProperty(Dialog.PROPERTY_MODAL, d.isModal());
+        addInitProperty(Dialog.PROPERTY_STATE, d.getState());
+        addInitProperty(Dialog.PROPERTY_MINIMIZABLE, d.isMinimizable());
+        addInitProperty(Dialog.PROPERTY_MAXIMIZABLE, d.isMaximizable());
         addClientSideProperty(Component.PROPERTY_X);
         addClientSideProperty(Component.PROPERTY_Y);
         addClientSideProperty(Component.PROPERTY_WIDTH);
@@ -82,5 +85,14 @@ public final class DialogRenderer extends WindowRenderer {
         } else {
             super.componentChange(event);
         }
+        if(name.equals("maximizeClick"))
+        {
+        	d.setState((d.getState()==Dialog.STATE_MAXIMIZED)?Dialog.STATE_NORMAL:Dialog.STATE_MAXIMIZED);
+        }
+        if(name.equals("minimizeClick"))
+        {
+        	d.setState(d.getState()==Dialog.STATE_MINIMIZED?Dialog.STATE_NORMAL:Dialog.STATE_MINIMIZED );
+        }
+        
     }
 }

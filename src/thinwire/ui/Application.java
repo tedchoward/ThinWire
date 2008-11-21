@@ -34,6 +34,7 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.List;
 import java.util.Properties;
@@ -65,10 +66,13 @@ import thinwire.util.XOD;
 public abstract class Application {
 	private static final Logger log = Logger.getLogger(Application.class.getName());
     private static final String DEFAULT_STYLE_SHEET = "class:///" + Application.class.getName() + "/resources/CorporateStyle.zip";
-    
+    private LinkedList<Dialog> minimizedDialogs=new LinkedList<Dialog>();
     private static final Map<String, String> versionInfo;
     private static final Map<Class<? extends Component>, Style> defaultStyleMap;
     public abstract String getPlatform();
+    private int minimizedHeight=24;
+    private int minimizedWidth=120;
+    
     static {
         Properties props = new Properties();
         Map<String, String> vi = new HashMap<String, String>();
@@ -132,6 +136,31 @@ public abstract class Application {
         return versionInfo;
     }    
     
+    public void addMinimizedDialog(Dialog dlg){
+    	minimizedDialogs.add(dlg);
+    	layoutMinimizedDialogs();
+    }
+    public void removeMinimizedDialog(Dialog dlg){
+    	minimizedDialogs.remove(dlg);
+    	layoutMinimizedDialogs();
+    }
+    private void layoutMinimizedDialogs(){
+    	int y=getFrame().getInnerHeight()-(minimizedHeight+1);
+    	int x=1;
+    	for(Dialog dlg:minimizedDialogs)
+    	{
+    		{
+    			dlg.setBounds(x, y, minimizedWidth, minimizedHeight);
+    			x+=(minimizedWidth+1);
+    			if(x>getFrame().getInnerWidth())
+    			{
+    				y-=minimizedHeight+1;
+    				x=1;
+    			}
+    			
+    		}
+    	}
+    }
     /**
      * Displays a version detail dialog.
      * @param args
@@ -742,7 +771,14 @@ public abstract class Application {
      * @return the <code>Frame</code> that represents the primary application window.
      */
     public Frame getFrame() {
-        if (frame == null) frame = new Frame();
+        if (frame == null) {
+        	frame = new Frame();
+        	frame.addPropertyChangeListener(new String[]{"width","height"}, new PropertyChangeListener(){
+        		public void propertyChange(PropertyChangeEvent ev) {
+        			layoutMinimizedDialogs();
+        		}
+        	});
+        }
         return frame;
     }
     

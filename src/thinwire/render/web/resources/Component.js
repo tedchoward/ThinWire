@@ -261,9 +261,9 @@ var tw_Component = Class.extend({
     },
     
     scrollTo: function(){
-    	if(this.scrollIntoView!=null)
+    	if(this._box!=null&&this._box.scrollIntoView!=null)
     	{
-    		scrollIntoView();
+    		this._box.scrollIntoView();
     	}
     },
     

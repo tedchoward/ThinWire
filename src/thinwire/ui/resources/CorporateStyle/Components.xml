@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<xod>
+  <alias name="Style" class="thinwire.ui.style.Style"/>
+
+  <Style id="Button" copy="default.outset">
+    <background color="buttonface"/>
+    <font color="buttontext"/>
+    <border color="buttonface"/>
+  </Style>
+  
+  <Style id="CheckBox" copy="default.inset">
+    <border color="buttonface"/>
+  </Style>  
+  
+  <Style id="Dialog" copy="default.outset">
+    <background color="threedface"/>
+    <font color="captiontext" bold="true"/>
+  </Style>
+  
+  <Style id="DateBox" copy="default.inset"/>
+  
+  <Style id="Divider" copy="default">
+    <border size="1" type="inset" color="threedface"/>
+  </Style>
+  
+  <Style id="DropDown" copy="default.inset"/>
+  
+  <Style id="Frame" copy="default">
+    <background color="window"/>
+  </Style>
+  
+  <Style id="GridBox" copy="default.inset"/>
+  
+  <Style id="Hyperlink" copy="default">
+    <font color="blue" underline="true"/>
+  </Style>
+  
+  <Style id="Image" copy="default"/>
+  
+  <Style id="Label" copy="default"/>
+  
+  <Style id="Menu" copy="default.outset">
+    <font color="menutext"/>
+  </Style>
+  
+  <Style id="Panel" copy="default">
+    <background color="threedface"/>
+  </Style>
+  
+  <Style id="ProgressBar" copy="default.inset">
+    <font color="highlight"/>
+  </Style>
+  
+  <Style id="RadioButton" copy="CheckBox">
+    <border image="${xod.path}/img/rbBorder.png"/>
+  </Style>
+  
+  <Style id="Slider" copy="Button"/>
+  
+  <Style id="TabFolder" copy="default.outset"/>
+  
+  <!--NOTE: Border is defined by TabFolder, not TabSheet-->
+  <Style id="TabSheet" copy="default.outset"/>
+  
+  <Style id="TextArea" copy="default.inset"/>
+  
+  <Style id="TextField" copy="default.inset"/>
+  
+  <Style id="Tree" copy="default.inset"/>
+  
+  <!-- NOTE: Not sure how many of these settings actually have an effect since we use
+  an IFRAME to render the WebBrowser control.  For instance the background color will mean nothing. -->
+  <Style id="WebBrowser" copy="default.inset"/>
+</xod>

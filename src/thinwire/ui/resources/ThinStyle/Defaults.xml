@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<xod>
+  <alias name="Style" class="thinwire.ui.style.Style"/>
+
+  <Style id="default">
+    <background color="transparent"/>
+    <font family="Tahoma, sans-serif" color="windowtext" size="11" italic="false" bold="false" underline="false" strike="false"/>
+    <border size="0" type="none" color="transparent"/>
+    <fX positionChange="none" sizeChange="none" visibleChange="none"/>
+  </Style>
+  
+  <Style id="default.inset" copy="default">
+    <background color="window"/>
+    <border size="1" type="inset" color="rgb(150, 150, 150)"/>
+  </Style>
+
+  <Style id="default.outset" copy="default">
+    <background color="threedface"/>
+    <border size="1" type="outset" color="rgb(150, 150, 150)"/>
+  </Style>
+</xod>

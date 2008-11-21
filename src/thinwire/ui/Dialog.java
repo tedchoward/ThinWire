@@ -26,6 +26,11 @@
 */
 package thinwire.ui;
 
+import java.awt.Rectangle;
+
+import thinwire.ui.event.PropertyChangeEvent;
+import thinwire.ui.event.PropertyChangeListener;
+
 /**
  * A Dialog is a window with a title that is usually associated to a Frame.
  * <p>
@@ -98,14 +103,25 @@ public class Dialog extends AbstractWindow<Dialog> {
     public static final String PROPERTY_RESIZE_ALLOWED = "resizeAllowed";
     public static final String PROPERTY_REPOSITION_ALLOWED = "repositionAllowed";
     public static final String PROPERTY_MODAL = "modal";
+    public static final String PROPERTY_STATE="state";
+    public static final String PROPERTY_MINIMIZABLE="minimizable";
+    public static final String PROPERTY_MAXIMIZABLE="maximizable";
     public static final String PROPERTY_WAIT_FOR_WINDOW = "waitForWindow";
-    
+    public static final int STATE_NORMAL=1;
+    public static final int STATE_MAXIMIZED=2;
+    public static final int STATE_MINIMIZED=3;
+    Rectangle savedBounds=null;
+    boolean normalResize=false;
+    boolean normalPosition=false;
     private static final int TITLE_BAR_HEIGHT = 18 + 1;
         
     private boolean resizeAllowed;
     private boolean repositionAllowed = true;
     private boolean modal = true;
+    private int state=STATE_NORMAL;
     boolean waitForWindow;
+    boolean minimizable=true;
+    boolean maximizable=true;
     
     /**
      * Constructs a new Dialog with no title. 
@@ -115,6 +131,16 @@ public class Dialog extends AbstractWindow<Dialog> {
         //#IFDEF V1_1_COMPAT                    
         if (isCompatModeOn()) this.waitForWindow = true;
         //#ENDIF
+        Application.current().getFrame().addPropertyChangeListener(new String[]{"width","height"}, new PropertyChangeListener(){
+        	public void propertyChange(PropertyChangeEvent ev) {
+        	if(state==STATE_MAXIMIZED)	
+        	{
+    			Dialog.this.setBounds(0, 0, Application.current().getFrame().getInnerWidth(),Application.current().getFrame().getInnerHeight() );
+
+        	}
+        		
+        	}
+        });
     }
     
     /**
@@ -244,4 +270,63 @@ public class Dialog extends AbstractWindow<Dialog> {
             }
         }
     }
+
+	public int getState() {
+		return state;
+	}
+
+	public void setState(int state) {
+		if(state==this.state){
+			return;// do nothing;
+		}
+		int oldState=this.state;
+		if(oldState==STATE_NORMAL){
+			savedBounds=new Rectangle(getX(),getY(),getWidth(),getHeight());
+			normalResize=isResizeAllowed();
+			normalPosition=isRepositionAllowed();
+		}
+		this.state = state;
+		switch(state)
+		{
+		case STATE_MAXIMIZED:{
+			Application.current().removeMinimizedDialog(this);
+			this.setBounds(0, 0, Application.current().getFrame().getInnerWidth(),Application.current().getFrame().getInnerHeight() );
+			
+			setRepositionAllowed(false);
+			setResizeAllowed(false);
+			break;
+			
+		}
+		case STATE_MINIMIZED:{
+			
+			setRepositionAllowed(false);
+			setResizeAllowed(false);
+			Application.current().addMinimizedDialog(this);
+			break;
+		}
+		default:{
+			Application.current().removeMinimizedDialog(this);
+			setResizeAllowed(normalResize);
+			setRepositionAllowed(normalPosition);
+			this.setBounds(savedBounds.x, savedBounds.y, savedBounds.width, savedBounds.height);
+		}
+		}
+		firePropertyChange(this, PROPERTY_STATE, oldState, this.state);
+	}
+
+	public boolean isMinimizable() {
+		return minimizable;
+	}
+
+	public void setMinimizable(boolean minimizable) {
+		this.minimizable = minimizable;
+	}
+
+	public boolean isMaximizable() {
+		return maximizable;
+	}
+
+	public void setMaximizable(boolean maximizable) {
+		this.maximizable = maximizable;
+	}
 }

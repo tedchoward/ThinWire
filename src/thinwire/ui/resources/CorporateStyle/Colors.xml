@@ -1,0 +1,144 @@
+<?xml version="1.0"?>
+<xod>
+  <alias name="Color" class="thinwire.ui.style.Color"/>
+
+  <!-- system color override, comment out any of these to use system defaults -->
+  
+  <!-- NO SPECIAL MEANING -->
+  <Color id="activeborder" valueOf="rgb(212, 208, 200)"/>
+
+  <!-- Controls the background color of the title bar in a Dialog when it is active -->
+  <Color id="activecaption" valueOf="rgb(0, 84, 227)"/>
+  
+  <!-- NO SPECIAL MEANING -->
+  <Color id="appworkspace" valueOf="rgb(128, 128, 128)"/>
+    
+  <!-- Controls the background color of GridBox column header, DateBox header, DropDown button & Dialog close button -->
+  <Color id="buttonface" valueOf="rgb(236, 233, 216)"/>
+
+  <!--
+  Controls the border color of GridBox column header, DateBox header, DropDown
+  button & Dialog close button NOTE: If you set them both to the same value, you
+  will get a sensible solid border unless they both equal the same value that
+  'buttonface' is set to, in which case you will get an outset border based on
+  the buttonface color value. Alternatively you can set the values to
+  independent color values in which case you will get a outset border that has
+  the left and top set to the 'buttonhighlight' value and the right and bottom
+  set to the 'buttonshadow' value.
+  -->
+  <Color id="buttonhighlight" valueOf="rgb(236, 233, 216)"/>
+  <Color id="buttonshadow" valueOf="rgb(236, 233, 216)"/>
+  
+  <!-- Controls the color of text on GridBox column header & DateBox header -->
+  <Color id="buttontext" valueOf="rgb(0, 0, 0)"/>
+  
+  <!-- NO SPECIAL MEANING -->
+  <Color id="captiontext" valueOf="rgb(255, 255, 255)"/>
+
+  <!--
+  The 'graytext' and 'background' colors work together to provide some degree of
+  control over the disabled component styling. Except for the rules below,
+  'graytext' controls the disabled text color of all components. Similarly,
+  'background' controls the disabled background color of all components that
+  have a typically lighter (usually white) area within them. For example, A
+  radio button would have it's radiobutton area shaded, and a tree's entire
+  background would be shaded, whereas a Label or Hyperlink would have no
+  noticable change to their background.  Here are some special cases:
+  
+  1. Commenting out the 'graytext' override will prevent any change to the text
+     from occuring when toggling a disabled state, except on a Button, Menu,
+     GridBox header or DateBox header, which will always have it's text grayed out.
+     
+  2. Commenting out the 'background' override will prevent any change to the 
+     background from occuring when toggling a disabled state.
+     
+  3. Setting the 'background' equal to the value in 'window' will cause the 
+     background to always copy the parent container's background color when
+     disabled.
+  -->
+  <Color id="graytext" valueOf="rgb(172, 168, 153)"/>
+  <!--<Color id="background" valueOf="rgb(255, 255, 255)"/>-->
+
+  <!-- Controls the selection/highlight background color in DateBox, GridBox, Menu & Tree -->
+  <Color id="highlight" valueOf="rgb(49, 106, 197)"/>
+
+  <!-- Controls the selection/highlight font color in DateBox, GridBox, Menu & Tree -->
+  <Color id="highlighttext" valueOf="rgb(255, 255, 255)"/>
+
+  <!-- NO SPECIAL MEANING -->
+  <Color id="inactiveborder" valueOf="rgb(212, 208, 200)"/>
+
+  <!--
+  Controls the background color of the title bar in a Dialog when it is inactive.
+  Also controls the background color used in place of the 'highlight' color for disabled
+  controls.
+  -->
+  <Color id="inactivecaption" valueOf="rgb(122, 150, 223)"/>
+
+  <!--
+  Controls the font color of the title bar text in a Dialog when it is inactive.
+  Also controls the font color used in place of the 'highlighttext' color for disabled
+  control text.
+  -->
+  <Color id="inactivecaptiontext" valueOf="rgb(216, 228, 248)"/>
+
+  <!-- NO SPECIAL MEANING -->
+  <Color id="infobackground" valueOf="rgb(255, 255, 225)"/>
+
+  <!-- NO SPECIAL MEANING -->
+  <Color id="infotext" valueOf="rgb(0, 0, 0)"/>
+
+  <!-- NO SPECIAL MEANING -->
+  <Color id="menu" valueOf="rgb(255, 255, 255)"/>
+
+  <!-- NO SPECIAL MEANING -->
+  <Color id="menutext" valueOf="rgb(0, 0, 0)"/>
+  
+  <!--
+  The following setting only has an effect in browsers that support scroll bar
+  styling dynamically via the 'style' object, such as IE.  For such browsers,
+  the following styling rules apply:
+  
+  1. If the value in 'scrollbar' does not equal the value in 'buttonface',
+     the color specified by 'scrollbar' will control the color of the entire
+     scrollbar.
+     
+  2. If the value in 'scrollbar' equals the value in 'buttonface' then the
+     styling will follow the rules outlined above for 'buttonface',
+     'buttonshadow' and 'buttonhighlight'
+  
+  3. Alternatively, you can comment out the 'scrollbar' color override to
+     prevent the scrollbars from being styled.
+  -->
+  <Color id="scrollbar" valueOf="rgb(236, 233, 216)"/>
+  
+  <!-- NO SPECIAL MEANING -->
+  <Color id="threeddarkshadow" valueOf="rgb(113, 111, 100)"/>
+
+  <!-- Controls the GridBox header color, not the column headers, just the area behind them -->
+  <Color id="threedface" valueOf="rgb(236, 233, 216)"/>
+
+  <!-- NO SPECIAL MEANING -->
+  <Color id="threedhighlight" valueOf="rgb(255, 255, 255)"/>
+
+  <!-- NO SPECIAL MEANING -->
+  <Color id="threedlightshadow" valueOf="rgb(241, 239, 226)"/>
+
+  <!-- Controls the DropDown depressed button border color -->
+  <Color id="threedshadow" valueOf="rgb(172, 168, 153)"/>
+
+  <!-- NO SPECIAL MEANING -->
+  <Color id="window" valueOf="rgb(255, 255, 255)"/>
+
+  <!-- NO SPECIAL MEANING -->
+  <Color id="windowframe" valueOf="rgb(0, 0, 0)"/>
+
+  <!--
+  Controls the color of the single pixel border that surrounds the selected date
+  in the DateBox control as well as the color of the line at the top and bottom
+  of the control. Also controls the 1px border that surrounds a Button or
+  DropDown button when they have focus. Additionally, this is the color used on
+  the 1px dotted border that surrounds a item that is being dragged around.
+  -->
+  <Color id="windowtext" valueOf="rgb(0, 0, 0)"/>
+</xod>

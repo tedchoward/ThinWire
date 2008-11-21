@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<xod>
+  <include file="${xod.path}/Colors.xml"/>
+  <include file="${xod.path}/Images.xml"/>
+  <include file="${xod.path}/Defaults.xml"/>
+  <include file="${xod.path}/Components.xml"/>
+</xod>

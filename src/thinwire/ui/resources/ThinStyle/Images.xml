@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<xod>
+  <property name="path.image" value="${xod.path}/img/"/>
+
+  <!-- NOTE: If you comment out the activityIndicator line, it will remove the activity indicator -->
+  <property name="image.activityIndicator" value="${path.image}activityInd.gif"/>
+  <property name="image.dragDrop.valid" value="${path.image}dragValid.png"/>
+  <property name="image.dragDrop.invalid" value="${path.image}dragInvalid.png"/>
+
+  <property name="image.checkBox.check" value="${path.image}cbChecked.png"/>
+  <property name="image.checkBox.checkDisabled" value="${path.image}cbDisabledChecked.png"/>
+
+  <property name="image.dateBox.prevArrow" value="${path.image}leftArrow.png"/>
+  <property name="image.dateBox.nextArrow" value="${path.image}rightArrow.png"/>
+
+  <property name="image.dialog.resize" value="${path.image}dResize.png"/>
+  <property name="image.dialog.close" value="${path.image}dClose.png"/>
+  <property name="image.dialog.maximize" value="${path.image}dMax.png"/>
+  <property name="image.dialog.minimize" value="${path.image}dMin.png"/>
+  <property name="image.dialog.restore" value="${path.image}dRestore.png"/>
+
+  <property name="image.dateBox.prevArrow" value="${path.image}leftArrow.png"/>
+  <property name="image.dateBox.nextArrow" value="${path.image}rightArrow.png"/>
+
+  <property name="image.dropDown.buttonArrow" value="${path.image}ddButton.png"/>
+  <property name="image.dropDown.buttonArrowDisabled" value="${path.image}ddDisabledButton.png"/>
+
+  <property name="image.gridBox.checked" value="${path.image}gbChecked.png"/>
+  <property name="image.gridBox.unchecked" value="${path.image}gbUnchecked.png"/>
+  <property name="image.gridBox.childArrow" value="${path.image}gbChildArrow.png"/>
+  <property name="image.gridBox.childArrowInvert" value="${path.image}gbChildArrowInvert.png"/>
+  <property name="image.gridBox.sortArrowAsc" value="${path.image}gbSortOrderAsc.png"/>
+  <property name="image.gridBox.sortArrowDesc" value="${path.image}gbSortOrderDesc.png"/>
+
+  <property name="image.menu.childArrow" value="${path.image}menuArrow.png"/>
+  <property name="image.menu.childArrowInvert" value="${path.image}menuArrowInvert.png"/>
+
+  <property name="image.radioButton.check" value="${path.image}rbChecked.png"/>
+  <property name="image.radioButton.checkDisabled" value="${path.image}rbDisabledChecked.png"/>
+
+  <!-- NOTE: There are too many images used by Tree currently.  Will be cleaned up for v1.3 -->
+  <property name="image.tree.empty" value="${path.image}Spacer.gif"/>
+  <property name="image.tree.expand" value="${path.image}Expanded.gif"/>
+  <property name="image.tree.expandBottom" value="${path.image}Expanded.gif"/>
+  <property name="image.tree.expandBottomTop" value="${path.image}Expanded.gif"/>
+  <property name="image.tree.expandTop" value="${path.image}Expanded.gif"/>
+  <property name="image.tree.leaf" value="${path.image}Spacer.gif"/>
+  <property name="image.tree.leafBottom" value="${path.image}Spacer.gif"/>
+  <property name="image.tree.leafBottomTop" value="${path.image}Spacer.gif"/>
+  <property name="image.tree.leafTop" value="${path.image}Spacer.gif"/>
+  <property name="image.tree.straight" value="${path.image}Spacer.gif"/>
+  <property name="image.tree.unexpand" value="${path.image}Collapsed.gif"/>
+  <property name="image.tree.unexpandBottom" value="${path.image}Collapsed.gif"/>
+  <property name="image.tree.unexpandBottomTop" value="${path.image}Collapsed.gif"/>
+  <property name="image.tree.unexpandTop" value="${path.image}Collapsed.gif"/>
+</xod>

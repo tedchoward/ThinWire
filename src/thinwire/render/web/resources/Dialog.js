@@ -24,7 +24,7 @@
 
 #VERSION_HEADER#
 */
-//TODO: Opera does not support dragging the dialog window around.
+//TODO: Opera does not support dragging the dialog window around. (Works in 9.62)
 //TODO: When a second modal dialog is presented and then closed the first dialog does not remain modal.
 //      Additionally, the prior dialog should be given focus.
 //TODO: The menu bar of the frame is still active when a modal dialog is visible.
@@ -35,6 +35,13 @@ var tw_Dialog = tw_BaseContainer.extend({
     _modalFlashCount: -1,
     _moveDrag: null,
     _resizeDrag: null,
+    _maximizeButton: null,
+    _minimizeButton: null,
+    _minimizable:true,
+    _maximizable:true,
+    _state:1,
+
+
 
     construct: function(id, containerId, props) {
         arguments.callee.$.call(this, "dialog", id, 0);
@@ -50,7 +57,7 @@ var tw_Dialog = tw_BaseContainer.extend({
             "background-color:" + tw_COLOR_ACTIVECAPTION + ";";
         tw_Component.setCSSText(cssText, title);
         title.appendChild(document.createTextNode(""));
-
+//NOTE: CLOSE/MAX/MIN/RESTORE button images should be 12X12
         var closeButton = this._closeButton = document.createElement("div");
         var s = closeButton.style;
         var fontSizeText = tw_isIE ? "font-size:0px;" : "";
@@ -61,8 +68,36 @@ var tw_Dialog = tw_BaseContainer.extend({
         tw_Component.applyButtonBorder(closeButton);
 
         title.appendChild(closeButton);
+
+        var maximizeButton = this._maximizeButton = document.createElement("div");
+        var s = maximizeButton.style;
+        var fontSizeText = tw_isIE ? "font-size:0px;" : "";
+        cssText = "width:11px;height:8px;right:21px;display:block;text-align:center;position:absolute;background-position:center;background-repeat:no-repeat;background-image:" +
+            "url(" + tw_IMAGE_DIALOG_MAXIMIZE + ");margin:0px;overflow:hidden;top:2px;" + fontSizeText + "background-color:" +
+            tw_COLOR_BUTTONFACE + ";color:" + tw_COLOR_BUTTONTEXT + ";";
+        tw_Component.setCSSText(cssText, maximizeButton);
+        tw_Component.applyButtonBorder(maximizeButton);
+
+        title.appendChild(maximizeButton);
+ 
+        var minimizeButton = this._minimizeButton = document.createElement("div");
+        var s = minimizeButton.style;
+        var fontSizeText = tw_isIE ? "font-size:0px;" : "";
+        cssText = "width:11px;height:8px;right:40px;display:block;text-align:center;position:absolute;background-position:center;background-repeat:no-repeat;background-image:" +
+            "url(" + tw_IMAGE_DIALOG_MINIMIZE + ");margin:0px;overflow:hidden;top:2px;" + fontSizeText + "background-color:" +
+            tw_COLOR_BUTTONFACE + ";color:" + tw_COLOR_BUTTONTEXT + ";";
+        tw_Component.setCSSText(cssText, minimizeButton);
+        tw_Component.applyButtonBorder(minimizeButton);
+
+        title.appendChild(minimizeButton);
+
+        
+        
+        
+        
         dialog.appendChild(title);
 
+        
         this._container = this._scrollBox = document.createElement("div");
         this._container.className = "container";
         var s = this._container.style;
@@ -77,12 +112,58 @@ var tw_Dialog = tw_BaseContainer.extend({
         tw_addEventListener(closeButton, "mousedown", this._closeButtonMouseDownListener.bind(this));
         tw_addEventListener(closeButton, ["mouseup", "mouseout"], this._closeButtonMouseUpListener.bind(this));
         tw_addEventListener(closeButton, "click", this._closeButtonClickListener.bind(this));
+
+        
+        tw_addEventListener(maximizeButton, "mousedown", this._maximizeButtonMouseDownListener.bind(this));
+        tw_addEventListener(maximizeButton, ["mouseup", "mouseout"], this._maximizeButtonMouseUpListener.bind(this));
+        tw_addEventListener(maximizeButton, "click", this._maximizeButtonClickListener.bind(this));
+
+        
+        tw_addEventListener(minimizeButton, "mousedown", this._minimizeButtonMouseDownListener.bind(this));
+        tw_addEventListener(minimizeButton, ["mouseup", "mouseout"], this._minimizeButtonMouseUpListener.bind(this));
+        tw_addEventListener(minimizeButton, "click", this._minimizeButtonClickListener.bind(this));
+
+        
         this.setActive = this.setActive.bind(this);
         this.setActive(true);
 
         this.init(-1, props);
     },
 
+    setState: function(newState)
+    {
+    	if(newState==this._state)return;
+    	this._state=newState;
+    	
+    	this.firePropertyChange("state",this._state);
+    	
+    },
+    setMaximizable: function(maximizable){
+    	if(maximizable)
+    	{
+    		this._minimizeButton.style.right='40px';
+    		this._maximizeButton.style.display='block';
+    	}
+    	else
+    	{
+    		this._minimizeButton.style.right='21px';
+    		this._maximizeButton.style.display='none';
+    	}
+    },
+    setMinimizable: function(minimizable){
+    	if(minimizable)
+    	{
+    		this._minimizeButton.style.display='block';
+    	}
+    	else
+    	{
+    		this._minimizeButton.style.display='none';
+    	}
+    },
+    
+    getState: function(){
+    	return this._state;
+    },
     _mouseDownListener: function(ev) {
         this.setFocus(true);
     },
@@ -119,14 +200,40 @@ var tw_Dialog = tw_BaseContainer.extend({
         this._closeButton.style.borderStyle = "inset";
         tw_cancelEvent(ev);
     },
+    _maximizeButtonMouseDownListener: function(ev) {
+        this.setFocus(true);
+        if (tw_getEventButton(ev) != 1) return;  //only if left click
+        this._maximizeButton.style.borderStyle = "inset";
+        tw_cancelEvent(ev);
+    },
+    _minimizeButtonMouseDownListener: function(ev) {
+        this.setFocus(true);
+        if (tw_getEventButton(ev) != 1) return;  //only if left click
+        this._minimizeButton.style.borderStyle = "inset";
+        tw_cancelEvent(ev);
+    },
 
     _closeButtonMouseUpListener: function(ev) {
         tw_Component.applyButtonBorder(this._closeButton);
         tw_cancelEvent(ev);
     },
+    _maximizeButtonMouseUpListener: function(ev) {
+        tw_Component.applyButtonBorder(this._maximizeButton);
+        tw_cancelEvent(ev);
+    },
+    _minimizeButtonMouseUpListener: function(ev) {
+        tw_Component.applyButtonBorder(this._minimizeButton);
+        tw_cancelEvent(ev);
+    },
 
     _closeButtonClickListener: function(ev) {
         tw_em.sendViewStateChanged(this._id, "closeClick", null);
+    },
+    _maximizeButtonClickListener: function(ev) {
+        tw_em.sendViewStateChanged(this._id, "maximizeClick", null);
+    },
+    _minimizeButtonClickListener: function(ev) {
+        tw_em.sendViewStateChanged(this._id, "minimizeClick", null);
     },
 
     registerEventNotifier: function(type, subType) {
@@ -285,6 +392,31 @@ var tw_Dialog = tw_BaseContainer.extend({
 
     setStandardButton: function(standardButton) {
         this._standardButton = standardButton;
+    },
+    
+    setState: function(newState)
+    {
+    	if(this._state=newState||!this._visible)return;
+    	this._state=newState;
+    	//NOTE: setting dimension and placement will be handled on the server side
+    	if(newState==1)
+    	{// set normal
+    		this._maximizeButton.style.backgroundImage=tw_IMAGE_DIALOG_MAXIMIZE;
+    		this._minimizeButton.style.backgroundImage=tw_IMAGE_DIALOG_MINIMIZE;
+    	}
+    	else if(newState==2)
+    	{// set maximized
+    		this._maximizeButton.style.backgroundImage=tw_IMAGE_DIALOG_RESTORE;
+    		this._minimizeButton.style.backgroundImage=tw_IMAGE_DIALOG_MINIMIZE;
+    	}
+    	else if(newState=3)
+    	{// set minimized
+    		this._maximizeButton.style.backgroundImage=tw_IMAGE_DIALOG_RESTORE;
+    		this._minimizeButton.style.backgroundImage=tw_IMAGE_DIALOG_MINIMIZE;
+    	}
+    		
+    	
+    	
     },
 
     destroy: function() {
