@@ -118,6 +118,10 @@ public class EventProcessor extends Thread {
     
     //Must only be called by the main run loop or the capture method!
     private void processUserActionEvent() {
+    	if(app==null){
+    		///  application has shut down, ignore this action
+    		return;
+    	}
         if (queue.size() > 0) {
             lastActivityTime = System.currentTimeMillis();
 
