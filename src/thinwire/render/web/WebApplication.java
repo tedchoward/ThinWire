@@ -35,6 +35,7 @@ import java.io.Reader;
 import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -49,6 +50,7 @@ import java.util.zip.GZIPOutputStream;
 
 import thinwire.render.RenderStateEvent;
 import thinwire.render.RenderStateListener;
+import thinwire.render.Renderer;
 import thinwire.ui.*;
 import thinwire.ui.FileChooser.FileInfo;
 import thinwire.ui.layout.SplitLayout;
@@ -61,12 +63,14 @@ import thinwire.util.ImageInfo;
  */
 public final class WebApplication extends Application {
     private static final String CLASS_NAME = WebApplication.class.getName();
-    private static final String PACKAGE_NAME = WebApplication.class.getPackage().getName();
-    private static final String EOL = System.getProperty("line.separator");
     private static final Logger log = Logger.getLogger(CLASS_NAME);
     private static final Level LEVEL = Level.FINER;
     
-    private static String[] BUILT_IN_RESOURCES = {
+    public static String WEB_PLATFORM_STRING="web";
+    public String getPlatform(){return WEB_PLATFORM_STRING;} 
+  
+ 
+    private static ArrayList<String> BUILT_IN_RESOURCES = new ArrayList<String>(Arrays.asList(new String[]{
         "Main.js",
         "Class.js",
         "HttpRequest.js",
@@ -108,9 +112,10 @@ public final class WebApplication extends Application {
         "FileChooser.js",
         "Startup.js",
         "FileUploadPage.html",
-    };
+    }));
     
     static final String MAIN_PAGE;
+ 
     
     static {
         String classURL = "class:///" + CLASS_NAME + "/resources/";
@@ -131,6 +136,8 @@ public final class WebApplication extends Application {
             if (!(e instanceof RuntimeException)) e = new RuntimeException(e);
             throw (RuntimeException)e;
         }
+        
+        
     }
     
     private static String loadJSLibrary(String resURL) {
@@ -527,51 +534,7 @@ public final class WebApplication extends Application {
         return new Integer(nextCompId);
     }
 
-    ComponentRenderer getRenderer(Component comp) {
-        Class compClass = comp.getClass();        
-        String className = compClass.getName();
-        Class<ComponentRenderer> renderClazz = nameToRenderer.get(className);
-        
-        if (renderClazz == null) {
-            String compClassName = className;
-            List<Class> lst = new ArrayList<Class>();
-            lst.add(compClass);
-            
-            do {
-                compClass = lst.remove(0);
-                className = compClass.getName();
-                String qualClassName = PACKAGE_NAME + '.' + className.substring(className.lastIndexOf('.') + 1) + "Renderer";
-                
-                try {
-                    renderClazz = (Class)Class.forName(qualClassName);
-                    nameToRenderer.put(compClassName, renderClazz);
-                    break;
-                } catch (ClassNotFoundException e) {
-                    //We'll continue trying until no classes in the hierarchy are left.
-                }
-                
-                Class sc = compClass.getSuperclass();
-                if (Component.class.isAssignableFrom(sc)) lst.add(sc);
-                
-                for (Class i : compClass.getInterfaces()) {
-                    if (Component.class.isAssignableFrom(i)) lst.add(i);
-                }
-            } while (lst.size() > 0);
-        }
-        
-        if (renderClazz != null) {
-            try {
-                return (ComponentRenderer)renderClazz.newInstance();
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException("illegal access while trying to access " + renderClazz.getName(), e);
-            } catch (InstantiationException e) {
-                throw new RuntimeException(renderClazz.getName() + " could not be instantiated, using default renderer instead", e);
-            }
-        }
-                
-        throw new RuntimeException("Renderer for component class '" + comp.getClass() + "' not found");        
-    }
-    
+
     //NOTE: Remote file includes will always cause a reinsertion of the code since the file cache
     //      doesn't hold onto a reference of them and it's very possible that remote file content can
     //      change for each request.

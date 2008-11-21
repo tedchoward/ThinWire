@@ -40,7 +40,7 @@ import thinwire.ui.event.PropertyChangeEvent;
 /**
  * @author Joshua J. Gertzen
  */
-class ContainerRenderer extends ComponentRenderer implements ItemChangeListener {
+public class ContainerRenderer extends ComponentRenderer implements ItemChangeListener {
     private static final String CONTAINER_CLASS = "tw_Container";
     private static final String SET_SCROLL_TYPE = "setScrollType";
     private static final String REMOVE_COMPONENT = "removeComponent";            
@@ -104,11 +104,11 @@ class ContainerRenderer extends ComponentRenderer implements ItemChangeListener 
         }
         
         fullyRendered = true;
-    }
+    } 
     
     void renderChild(Component comp) {
     	ComponentRenderer r = compToRenderer.get(comp);
-    	if (r == null) compToRenderer.put(comp, r = wr.ai.getRenderer(comp));
+    	if (r == null) compToRenderer.put(comp, r =(ComponentRenderer) wr.ai.getRenderer(comp));
         r.render(wr, comp, this);
     }
     

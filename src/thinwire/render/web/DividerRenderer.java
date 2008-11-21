@@ -31,7 +31,7 @@ import thinwire.ui.Component;
 /**
  * @author Joshua J. Gertzen
  */
-final class DividerRenderer extends ComponentRenderer {
+public final class DividerRenderer extends ComponentRenderer {
     private static final String DIVIDER_CLASS = "tw_Divider";
 
     public void render(WindowRenderer wr, Component c, ComponentRenderer container) {

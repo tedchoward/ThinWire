@@ -39,7 +39,7 @@ import thinwire.ui.style.*;
 /**
  * @author Joshua J. Gertzen
  */
-abstract class ComponentRenderer implements Renderer, WebComponentListener  {
+public abstract class ComponentRenderer implements Renderer, WebComponentListener, thinwire.render.ComponentRenderer  {
     static final String SET_STYLE = "setStyle";
     static final String SET_STYLES = "setStyles";
     static final String REGISTER_EVENT_NOTIFIER = "registerEventNotifier";
@@ -223,6 +223,9 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         this.clientSideProps.put(name, clientName);
     }
 
+    /* (non-Javadoc)
+	 * @see thinwire.render.web.aComponentRenderer#eventSubTypeListenerInit(java.lang.Class, java.util.Set)
+	 */
     public void eventSubTypeListenerInit(Class<? extends EventListener> clazz, Set<Object> subTypes) {
         for (Object subType : subTypes) {
             eventSubTypeListenerAdded(clazz, subType);
@@ -231,6 +234,9 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
     
     private Map<Component, RenderStateListener> dragRenderListeners;
     
+    /* (non-Javadoc)
+	 * @see thinwire.render.web.aComponentRenderer#eventSubTypeListenerAdded(java.lang.Class, java.lang.Object)
+	 */
     public void eventSubTypeListenerAdded(Class<? extends EventListener> clazz, Object subType) {
         if (PropertyChangeListener.class.isAssignableFrom(clazz)) {
             String prop = clientSideProps.get(subType);
@@ -278,6 +284,9 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         }
     }
     
+    /* (non-Javadoc)
+	 * @see thinwire.render.web.aComponentRenderer#eventSubTypeListenerRemoved(java.lang.Class, java.lang.Object)
+	 */
     public void eventSubTypeListenerRemoved(Class<? extends EventListener> clazz, Object subType) {
         if (PropertyChangeListener.class.isAssignableFrom(clazz)) {
             String prop = clientSideProps.get(subType);
@@ -315,6 +324,9 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         }
     }
     
+    /* (non-Javadoc)
+	 * @see thinwire.render.web.aComponentRenderer#componentChange(thinwire.render.web.WebComponentEvent)
+	 */
     public void componentChange(WebComponentEvent event) {
         String name = event.getName();
 
@@ -531,6 +543,9 @@ abstract class ComponentRenderer implements Renderer, WebComponentListener  {
         }
     }    
     
+    /* (non-Javadoc)
+	 * @see thinwire.render.web.aComponentRenderer#propertyChange(thinwire.ui.event.PropertyChangeEvent)
+	 */
     public void propertyChange(PropertyChangeEvent pce) {
         String name = pce.getPropertyName();
         if (isPropertyChangeIgnored(name)) return;

@@ -40,7 +40,7 @@ import thinwire.ui.event.PropertyChangeEvent;
 /**
  * @author Joshua J. Gertzen
  */
-final class RadioButtonRenderer extends TextComponentRenderer {
+public final class RadioButtonRenderer extends TextComponentRenderer {
     private static final String RADIOBUTTON_CLASS = "tw_RadioButton";
     private static final String SET_CHECKED = "setChecked";
     private static final String SET_GROUP = "setGroup";

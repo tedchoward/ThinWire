@@ -33,7 +33,7 @@ import thinwire.ui.event.PropertyChangeEvent;
 /**
  * @author Joshua J. Gertzen
  */
-final class DialogRenderer extends WindowRenderer {
+public final class DialogRenderer extends WindowRenderer {
     private static final String DIALOG_CLASS = "tw_Dialog";
     private static final String SET_RESIZE_ALLOWED = "setResizeAllowed";
     private static final String SET_REPOSITION_ALLOWED = "setRepositionAllowed";

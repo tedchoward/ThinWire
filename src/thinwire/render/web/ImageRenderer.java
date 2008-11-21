@@ -33,7 +33,7 @@ import thinwire.ui.event.PropertyChangeEvent;
 /**
  * @author Joshua J. Gertzen
  */
-final class ImageRenderer extends ComponentRenderer {
+public final class ImageRenderer extends ComponentRenderer {
     private static final String IMAGE_CLASS = "tw_Image";
 
     void render(WindowRenderer wr, Component c, ComponentRenderer container) {

@@ -33,7 +33,7 @@ import thinwire.ui.event.PropertyChangeEvent;
 /**
  * @author Joshua J. Gertzen
  */
-abstract class MaskEditorComponentRenderer extends EditorComponentRenderer {
+public abstract class MaskEditorComponentRenderer extends EditorComponentRenderer {
     private static final String SET_EDIT_MASK = "setEditMask";    
     
     void render(WindowRenderer wr, Component c, ComponentRenderer container) {

@@ -33,7 +33,7 @@ import thinwire.ui.event.PropertyChangeEvent;
 /**
  * @author Joshua J. Gertzen
  */
-final class TabFolderRenderer extends ContainerRenderer {
+public final class TabFolderRenderer extends ContainerRenderer {
     private static final String TABFOLDER_CLASS = "tw_TabFolder";
     private static final String SET_CURRENT_INDEX = "setCurrentIndex";
 

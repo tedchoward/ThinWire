@@ -33,7 +33,7 @@ import thinwire.ui.event.PropertyChangeEvent;
 /**
  * @author Joshua J. Gertzen
  */
-final class TextAreaRenderer extends EditorComponentRenderer {
+public final class TextAreaRenderer extends EditorComponentRenderer {
     private static final String TEXTAREA_CLASS = "tw_TextArea";
     private static final String SET_MAX_LENGTH = "setMaxLength";
 

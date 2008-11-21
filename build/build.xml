@@ -91,6 +91,7 @@
 
 		<copy todir="${path.temp}" overwrite="true">
 			<fileset dir="${path.source}" defaultexcludes="yes">
+				<include name="thinwire/config/*.*"/>
 				<include name="thinwire/render/**/resources/*.*"/>
 				<include name="thinwire/ui/**/resources/*.*"/>
 				<include name="thinwire/util/**/resources/*.*"/>				

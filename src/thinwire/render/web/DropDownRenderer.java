@@ -33,7 +33,7 @@ import thinwire.ui.event.PropertyChangeEvent;
 /**
  * @author Joshua J. Gertzen
  */
-final class DropDownRenderer extends MaskEditorComponentRenderer {
+public final class DropDownRenderer extends MaskEditorComponentRenderer {
     private static final String DROPDOWN_CLASS = "tw_DropDown";
     private static final String SET_EDIT_ALLOWED = "setEditAllowed";
     private static final String SET_COMPONENT = "setComponent";
@@ -51,7 +51,7 @@ final class DropDownRenderer extends MaskEditorComponentRenderer {
         ddc.setVisible(false);
  
         //TODO REFRESH Is this ok in a refresh scenario?
-        ddcr = wr.ai.getRenderer(ddc);
+        ddcr = (ComponentRenderer)wr.ai.getRenderer(ddc);
         ddcr.setPropertyChangeIgnored(Component.PROPERTY_FOCUS, true);
         ddcr.setPropertyChangeIgnored(Component.PROPERTY_ENABLED, true);
         ddcr.setPropertyChangeIgnored(Component.PROPERTY_X, true);
@@ -81,7 +81,7 @@ final class DropDownRenderer extends MaskEditorComponentRenderer {
             if (ddc.getWidth() == 0 || ddc.getWidth() < dd.getWidth()) ddc.setWidth(dd.getView().getOptimalWidth());
             if (ddc.getHeight() == 0 || ddc.getHeight() < MIN_SIZE) ddc.setHeight(dd.getView().getOptimalHeight());
             ddc.setVisible(false);
-            ddcr = wr.ai.getRenderer(ddc);
+            ddcr = (ComponentRenderer)wr.ai.getRenderer(ddc);
             ddcr.setPropertyChangeIgnored(Component.PROPERTY_FOCUS, true);
             ddcr.setPropertyChangeIgnored(Component.PROPERTY_ENABLED, true);
             ddcr.setPropertyChangeIgnored(Component.PROPERTY_X, true);

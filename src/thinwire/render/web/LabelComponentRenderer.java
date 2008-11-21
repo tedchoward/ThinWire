@@ -34,7 +34,7 @@ import thinwire.ui.event.PropertyChangeEvent;
 /**
  * @author Joshua J. Gertzen
  */
-abstract class LabelComponentRenderer extends TextComponentRenderer {
+public abstract class LabelComponentRenderer extends TextComponentRenderer {
     private static final String SET_WRAP_TEXT = "setWrapText";
 
 	void render(WindowRenderer wr, Component c, ComponentRenderer container) {

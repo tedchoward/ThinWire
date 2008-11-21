@@ -33,7 +33,7 @@ import thinwire.ui.event.PropertyChangeEvent;
 /**
  * @author Joshua J. Gertzen
  */
-final class CheckBoxRenderer extends TextComponentRenderer {
+public final class CheckBoxRenderer extends TextComponentRenderer {
     private static final String CHECKBOX_CLASS = "tw_CheckBox";
     private static final String SET_CHECKED = "setChecked";
 

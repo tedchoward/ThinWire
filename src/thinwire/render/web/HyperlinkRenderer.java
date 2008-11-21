@@ -33,7 +33,7 @@ import thinwire.ui.event.PropertyChangeEvent;
 /**
  * @author Joshua J. Gertzen
  */
-final class HyperlinkRenderer extends LabelComponentRenderer {	
+public final class HyperlinkRenderer extends LabelComponentRenderer {	
     private static final String HYPERLINK_CLASS = "tw_Hyperlink";
     private static final String SET_LOCATION = "setLocation";
     private static final String SET_TARGET = "setTarget";

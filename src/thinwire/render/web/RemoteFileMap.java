@@ -35,7 +35,7 @@ import java.util.logging.Logger;
 /**
  * @author Joshua J. Gertzen
  */
-final class RemoteFileMap {
+public final class RemoteFileMap {
     private static final Logger log = Logger.getLogger(RemoteFileMap.class.getName());
     private static final Level LEVEL = Level.FINER;
 

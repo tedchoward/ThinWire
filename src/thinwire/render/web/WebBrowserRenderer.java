@@ -34,7 +34,7 @@ import thinwire.ui.event.PropertyChangeEvent;
 /**
  * @author Joshua J. Gertzen
  */
-final class WebBrowserRenderer extends ComponentRenderer {	
+public final class WebBrowserRenderer extends ComponentRenderer {	
     private static final String WEBBROWSER_CLASS = "tw_WebBrowser";
     private static final String SET_LOCATION = "setLocation";
 

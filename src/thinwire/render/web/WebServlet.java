@@ -40,6 +40,7 @@ import org.apache.commons.fileupload.DiskFileUpload;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 
+import thinwire.render.Renderer;
 import thinwire.ui.FileChooser;
 
 import javax.servlet.*;
@@ -95,7 +96,6 @@ public class WebServlet extends HttpServlet {
             if (app != null) app.shutdown();
         }
     }
-    
     public WebServlet() {
     	if (Thread.currentThread() instanceof EventProcessor) {
     		throw new IllegalStateException("This class '" + this.getClass().getName() + "' is managed by the servlet engine and cannot be constructed from an EventProcessor UI thread");

@@ -38,7 +38,7 @@ import java.util.logging.Logger;
 /**
  * @author Joshua J. Gertzen
  */
-class EventProcessor extends Thread {
+public class EventProcessor extends Thread {
     private static final char EVENT_WEB_COMPONENT = '0';
     private static final char EVENT_GET_EVENTS = '1';
     private static final char EVENT_SYNC_CALL = '2';

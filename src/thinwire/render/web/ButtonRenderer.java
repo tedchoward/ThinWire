@@ -33,7 +33,7 @@ import thinwire.ui.event.PropertyChangeEvent;
 /**
  * @author Joshua J. Gertzen
  */
-final class ButtonRenderer extends TextComponentRenderer {
+public final class ButtonRenderer extends TextComponentRenderer {
     private static final String BUTTON_CLASS = "tw_Button";
 
     void render(WindowRenderer wr, Component c, ComponentRenderer container) {

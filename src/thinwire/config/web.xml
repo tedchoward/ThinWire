@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<entry key="thinwire.ui.Button" >thinwire.render.web.ButtonRenderer</entry>
+<entry key="thinwire.ui.CheckBox" >thinwire.render.web.CheckBoxRenderer</entry>
+<entry key="thinwire.ui.Component" >thinwire.render.web.ComponentRenderer</entry>
+<entry key="thinwire.ui.Container" >thinwire.render.web.ContainerRenderer</entry>
+<entry key="thinwire.ui.DateBox" >thinwire.render.web.DateBoxRenderer</entry>
+<entry key="thinwire.ui.Dialog" >thinwire.render.web.DialogRenderer</entry>
+<entry key="thinwire.ui.Divider" >thinwire.render.web.DividerRenderer</entry>
+<entry key="thinwire.ui.DropDown" >thinwire.render.web.DropDownRenderer</entry>
+<entry key="thinwire.ui.EditorComponent" >thinwire.render.web.EditorComponentRenderer</entry>
+<entry key="thinwire.ui.Frame" >thinwire.render.web.FrameRenderer</entry>
+<entry key="thinwire.ui.GridBox" >thinwire.render.web.GridBoxRenderer</entry>
+<entry key="thinwire.ui.Hyperlink" >thinwire.render.web.HyperlinkRenderer</entry>
+<entry key="thinwire.ui.Image" >thinwire.render.web.ImageRenderer</entry>
+<entry key="thinwire.ui.Label" >thinwire.render.web.LabelRenderer</entry>
+<entry key="thinwire.ui.LabelComponent" >thinwire.render.web.LabelComponentRenderer</entry>
+<entry key="thinwire.ui.MaskEditorComponent" >thinwire.render.web.MaskEditorComponentRenderer</entry>
+<entry key="thinwire.ui.Menu" >thinwire.render.web.MenuRenderer</entry>
+<entry key="thinwire.ui.ProgressBar" >thinwire.render.web.ProgressBarRenderer</entry>
+<entry key="thinwire.ui.RadioButton" >thinwire.render.web.RadioButtonRenderer</entry>
+<entry key="thinwire.ui.RangeComponent" >thinwire.render.web.RangeComponentRenderer</entry>
+<entry key="thinwire.ui.Slider" >thinwire.render.web.SliderRenderer</entry>
+<entry key="thinwire.ui.TabFolder" >thinwire.render.web.TabFolderRenderer</entry>
+<entry key="thinwire.ui.TabSheet" >thinwire.render.web.TabSheetRenderer</entry>
+<entry key="thinwire.ui.TextArea" >thinwire.render.web.TextAreaRenderer</entry>
+<entry key="thinwire.ui.TextComponent" >thinwire.render.web.TextComponentRenderer</entry>
+<entry key="thinwire.ui.TextField" >thinwire.render.web.TextFieldRenderer</entry>
+<entry key="thinwire.ui.Tree" >thinwire.render.web.TreeRenderer</entry>
+<entry key="thinwire.ui.WebBrowser" >thinwire.render.web.WebBrowserRenderer</entry>
+<entry key="thinwire.ui.Window" >thinwire.render.web.WindowRenderer</entry>
+</properties>

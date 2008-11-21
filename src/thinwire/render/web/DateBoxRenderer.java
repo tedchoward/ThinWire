@@ -33,7 +33,7 @@ import thinwire.ui.Component;
 import thinwire.ui.DateBox;
 import thinwire.ui.event.PropertyChangeEvent;
 
-final class DateBoxRenderer extends ComponentRenderer {
+public final class DateBoxRenderer extends ComponentRenderer {
     private static final String DATE_BOX_CLASS = "tw_DateBox";
     static final SimpleDateFormat dateBoxFormat = new SimpleDateFormat("MM/dd/yyyy");
     

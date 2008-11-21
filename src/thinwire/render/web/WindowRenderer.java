@@ -38,7 +38,7 @@ import thinwire.ui.event.PropertyChangeEvent;
 /**
  * @author Joshua J. Gertzen
  */
-class WindowRenderer extends ContainerRenderer {
+public class WindowRenderer extends ContainerRenderer {
     private static final String SET_TITLE = "setTitle";
     private static final String SET_MENU = "setMenu";            
 

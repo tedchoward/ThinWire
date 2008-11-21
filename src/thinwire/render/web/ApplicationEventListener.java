@@ -36,7 +36,7 @@ import thinwire.ui.Frame;
 import thinwire.ui.event.PropertyChangeEvent;
 import thinwire.ui.event.PropertyChangeListener;
 
-class ApplicationEventListener implements WebComponentListener {
+public class ApplicationEventListener implements WebComponentListener {
     private static final Logger log = Logger.getLogger(ApplicationEventListener.class.getName());
     private static final Level LEVEL = Level.FINER;
     

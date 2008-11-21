@@ -26,15 +26,73 @@
 */
 package thinwire.render;
 
+import java.io.IOException;
+import java.net.URL;
+import java.util.Enumeration;
 import java.util.EventListener;
+import java.util.HashMap;
+import java.util.Properties;
 import java.util.Set;
+import java.util.Map.Entry;
 
+import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
+import thinwire.ui.Component;
 import thinwire.ui.event.PropertyChangeListener;
 
 /**
  * @author Joshua J. Gertzen
  */
 public interface Renderer extends PropertyChangeListener {
+	
+	public static final class RendererManager{
+		static private HashMap<String, RendererManager> platformRendererManagers=new HashMap<String, RendererManager>();
+		HashMap<Class<Component>, Class<thinwire.render.ComponentRenderer>> renderers=new HashMap<Class<Component>, Class<thinwire.render.ComponentRenderer>>();
+		private RendererManager(){
+			//private constructor to ensure factory
+		}
+		@SuppressWarnings("unchecked")
+		private void load(URL propertiesURL)
+		{
+			try {
+				Properties props=new Properties();
+				props.loadFromXML(propertiesURL.openStream());
+				for(Entry<Object, Object> entry:props.entrySet())
+				{
+					try {
+						renderers.put((Class<Component>)Class.forName((String)entry.getKey()), (Class<ComponentRenderer>)Class.forName((String)entry.getValue()));
+					} catch (ClassNotFoundException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		public Class<thinwire.render.ComponentRenderer> getRenderer(Class forClass){
+			return renderers.get(forClass);
+		}
+		public static RendererManager getInstance(String platform){
+			if(platform==null){
+				return null;
+			}
+			if(platformRendererManagers.get(platform)==null)
+			{
+				RendererManager manager=new RendererManager();
+				platformRendererManagers.put(platform, manager);
+				try {
+					for(Enumeration<URL> urlEnum=Thread.currentThread().getContextClassLoader().getResources("thinwire/config/"+platform+".xml");urlEnum.hasMoreElements();)
+					{
+						manager.load(urlEnum.nextElement());
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			return platformRendererManagers.get(platform);
+		}
+	}
     void eventSubTypeListenerInit(Class<? extends EventListener> clazz, Set<Object> subTypes);
     void eventSubTypeListenerAdded(Class<? extends EventListener> clazz, Object subType);
     void eventSubTypeListenerRemoved(Class<? extends EventListener> clazz, Object subType);

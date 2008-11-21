@@ -32,7 +32,7 @@ import java.util.logging.*;
 /**
  * @author Joshua J. Gertzen
  */
-class EventProcessorPool {
+public class EventProcessorPool {
     private static final Logger log = Logger.getLogger(EventProcessorPool.class.getName());
     private static final Level LEVEL = Level.FINER;
     

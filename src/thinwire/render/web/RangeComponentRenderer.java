@@ -31,7 +31,7 @@ import thinwire.ui.RangeComponent;
 import thinwire.ui.event.PropertyChangeEvent;
 import thinwire.ui.style.FX;
 
-abstract class RangeComponentRenderer extends ComponentRenderer {
+public abstract class RangeComponentRenderer extends ComponentRenderer {
     
     public void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         RangeComponent rc = (RangeComponent) c;

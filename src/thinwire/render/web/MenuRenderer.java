@@ -46,7 +46,7 @@ import thinwire.ui.event.PropertyChangeEvent;
 /**
  * @author Joshua J. Gertzen
  */
-final class MenuRenderer extends ComponentRenderer implements ItemChangeListener {    
+public final class MenuRenderer extends ComponentRenderer implements ItemChangeListener {    
 	private static final Pattern REGEX_AMP = Pattern.compile("[&](\\w)");
 	private static final Pattern REGEX_DAMP = Pattern.compile("[&]{1,2}");
     private static final String MENU_CLASS = "tw_Menu";

@@ -33,7 +33,7 @@ import thinwire.ui.event.PropertyChangeEvent;
 /**
  * @author Joshua J. Gertzen
  */
-abstract class TextComponentRenderer extends ComponentRenderer {
+public abstract class TextComponentRenderer extends ComponentRenderer {
     static final String SET_TEXT = "setText";
 
     void render(WindowRenderer wr, Component c, ComponentRenderer container) {

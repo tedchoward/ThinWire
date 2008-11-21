@@ -33,7 +33,7 @@ import thinwire.ui.event.PropertyChangeEvent;
 /**
  * @author Joshua J. Gertzen
  */
-final class TextFieldRenderer extends MaskEditorComponentRenderer {
+public final class TextFieldRenderer extends MaskEditorComponentRenderer {
     private static final String TEXTFIELD_CLASS = "tw_TextField";
     private static final String SET_INPUT_HIDDEN = "setInputHidden";
 

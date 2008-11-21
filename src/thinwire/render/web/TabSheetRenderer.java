@@ -35,7 +35,7 @@ import thinwire.ui.style.Border;
 /**
  * @author Joshua J. Gertzen
  */
-class TabSheetRenderer extends ContainerRenderer {
+public class TabSheetRenderer extends ContainerRenderer {
     private static final String TABSHEET_CLASS = "tw_TabSheet";
 
     void render(WindowRenderer wr, Component c, ComponentRenderer container) {

@@ -48,7 +48,7 @@ import thinwire.ui.style.FX;
 /**
  * @author Joshua J. Gertzen
  */
-final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListener {
+public final class GridBoxRenderer extends ComponentRenderer implements ItemChangeListener {
     private static final String GRIDBOX_CLASS = "tw_GridBox";
     private static final String SET_VISIBLE_HEADER = "setVisibleHeader";
     private static final String SET_VISIBLE_CHECK_BOXES = "setVisibleCheckBoxes";

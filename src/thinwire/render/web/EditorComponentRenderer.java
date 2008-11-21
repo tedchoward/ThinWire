@@ -34,7 +34,7 @@ import thinwire.ui.event.PropertyChangeEvent;
 /**
  * @author Joshua J. Gertzen
  */
-abstract class EditorComponentRenderer extends TextComponentRenderer {
+public abstract class EditorComponentRenderer extends TextComponentRenderer {
     private static final String SET_SELECTION_RANGE = "setSelectionRange";    
     private static final String VIEW_STATE_SELECTION_RANGE = "selectionRange";
     

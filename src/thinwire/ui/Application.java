@@ -44,6 +44,7 @@ import java.util.logging.Logger;
 import java.util.zip.*;
 
 import thinwire.render.Renderer;
+import thinwire.render.ComponentRenderer;
 import thinwire.ui.event.ActionEvent;
 import thinwire.ui.event.ActionListener;
 import thinwire.ui.event.DropListener;
@@ -67,7 +68,7 @@ public abstract class Application {
     
     private static final Map<String, String> versionInfo;
     private static final Map<Class<? extends Component>, Style> defaultStyleMap;
-    
+    public abstract String getPlatform();
     static {
         Properties props = new Properties();
         Map<String, String> vi = new HashMap<String, String>();
@@ -194,6 +195,32 @@ public abstract class Application {
  			return false;
  		}
 	}
+	
+	  public thinwire.render.ComponentRenderer getRenderer(Component comp) {
+		   return getRenderer(comp.getClass());
+	   }
+		   thinwire.render.ComponentRenderer getRenderer(Class clazz) {
+			          Class<thinwire.render.ComponentRenderer>  rendererClass=Renderer.RendererManager.getInstance(getPlatform()).getRenderer(clazz);
+        if(rendererClass==null)
+        {
+        	if(clazz.getSuperclass()!=AbstractComponent.class)
+        	{
+        		return getRenderer(clazz.getSuperclass());
+        	}
+        	else
+        	{
+        	       throw new RuntimeException("No renderer for component class '" + clazz.getCanonicalName() + "'.");        
+
+        	}
+        }
+        try {
+			return rendererClass.newInstance();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+ 	       throw new RuntimeException("Illegal acces Exception thrown while getting renderer for '" + clazz.getCanonicalName() + "'.");        
+		} 
+    }
     
     /**
      * Returns an InputStream representing the specified resource.

@@ -40,7 +40,7 @@ import thinwire.ui.event.PropertyChangeEvent;
  * @author Joshua J. Gertzen
  * @author Tom E. Kimball
  */
-final class TreeRenderer extends ComponentRenderer implements ItemChangeListener {
+public final class TreeRenderer extends ComponentRenderer implements ItemChangeListener {
     private static final String TREE_CLASS = "tw_Tree";
     private static final String ITEM_REMOVE = "itemRemove";
     private static final String ITEM_EXPAND = "itemExpand";

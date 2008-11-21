@@ -31,7 +31,7 @@ import thinwire.ui.Component;
 /**
  * @author Joshua J. Gertzen
  */
-final class FrameRenderer extends WindowRenderer {  
+public final class FrameRenderer extends WindowRenderer {  
     private static final String FRAME_CLASS = "tw_Frame";
     
 	void render(WindowRenderer wr, Component c, ComponentRenderer container) {
