@@ -264,6 +264,7 @@ public class Dialog extends AbstractWindow<Dialog> {
                 super.setVisible(visible);
                 if (waitForWindow) app.captureThread();
             } else {
+            	setState(STATE_NORMAL);
                 app.hideWindow(this);
                 super.setVisible(false);
                 if (waitForWindow) app.releaseThread();
