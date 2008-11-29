@@ -68,9 +68,9 @@ public final class WebApplication extends Application {
     
     public static String WEB_PLATFORM_STRING="web";
     public String getPlatform(){return WEB_PLATFORM_STRING;} 
-  
+    List<Class<? extends ComponentRenderer>> knownRenderer=new ArrayList<Class<? extends ComponentRenderer>>();
  
-    private static ArrayList<String> BUILT_IN_RESOURCES = new ArrayList<String>(Arrays.asList(new String[]{
+    private static ArrayList<String> JAVASCRIPT_FILES = new ArrayList<String>(Arrays.asList(new String[]{
         "Main.js",
         "Class.js",
         "HttpRequest.js",
@@ -116,11 +116,18 @@ public final class WebApplication extends Application {
     
     static final String MAIN_PAGE;
  
+    public static void addScript(String scriptURI){
+    	JAVASCRIPT_FILES.add(scriptURI);
+    }
     
     static {
+    	// ensure all Renderers have a chance to register their JS files
+    	Renderer.RendererManager.getInstance("web");
+    	
+    	
         String classURL = "class:///" + CLASS_NAME + "/resources/";
         
-        for (String res : BUILT_IN_RESOURCES) {
+        for (String res : JAVASCRIPT_FILES) {
             if (!res.endsWith(".js")) {
                 if (!res.startsWith("class:///")) res = classURL + res;
                 RemoteFileMap.SHARED.add(res);
@@ -140,6 +147,7 @@ public final class WebApplication extends Application {
         
     }
     
+    
     private static String loadJSLibrary(String resURL) {
         try {
             //Write out the library JS
@@ -149,7 +157,7 @@ public final class WebApplication extends Application {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             GZIPOutputStream os = new GZIPOutputStream(baos);
             
-            for (String res : BUILT_IN_RESOURCES) {
+            for (String res : JAVASCRIPT_FILES) {
                 if (res.endsWith(".js")) {
                     if (!res.startsWith("class:///")) res = resURL + res;
                     WebApplication.writeResourceToStream(res, os);
@@ -197,6 +205,8 @@ public final class WebApplication extends Application {
     Map<Style, String> styleToStyleClass = new HashMap<Style, String>();
     FileInfo[] fileList = new FileInfo[1];
 	protected UserActionListener userActionListener;
+    protected PrintWriter out=null;  
+    
     
     WebApplication(String baseFolder, Class mainClass, String styleSheet, String[] args, String initialFrameTitle) throws IOException {
         this.baseFolder = baseFolder;
@@ -287,9 +297,35 @@ public final class WebApplication extends Application {
         }
     }
         
+    public synchronized void writeToStream(InputStream in)throws IllegalStateException,IOException
+    {
+    	if(out!=null)
+    	{
+    	//	captureThread();
+    		int len=0;byte[] buff=new byte[1024];
+    		while((len=in.read(buff))>0)
+    		{
+    			out.write(new String(buff, 0, len).toCharArray());
+    		}
+    		in.close();
+    	}
+    	else
+    	{
+    		throw new IllegalStateException("This may only be called in the context of processing Events");
+    	}
+    }
+    
+    
+    public boolean checkRenderer(Class<? extends ComponentRenderer> rendererClass){
+    	return knownRenderer.contains(rendererClass);
+    }
+    public void registerRenderer(Class<? extends ComponentRenderer> rendererClass){
+    	knownRenderer.add(rendererClass);
+    }
+    
     void processActionEvents(Reader r, PrintWriter w) throws IOException {
         if (proc != null) throw new IllegalStateException("There is already an EventProcessor allocated to this application!");
-        
+        out=w;
         try {
             proc = EventProcessorPool.INSTANCE.getProcessor(this);
             proc.handleRequest(r, w);
@@ -311,6 +347,7 @@ public final class WebApplication extends Application {
                 }
             }
         } finally {
+        	out=null;
             if (proc != null) {
                 EventProcessorPool.INSTANCE.returnToPool(proc);
                 proc = null;
@@ -318,7 +355,7 @@ public final class WebApplication extends Application {
         }
     }
     
-    void sendDefaultComponentStyles() {
+    protected void sendDefaultComponentStyles() {
         StringBuilder sb = new StringBuilder();
         sb.append("{");
         
@@ -339,7 +376,7 @@ public final class WebApplication extends Application {
         clientSideMethodCall("tw_Component", "setDefaultStyles", sb);
     }
     
-    void sendStyleInitInfo() {
+    protected void sendStyleInitInfo() {
         try {
             loadStyleSheet(styleSheet);
             StringBuilder sb = new StringBuilder();
@@ -368,11 +405,11 @@ public final class WebApplication extends Application {
         }
     }
     
-    Color getSystemColor(String name) {
+    protected Color getSystemColor(String name) {
         return getSystemColors().get(name);
     }
     
-    StringBuilder getStyleValue(StringBuilder sb, String propertyName, Object value) {
+    protected StringBuilder getStyleValue(StringBuilder sb, String propertyName, Object value) {
         if (propertyName.equals(Border.PROPERTY_BORDER_SIZE)) {
             sb.append(RichTextParser.STYLE_BORDER_WIDTH).append(":\"").append(value).append("px");
         } else if (propertyName.equals(Font.PROPERTY_FONT_SIZE)) {
@@ -529,7 +566,7 @@ public final class WebApplication extends Application {
         return sb;
     }
     
-    Integer getNextComponentId() {
+    protected Integer getNextComponentId() {
         nextCompId = nextCompId == Integer.MAX_VALUE ? 1 : nextCompId + 1;
         return new Integer(nextCompId);
     }
@@ -609,7 +646,7 @@ public final class WebApplication extends Application {
         }
     }
     
-    void flushRenderCallbacks(Component comp, Integer id) {
+    protected void flushRenderCallbacks(Component comp, Integer id) {
         if (renderStateListeners == null) return;
         Object o = renderStateListeners.get(comp);        
         if (o == null) return;
@@ -648,7 +685,7 @@ public final class WebApplication extends Application {
         return ((ComponentRenderer)getWebComponentListener(id)).comp;
     }
 
-    void setWebComponentListener(Integer compId, WebComponentListener listener) {
+    protected void setWebComponentListener(Integer compId, WebComponentListener listener) {
         synchronized (webComponentListeners) {
             if (listener == null)
                 webComponentListeners.remove(compId);
@@ -657,7 +694,7 @@ public final class WebApplication extends Application {
         }
     }
 
-    WebComponentListener getWebComponentListener(Integer compId) {
+    protected  WebComponentListener getWebComponentListener(Integer compId) {
         synchronized (webComponentListeners) {
             return webComponentListeners.get(compId);
         }
@@ -667,12 +704,12 @@ public final class WebApplication extends Application {
         return baseFolder;
     }
     
-    protected void captureThread() {
+    public void captureThread() {
         if (proc == null) throw new IllegalStateException("No event processor allocated to this application. This is likely caused by making UI calls from a non-UI thread");
         proc.captureThread();
     }
 
-    protected void releaseThread() {
+    public void releaseThread() {
         if (proc == null) throw new IllegalStateException("No event processor allocated to this application. This is likely caused by making UI calls from a non-UI thread");
         proc.releaseThread();
     }
@@ -723,7 +760,7 @@ public final class WebApplication extends Application {
         }
     }
 
-    protected String addResourceMapping(String uri) {
+    public String addResourceMapping(String uri) {
         if (uri.trim().length() > 0) {
         	File file = null;
         	
@@ -747,7 +784,7 @@ public final class WebApplication extends Application {
         return uri;
     }
     
-    protected void removeResourceMapping(String uri) {
+    public void removeResourceMapping(String uri) {
         if (uri.trim().length() > 0) {
             if (uri.startsWith("file") || uri.startsWith("class") || getRelativeFile(uri).exists()) {
                 if (!uri.startsWith("class")) {

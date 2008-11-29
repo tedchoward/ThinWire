@@ -36,7 +36,7 @@ import thinwire.ui.event.PropertyChangeEvent;
 public final class ImageRenderer extends ComponentRenderer {
     private static final String IMAGE_CLASS = "tw_Image";
 
-    void render(WindowRenderer wr, Component c, ComponentRenderer container) {
+    protected void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         init(IMAGE_CLASS, wr, c, container);
         addInitProperty(Image.PROPERTY_IMAGE, wr.ai.addResourceMapping(((Image)c).getImage()));
         super.render(wr, c, container);                
@@ -54,7 +54,7 @@ public final class ImageRenderer extends ComponentRenderer {
         }
     }
     
-    void destroy() {
+    protected void destroy() {
     	wr.ai.removeResourceMapping(((Image)comp).getImage());
     	super.destroy();
     }

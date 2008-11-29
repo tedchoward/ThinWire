@@ -38,19 +38,19 @@
   <property name="image.radioButton.check" value="${path.image}rbChecked.png"/>
   <property name="image.radioButton.checkDisabled" value="${path.image}rbDisabledChecked.png"/>
 
-  <!-- NOTE: There are too many images used by Tree currently.  Will be cleaned up before v1.2 final -->
-  <property name="image.tree.empty" value="${path.image}treeEmpty.png"/>
-  <property name="image.tree.expand" value="${path.image}treeExpand.png"/>
-  <property name="image.tree.expandBottom" value="${path.image}treeExpandBottom.png"/>
-  <property name="image.tree.expandBottomTop" value="${path.image}treeExpandBottomTop.png"/>
-  <property name="image.tree.expandTop" value="${path.image}treeExpandTop.png"/>
-  <property name="image.tree.leaf" value="${path.image}treeLeaf.png"/>
-  <property name="image.tree.leafBottom" value="${path.image}treeLeafBottom.png"/>
-  <property name="image.tree.leafBottomTop" value="${path.image}treeLeafBottomTop.png"/>
-  <property name="image.tree.leafTop" value="${path.image}treeLeafTop.png"/>
-  <property name="image.tree.straight" value="${path.image}treeStraight.png"/>
-  <property name="image.tree.unexpand" value="${path.image}treeUnexpand.png"/>
-  <property name="image.tree.unexpandBottom" value="${path.image}treeUnexpandBottom.png"/>
-  <property name="image.tree.unexpandBottomTop" value="${path.image}treeUnexpandBottomTop.png"/>
-  <property name="image.tree.unexpandTop" value="${path.image}treeUnexpandTop.png"/>
+  <!-- NOTE: There are too many images used by Tree currently.  Will be cleaned up for v1.3 -->
+  <property name="image.tree.empty" value="${path.image}Spacer.gif"/>
+  <property name="image.tree.expand" value="${path.image}Expanded.gif"/>
+  <property name="image.tree.expandBottom" value="${path.image}Expanded.gif"/>
+  <property name="image.tree.expandBottomTop" value="${path.image}Expanded.gif"/>
+  <property name="image.tree.expandTop" value="${path.image}Expanded.gif"/>
+  <property name="image.tree.leaf" value="${path.image}Spacer.gif"/>
+  <property name="image.tree.leafBottom" value="${path.image}Spacer.gif"/>
+  <property name="image.tree.leafBottomTop" value="${path.image}Spacer.gif"/>
+  <property name="image.tree.leafTop" value="${path.image}Spacer.gif"/>
+  <property name="image.tree.straight" value="${path.image}Spacer.gif"/>
+  <property name="image.tree.unexpand" value="${path.image}Collapsed.gif"/>
+  <property name="image.tree.unexpandBottom" value="${path.image}Collapsed.gif"/>
+  <property name="image.tree.unexpandBottomTop" value="${path.image}Collapsed.gif"/>
+  <property name="image.tree.unexpandTop" value="${path.image}Collapsed.gif"/>
 </xod>

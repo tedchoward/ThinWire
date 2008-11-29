@@ -39,7 +39,7 @@ import thinwire.ui.layout.Layout;
 /**
  * @author Joshua J. Gertzen
  */
-abstract class AbstractContainer<C extends Container<T>, T extends Component> extends AbstractComponent<C> implements Container<T> {
+public abstract class AbstractContainer<C extends Container<T>, T extends Component> extends AbstractComponent<C> implements Container<T> {
     private class ChildList extends AbstractList<T> {
         private ArrayList<T> l = new ArrayList<T>();
 
@@ -138,8 +138,6 @@ abstract class AbstractContainer<C extends Container<T>, T extends Component> ex
         			layout.apply();
         		}
         	}
-        	
-        	
         });
     }
 

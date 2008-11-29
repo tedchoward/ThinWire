@@ -37,7 +37,7 @@ public final class CheckBoxRenderer extends TextComponentRenderer {
     private static final String CHECKBOX_CLASS = "tw_CheckBox";
     private static final String SET_CHECKED = "setChecked";
 
-    void render(WindowRenderer wr, Component c, ComponentRenderer container) {
+    protected void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         init(CHECKBOX_CLASS, wr, c, container);
         CheckBox cb = (CheckBox)c;
         addClientSideProperty(CheckBox.PROPERTY_CHECKED);

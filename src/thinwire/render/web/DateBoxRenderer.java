@@ -37,7 +37,7 @@ public final class DateBoxRenderer extends ComponentRenderer {
     private static final String DATE_BOX_CLASS = "tw_DateBox";
     static final SimpleDateFormat dateBoxFormat = new SimpleDateFormat("MM/dd/yyyy");
     
-    void render(WindowRenderer wr, Component c, ComponentRenderer container) {
+    protected void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         init(DATE_BOX_CLASS, wr, c, container);
         addClientSideProperty(DateBox.PROPERTY_SELECTED_DATE);
         addInitProperty(DateBox.PROPERTY_SELECTED_DATE, dateBoxFormat.format(((DateBox) c).getSelectedDate()));

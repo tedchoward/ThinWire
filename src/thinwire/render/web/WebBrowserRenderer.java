@@ -38,7 +38,7 @@ public final class WebBrowserRenderer extends ComponentRenderer {
     private static final String WEBBROWSER_CLASS = "tw_WebBrowser";
     private static final String SET_LOCATION = "setLocation";
 
-    void render(WindowRenderer wr, Component c, ComponentRenderer container) {
+    protected void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         init(WEBBROWSER_CLASS, wr, c, container); 
         addInitProperty(WebBrowser.PROPERTY_LOCATION, wr.ai.addResourceMapping(((WebBrowser)c).getLocation()));        
         super.render(wr, c, container);
@@ -57,7 +57,7 @@ public final class WebBrowserRenderer extends ComponentRenderer {
         }
     }
     
-    void destroy() {
+    protected void destroy() {
     	wr.ai.removeResourceMapping(((WebBrowser)comp).getLocation());
     	super.destroy();
     }

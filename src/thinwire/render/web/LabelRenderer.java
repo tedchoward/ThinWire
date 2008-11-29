@@ -34,7 +34,7 @@ import thinwire.ui.Component;
 public final class LabelRenderer extends LabelComponentRenderer {
     private static final String LABEL_CLASS = "tw_Label";
     
-	void render(WindowRenderer wr, Component c, ComponentRenderer container) {
+    protected void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         init(LABEL_CLASS, wr, c, container);
         super.render(wr, c, container);                
 	}

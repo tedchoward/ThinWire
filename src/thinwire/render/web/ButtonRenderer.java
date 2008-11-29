@@ -36,7 +36,7 @@ import thinwire.ui.event.PropertyChangeEvent;
 public final class ButtonRenderer extends TextComponentRenderer {
     private static final String BUTTON_CLASS = "tw_Button";
 
-    void render(WindowRenderer wr, Component c, ComponentRenderer container) {
+    protected void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         init(BUTTON_CLASS, wr, c, container);
         Button b = (Button)c;
         addInitProperty(Button.PROPERTY_IMAGE, wr.ai.addResourceMapping(b.getImage()));
@@ -57,7 +57,7 @@ public final class ButtonRenderer extends TextComponentRenderer {
         }
     }
     
-    void destroy() {
+    protected void destroy() {
     	wr.ai.removeResourceMapping(((Button)comp).getImage());
     	super.destroy();
     }

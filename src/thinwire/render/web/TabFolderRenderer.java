@@ -37,7 +37,7 @@ public final class TabFolderRenderer extends ContainerRenderer {
     private static final String TABFOLDER_CLASS = "tw_TabFolder";
     private static final String SET_CURRENT_INDEX = "setCurrentIndex";
 
-    void render(WindowRenderer wr, Component c, ComponentRenderer container) {
+    protected void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         init(TABFOLDER_CLASS, wr, c, container);
         addClientSideProperty(TabFolder.PROPERTY_CURRENT_INDEX);        
         setPropertyChangeIgnored(TabFolder.PROPERTY_SCROLL_TYPE, true);

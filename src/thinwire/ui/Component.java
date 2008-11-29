@@ -64,6 +64,13 @@ public interface Component {
     public static final String PROPERTY_X = "x";
     
     /**
+     * Contains the formal property name for styleClass of a <code>Component</code>.  
+     * @see #setStyleClass(String)
+     * @see #getStyleClass()
+     */    
+    public static final String PROPERTY_STYLE_CLASS="styleClass";
+    
+    /**
      * Contains the formal property name for the 'Y' coordinate of a <code>Component</code>.
      * @see #setY(int)
      * @see #getY()
@@ -825,4 +832,7 @@ public interface Component {
      * @see thinwire.ui.event.PropertyChangeEvent
      */
     void setVisible(boolean visible);
+    
+    void setStyleClass(String sc);
+    String getStyleClass();
 }

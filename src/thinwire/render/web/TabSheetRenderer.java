@@ -38,7 +38,7 @@ import thinwire.ui.style.Border;
 public class TabSheetRenderer extends ContainerRenderer {
     private static final String TABSHEET_CLASS = "tw_TabSheet";
 
-    void render(WindowRenderer wr, Component c, ComponentRenderer container) {
+    protected void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         init(TABSHEET_CLASS, wr, c, container);
         //a tabsheet does not support x, y, width, height, enabled or visible
         setPropertyChangeIgnored(Component.PROPERTY_X, true);
@@ -71,7 +71,7 @@ public class TabSheetRenderer extends ContainerRenderer {
         }
     }
     
-    void destroy() {
+    protected void destroy() {
     	wr.ai.removeResourceMapping(((TabSheet)comp).getImage());
     	super.destroy();
     }

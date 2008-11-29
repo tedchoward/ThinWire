@@ -39,8 +39,7 @@ var tw_Dialog = tw_BaseContainer.extend({
     _minimizeButton: null,
     _minimizable:true,
     _maximizable:true,
-    _state:1,
-
+ 
 
 
     construct: function(id, containerId, props) {
@@ -69,22 +68,24 @@ var tw_Dialog = tw_BaseContainer.extend({
 
         title.appendChild(closeButton);
 
-        var maximizeButton = this._maximizeButton = document.createElement("div");
+        var maximizeButton = this._maximizeButton = document.createElement("img");
         var s = maximizeButton.style;
+        maximizeButton['src']= tw_IMAGE_DIALOG_MAXIMIZE ;
         var fontSizeText = tw_isIE ? "font-size:0px;" : "";
-        cssText = "width:11px;height:8px;right:21px;display:block;text-align:center;position:absolute;background-position:center;background-repeat:no-repeat;background-image:" +
-            "url(" + tw_IMAGE_DIALOG_MAXIMIZE + ");margin:0px;overflow:hidden;top:2px;" + fontSizeText + "background-color:" +
+        cssText = "width:11px;height:8px;right:21px;display:block;text-align:center;position:absolute;background-position:center;background-repeat:no-repeat;" +
+            ";margin:0px;overflow:hidden;top:2px;" + fontSizeText + "background-color:" +
             tw_COLOR_BUTTONFACE + ";color:" + tw_COLOR_BUTTONTEXT + ";";
         tw_Component.setCSSText(cssText, maximizeButton);
         tw_Component.applyButtonBorder(maximizeButton);
 
         title.appendChild(maximizeButton);
  
-        var minimizeButton = this._minimizeButton = document.createElement("div");
+        var minimizeButton = this._minimizeButton = document.createElement("img");
+        minimizeButton['src']=tw_IMAGE_DIALOG_MINIMIZE ;
         var s = minimizeButton.style;
         var fontSizeText = tw_isIE ? "font-size:0px;" : "";
-        cssText = "width:11px;height:8px;right:40px;display:block;text-align:center;position:absolute;background-position:center;background-repeat:no-repeat;background-image:" +
-            "url(" + tw_IMAGE_DIALOG_MINIMIZE + ");margin:0px;overflow:hidden;top:2px;" + fontSizeText + "background-color:" +
+        cssText = "width:11px;height:8px;right:40px;display:block;text-align:center;position:absolute;background-position:center;background-repeat:no-repeat;"+
+        "margin:0px;overflow:hidden;top:2px;" + fontSizeText + "background-color:" +
             tw_COLOR_BUTTONFACE + ";color:" + tw_COLOR_BUTTONTEXT + ";";
         tw_Component.setCSSText(cssText, minimizeButton);
         tw_Component.applyButtonBorder(minimizeButton);
@@ -130,14 +131,7 @@ var tw_Dialog = tw_BaseContainer.extend({
         this.init(-1, props);
     },
 
-    setState: function(newState)
-    {
-    	if(newState==this._state)return;
-    	this._state=newState;
-    	
-    	this.firePropertyChange("state",this._state);
-    	
-    },
+  
     setMaximizable: function(maximizable){
     	if(maximizable)
     	{
@@ -160,10 +154,7 @@ var tw_Dialog = tw_BaseContainer.extend({
     		this._minimizeButton.style.display='none';
     	}
     },
-    
-    getState: function(){
-    	return this._state;
-    },
+  
     _mouseDownListener: function(ev) {
         this.setFocus(true);
     },
@@ -396,25 +387,29 @@ var tw_Dialog = tw_BaseContainer.extend({
     
     setState: function(newState)
     {
-    	if(this._state=newState||!this._visible)return;
-    	this._state=newState;
+   // alert('setting stat to:'+newState);
+   // if(this._state=newState)return;
+    	//this._state=newState;
     	//NOTE: setting dimension and placement will be handled on the server side
     	if(newState==1)
     	{// set normal
-    		this._maximizeButton.style.backgroundImage=tw_IMAGE_DIALOG_MAXIMIZE;
-    		this._minimizeButton.style.backgroundImage=tw_IMAGE_DIALOG_MINIMIZE;
+    	//	alert('returning to normal');
+    		this._maximizeButton['src']=tw_IMAGE_DIALOG_MAXIMIZE;
+    		this._minimizeButton['src']=tw_IMAGE_DIALOG_MINIMIZE;
     	}
     	else if(newState==2)
     	{// set maximized
-    		this._maximizeButton.style.backgroundImage=tw_IMAGE_DIALOG_RESTORE;
-    		this._minimizeButton.style.backgroundImage=tw_IMAGE_DIALOG_MINIMIZE;
+    		//alert('maximized');
+    		this._maximizeButton['src']=tw_IMAGE_DIALOG_RESTORE;
+    		this._minimizeButton['src']=tw_IMAGE_DIALOG_MINIMIZE;
     	}
     	else if(newState=3)
     	{// set minimized
-    		this._maximizeButton.style.backgroundImage=tw_IMAGE_DIALOG_RESTORE;
-    		this._minimizeButton.style.backgroundImage=tw_IMAGE_DIALOG_MINIMIZE;
+    		//alert('minimized');
+    		this._maximizeButton['src']=tw_IMAGE_DIALOG_MAXIMIZE;
+    		this._minimizeButton['src']=tw_IMAGE_DIALOG_RESTORE;
     	}
-    		
+    	
     	
     	
     },

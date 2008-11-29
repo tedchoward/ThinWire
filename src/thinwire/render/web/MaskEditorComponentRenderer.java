@@ -36,7 +36,7 @@ import thinwire.ui.event.PropertyChangeEvent;
 public abstract class MaskEditorComponentRenderer extends EditorComponentRenderer {
     private static final String SET_EDIT_MASK = "setEditMask";    
     
-    void render(WindowRenderer wr, Component c, ComponentRenderer container) {
+    protected void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         MaskEditorComponent med = (MaskEditorComponent)c;
         addInitProperty(MaskEditorComponent.PROPERTY_EDIT_MASK, getEditMaskTextLength(med));
         super.render(wr, c, container);

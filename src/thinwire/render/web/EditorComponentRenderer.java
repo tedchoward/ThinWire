@@ -38,7 +38,7 @@ public abstract class EditorComponentRenderer extends TextComponentRenderer {
     private static final String SET_SELECTION_RANGE = "setSelectionRange";    
     private static final String VIEW_STATE_SELECTION_RANGE = "selectionRange";
     
-    void render(WindowRenderer wr, Component c, ComponentRenderer container) {
+    protected void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         EditorComponent ed = (EditorComponent)c;
         addClientSideProperty(EditorComponent.PROPERTY_TEXT);
         addClientSideProperty(EditorComponent.PROPERTY_SELECTION_BEGIN_INDEX, VIEW_STATE_SELECTION_RANGE);

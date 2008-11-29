@@ -37,7 +37,7 @@ public final class TextAreaRenderer extends EditorComponentRenderer {
     private static final String TEXTAREA_CLASS = "tw_TextArea";
     private static final String SET_MAX_LENGTH = "setMaxLength";
 
-    void render(WindowRenderer wr, Component c, ComponentRenderer container) {
+    protected void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         init(TEXTAREA_CLASS, wr, c, container);
         TextArea ta = (TextArea)c;
         addInitProperty(TextArea.PROPERTY_MAX_LENGTH, ta.getMaxLength());

@@ -287,6 +287,7 @@ public class Dialog extends AbstractWindow<Dialog> {
 			normalPosition=isRepositionAllowed();
 		}
 		this.state = state;
+		firePropertyChange(this, PROPERTY_STATE, oldState, this.state);
 		switch(state)
 		{
 		case STATE_MAXIMIZED:{
@@ -312,7 +313,6 @@ public class Dialog extends AbstractWindow<Dialog> {
 			this.setBounds(savedBounds.x, savedBounds.y, savedBounds.width, savedBounds.height);
 		}
 		}
-		firePropertyChange(this, PROPERTY_STATE, oldState, this.state);
 	}
 
 	public boolean isMinimizable() {

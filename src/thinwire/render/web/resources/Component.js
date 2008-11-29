@@ -66,7 +66,7 @@ var tw_Component = Class.extend({
     _fontBox: null,
     _clickTime: null,
     _dragAndDropHandler: null,
-    
+    _styleClass:"",
     construct: function(tagName, className, id, containerId) {
         var box = document.createElement(tagName);
         box.className = className;
@@ -243,9 +243,7 @@ var tw_Component = Class.extend({
                     if (sButton != null && this !== sButton) sButton._setStandardStyle(false);
                 }
             }
-            if(this.scrollIntoView!=null){
-            	this.scrollIntoView();
-            }
+         
         }
         
     },
@@ -260,8 +258,8 @@ var tw_Component = Class.extend({
         }
     },
     
-    scrollTo: function(){
-    	if(this._box!=null&&this._box.scrollIntoView!=null)
+    setScrollTo: function(scroll){
+    	if(scroll&&this._box!=null&&this._box.scrollIntoView!=null)
     	{
     		this._box.scrollIntoView();
     	}
@@ -451,7 +449,10 @@ var tw_Component = Class.extend({
         if (this._eventNotifiers != null) props = this._eventNotifiers["propertyChange"];                        
         return props != undefined && props[name] === true;
     },
-
+    setStyleClass: function(styleClass){
+    	this._styleClass=styleClass;
+    	this._box['class']=styleClass;
+    },
         
     getNextComponent: function(usable) {
         var parent = this._parent;

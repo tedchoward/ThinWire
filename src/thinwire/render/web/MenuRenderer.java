@@ -61,7 +61,7 @@ public final class MenuRenderer extends ComponentRenderer implements ItemChangeL
     private StringBuilder sb;
     private List<String> resources;
 	
-	void render(WindowRenderer wr, Component c, ComponentRenderer container) {        
+    protected void render(WindowRenderer wr, Component c, ComponentRenderer container) {        
         init(MENU_CLASS, wr, c, container);
 
         boolean windowMenu = container instanceof WindowRenderer && comp.equals(((Window) ((WindowRenderer) container).comp).getMenu());
@@ -98,7 +98,7 @@ public final class MenuRenderer extends ComponentRenderer implements ItemChangeL
     	return wr.ai.addResourceMapping(newUri);
     }
 
-    void destroy() {
+    protected void destroy() {
     	if (resources != null) {
 	    	for (String uri : resources) {
 	    		wr.ai.removeResourceMapping(uri);

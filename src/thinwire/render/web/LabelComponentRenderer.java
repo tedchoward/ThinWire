@@ -37,7 +37,7 @@ import thinwire.ui.event.PropertyChangeEvent;
 public abstract class LabelComponentRenderer extends TextComponentRenderer {
     private static final String SET_WRAP_TEXT = "setWrapText";
 
-	void render(WindowRenderer wr, Component c, ComponentRenderer container) {
+    protected void render(WindowRenderer wr, Component c, ComponentRenderer container) {
 		LabelComponent l = (LabelComponent)c;
         addInitProperty(LabelComponent.PROPERTY_ALIGN_X, l.getAlignX().name().toLowerCase());
         addInitProperty(LabelComponent.PROPERTY_WRAP_TEXT, l.isWrapText());

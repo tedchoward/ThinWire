@@ -39,7 +39,7 @@ import thinwire.ui.style.*;
 /**
  * @author Joshua J. Gertzen
  */
-abstract class AbstractComponent<C extends Component> implements Component {
+public abstract class AbstractComponent<C extends Component> implements Component {
     //#IFDEF V1_1_COMPAT    
     private static final String COMPAT_MODE_PROP = Application.class.getName() + ".compatMode";
     static boolean isCompatModeOn() {
@@ -68,12 +68,12 @@ abstract class AbstractComponent<C extends Component> implements Component {
     private Object limit;
     private boolean visible;
     private boolean ignoreFirePropertyChange;
-    
-    AbstractComponent() {
+    private String styleClass="";
+   public  AbstractComponent() {
         this(EventListenerImpl.ACTION_VALIDATOR);
     }
     
-    AbstractComponent(EventListenerImpl.SubTypeValidator actionValidator) {
+   public AbstractComponent(EventListenerImpl.SubTypeValidator actionValidator) {
         this.visible = true;
         app = Application.current();
         
@@ -489,6 +489,18 @@ abstract class AbstractComponent<C extends Component> implements Component {
         return (C)this;
     }
     
+    public void scrollTo(){
+    	firePropertyChange(this, "scrollTo", false, true);
+    }
+    public String getStyleClass(){
+    	return styleClass;
+    }
+    
+    public void setStyleClass(String styleClass){
+    	String oldStyleClass=this.styleClass;
+    	this.styleClass=styleClass;
+    	firePropertyChange(this, PROPERTY_STYLE_CLASS, oldStyleClass, this.styleClass);
+    }
     @SuppressWarnings("unchecked")
 	public C setBounds(int x, int y, int width, int height) {
         rangeCheck(PROPERTY_X, x, Short.MIN_VALUE, Short.MAX_VALUE);

@@ -46,7 +46,7 @@ public class WindowRenderer extends ContainerRenderer {
     private MenuRenderer mr;
     WebApplication ai;
     
-    void render(WindowRenderer wr, Component c, ComponentRenderer container) {
+    protected void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         setPropertyChangeIgnored(Component.PROPERTY_VISIBLE, true);
         Window w = (Window)c;
         addInitProperty(Window.PROPERTY_TITLE, w instanceof Frame ? w.getTitle() : parseRichText(w.getTitle()));
@@ -62,7 +62,12 @@ public class WindowRenderer extends ContainerRenderer {
         log.fine("Showing window with id:" + id);
     }
     
-    void destroy() {
+    public WebApplication getWebApplication(){
+    	return ai;
+    }
+    
+    
+    protected void destroy() {
         ai.clientSideMethodCall(id, DESTROY);
         if (mr != null) mr.destroy();
         super.destroy();

@@ -40,7 +40,7 @@ public final class DropDownRenderer extends MaskEditorComponentRenderer {
     private static final int MIN_SIZE = 25;
     private ComponentRenderer ddcr;
 
-	void render(WindowRenderer wr, Component c, ComponentRenderer container) {
+    protected void render(WindowRenderer wr, Component c, ComponentRenderer container) {
 	    init(DROPDOWN_CLASS, wr, c, container);
 	    DropDown dd = (DropDown)c;        
         addInitProperty(DropDown.PROPERTY_EDIT_ALLOWED, dd.isEditAllowed());
@@ -61,7 +61,7 @@ public final class DropDownRenderer extends MaskEditorComponentRenderer {
         postClientEvent(SET_COMPONENT, wr.ai.getComponentId(ddc));
 	}
     
-    void destroy() {
+	protected void destroy() {
         super.destroy();
         ddcr.destroy();
         ddcr = null;

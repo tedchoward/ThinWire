@@ -40,7 +40,7 @@ public final class HyperlinkRenderer extends LabelComponentRenderer {
     private static final String SET_VISIBLE_CHROME = "setVisibleChrome";
     private static final String SET_RESIZE_ALLOWED = "setResizeAllowed";
 
-    void render(WindowRenderer wr, Component c, ComponentRenderer container) {
+    protected void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         init(HYPERLINK_CLASS, wr, c, container);
         Hyperlink hl = (Hyperlink)c;
         addInitProperty(Hyperlink.PROPERTY_LOCATION, wr.ai.addResourceMapping(hl.getLocation()));
@@ -69,7 +69,7 @@ public final class HyperlinkRenderer extends LabelComponentRenderer {
         }
     }
     
-    void destroy() {
+    protected  void destroy() {
     	wr.ai.removeResourceMapping(((Hyperlink)comp).getLocation());
     	super.destroy();
     }

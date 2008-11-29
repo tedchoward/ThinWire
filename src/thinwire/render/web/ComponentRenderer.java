@@ -26,6 +26,7 @@
 */
 package thinwire.render.web;
 
+import java.io.PrintWriter;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.logging.Logger;
@@ -54,7 +55,8 @@ public abstract class ComponentRenderer implements Renderer, WebComponentListene
     static final String SET_VISIBLE = "setVisible";
     static final String SET_OPACITY = "setOpacity";
     static final String SET_PROPERTY_WITH_EFFECT = "setPropertyWithEffect";
-
+    static final String SET_STYLE_CLASS="setStyleClass";
+    static final String SET_SCROLL_TO="setScrollTo";
     //Shared by other renderers
     static final String DESTROY = "destroy";
     static final String SET_IMAGE = "setImage";
@@ -76,12 +78,14 @@ public abstract class ComponentRenderer implements Renderer, WebComponentListene
 	private RichTextParser richTextParser;
 	private Component baseComp;
 	
-    String jsClass;
-    Component comp;
-    WindowRenderer wr;
-    ContainerRenderer cr;
-	ComponentRenderer pr;
-    Integer id;
+    protected String jsClass;
+    protected Component comp;
+    protected WindowRenderer wr;
+    protected ContainerRenderer cr;
+    protected ComponentRenderer pr;
+    protected Integer id;
+
+    
     
     void init(String jsClass, WindowRenderer wr, Component comp, ComponentRenderer container) {
         this.jsClass = jsClass;
@@ -112,7 +116,7 @@ public abstract class ComponentRenderer implements Renderer, WebComponentListene
                 visibleChange != Effect.Motion.NONE && cr != null && cr.isFullyRendered() ? Boolean.FALSE : comp.isVisible());                
         if (!isPropertyChangeIgnored(Component.PROPERTY_ENABLED)) addInitProperty(Component.PROPERTY_ENABLED, comp.isEnabled());
         if (!comp.isFocusCapable()) addInitProperty(Component.PROPERTY_FOCUS_CAPABLE, false);         
-        
+        if(!isPropertyChangeIgnored(Component.PROPERTY_STYLE_CLASS))addInitProperty(Component.PROPERTY_STYLE_CLASS, comp.getStyleClass());
         Style defaultStyle = wr.ai.getDefaultStyle(comp.getClass());
         addInitProperty("styleClass", wr.ai.styleToStyleClass.get(defaultStyle));
         StringBuilder styleProps = wr.ai.getStyleValues(new StringBuilder(), comp.getStyle(), defaultStyle);
@@ -154,7 +158,7 @@ public abstract class ComponentRenderer implements Renderer, WebComponentListene
         wr.ai.flushRenderCallbacks(comp, id);
 	}
 	
-    private void setStyle(String propertyName, Object oldValue) {
+    protected void setStyle(String propertyName, Object oldValue) {
         if (propertyName.startsWith("fx") || isPropertyChangeIgnored(propertyName)) return;
         Style s = comp.getStyle();
         if (propertyName.equals(Border.PROPERTY_BORDER_TYPE) && s.getBorder().getType() == Border.Type.IMAGE) return;
@@ -188,7 +192,7 @@ public abstract class ComponentRenderer implements Renderer, WebComponentListene
         postClientEvent(SET_STYLES, sb);
     }
         
-    void destroy() {
+    protected void destroy() {
         if (richTextParser != null) {
         	richTextParser.reset();
         	richTextParser = null;
@@ -209,17 +213,17 @@ public abstract class ComponentRenderer implements Renderer, WebComponentListene
         pr = null;
     }
     
-    void addInitProperty(String name, Object value) {
+    protected void addInitProperty(String name, Object value) {
         initProps.append(name).append(':');
         initProps.append(stringValueOf(value));        
         initProps.append(',');
     }
     
-    void addClientSideProperty(String name) {
+    protected void addClientSideProperty(String name) {
         this.clientSideProps.put(name, name);
     }
 
-    void addClientSideProperty(String name, String clientName) {
+    protected void addClientSideProperty(String name, String clientName) {
         this.clientSideProps.put(name, clientName);
     }
 
@@ -449,7 +453,7 @@ public abstract class ComponentRenderer implements Renderer, WebComponentListene
         }
     }
 
-    void setPropertyWithEffect(String propertyName, Object newValue, Object oldValue, String standardMethod, String styleProp) {
+    protected void setPropertyWithEffect(String propertyName, Object newValue, Object oldValue, String standardMethod, String styleProp) {
         Effect.Motion type;
         FX fx = comp.getStyle().getFX();
         
@@ -573,17 +577,28 @@ public abstract class ComponentRenderer implements Renderer, WebComponentListene
             setPropertyWithEffect(name, pce.getNewValue(), pce.getOldValue(), SET_HEIGHT, FX.PROPERTY_FX_SIZE_CHANGE);
         } else if (name.equals(Component.PROPERTY_VISIBLE)) {
             setPropertyWithEffect(name, pce.getNewValue(), pce.getOldValue(), SET_VISIBLE, FX.PROPERTY_FX_VISIBLE_CHANGE);
-        } else {
+        } 
+        else if(name.equals(Component.PROPERTY_STYLE_CLASS))
+        {
+        	setPropertyWithEffect(name, pce.getNewValue(), pce.getOldValue(), SET_STYLE_CLASS, FX.PROPERTY_FX_VISIBLE_CHANGE);
+        }
+        else if(name.equals("scrollTo"))
+        {
+        	setPropertyWithEffect(name, pce.getNewValue(), pce.getOldValue(), "setScrollTo", FX.PROPERTY_FX_VISIBLE_CHANGE);
+        }
+        
+        
+        else {
             Object source = pce.getSource();            
             if (source instanceof Background || source instanceof Font || source instanceof Border) setStyle(pce.getPropertyName(), pce.getOldValue());
         }
     }
 
-    final void postClientEvent(String methodName, Object... args) {
+    protected final void postClientEvent(String methodName, Object... args) {
         wr.ai.clientSideMethodCall(id, methodName, args);
     }
 
-    final void setPropertyChangeIgnored(String name, boolean ignore) {
+    protected final void setPropertyChangeIgnored(String name, boolean ignore) {
         if (ignore) {            
             ignoredProperties.put(name, NO_VALUE);
         } else {
@@ -591,7 +606,7 @@ public abstract class ComponentRenderer implements Renderer, WebComponentListene
         }
     }
 
-    final boolean isPropertyChangeIgnored(String name, Object value) {
+    protected final boolean isPropertyChangeIgnored(String name, Object value) {
         if (ignoredProperties.containsKey(name)) {
             if (value == NO_VALUE) {
                 return true;
@@ -604,17 +619,17 @@ public abstract class ComponentRenderer implements Renderer, WebComponentListene
         }
     }
     
-    final boolean isPropertyChangeIgnored(String name) {
+    protected final boolean isPropertyChangeIgnored(String name) {
         return isPropertyChangeIgnored(name, NO_VALUE);
     }
     
-    final boolean resetPropertyChangeIgnored(String name, Object value) {
+    protected final boolean resetPropertyChangeIgnored(String name, Object value) {
         boolean ret = isPropertyChangeIgnored(name, value);
         if (ret) ignoredProperties.remove(name);
         return ret;
     }
 
-    final boolean resetPropertyChangeIgnored(String name) {
+    protected final boolean resetPropertyChangeIgnored(String name) {
         return resetPropertyChangeIgnored(name, NO_VALUE);
     }
     
@@ -640,7 +655,7 @@ public abstract class ComponentRenderer implements Renderer, WebComponentListene
         return ret;
     }
     
-    static String getEscapedText(String s, boolean CRLFToSpace) {
+    public static String getEscapedText(String s, boolean CRLFToSpace) {
         s = s.replace('\0', ' ');
         s = REGEX_DOUBLE_SLASH.matcher(s).replaceAll("\\\\\\\\");        
         s = REGEX_DOUBLE_QUOTE.matcher(s).replaceAll("\\\\\"");
@@ -648,7 +663,7 @@ public abstract class ComponentRenderer implements Renderer, WebComponentListene
         return s;
     }
         
-    Object parseRichText(String value) {
+    protected Object parseRichText(String value) {
         if (value == null) return "";
     	if (this instanceof EditorComponentRenderer) return value;
 
@@ -660,7 +675,7 @@ public abstract class ComponentRenderer implements Renderer, WebComponentListene
     	}
     }
 
-    static Object getEventObject(Component comp, String data) {
+    protected static Object getEventObject(Component comp, String data) {
         Object o;
         
         if (comp instanceof GridBox) {

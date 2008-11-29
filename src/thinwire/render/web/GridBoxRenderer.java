@@ -77,14 +77,14 @@ public final class GridBoxRenderer extends ComponentRenderer implements ItemChan
     private int autoColumnWidth;
     
     @Override
-    void init(String jsClass, WindowRenderer wr, Component comp, ComponentRenderer container) {
+    protected void init(String jsClass, WindowRenderer wr, Component comp, ComponentRenderer container) {
     	super.init(jsClass, wr, comp, container);
     	rowState.clear();
     	columnState.clear();
     }
     
     //TODO: Column indexes on the client side may differ if there is a hidden column between two visible columns
-    void render(WindowRenderer wr, Component c, ComponentRenderer container) {
+    protected  void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         render(wr, c, container, null);
     }
     
@@ -188,7 +188,7 @@ public final class GridBoxRenderer extends ComponentRenderer implements ItemChan
         }
     }
 
-    void destroy() {
+    protected void destroy() {
         super.destroy();
         gb.removeItemChangeListener(this);
         gb = null;

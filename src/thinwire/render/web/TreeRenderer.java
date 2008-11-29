@@ -51,7 +51,7 @@ public final class TreeRenderer extends ComponentRenderer implements ItemChangeL
     private Tree tree;
     private List<String> resources;
     
-	void render(WindowRenderer wr, Component c, ComponentRenderer container) {
+    protected void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         init(TREE_CLASS, wr, c, container);
         tree = (Tree)c;
         StringBuilder sb = new StringBuilder();
@@ -65,7 +65,7 @@ public final class TreeRenderer extends ComponentRenderer implements ItemChangeL
         if (item != null) postClientEvent(ITEM_SELECT, fullIndex((Tree.Item)item));
 	}
     
-    void destroy() {
+    protected void destroy() {
     	if (resources != null) {
         	for (String uri : resources) {
 	    		wr.ai.removeResourceMapping(uri);

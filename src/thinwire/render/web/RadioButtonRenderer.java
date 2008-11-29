@@ -53,7 +53,7 @@ public final class RadioButtonRenderer extends TextComponentRenderer {
     
     private int groupId;
     
-	void render(WindowRenderer wr, Component c, ComponentRenderer container) {
+    protected void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         init(RADIOBUTTON_CLASS, wr, c, container);
 		RadioButton rb = (RadioButton)c;
         addClientSideProperty(RadioButton.PROPERTY_CHECKED);
@@ -128,7 +128,7 @@ public final class RadioButtonRenderer extends TextComponentRenderer {
         }
     }
     
-    void destroy() {
+    protected void destroy() {
         setGroup(0);
         super.destroy();
     }

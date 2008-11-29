@@ -38,8 +38,9 @@ public final class DialogRenderer extends WindowRenderer {
     private static final String SET_RESIZE_ALLOWED = "setResizeAllowed";
     private static final String SET_REPOSITION_ALLOWED = "setRepositionAllowed";
     private static final String SET_MODAL = "setModal";
+    private static final String SET_STATE= "setState";
 
-	void render(WindowRenderer wr, Component c, ComponentRenderer container) {        
+    protected void render(WindowRenderer wr, Component c, ComponentRenderer container) {        
         init(DIALOG_CLASS, wr, c, container);
         Dialog d = (Dialog)c;
         addInitProperty(Dialog.PROPERTY_RESIZE_ALLOWED, d.isResizeAllowed());
@@ -57,6 +58,7 @@ public final class DialogRenderer extends WindowRenderer {
         addInitProperty(Dialog.PROPERTY_STATE, d.getState());
         addInitProperty(Dialog.PROPERTY_MINIMIZABLE, d.isMinimizable());
         addInitProperty(Dialog.PROPERTY_MAXIMIZABLE, d.isMaximizable());
+        addClientSideProperty(Dialog.PROPERTY_STATE);
         addClientSideProperty(Component.PROPERTY_X);
         addClientSideProperty(Component.PROPERTY_Y);
         addClientSideProperty(Component.PROPERTY_WIDTH);
@@ -71,7 +73,12 @@ public final class DialogRenderer extends WindowRenderer {
             postClientEvent(SET_REPOSITION_ALLOWED, pce.getNewValue());            
         } else if (pce.getPropertyName().equals(Dialog.PROPERTY_MODAL)) {            
             postClientEvent(SET_MODAL, pce.getNewValue());            
-        } else {
+        } 
+        else if(pce.getPropertyName().equals(Dialog.PROPERTY_STATE))
+        {
+        	postClientEvent(SET_STATE, pce.getNewValue());
+        }
+        else {
             super.propertyChange(pce);
         }
     }

@@ -34,7 +34,7 @@ import thinwire.ui.Component;
 public final class FrameRenderer extends WindowRenderer {  
     private static final String FRAME_CLASS = "tw_Frame";
     
-	void render(WindowRenderer wr, Component c, ComponentRenderer container) {
+    protected void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         init(FRAME_CLASS, wr, c, container);
         setPropertyChangeIgnored(Component.PROPERTY_X, true);
         setPropertyChangeIgnored(Component.PROPERTY_Y, true);

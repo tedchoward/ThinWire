@@ -36,7 +36,7 @@ import thinwire.ui.event.PropertyChangeEvent;
 public abstract class TextComponentRenderer extends ComponentRenderer {
     static final String SET_TEXT = "setText";
 
-    void render(WindowRenderer wr, Component c, ComponentRenderer container) {
+    protected void render(WindowRenderer wr, Component c, ComponentRenderer container) {
         TextComponent tc = (TextComponent)c;
         addInitProperty(TextComponent.PROPERTY_TEXT, parseRichText(tc.getText()));
         super.render(wr, c, container);

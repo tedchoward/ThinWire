@@ -48,7 +48,7 @@ public class ContainerRenderer extends ComponentRenderer implements ItemChangeLi
     private boolean fullyRendered;
     private Map<Component, ComponentRenderer> compToRenderer;
     
-	void render(WindowRenderer wr, Component comp, ComponentRenderer container) {
+	protected void render(WindowRenderer wr, Component comp, ComponentRenderer container) {
         if (jsClass == null) init(CONTAINER_CLASS, wr, comp, container);
         setPropertyChangeIgnored(Component.PROPERTY_FOCUS, true);
         setPropertyChangeIgnored(Component.PROPERTY_ENABLED, true);
@@ -81,7 +81,7 @@ public class ContainerRenderer extends ComponentRenderer implements ItemChangeLi
         return sti;
     }
     
-    void destroy() {
+    protected void destroy() {
         Container<Component> c = (Container<Component>)comp;
         c.removeItemChangeListener(this);
         super.destroy();
