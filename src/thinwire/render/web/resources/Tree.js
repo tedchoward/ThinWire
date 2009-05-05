@@ -630,8 +630,8 @@ var tw_Tree = tw_Component.extend({
         if (action == "click" || action == "doubleClick") {
             if (this._eventNotifiers != null) {
                 var actions = this._eventNotifiers["action"];            
-            
-                if (actions != undefined && actions[action] === true) {
+
+                if (actions != undefined && actions[action] === true && !(source instanceof tw_Component)) {
                     var x = 0, y = 0, cellX = 0, cellY = 0;
                 
                     if (ev != null) {

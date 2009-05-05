@@ -388,15 +388,18 @@ var tw_GridBox = tw_Component.extend({
     
     _scrollIntoView: function(index) {
     	if (this._getColumnCount() > 0) {
-			var cell = this._content.childNodes.item(0).childNodes.item(index);
-			var body = this._content.parentNode;        
-	    	var cellOffset = cell.offsetTop + cell.offsetHeight - body.scrollTop;        
-	
-	        if (cellOffset < 0) {        
-	            body.scrollTop = cell.offsetTop;
-	        } else if (cellOffset > body.clientHeight) {
-	            body.scrollTop = (cell.offsetTop + cell.offsetHeight) - body.clientHeight;
-	        }
+            var cell = this._content.childNodes.item(0).childNodes.item(index);
+
+            if(cell != null){
+                var body = this._content.parentNode;
+                var cellOffset = cell.offsetTop + cell.offsetHeight - body.scrollTop;
+
+                if (cellOffset < 0) {
+                    body.scrollTop = cell.offsetTop;
+                } else if (cellOffset > body.clientHeight) {
+                    body.scrollTop = (cell.offsetTop + cell.offsetHeight) - body.clientHeight;
+                }
+            }
         }
 	},
     
@@ -976,8 +979,8 @@ var tw_GridBox = tw_Component.extend({
         if (action == "click" || action == "doubleClick") {
             if (this._eventNotifiers != null) {
                 var actions = this._eventNotifiers["action"];            
-            
-                if (actions != undefined && actions[action] === true) {
+
+                if (actions != undefined && actions[action] === true && !(source instanceof tw_Component)) {
                     var x = 0, y = 0, cellX = 0, cellY = 0;
                 
                     if (ev != null) {

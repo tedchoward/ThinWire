@@ -31,8 +31,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import thinwire.ui.event.ItemChangeListener;
-import thinwire.ui.event.PropertyChangeEvent;
-import thinwire.ui.event.PropertyChangeListener;
 import thinwire.ui.event.ItemChangeEvent.Type;
 import thinwire.ui.layout.Layout;
 
@@ -131,14 +129,6 @@ public abstract class AbstractContainer<C extends Container<T>, T extends Compon
     	EventListenerImpl<ItemChangeListener> gicei = app == null ? null : app.getGlobalListenerSet(ItemChangeListener.class, false);
     	icei = new EventListenerImpl<ItemChangeListener>(this, ItemChangeListener.class, null, gicei);
         children = new ChildList();
-        addPropertyChangeListener(new String[]{"width","height"}, new PropertyChangeListener(){
-        	public void propertyChange(PropertyChangeEvent ev) {
-        		if(layout!=null)
-        		{
-        			layout.apply();
-        		}
-        	}
-        });
     }
 
     @SuppressWarnings("unchecked")

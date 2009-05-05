@@ -360,7 +360,7 @@ public abstract class ComponentRenderer implements Renderer, WebComponentListene
             	srcY = getInt(vals[3]);
             	value = vals[4];
             } else {
-            	value = vals[2];
+            	value = vals[3];
             }
             
             if (this.comp instanceof DateBox) {

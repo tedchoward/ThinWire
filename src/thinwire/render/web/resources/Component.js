@@ -249,7 +249,9 @@ var tw_Component = Class.extend({
     },
     
     _focus: function() {
-        this._focusBox.focus();
+        if(this._focusBox != null){
+            this._focusBox.focus();
+        }
     },
     
     setStyles: function(styles) {
@@ -406,8 +408,7 @@ var tw_Component = Class.extend({
     fireAction: function(ev, action, source) {
         if (this._eventNotifiers != null) {
             var actions = this._eventNotifiers["action"];            
-            
-            if (actions != undefined && actions[action] === true) {
+            if (actions != undefined && actions[action] === true && !(source instanceof tw_Component)) {
                 var x = 0, y = 0;
                 var btn=0;
                 btn=tw_getEventButton(ev);
@@ -420,7 +421,7 @@ var tw_Component = Class.extend({
                 }
                 
                 if (source == null) source = "";
-                tw_em.sendViewStateChanged(this._id, action, x + "," + y + ","+btn+"," + source);
+                  tw_em.sendViewStateChanged(this._id, action, x + "," + y + ","+btn+"," + source);
             }
         }
     },

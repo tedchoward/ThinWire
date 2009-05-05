@@ -192,7 +192,7 @@ public final class Frame extends AbstractWindow<Frame> {
                 
                 app.hideWindow(this);
             }
-        
+
             super.setVisible(visible);
         }
     }

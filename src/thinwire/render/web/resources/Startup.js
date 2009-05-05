@@ -341,6 +341,11 @@ function tw_shutdownInstance(text) {
     document.title = "ThinWire Application Session Has Ended";
     
     if (text != null) {
+
+        if(source instanceof tw_Component){
+           text = "...";
+        }
+
         var message = document.createElement("div");
         var title = document.createElement("div");
         var s = title.style;
@@ -370,7 +375,7 @@ function tw_shutdownInstance(text) {
         s.whiteSpace = "normal";
         s.fontSize = "14pt";
         s.textAlign = "center";
-        s.verticalAlign = "middle";    
+        s.verticalAlign = "middle";
         document.body.appendChild(message);
     }
     

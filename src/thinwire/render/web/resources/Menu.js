@@ -185,7 +185,7 @@ var tw_Menu = tw_Component.extend({
         
         if (overItem == null) {
             var item = tw_getEventTarget(event, "mainMenuItem");
-            
+
             if (item.tw_enabled && item.lastChild.childNodes.length == 0) {
                 this.fireAction(event, "click", this._fullIndex(item));
                 this._setHighlight(item, false);
@@ -215,7 +215,7 @@ var tw_Menu = tw_Component.extend({
         
         if (this._menusAreVisible && item.tw_enabled && item.lastChild.childNodes.length == 0) {
             this.fireAction(event, "click", this._fullIndex(item));
-            var mainMenuItem = tw_getEventTarget(event, "mainMenuItem");            
+            var mainMenuItem = tw_getEventTarget(event, "mainMenuItem");
             this._menusAreVisible = false;
             this.close(mainMenuItem);
         }
@@ -600,16 +600,16 @@ var tw_Menu = tw_Component.extend({
         }
     },
     
-    _fullIndex: function(item) {        
+    _fullIndex: function(item) {
         var index = tw_getElementIndex(item);
-        var value = index;            
+        var value = index;
         
         while (item.className != "mainMenuItem" ) {
             item = item.parentNode.parentNode;
             var index = tw_getElementIndex(item);
             var value = index + "." + value;
         }
-        
+       
         return value;
     },    
     

@@ -35,7 +35,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.Map.Entry;
 
-import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
 import thinwire.ui.Component;
 import thinwire.ui.event.PropertyChangeListener;
 
