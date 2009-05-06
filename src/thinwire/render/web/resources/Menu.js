@@ -25,6 +25,7 @@
 #VERSION_HEADER#
 */
 var tw_Menu = tw_Component.extend({
+    _lastPressedMenuItem: null,
     _menusAreVisible: false,
     _activeMenuItem: null,
     _windowMenu: false,
@@ -166,6 +167,15 @@ var tw_Menu = tw_Component.extend({
             this._menusAreVisible = this._menusAreVisible ? false : true;
             this._setHighlight(item, true);
             if (this._menusAreVisible) this._open(item);
+            var now = new Date();
+            this._menuOpenedTime = now.getMinutes()*60*1000+now.getSeconds()*1000+now.getMilliseconds();
+            
+            if(tw_Component.currentOpenMenu != null){
+                tw_Component.currentOpenMenu._closeCurrentMenuItem();
+            }
+
+            tw_Component.currentOpenMenu = this;
+            _lastPressedMenuItem = item;
         }
     },
                 
@@ -666,6 +676,11 @@ var tw_Menu = tw_Component.extend({
         }
     },
     
+    _closeCurrentMenuItem: function() {
+        this.close(this._lastPressedMenuItem);
+        this._lastPressedMenuItem = null;
+    },
+
     close: function(menu) {
         if (menu == null) menu = this._box;
         

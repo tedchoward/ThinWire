@@ -236,6 +236,11 @@ var tw_DropDown = tw_BaseText.extend({
         this.setHeight(this._height);
     },
 
+    _focusLost: function(){
+        arguments.callee.$.call(this);
+        this.setDropDownVisible();
+    },
+
     setDropDownVisible: function(state) {
         if (this._ddComp == null) return;
 

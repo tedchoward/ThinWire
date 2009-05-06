@@ -41,12 +41,14 @@ var tw_Component = Class.extend({
     _inited: false,
     _opacity: 100,
     _focusBox: null,
+    _isInFocus: false,
     _id: -1,
     _parent: null,
     _parentIndex: -1,
     _x: 0,
     _y: 0,
     _down:-1,
+    _menuOpenedTime:-1,
     _width: 0,
     _height: 0,
     _enabled: true,
@@ -133,28 +135,43 @@ var tw_Component = Class.extend({
   	  var now=new Date();
 	  var milliseconds=now.getMinutes()*60*1000+now.getSeconds()*1000+now.getMilliseconds();
    	this._down=milliseconds;
-    	
+
   },
-  _mouseUpListener: function(ev) {
-	  var now=new Date();
-	  var milliseconds=now.getMinutes()*60*1000+now.getSeconds()*1000+now.getMilliseconds();
-	  var diff=milliseconds-this._down;
-	
-	   	if(ev.type=="mouseup"&&diff <400&&this._enabled) // <700 milliseconds represents a click
-	  {
-		var type="click";
-		if(this._clickTime&&milliseconds-this._clickTime<400)
-		{
-			type="dblclick";
-			this._clickTime=null;
-		}
-		else{
-			this._clickTime=milliseconds;
-		}
-		  this.fireAction(ev, type, this);
-	  }
-		  this._down=-1;
-  },    
+    _mouseUpListener: function(ev) {
+        var now=new Date();
+        var milliseconds=now.getMinutes()*60*1000+now.getSeconds()*1000+now.getMilliseconds();
+        var diff=milliseconds-this._down;
+
+        if(ev.type=="mouseup"&&diff <400&&this._enabled) // <700 milliseconds represents a click
+        {
+            var type="click";
+            if(this._clickTime&&milliseconds-this._clickTime<400)
+            {
+                type="dblclick";
+                this._clickTime=null;
+            }
+            else{
+                this._clickTime=milliseconds;
+            }
+            this.fireAction(ev, type, this);
+        }
+
+
+        if(ev.type=="mouseup" && tw_Component.currentOpenMenu instanceof tw_Menu && this != tw_Component.currentOpenMenu){
+            milliseconds=now.getMinutes()*60*1000+now.getSeconds()*1000+now.getMilliseconds();
+            var menuOpenDiff = milliseconds-tw_Component.currentOpenMenu._menuOpenedTime;
+            if(menuOpenDiff > 500){
+                
+                tw_Component.currentOpenMenu._menuOpenedTime = -1;
+                tw_Component.currentOpenMenu._closeCurrentMenuItem();
+                tw_Component.currentOpenMenu = null;
+            }
+        }
+
+ 
+    this._down=-1;
+  },
+
     setFocusCapable: function(focusCapable) {
         this._focusCapable = focusCapable;
     },
@@ -217,6 +234,14 @@ var tw_Component = Class.extend({
     _blurListener: function() {
         this.setFocus(false);        
     },
+
+    _focusGained: function(){
+        this._isInFocus = true;
+    },
+
+    _focusLost: function(){
+        this._isInFocus = false;
+    },
         
     setFocus: function(focus) {
         if (!this._enabled || !this.isVisible()) return;
@@ -242,10 +267,15 @@ var tw_Component = Class.extend({
                     var sButton = this.getBaseWindow().getStandardButton();
                     if (sButton != null && this !== sButton) sButton._setStandardStyle(false);
                 }
+
+                this._focusGained();
             }
-         
         }
-        
+        else{
+                if (tw_Component.currentFocus !== this) {
+                    this._focusLost();
+                }
+            }
     },
     
     _focus: function() {
@@ -421,9 +451,9 @@ var tw_Component = Class.extend({
                 }
                 
                 if (source == null) source = "";
-                  tw_em.sendViewStateChanged(this._id, action, x + "," + y + ","+btn+"," + source);
-            }
-        }
+                tw_em.sendViewStateChanged(this._id, action, x + "," + y + ","+btn+"," + source);
+    }
+                }
     },
     
     getClickBox: function() {
@@ -663,6 +693,7 @@ tw_Component.zIndex = 0;
 tw_Component.instances = {};
 tw_Component.priorFocus = null;
 tw_Component.currentFocus = null;
+tw_Component.currentOpenMenu = null;
 tw_Component.defaultStyles = null;
 tw_Component.setDefaultStyles = function(defaultStyles) {
     var styles = {};

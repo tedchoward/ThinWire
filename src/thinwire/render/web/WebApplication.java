@@ -183,7 +183,7 @@ public final class WebApplication extends Application {
         boolean repeat;
     }
     
-    static enum State {INIT, STARTUP, RUNNING, REPAINT, SHUTDOWN, TERMINATED}
+    static enum State {INIT, STARTUP, RUNNING, REPAINT, SHUTDOWN, TERMINATED, TERMINATING}
     
     public static final String REMOTE_FILE_PREFIX = "%SYSROOT%";
     
@@ -242,8 +242,9 @@ public final class WebApplication extends Application {
     }
     
     protected void shutdown() {
-        if (state == State.TERMINATED) return;
-        if (state != State.SHUTDOWN) state = State.SHUTDOWN;
+        if (state != State.SHUTDOWN) return;
+        if (state != State.TERMINATING) state = State.TERMINATING;
+        
         if (log.isLoggable(LEVEL)) log.log(LEVEL, Thread.currentThread().getName() + ": initiating application instance shutdown");        
         
         try {
@@ -293,7 +294,7 @@ public final class WebApplication extends Application {
             remoteFileMap.destroy();
             remoteFileMap = null;
             super.shutdown(); //Clear Application references
-            state = State.TERMINATED;            
+            state = State.TERMINATED; 
         }
     }
         
@@ -324,19 +325,23 @@ public final class WebApplication extends Application {
     }
     
     void processActionEvents(Reader r, PrintWriter w) throws IOException {
+        if(state == State.TERMINATING){
+            return;
+        }
+        
         if (proc != null) throw new IllegalStateException("There is already an EventProcessor allocated to this application!");
         out=w;
-        try {
-            proc = EventProcessorPool.INSTANCE.getProcessor(this);
-            proc.handleRequest(r, w);
-     
+            try {
+                proc = EventProcessorPool.INSTANCE.getProcessor(this);
+                proc.handleRequest(r, w);
+
             if (state != State.RUNNING) {
                 if (state == State.INIT) {
                     proc.handleRequest(ApplicationEventListener.newInitEvent(), w);
                     state = State.STARTUP;
                 } else if (state == State.SHUTDOWN) {
                     shutdown();
-                } else if (state == State.STARTUP && (getFrame().getWidth() > 0 || getFrame().getHeight() > 0)) { 
+                } else if (state == State.STARTUP && (getFrame().getWidth() > 0 || getFrame().getHeight() > 0)) {
                     WebComponentEvent startupEvent = this.startupEvent;
                     this.startupEvent = null;
                     proc.handleRequest(startupEvent, w);
@@ -346,14 +351,14 @@ public final class WebApplication extends Application {
                     state = State.RUNNING;
                 }
             }
-        } finally {
+            } finally {
         	out=null;
             if (proc != null) {
-                EventProcessorPool.INSTANCE.returnToPool(proc);
-                proc = null;
+                    EventProcessorPool.INSTANCE.returnToPool(proc);
+                    proc = null;
+                }
             }
         }
-    }
     
     protected void sendDefaultComponentStyles() {
         StringBuilder sb = new StringBuilder();
