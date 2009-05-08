@@ -170,7 +170,7 @@ var tw_Menu = tw_Component.extend({
             var now = new Date();
             this._menuOpenedTime = now.getMinutes()*60*1000+now.getSeconds()*1000+now.getMilliseconds();
             
-            if(tw_Component.currentOpenMenu != null){
+            if(tw_Component.currentOpenMenu != null && tw_Component.currentOpenMenu != this){
                 tw_Component.currentOpenMenu._closeCurrentMenuItem();
             }
 
