@@ -862,13 +862,12 @@ var tw_GridBox = tw_Component.extend({
         
         if (index == this._currentIndex) {
             var size = this._getRowCount();
+            this._currentIndex = -1;
             
             if (index < size) {                
                 this.setRowIndexSelected(index);
             } else if (size > 0) {
                 this.setRowIndexSelected(size - 1);
-            } else {
-                this._currentIndex = -1;
             }
         } else if (index <= this._currentIndex) {
             if (this._currentIndex - 1 >= 0) this._currentIndex--;
