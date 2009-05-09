@@ -341,11 +341,6 @@ function tw_shutdownInstance(text) {
     document.title = "ThinWire Application Session Has Ended";
     
     if (text != null) {
-
-        if(source instanceof tw_Component){
-           text = "...";
-        }
-
         var message = document.createElement("div");
         var title = document.createElement("div");
         var s = title.style;

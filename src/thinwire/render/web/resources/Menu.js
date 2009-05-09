@@ -169,10 +169,6 @@ var tw_Menu = tw_Component.extend({
             if (this._menusAreVisible) this._open(item);
             var now = new Date();
             this._menuOpenedTime = now.getMinutes()*60*1000+now.getSeconds()*1000+now.getMilliseconds();
-            
-            if(tw_Component.currentOpenMenu != null && tw_Component.currentOpenMenu != this){
-                tw_Component.currentOpenMenu._closeCurrentMenuItem();
-            }
 
             tw_Component.currentOpenMenu = this;
             _lastPressedMenuItem = item;
@@ -674,6 +670,11 @@ var tw_Menu = tw_Component.extend({
             if (item.className != "menuDivider") this._clear(item);
             this._remove(menu, i);
         }
+    },
+
+    _focusLost: function(){
+        arguments.callee.$.call(this);
+        this._closeCurrentMenuItem();
     },
     
     _closeCurrentMenuItem: function() {
