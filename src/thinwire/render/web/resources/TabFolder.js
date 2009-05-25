@@ -167,6 +167,11 @@ var tw_TabFolder = tw_BaseContainer.extend({
             this._currentIndex = index;
         }
 
+        if(tw_Component.currentFocus instanceof tw_Component){
+            tw_Component.currentFocus.setFocus(false);
+        }
+
+
         var commonSize = active ? "0px" : this._borderSize + "px";
         if (index == 0) this._tabs.style.paddingLeft = commonSize;        
         if (index > 0) cl[index - 1]._tab.style.borderRightWidth = commonSize;        

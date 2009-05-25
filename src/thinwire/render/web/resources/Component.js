@@ -41,11 +41,13 @@ var tw_Component = Class.extend({
     _inited: false,
     _opacity: 100,
     _focusBox: null,
+    _isInFocus: false,
     _id: -1,
     _parent: null,
     _parentIndex: -1,
     _x: 0,
     _y: 0,
+     _menuOpenedTime:-1,
     _width: 0,
     _height: 0,
     _enabled: true,
@@ -186,6 +188,15 @@ var tw_Component = Class.extend({
     _blurListener: function() {
         this.setFocus(false);        
     },
+
+    _focusGained: function(){
+        this._isInFocus = true;
+    },
+
+    _focusLost: function(){
+        this._isInFocus = false;
+    },
+
         
     setFocus: function(focus) {
         if (!this._enabled || !this.isVisible()) return;
@@ -211,12 +222,21 @@ var tw_Component = Class.extend({
                     var sButton = this.getBaseWindow().getStandardButton();
                     if (sButton != null && this !== sButton) sButton._setStandardStyle(false);
                 }
+
+                this._focusGained();
+            }
+        }
+        else{
+            if (tw_Component.currentFocus !== this) {
+                this._focusLost();
             }
         }
     },
     
     _focus: function() {
-        this._focusBox.focus();
+        if(this._focusBox != null){
+            this._focusBox.focus();
+        }
     },
     
     setStyles: function(styles) {

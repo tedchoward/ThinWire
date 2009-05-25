@@ -387,18 +387,22 @@ var tw_GridBox = tw_Component.extend({
     },
     
     _scrollIntoView: function(index) {
-    	if (this._getColumnCount() > 0) {
-			var cell = this._content.childNodes.item(0).childNodes.item(index);
-			var body = this._content.parentNode;        
-	    	var cellOffset = cell.offsetTop + cell.offsetHeight - body.scrollTop;        
+        if (this._getColumnCount() > 0) {
+            var cell = this._content.childNodes.item(0).childNodes.item(index);
+
+            if(cell != null){
+                var body = this._content.parentNode;
+                var cellOffset = cell.offsetTop + cell.offsetHeight - body.scrollTop;
 	
-	        if (cellOffset < 0) {        
-	            body.scrollTop = cell.offsetTop;
-	        } else if (cellOffset > body.clientHeight) {
-	            body.scrollTop = (cell.offsetTop + cell.offsetHeight) - body.clientHeight;
-	        }
+                if (cellOffset < 0) {
+                    body.scrollTop = cell.offsetTop;
+                }
+                else if (cellOffset > body.clientHeight) {
+                    body.scrollTop = (cell.offsetTop + cell.offsetHeight) - body.clientHeight;
+                }
+            }
         }
-	},
+    },
     
     _toggleHighlight: function(index, state) {
         if (this._getColumnCount() < 1 || index < 0) return;
@@ -859,15 +863,15 @@ var tw_GridBox = tw_Component.extend({
         
         if (index == this._currentIndex) {
             var size = this._getRowCount();
+            this._currentIndex = -1;
             
             if (index < size) {                
                 this.setRowIndexSelected(index);
             } else if (size > 0) {
                 this.setRowIndexSelected(size - 1);
-            } else {
-                this._currentIndex = -1;
             }
-        } else if (index <= this._currentIndex) {
+        }
+        else if (index <= this._currentIndex) {
             if (this._currentIndex - 1 >= 0) this._currentIndex--;
         }
     },

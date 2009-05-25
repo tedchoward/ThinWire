@@ -212,6 +212,12 @@ var tw_Frame = tw_BaseContainer.extend({
         tw_removeEventListener(window, "resize", this._windowBoundsListener);
         document.body.removeChild(this._modalLayer);
         document.body.removeChild(this._box);
+
+        //if it has a menu remove it
+        if(this._menu != null ){
+            document.body.removeChild(this._menu._box);
+        }
+
         this._menu = this._standardButton = this._modalLayer = this._modalDialogIds = null;
         arguments.callee.$.call(this);
         tw_shutdownInstance("The application instance has shutdown. Press F5 to restart the application or close the browser to end your session.");
