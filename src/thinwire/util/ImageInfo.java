@@ -34,6 +34,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import thinwire.ui.Application;
 
 /**
@@ -68,9 +70,10 @@ public class ImageInfo {
         return name;
     }
     
-    private void setName(String name) {        
+    private void setName(String name) {
+        InputStream is = null;
         try {                       
-            InputStream is = Application.getResourceAsStream(name);
+            is = Application.getResourceAsStream(name);
                 
             if (is != null) {
                 this.name = name;
@@ -108,6 +111,14 @@ public class ImageInfo {
         } catch (Exception e) {
             if (!(e instanceof RuntimeException)) e = new RuntimeException(e);
             throw (RuntimeException)e;
+        } finally{
+            if(is != null){
+                try {
+                    is.close();
+                }
+                catch (IOException ex) {
+                }
+            }
         }
     }   
     
