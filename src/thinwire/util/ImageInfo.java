@@ -68,31 +68,32 @@ public class ImageInfo {
         return name;
     }
     
-    private void setName(String name) {        
-        try {                       
-            InputStream is = Application.getResourceAsStream(name);
-                
+    private void setName(String name) {
+        InputStream is = null;
+        try {
+            is = Application.getResourceAsStream(name);
+
             if (is != null) {
                 this.name = name;
-                ImageParser ii = new ImageParser();                        
+                ImageParser ii = new ImageParser();
                 ii.setInput(is);
-                
+
                 if (!ii.check())
                     throw new UnsupportedOperationException("Unknown image file format for file.");
-                
+
                 switch (ii.getFormat()) {
                     case ImageParser.FORMAT_GIF:
-                        this.format = Format.GIF;                        
+                        this.format = Format.GIF;
                         break;
-                        
+
                     case ImageParser.FORMAT_JPEG:
                         this.format = Format.JPEG;
                         break;
-                        
+
                     case ImageParser.FORMAT_PNG:
-                        this.format = Format.PNG; 
+                        this.format = Format.PNG;
                         break;
-                    
+
                     default:
                         throw new UnsupportedOperationException("Unsupported image file format '" + ii.getFormatName() + "'.");
                 }
@@ -108,8 +109,16 @@ public class ImageInfo {
         } catch (Exception e) {
             if (!(e instanceof RuntimeException)) e = new RuntimeException(e);
             throw (RuntimeException)e;
+        } finally{
+            if(is != null){
+                try {
+                    is.close();
+                }
+                catch (IOException ex) {
+                }
+            }
         }
-    }   
+    }
     
     public boolean equals(Object o) {
         return o instanceof ImageInfo && toString().equals(o.toString());
