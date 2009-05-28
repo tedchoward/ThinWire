@@ -196,6 +196,8 @@ public final class WebApplication extends Application {
     private Map<Component, Object> renderStateListeners;
     private EventProcessor proc;
     private ClassLoader classLoader;
+    private String faviconType;
+    private String faviconURL;
     
     State state;
     List<Runnable> timers;
@@ -844,7 +846,23 @@ public final class WebApplication extends Application {
 
     protected Object setPackagePrivateMember(String memberName, Component comp, Object value) {
         return super.setPackagePrivateMember(memberName, comp, value);
-    }    
+    }
+
+     /**
+     * Sets the favourite icon for the browser.
+     *
+     * @param mimetype The type of image it is. Valid types are "image/gif", "image/png" and "image/vnd.microsoft.icon"
+     * @param url The url to the icon
+     */
+    public void setFavIconPath(String type, String url) {
+        this.faviconType = type;
+        this.faviconURL = url;
+        clientSideFunctionCall("tw_setFavicon", type, url);
+    }
+
+    public void reloadFavicon() {
+        setFavIconPath(faviconType, faviconURL);
+    }
     
     protected void finalize() {
         if (log.isLoggable(LEVEL)) log.log(LEVEL, Thread.currentThread().getName() + ": finalizing app");

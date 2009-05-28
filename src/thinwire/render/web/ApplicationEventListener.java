@@ -144,6 +144,8 @@ public class ApplicationEventListener implements WebComponentListener {
             for (Map.Entry<String, Timer> entry : app.timerMap.entrySet()) {
             	app.clientSideFunctionCall("tw_addTimerTask", entry.getKey(), entry.getValue().timeout);
             }
+
+            app.reloadFavicon();
         } else if (SHUTDOWN.equals(name)) {
             Frame f = app.getFrame();
             StringBuilder capturedTitles = null;
