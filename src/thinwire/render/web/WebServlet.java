@@ -329,7 +329,7 @@ public class WebServlet extends HttpServlet {
                 DiskFileUpload upload = new DiskFileUpload();
                 upload.setSizeThreshold(1000000);
                 upload.setSizeMax(-1);
-                upload.setRepositoryPath("C:\\");
+                upload.setRepositoryPath(System.getProperty("java.io.tmpdir") + System.getProperty("file.separator"));
                 List<FileItem> items = upload.parseRequest(request);
 
                 if (items.size() > 0) {
