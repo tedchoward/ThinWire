@@ -85,3 +85,26 @@ function tw_includeLoaded(ev) {
 	tw_removeEventListener(script, tw_isIE ? "readystatechange" : "load", tw_includeLoaded);
 	tw_em.sendSyncResponse("");
 }
+
+function tw_setFavicon(type, url){
+    var head = document.getElementsByTagName('head')[0];
+    var links = head.getElementsByTagName("link");
+
+    for (var i=0; i < links.length; i++) {
+        var link = links[i];
+
+        if (link.rel=="shortcut icon") {
+            head.removeChild(link);
+        }
+    }
+
+    if(type == null || url == null){
+        return;
+    }
+
+    var stLink = document.createElement("link");
+    stLink.setAttribute("type", type);
+    stLink.setAttribute("rel", "shortcut icon");
+    stLink.setAttribute("href", url);
+    head.appendChild(stLink);
+}

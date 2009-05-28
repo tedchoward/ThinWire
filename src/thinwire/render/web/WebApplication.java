@@ -33,9 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.PrintWriter;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -161,7 +159,7 @@ public final class WebApplication extends Application {
         Thread t = Thread.currentThread();
         return t instanceof EventProcessor ? ((EventProcessor)t).app : null;
     }
-    
+
     static class Timer {
         Runnable task;
         long timeout;
@@ -181,6 +179,8 @@ public final class WebApplication extends Application {
     private Map<Component, Object> renderStateListeners;
     private EventProcessor proc;
     private ClassLoader classLoader;
+    private String faviconType;
+    private String faviconURL;
     
     State state;
     List<Runnable> timers;
@@ -218,7 +218,7 @@ public final class WebApplication extends Application {
     void flushEvents() {
         proc.flush();
     }
-    
+
     void repaint() {
     	state = State.REPAINT;
     }
@@ -838,7 +838,23 @@ public final class WebApplication extends Application {
 
     protected Object setPackagePrivateMember(String memberName, Component comp, Object value) {
         return super.setPackagePrivateMember(memberName, comp, value);
-    }    
+    }
+
+     /**
+     * Sets the favourite icon for the browser.
+     *
+     * @param mimetype The type of image it is. Valid types are "image/gif", "image/png" and "image/vnd.microsoft.icon"
+     * @param url The url to the icon
+     */
+    public void setFavIconPath(String type, String url) {
+        this.faviconType = type;
+        this.faviconURL = url;
+        clientSideFunctionCall("tw_setFavicon", type, url);
+    }
+
+    public void reloadFavicon() {
+        setFavIconPath(faviconType, faviconURL);
+    }
     
     protected void finalize() {
         if (log.isLoggable(LEVEL)) log.log(LEVEL, Thread.currentThread().getName() + ": finalizing app");
