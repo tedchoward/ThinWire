@@ -51,6 +51,7 @@ import javax.servlet.http.*;
 public class WebServlet extends HttpServlet {
 	private static final Level LEVEL = Level.FINER;
     private static final Logger log = Logger.getLogger(WebServlet.class.getName());
+    private File storageDirectory = null;
     
     private static enum InitParam {
         MAIN_CLASS, EXTRA_ARGUMENTS, STYLE_SHEET, RELOAD_ON_REFRESH;
@@ -320,6 +321,15 @@ public class WebServlet extends HttpServlet {
         }
     }
     
+    private File getStorageDirectory() throws IOException {
+        if (this.storageDirectory == null) {
+            this.storageDirectory = File.createTempFile("upload", "tmp");
+            this.storageDirectory.mkdirs();
+            this.storageDirectory.deleteOnExit();
+        }
+        return this.storageDirectory;
+    }
+
     private void handleUserUpload(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         HttpSession httpSession = request.getSession();
         ApplicationHolder holder = (ApplicationHolder)httpSession.getAttribute("instance");
@@ -329,7 +339,7 @@ public class WebServlet extends HttpServlet {
                 DiskFileUpload upload = new DiskFileUpload();
                 upload.setSizeThreshold(1000000);
                 upload.setSizeMax(-1);
-                upload.setRepositoryPath(System.getProperty("java.io.tmpdir") + System.getProperty("file.separator"));
+                upload.setRepositoryPath(getStorageDirectory().getAbsolutePath());
                 List<FileItem> items = upload.parseRequest(request);
 
                 if (items.size() > 0) {
