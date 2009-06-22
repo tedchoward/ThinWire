@@ -84,12 +84,12 @@ public class ContainerRenderer extends ComponentRenderer implements ItemChangeLi
     protected void destroy() {
         Container<Component> c = (Container<Component>)comp;
         c.removeItemChangeListener(this);
-        super.destroy();
         
         for (Component comp : c.getChildren()) {
             compToRenderer.get(comp).destroy();
         }
-        
+
+        super.destroy();
         compToRenderer.clear();
         compToRenderer = null;
     }
