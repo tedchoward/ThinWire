@@ -102,7 +102,7 @@ var tw_GridBox = tw_Component.extend({
         tw_addEventListener(header, "mousemove", this._headerMouseMoveListener.bind(this));
         tw_addEventListener(header, "mousedown", this._headerMouseDownListener.bind(this));
         tw_addEventListener(header, "mouseup", this._headerMouseUpListener.bind(this));
-        tw_addEventListener(this._box, ["click", "dblClick"], this._clickListener.bind(this));
+        tw_addEventListener(this._box, ["click", "dblclick"], this._clickListener.bind(this));
          
         var showDropDown = false;
         var showChild = false;
