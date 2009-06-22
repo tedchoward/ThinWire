@@ -88,11 +88,11 @@ public class Hyperlink extends AbstractLabelComponent {
     }
 
     public static void openLocation(String location, String target) {
-    	openLocation(location, null, false, false);
+    	openLocation(location, target, false, false);
     }
     
     public static void openLocation(String location, String target, boolean visibleChrome) {
-    	openLocation(location, null, visibleChrome, false);
+    	openLocation(location, target, visibleChrome, false);
     }
 
     public static void openLocation(String location, String target, boolean visibleChrome, boolean resizeAllowed) {
