@@ -1,27 +1,4 @@
-                           ThinWire(R) Ajax RIA Framework
-                        Copyright (C) 2003-2008 ThinWire LLC
-
-  This library is free software; you can redistribute it and/or modify it under
-  the terms of the GNU Lesser General Public License as published by the Free
-  Software Foundation; either version 2.1 of the License, or (at your option) any
-  later version.
-
-  This library is distributed in the hope that it will be useful, but WITHOUT ANY
-  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-  PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
-
-  You should have received a copy of the GNU Lesser General Public License along
-  with this library; if not, write to the Free Software Foundation, Inc., 59
-  Temple Place, Suite 330, Boston, MA 02111-1307 USA
-
-  Users who would rather have a commercial license, warranty or support should
-  contact the following company who supports the technology:
-  
-            ThinWire LLC, 5919 Greenville #335, Dallas, TX 75206-1906
-   	            email: info@thinwire.com    ph: +1 (214) 295-4859
- 	                        http://www.thinwire.com
-
-===============================================================================
+                        ThinWire(R) Ajax RIA Framework
                      Rich Web Applications, Made Simple!
 ===============================================================================
 ThinWire(R) is an LGPL open source, free for commercial use, development framework
@@ -34,30 +11,3 @@ view-layer of your Java EE (J2EE) application and you'll be able to provide an
 unparalleled user experience, while at the same time completing your project
 faster than ever.
 
-===============================================================================
-                          Building the Framework
-===============================================================================
-The build process for ThinWire is defined using the Apache Ant build tool. It
-has only been built using Ant 1.6 or greater, but it may build correctly with
-earlier releases as well.  You can learn about the Apache Ant project and
-download a working version from: http://ant.apache.org/
-
-Once you have Ant installed and added to your system path, you can build the
-ThinWire(R) framework simply by typing 'ant dist' at the command shell from
-the 'build' directory.  The following Ant build targets are supported:
-
- dist        compile the framework, create a jar and package
-	         it along with other required runtime files into
-             a distribution zip.
-
- dist14      compile a Java 1.4 compatible version of the
-             framework, create a jar and package it along with
-             other required runtime files into a distribution
-             zip.
-	
- source      create a source only distribution that contains
-             everything necessary to build the framework.
-
- javadoc     generate the framework API documentation and
-             package it into a javadoc only distribution zip
-             file.
