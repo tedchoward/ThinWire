@@ -62,6 +62,26 @@
     </resources>
     <plugins>
       <plugin>
+        <groupId>thinwire</groupId>
+        <artifactId>thinwire-jso</artifactId>
+        <version>1.2.0-SNAPSHOT</version>
+        <executions>
+          <execution>
+            <id>default</id>
+            <phase>process-resources</phase>
+            <configuration>
+              <srcdir>${basedir}/src/main/resources/thinwire/render/web/resources</srcdir>
+              <destdir>${project.build.outputDirectory}/thinwire/render/web/resources</destdir>
+              <namemap>Main.js</namemap>
+              <!--<compress>true</compress>-->
+            </configuration>
+            <goals>
+              <goal>jso</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
         <version>2.4</version>
