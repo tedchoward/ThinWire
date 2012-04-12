@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0   http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>thinwire</groupId>
+  <artifactId>thinwire</artifactId>
+  <version>1.2-SNAPSHOT</version>
+
+  <name>ThinWire Ajax RIA Framework</name>
+  <inceptionYear>2003</inceptionYear>
+  <licenses>
+    <license>
+      <name>LGPL-2.1</name>
+      <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt</url>
+      <distribution>repo</distribution>
+      <comments>The GNU Lesser General Public License, version 2.1</comments>
+    </license>
+  </licenses>
+
+  <scm>
+    <connection>scm:git:git://github.com/tedchoward/ThinWire.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/tedchoward/ThinWire.git</developerConnection>
+    <url>http://github.com/tedchoward/ThinWire</url>
+  </scm>
+
+
+  <dependencies>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>servlet-api</artifactId>
+      <version>2.3</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>commons-fileupload</groupId>
+      <artifactId>commons-fileupload</artifactId>
+      <version>1.0</version>
+      <scope>compile</scope>
+    </dependency>
+  </dependencies>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>2.4</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <addClasspath>true</addClasspath>
+              <mainClass>thinwire.ui.Application</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.8.1</version>
+        <configuration>
+          <author>false</author>
+          <version>false</version>
+          <use>false</use>
+          <show>protected</show>
+          <windowtitle>ThinWire Ajax RIA Framework API ${project.version}</windowtitle>
+          <doctitle>ThinWire Ajax RIA Framework API ${project.version}</doctitle>
+          <stylesheetfile>${basedir}/src/main/javadoc/stylesheet.css</stylesheetfile>
+          <docfilessubdirs>true</docfilessubdirs>
+          <bottom><![CDATA[
+            <div class="FooterText"><a href="http://www.thinwire.com">ThinWire&reg;</a> is a registered of <a href="http://www.customcreditsystems.com">Custom Credit Systems</a>&nbsp;&nbsp;Copyright &copy; 2008 All rights reserved.</div>
+            <div class="FooterButtons">
+              <a href="http://www.opensource.org/licenses/lgpl-license.php"><img src="http://opensource.org/trademarks/open_source_button.png" width=88" height="31" alt="ThinWire_is_Open_Source_under_the_terms_of_the_LGPLv2.1"/></a>
+              <a href="http://sourceforge.net/projects/thinwire"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=170706&amp;type=1" width="88" height="31" alt="SourceForge.net_Project_Page"/></a>
+              <a href="http://www.java.net"><img src="http://today.java.net/images/javanet_button_90.gif" border="0" width="90" height="25" alt="java.net_Member"/></a>
+              <a href="http://digg.com/programming/ThinWire_Ajax_Framework_Now_Available_Under_LGPL"><img src="http://thinwire.sourceforge.net/DiggButtonLarge.png" width="156" height="31" alt="Support_ThinWire,_Digg_our_Story"/></a>
+            </div>
+          ]]></bottom>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>
