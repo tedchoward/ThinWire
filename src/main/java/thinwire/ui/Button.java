@@ -148,17 +148,4 @@ public class Button extends AbstractTextComponent<Button> implements ImageCompon
 	    
 	    firePropertyChange(this, PROPERTY_STANDARD, oldStandard, standard);
 	}
-    //#IFDEF V1_1_COMPAT
-    
-	/**
-	 * Add an actionListener that receives "click" notification from this object.
-     * Equivalent to addActionListener("click", listener);
-	 * @param listener the listener to add
-	 * @deprecated for performance reasons, this form as been deprecated.  Use the named action form instead.
-	 */
-	public void addActionListener(ActionListener listener) {
-        if (!isCompatModeOn()) throw new IllegalStateException("this method is deprecated as of v1.2 and cannot be called unless compat mode is on, use addActionListener(action, listener) instead.");        
-        addActionListener(ACTION_CLICK, listener);
-	}
-    //#ENDIF
 }

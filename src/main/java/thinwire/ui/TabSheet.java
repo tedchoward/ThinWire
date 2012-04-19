@@ -150,9 +150,6 @@ public class TabSheet extends AbstractContainer<TabSheet, Component> implements 
             TabFolder tf = (TabFolder)getParent();
             
             if (tf == null) {
-                //#IFDEF V1_1_COMPAT        
-                if (!isCompatModeOn())
-                //#ENDIF
                 throw new IllegalStateException("You must first add a TabSheet to a TabFolder before you can set the 'width' property");
             } else {
                 tf.setWidth(width);
@@ -167,9 +164,6 @@ public class TabSheet extends AbstractContainer<TabSheet, Component> implements 
             TabFolder tf = (TabFolder)getParent();
             
             if (tf == null) {
-                //#IFDEF V1_1_COMPAT        
-                if (!isCompatModeOn())
-                //#ENDIF
                 throw new IllegalStateException("You must first add a TabSheet to a TabFolder before you can set the 'height' property");
             } else {
                 tf.setHeight(height);
@@ -184,9 +178,6 @@ public class TabSheet extends AbstractContainer<TabSheet, Component> implements 
             TabFolder tf = (TabFolder)getParent();
             
             if (tf == null) {
-                //#IFDEF V1_1_COMPAT        
-                if (!isCompatModeOn())
-                //#ENDIF
                 throw new IllegalStateException("You must first add a TabSheet to a TabFolder before you can set the 'x' property");
             } else {
                 tf.setX(x);
@@ -201,9 +192,6 @@ public class TabSheet extends AbstractContainer<TabSheet, Component> implements 
             TabFolder tf = (TabFolder)getParent();
             
             if (tf == null) {
-                //#IFDEF V1_1_COMPAT        
-                if (!isCompatModeOn())
-                //#ENDIF
                 throw new IllegalStateException("You must first add a TabSheet to a TabFolder before you can set the 'y' property");
             } else {
                 tf.setY(y);

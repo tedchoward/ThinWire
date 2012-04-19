@@ -255,53 +255,11 @@ public class RadioButton extends AbstractTextComponent<RadioButton> implements C
 	    public void setChecked(RadioButton rb) {
 	        rb.setChecked(true);
 	    }
-        //#IFDEF V1_1_COMPAT
-	    
-        /**
-         * Returns getChecked().getValue().
-         * @return getChecked().getValue();
-         * @deprecated although their is no direct equivalent, a similar result could be accomplished with getChecked().getUserObject().
-         */
-	    public Object getCheckedValue() {                        
-            if (!isCompatModeOn()) throw new IllegalStateException("this method is deprecated as of v1.2 and cannot be called unless compat mode is on. There is no direct equivalent, use another method to track values like this.");
-	        return checked == null ? "" : checked.getValue();
-	    }
-
-        /**
-         * Sets the checked state of the RadioButton that has a 'value' property equal to checkedValue.
-         * @param checkedValue
-         * @throws IllegalStateException if compat mode is not on
-         * @deprecated there is no direct equivalent, use another method to track values like this.
-         */
-	    public void setCheckedValue(Object checkedValue) {
-            if (!isCompatModeOn()) throw new IllegalStateException("this method is deprecated as of v1.2 and cannot be called unless compat mode is on. There is no direct equivalent, use another method to track values like this.");
-            
-            if(checkedValue == null || (checkedValue instanceof String && ((String)checkedValue).trim().length() == 0)) {
-                for (RadioButton rb : l) {
-                    if (rb.isChecked()) {
-                        rb.setChecked(false);
-                        break;
-                    }
-                }
-            }
-            else {
-                for (RadioButton rb : l) {
-    	            if (rb.getValue().equals(checkedValue)) {
-    	                rb.setChecked(true);
-    	                break;
-    	            }
-                }
-            }
-	    }
-        //#ENDIF
 	}
 
     public static final String PROPERTY_GROUP = "group";
     
 	private boolean checked;
-    //#IFDEF V1_1_COMPAT
-	private Object value = "";
-    //#ENDIF
 	private Group group;	
 
 	/**
@@ -422,33 +380,4 @@ public class RadioButton extends AbstractTextComponent<RadioButton> implements C
 		
 		firePropertyChange(this, PROPERTY_CHECKED, oldChecked, checked);		
 	}
-    //#IFDEF V1_1_COMPAT
-
-    /**
-     * Returns a user defined <code>Object</code> assigned to this <code>RadioButton</code>.
-     * @return a value associated to this RadioButton
-     * @throws IllegalStateException if compat mode is not on
-     * @deprecated Component.setUserObject is the replacement 
-     * @see Component#setUserObject(Object)
-     */
-	public Object getValue() {
-        if (!isCompatModeOn()) throw new IllegalStateException("this method is deprecated as of v1.2 and cannot be called unless compat mode is on, use getUserObject() instead; RadioButton no longer has a value dedicated to itself");
-		return value;
-	}
-	
-    /**
-     * Assigns a user defined <code>Object</code> to this <code>RadioButton</code>.
-     * @param value a value to associate to this RadioButton
-     * @throws IllegalStateException if compat mode is not on
-     * @deprecated Component.setUserObject is the replacement 
-     * @see Component#setUserObject(Object)
-     */
-	public void setValue(Object value) {
-        if (!isCompatModeOn()) throw new IllegalStateException("this method is deprecated as of v1.2 and cannot be called unless compat mode is on, use getUserObject() instead; RadioButton no longer has a value dedicated to itself");
-	    Object oldValue = this.value;
-	    value = value == null ? "" : value;
-		this.value = value;
-		firePropertyChange(this, "value", oldValue, value);		
-	}
-    //#ENDIF
 }

@@ -32,15 +32,6 @@ import thinwire.ui.style.*;
  * @author Joshua J. Gertzen
  */
 abstract class AbstractComponent<C extends Component> implements Component {
-    //#IFDEF V1_1_COMPAT    
-    private static final String COMPAT_MODE_PROP = Application.class.getName() + ".compatMode";
-    static boolean isCompatModeOn() {
-        String value = System.getProperty(COMPAT_MODE_PROP);
-        return value != null && value.toUpperCase().equals("TRUE");        
-    }
-    
-    //#ENDIF
-    
     Application app;
     private Object parent;
     private LabelComponent label;

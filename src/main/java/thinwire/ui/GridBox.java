@@ -379,9 +379,6 @@ public class GridBox extends AbstractComponent<GridBox> implements Grid, ItemCha
          */
         public Column() {
             
-            //#IFDEF V1_1_COMPAT
-            if (isCompatModeOn()) visible = false;
-            //#ENDIF
         }
 
         /**
@@ -1012,26 +1009,5 @@ public class GridBox extends AbstractComponent<GridBox> implements Grid, ItemCha
     	return grid.toString();
     }
     
-    //#IFDEF V1_1_COMPAT
-    
-    DropDown.View<GridBox> view;     
-
-    /**
-     * @deprecated
-     */
-    public DropDown.View<GridBox> getView() {
-        if (!isCompatModeOn()) throw new IllegalStateException("this method is deprecated as of v1.2 and cannot be called unless compat mode is on, use DropDown.getView() instead; GridBox's no longer hold a reference to a view.");
-
-        if (getParent() instanceof DropDownGridBox) {
-            view = ((DropDownGridBox)getParent()).getView();
-        } else if (view == null) {
-            DefaultView v = new DefaultView();
-            v.init(null, this);
-            view = v;
-        }
-        
-        return view;
-    }
-    //#ENDIF
 }
 

@@ -104,9 +104,6 @@ public class Dialog extends AbstractWindow<Dialog> {
      */
     public Dialog() {
         this(null);
-        //#IFDEF V1_1_COMPAT                    
-        if (isCompatModeOn()) this.waitForWindow = true;
-        //#ENDIF
     }
     
     /**

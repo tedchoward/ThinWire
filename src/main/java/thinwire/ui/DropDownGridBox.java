@@ -221,19 +221,8 @@ public class DropDownGridBox extends DropDown<GridBox> {
             if (gb == null) throw new IllegalStateException("gridBox == null");
             String delimiter;
             int columnIndex;
-            //#IFDEF V1_1_COMPAT
-            
-            if (gb.view == null) {
-            //#ENDIF
-                delimiter = this.delimiter;
-                columnIndex = this.columnIndex;
-            //#IFDEF V1_1_COMPAT
-            } else {
-                DefaultView view = (DefaultView)gb.view;
-                delimiter = view.delimiter;
-                columnIndex = view.columnIndex;
-            }
-            //#ENDIF
+            delimiter = this.delimiter;
+            columnIndex = this.columnIndex;
             
             if (columnIndex >= gb.getColumns().size()) throw new IllegalStateException("columnIndex >= gridBox.getColumns().size()");
             String s;
@@ -259,19 +248,8 @@ public class DropDownGridBox extends DropDown<GridBox> {
 
             String delimiter;
             int columnIndex;
-            //#IFDEF V1_1_COMPAT
-            
-            if (gb.view == null) {
-            //#ENDIF
             delimiter = this.delimiter;
             columnIndex = this.columnIndex;
-            //#IFDEF V1_1_COMPAT
-            } else {
-                DefaultView view = (DefaultView)gb.view;
-                delimiter = view.delimiter;
-                columnIndex = view.columnIndex;
-            }          
-            //#ENDIF
             
             if (columnIndex >= gb.getColumns().size()) throw new IllegalStateException("columnIndex >= gridBox.getColumns().size()");
             String s;

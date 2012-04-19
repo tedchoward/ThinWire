@@ -66,14 +66,10 @@ var tw_BaseCheckRadio = tw_Component.extend({
     _clickListener: function(ev) {
         if (!this._enabled) return;
         if (this._focusCapable) this.setFocus(true)
-        //#IFNDEF V1_1_COMPAT
         if (this instanceof tw_CheckBox || !this.isChecked()) {
-        //#ENDIF
             var checked = !this.isChecked();
             this.setChecked(checked, true);
-        //#IFNDEF V1_1_COMPAT
         }
-        //#ENDIF
         
         var action = tw_Component.getClickAction(ev.type);
         if (action == null) return;

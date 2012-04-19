@@ -879,50 +879,10 @@ public abstract class Application {
         String ret = null;
 
         if (s != null && !s.matches("^\\w?:?[\\\\|/].*")) {
-            //#IFDEF V1_1_COMPAT
-            //Limit the keys in the map to UPPER-CASE letters or underscores.
-            //This lowers the chance of someone using this resourceMap to override a valid
-            //file path.  i.e.  map.put("C:\\WORK\\CUSTOMERFILE.DOC", "C:\\TEMP\\HACK.TXT")
-            //would make new Resource("C:\\WORK\\CUSTOMERFILE.DOC") return a file reference
-            //to "C:\\TEMP\\HACK.TXT" instead of "C:\\WORK\\CUSTOMERFILE.DOC".
-            if (s.matches("^[A-Z_]+$")) {            
-                if (fileMap != null) {
-                    String m = fileMap.get(s);
-                
-                    if (m != null) {
-                        if (m.matches("^\\w?:?[\\\\|/].*"))
-                            ret = m;
-                        else
-                            ret = getBaseFolder() + File.separator + m;
-                    }
-                }
-            }
-            //#ENDIF
             if (ret == null) ret = getBaseFolder() + File.separator + s;
         }
         
         ret = (ret == null ? s : ret);
         return ret;
     }
-    //#IFDEF V1_1_COMPAT    
-
-    private Map<String, String> fileMap;
-    
-    /**
-     * @return
-     * @deprecated there is no replacement for this method, instead use String constant variables.
-     */
-    public Map<String, String> getFileMap() {
-        return fileMap;
-    }
-    
-    /**
-     * All keys in the file map must be upper case
-     * @param fileMap
-     * @deprecated there is no replacement for this method, instead use String constant variables.
-     */
-    public void setFileMap(Map<String, String> fileMap) {
-        this.fileMap = fileMap;
-    }
-    //#ENDIF
 }

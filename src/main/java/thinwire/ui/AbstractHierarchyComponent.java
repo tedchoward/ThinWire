@@ -131,28 +131,6 @@ abstract class AbstractHierarchyComponent<C extends HierarchyComponent<HI>, HI e
             H hier = getHierarchy();
             if (hier != null) hier.firePropertyChange(this, PROPERTY_ITEM_USER_OBJECT, oldValue, this.userObject);
         }
-        //#IFDEF V1_1_COMPAT
-        
-        /**
-         * @return value from getUserObject()
-         * @deprecated in favor of getUserObject
-         * @see #getUserObject()
-         */
-        public Object getValue() {
-            if (!isCompatModeOn()) throw new IllegalStateException("this method is deprecated as of v1.2 and cannot be called unless compat mode is on, use getUserObject() instead.");            
-            return getUserObject();
-        }
-
-        /**
-         * @param value value to pass to setUserObject()
-         * @deprecated in favor of setUserObject
-         * @see #setUserObject(Object)
-         */
-        public void setValue(Object value) {
-            if (!isCompatModeOn()) throw new IllegalStateException("this method is deprecated as of v1.2 and cannot be called unless compat mode is on, use setUserObject() instead.");            
-            setUserObject(value);
-        }
-        //#ENDIF
         
         public int getIndex() {
             if (parent == null) throw new IllegalStateException("getParent() == null");
@@ -222,17 +200,4 @@ abstract class AbstractHierarchyComponent<C extends HierarchyComponent<HI>, HI e
         icei.removeListener(listener);
         return (C)this;
     }    
-    //#IFDEF V1_1_COMPAT
-    
-    /**
-     * Register an ActionListener that will be notified when a Menu action occurs. Actions: Menu.ACTION_CLICK - Fired when a
-     * Menu.Item is clicked.
-     * @param listener the listener that is to be notified when a Menu action occurs.
-     * @deprecated for performance reasons, this form as been deprecated.  Use the named action form instead.
-     */
-    public void addActionListener(ActionListener listener) {
-        if (!isCompatModeOn()) throw new IllegalStateException("this method is deprecated as of v1.2 and cannot be called unless compat mode is on, use addActionListener(action, listener) instead.");        
-        addActionListener(ACTION_CLICK, listener);
-    }
-    //#ENDIF
 }
