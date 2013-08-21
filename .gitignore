@@ -16,3 +16,4 @@ local.properties
 
 ### Maven ###
 target /
+/target
