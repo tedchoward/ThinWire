@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
@@ -30,12 +29,9 @@ import java.util.logging.Logger;
 import thinwire.render.RenderStateEvent;
 import thinwire.render.RenderStateListener;
 import thinwire.render.web.WebApplication;
-import thinwire.ui.event.ActionEvent;
-import thinwire.ui.event.ActionListener;
 import thinwire.ui.event.PropertyChangeEvent;
 import thinwire.ui.event.PropertyChangeListener;
 import thinwire.ui.style.Color;
-import thinwire.ui.AlignTextComponent.AlignX;
 
 /**
  * A <code>FileChooser</code> is a Component that enables a user to upload a
@@ -249,156 +245,5 @@ public class FileChooser extends Panel {
     @Override
     public List<Component> getChildren() {
         return Collections.unmodifiableList(super.getChildren());
-    }
-    
-    /**
-     * Displays a <code>Dialog</code> with a <code>FileChooser</code> along
-     * with OK and Cancel <code>Buttons</code>.
-     * 
-     * @return the <code>FileInfo</code> for the file uploaded
-     */
-    public static FileInfo show() {
-        return show(false);
-    }
-    
-    /**
-     * Displays a <code>Dialog</code> with a <code>FileChooser</code> and
-     * optionally a description <code>TextField</code> along with OK and
-     * Cancel <code>Buttons</code>.
-     * 
-     * @param showDescription
-     *            displays a <code>TextField</code> for a description if true
-     * @return the <code>FileInfo</code> for the file uploaded
-     */
-    public static FileInfo show(boolean showDescription) {
-        List<FileInfo> l = show(showDescription, false);
-        return l.size() > 0 ? l.get(0) : null;
-    }
-    
-    /**
-     * Displays a <code>Dialog</code> with a <code>FileChooser</code> and
-     * optionally a description <code>TextField</code> along with OK and
-     * Cancel <code>Buttons</code>. Optional <code>Buttons</code> are
-     * availiable for adding and removing additional <code>FileChooser</code>
-     * components.
-     * 
-     * @param showDescription
-     *            displays a <code>TextField</code> for a description if true
-     * @param multiFile
-     *            displays Add and Remove <code>Buttons</code> for uploading multiple files
-     * @return a <code>List</code> of <code>FileInfo</code> objects
-     */
-    public static List<FileInfo> show(final boolean showDescription, boolean multiFile) {
-        final Frame f = Application.current().getFrame();
-        final Dialog dlg = new Dialog(multiFile ? "Upload Multiple Files" : "Upload File");
-        dlg.setWaitForWindow(true);
-        final List<Component> kids = dlg.getChildren();
-        final List<Component[]> files = new ArrayList<Component[]>();
-        final List<FileInfo> fileInfoList = new ArrayList<FileInfo>();
-        
-        int width = 600;
-        int height = showDescription ? 121 : 98;
-        final int incHeight = showDescription ? 50 : 25;
-        
-        dlg.setBounds((f.getWidth() - width) / 2, (f.getHeight() - height) / 2, width, height);
-        files.add(addRow(dlg, 0, showDescription));
-        
-        final Button okBtn = new Button("OK");
-        okBtn.setBounds(dlg.getInnerWidth() - 170, dlg.getInnerHeight() - 27, 80, 22);
-        okBtn.addActionListener(Button.ACTION_CLICK, new ActionListener() {
-            public void actionPerformed(ActionEvent ev) {
-                for (Component[] c : files) {
-                    FileChooser fc = (FileChooser) c[0];
-                    FileInfo fi = fc.getFileInfo();
-                    if (fi != null) {
-                    	if (c.length == 2) fi.setDescription(((TextField) c[1]).getText());
-                    	fileInfoList.add(fi);
-                    }
-                }
-                dlg.setVisible(false);
-            }
-        });
-        kids.add(okBtn);
-        
-        final Button cancelBtn = new Button("Cancel");
-        cancelBtn.setBounds(dlg.getInnerWidth() - 85, dlg.getInnerHeight() - 27, 80, 22);
-        cancelBtn.addActionListener(Button.ACTION_CLICK, new ActionListener() {
-            public void actionPerformed(ActionEvent ev) {
-                dlg.setVisible(false);
-            }
-        });
-        kids.add(cancelBtn);
-        
-        if (multiFile) {
-            Button addBtn = new Button("Add");
-            final Button removeBtn = new Button("Remove");
-            
-            addBtn.setBounds(5, dlg.getInnerHeight() - 27, 80, 22);
-            addBtn.addActionListener(Button.ACTION_CLICK, new ActionListener() {
-                public void actionPerformed(ActionEvent ev) {
-                    dlg.setHeight(dlg.getHeight() + incHeight);
-                    dlg.setY((f.getHeight() - dlg.getHeight()) / 2);
-                    files.add(addRow(dlg, files.size(), showDescription));
-                    if (files.size() > 1) removeBtn.setEnabled(true);
-                }
-            });
-            kids.add(addBtn);
-            
-            removeBtn.setBounds(90, dlg.getInnerHeight() - 27, 80, 22);
-            removeBtn.setEnabled(false);
-            removeBtn.addActionListener(Button.ACTION_CLICK, new ActionListener() {
-                public void actionPerformed(ActionEvent ev) {
-                    Component[] lastFile = files.remove(files.size() - 1);
-                    for (Component c : lastFile) {
-                        kids.remove(c.getLabel());
-                        kids.remove(c);
-                    }
-                    dlg.setHeight(dlg.getHeight() - incHeight);
-                    dlg.setY((f.getHeight() - dlg.getHeight()) / 2);
-                    if (files.size() <= 1) ((Button) ev.getSource()).setEnabled(false);
-                }
-            });
-            kids.add(removeBtn);
-        }
-        
-        dlg.addPropertyChangeListener(Dialog.PROPERTY_HEIGHT, new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent ev) {
-                int newY = ((Dialog) ev.getSource()).getInnerHeight() - 27;
-                for (Component c : ((Dialog) ev.getSource()).getChildren()) {
-                    if (c instanceof Button) c.setY(newY);
-                }
-            }
-        });
-        
-        dlg.setVisible(true);
-        return fileInfoList;
-    }
-    
-    private static Component[] addRow(Dialog dlg, int rowCount, boolean showDescription) {
-        List<Component> kids = dlg.getChildren();
-        int y1 = showDescription ? 10 + (rowCount * 50) : 10 + (rowCount * 20);
-        FileChooser fc = new FileChooser();
-        fc.setBounds(85, y1, dlg.getInnerWidth() - 90, 20);
-        kids.add(fc);
-        Label fcl = new Label("File Name:");
-        fcl.setBounds(10, y1, 70, 20);
-        fcl.setAlignX(AlignX.RIGHT);
-        fcl.setLabelFor(fc);
-        kids.add(fcl);
-        if (showDescription) {
-            int y2 = y1 + 25;
-            TextField description = new TextField();
-            description.setBounds(85, y2, dlg.getInnerWidth() - 90, 20);
-            kids.add(description);
-            
-            Label lblDescription = new Label("Description:");
-            lblDescription.setBounds(10, y2, 70, 20);
-            lblDescription.setAlignX(AlignX.RIGHT);
-            lblDescription.setLabelFor(description);
-            kids.add(lblDescription);
-            return new Component[] { fc, description };
-        } else {
-            return new Component[] { fc };
-        }
     }
 }
