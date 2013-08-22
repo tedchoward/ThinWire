@@ -146,16 +146,6 @@ class ApplicationEventListener implements WebComponentListener {
             for (int i = diags.length; --i >= 0;) {
             	Dialog d = diags[i];
             	
-                if (d.isWaitForWindow()) {
-                	if (capturedTitles == null) {
-                		capturedTitles = new StringBuilder();
-                	} else {
-                		capturedTitles.append(", ");
-                	}
-                	
-                	capturedTitles.append('\'').append(d.getTitle()).append('\'');
-                }
-
                 if (d.isVisible()) {
             		try {
             			d.setVisible(false);

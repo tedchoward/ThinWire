@@ -73,6 +73,7 @@ public final class MessageBox {
 	private String buttons;	
 	private int buttonId;
     private boolean hasButtons;
+    private ActionListener listener;
 	
     /**
      * Display a dialog window without buttons.<p>
@@ -145,9 +146,11 @@ public final class MessageBox {
      * For multiple line messages, separate the lines with "\n".
      * 
      * @param message  The dialog message, a \n separated sequence of lines.
+     * @param listener ActionListener for the closing of the MessageBox (the source
+	 *            of the event is the id of the Button clicked)
      */
-    public static void confirm(String message) {
-        confirm(null, null, message, null);
+    public static void confirm(String message, ActionListener listener) {
+        confirm(null, null, message, null, listener);
     }
 	
     /**
@@ -163,9 +166,11 @@ public final class MessageBox {
      * 
      * @param title  the dialog title
      * @param message  The dialog message, a \n separated sequence of lines.
+     * @param listener ActionListener for the closing of the MessageBox (the source
+	 *            of the event is the id of the Button clicked)
      */
-    public static void confirm(String title, String message) {
-        confirm(null, title, message, null);
+    public static void confirm(String title, String message, ActionListener listener) {
+        confirm(null, title, message, null, listener);
     }
     
 	/**
@@ -182,9 +187,11 @@ public final class MessageBox {
 	 * @param icon name of the image file without path info or file extension.
 	 * @param title  the dialog title
 	 * @param message  The dialog message, a \n separated sequence of lines.
+	 * @param listener ActionListener for the closing of the MessageBox (the source
+	 *            of the event is the id of the Button clicked)
 	 */
-	public static void confirm(String icon, String title, String message) {
-		confirm(icon, title, message, null);
+	public static void confirm(String icon, String title, String message, ActionListener listener) {
+		confirm(icon, title, message, null, listener);
 	}
 
 	/**
@@ -215,11 +222,11 @@ public final class MessageBox {
 	 * @param title  The dialog's title.
 	 * @param message  The dialog's message.
 	 * @param buttons specifies what text and icon each button will have
-	 * @return the clicked button's return value
-	 *            
+	 * @param listener ActionListener for the closing of the MessageBox (the source
+	 *            of the event is the id of the Button clicked)
 	 */
-	public static int confirm(String icon, String title, String message, String buttons) {
-		return confirm(icon, title, message, null, buttons);
+	public static void confirm(String icon, String title, String message, String buttons, ActionListener listener) {
+		confirm(icon, title, message, null, buttons, listener);
 	}	
 	
 	/**
@@ -229,31 +236,33 @@ public final class MessageBox {
 	 * @param title the MessageBox title
 	 * @param component the Component for the content panel.
 	 * @param buttons a string specifying the buttons
-	 * @return the clicked button's return value
+	 * @param listener ActionListener for the closing of the MessageBox (the source
+	 *            of the event is the id of the Button clicked)
 	 */
-	public static int confirm(String icon, String title, Component component, String buttons) {
-		return confirm(icon, title, null, component, buttons);
+	public static void confirm(String icon, String title, Component component, String buttons, ActionListener listener) {
+		confirm(icon, title, null, component, buttons, listener);
 	}
 	
 	/**
 	 * Display a dialog window with the specified icon, title,
 	 *   message, component, and buttons.<p>
-   * Note:  Don't specify both a message and a component.
+	 * Note:  Don't specify both a message and a component.
 	 * @param icon the name of the icon, optional
 	 * @param title the MessageBox title
 	 * @param message the message for this MessageBox
 	 * @param component the Component for the content panel.
 	 * @param buttons a string specifying the buttons
-	 * @return the clicked button's return value
+	 * @param listener ActionListener for the closing of the MessageBox (the source
+	 *            of the event is the id of the Button clicked)
 	 */
-	private static int confirm(String icon, String title, String message, Component component, String buttons) {
+	private static void confirm(String icon, String title, String message, Component component, String buttons, ActionListener listener) {
 		MessageBox box = new MessageBox();
 		box.setTitle(title);
 		box.setIcon(icon);
 		box.setText(message);
 		box.setComponent(component);
 		box.setButtons(buttons);
-		return box.confirm();
+		box.confirm(listener);
 	}
 
 	/**
@@ -380,22 +389,24 @@ public final class MessageBox {
         if (dialog != null) throw new IllegalStateException("messageBox is already open");
 	    dialog = getDialog();
 		getMessageBoxes().add(this);
-	    dialog.setWaitForWindow(false);
 		dialog.setVisible(true);
 	}
-		
+	
 	/**
-	 * Make the MessageBox visible, and then block.
-	 * @return the clicked button's return value
+	 * Make the MessageBox visible. Execute the ActionListener when the
+	 * MessageBox is closed
+	 * 
+	 * @param l
+	 *            ActionListener for the closing of the MessageBox (the source
+	 *            of the event is the id of the Button clicked)
 	 */
-	public int confirm() {
-        if (dialog != null) throw new IllegalStateException("messageBox is already open");
+	public void confirm(ActionListener l) {
+		if (dialog != null) throw new IllegalStateException("messageBox is already open");
 		if (buttons == null || buttons.length() == 0) buttons = "OK";
-        hasButtons = true;
-	    dialog = getDialog();
-        dialog.setWaitForWindow(true);
+		hasButtons = true;
+		listener = l;
+		dialog = getDialog();
 		dialog.setVisible(true);
-		return buttonId;
 	}
 	
 	/**
@@ -541,6 +552,12 @@ public final class MessageBox {
 		                    MessageBox.this.buttonId = id;
                             if (component != null) dialog.getChildren().remove(component);
                             dialog.setVisible(false);
+                            
+                            if (listener != null) {
+                            	ActionEvent event = new ActionEvent(Component.ACTION_CLICK, ev.getSourceComponent(), id);
+                            	listener.actionPerformed(event);
+                            	listener = null;
+                            }
 	                    }
 	                }	                
 	            });
