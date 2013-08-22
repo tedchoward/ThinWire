@@ -97,7 +97,6 @@ public class Dialog extends AbstractWindow<Dialog> {
     private boolean resizeAllowed;
     private boolean repositionAllowed = true;
     private boolean modal = true;
-    boolean waitForWindow;
     
     /**
      * Constructs a new Dialog with no title. 
@@ -182,35 +181,7 @@ public class Dialog extends AbstractWindow<Dialog> {
         int innerHeight = super.getInnerHeight() - TITLE_BAR_HEIGHT - (getMenu() == null ? 0 : MENU_BAR_HEIGHT);
         return innerHeight < 0 ? 0 : innerHeight;
     }
-    
-    /**
-	 * Returns whether the Dialog will block execution when visible.
-	 * 
-	 * @return
-	 */
-    public boolean isWaitForWindow() {
-        return this.waitForWindow;
-    }   
-    
-    /**
-     * Sets whether setting the visible property to true will cause this thread to block.
-     * @param waitForWindow (Default = false)
-     */
-    public void setWaitForWindow(boolean waitForWindow) {
-        if (this.waitForWindow == waitForWindow) return;                
-        boolean oldWaitForWindow = this.waitForWindow;
-        this.waitForWindow = waitForWindow;
-        firePropertyChange(this, PROPERTY_WAIT_FOR_WINDOW, oldWaitForWindow, waitForWindow);
-
-        if (isVisible()) {
-            if (oldWaitForWindow) {
-                Application.current().releaseThread();
-            } else {
-                Application.current().captureThread();
-            }
-        }       
-    }
-    
+        
     /**
      * Makes the Dialog visible.
      * @see thinwire.ui.Component#setVisible(boolean)
@@ -225,11 +196,9 @@ public class Dialog extends AbstractWindow<Dialog> {
             if (visible) {
                 app.showWindow(this);
                 super.setVisible(visible);
-                if (waitForWindow) app.captureThread();
             } else {
                 app.hideWindow(this);
                 super.setVisible(false);
-                if (waitForWindow) app.releaseThread();
             }
         }
     }

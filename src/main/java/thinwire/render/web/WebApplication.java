@@ -695,16 +695,6 @@ public final class WebApplication extends Application {
         return baseFolder;
     }
     
-    protected void captureThread() {
-        if (proc == null) throw new IllegalStateException("No event processor allocated to this application. This is likely caused by making UI calls from a non-UI thread");
-        proc.captureThread();
-    }
-
-    protected void releaseThread() {
-        if (proc == null) throw new IllegalStateException("No event processor allocated to this application. This is likely caused by making UI calls from a non-UI thread");
-        proc.releaseThread();
-    }
-
     protected void showWindow(Window w) {
         WindowRenderer wr = (WindowRenderer) windowToRenderer.get(w);
         if (wr != null) throw new IllegalStateException("A window cannot be set to visible while it is already visible");

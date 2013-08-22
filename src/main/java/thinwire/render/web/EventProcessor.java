@@ -96,18 +96,6 @@ class EventProcessor extends Thread {
         if (log.isLoggable(LEVEL)) log.log(LEVEL, Thread.currentThread().getName() + ": exiting thread");
     }
     
-    void captureThread() {
-        int currentCaptureCount = ++captureCount;
-        if (log.isLoggable(LEVEL)) log.log(LEVEL, Thread.currentThread().getName() + ": capture count:" + captureCount);
-        threadCaptured = true;
-
-        //XXX Loops infinitely if entered while frame is not visible and a dialog is blocking.
-        while (threadCaptured) {
-            processUserActionEvent();
-            if (currentCaptureCount == captureCount) threadCaptured = true;
-        }
-    }
-    
     //Must only be called by the main run loop or the capture method!
     private void processUserActionEvent() {
         if (queue.size() > 0) {
@@ -162,13 +150,7 @@ class EventProcessor extends Thread {
             active = true;
         }
     }
-    
-    void releaseThread() {
-        threadCaptured = false;
-        captureCount--;
-        if (log.isLoggable(LEVEL)) log.log(LEVEL, Thread.currentThread().getName() + ": release count:" + captureCount);
-    }
-    
+        
     //This method is called by the servers request handler thread, not this thread.
     void handleRequest(WebComponentEvent ev, Writer w) throws IOException {
         synchronized (queue) {
