@@ -839,8 +839,6 @@ public abstract class Application {
     }
     
     protected abstract ClassLoader getClassLoader();
-    protected abstract void captureThread();
-    protected abstract void releaseThread();
     protected abstract void showWindow(Window w);
     protected abstract void hideWindow(Window w);
     protected abstract FileChooser.FileInfo getFileInfo();
