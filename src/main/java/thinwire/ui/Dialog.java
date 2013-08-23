@@ -90,7 +90,7 @@ public class Dialog extends AbstractWindow<Dialog> {
     public static final String PROPERTY_RESIZE_ALLOWED = "resizeAllowed";
     public static final String PROPERTY_REPOSITION_ALLOWED = "repositionAllowed";
     public static final String PROPERTY_MODAL = "modal";
-    public static final String PROPERTY_WAIT_FOR_WINDOW = "waitForWindow";
+//    public static final String PROPERTY_WAIT_FOR_WINDOW = "waitForWindow";
     
     private static final int TITLE_BAR_HEIGHT = 18 + 1;
         
