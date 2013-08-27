@@ -273,6 +273,7 @@ var tw_Component = Class.extend({
                         this._borderBox = bb;
                     }
                     
+                    bi.setBorderSize(this._borderSize);
                     var ary = value.split(',');
                     bi.setImage(ary[0], ary[1], ary[2]);
                 }
