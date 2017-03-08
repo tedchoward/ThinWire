@@ -4,7 +4,7 @@
 
   <groupId>thinwire</groupId>
   <artifactId>thinwire</artifactId>
-  <version>1.2-SNAPSHOT</version>
+  <version>1.2</version>
 
   <name>ThinWire Ajax RIA Framework</name>
   <inceptionYear>2003</inceptionYear>
@@ -83,6 +83,15 @@
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.1</version>
+        <configuration>
+          <source>1.5</source>
+          <target>1.5</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
         <version>2.4</version>
         <configuration>
@@ -120,5 +129,13 @@
       </plugin>
     </plugins>
   </build>
+
+  <distributionManagement>
+    <repository>
+        <id>bintray-tedchoward-ThinWire</id>
+        <name>tedchoward-ThinWire</name>
+        <url>https://api.bintray.com/maven/tedchoward/ThinWire/ThinWire/;publish=1</url>
+    </repository>
+  </distributionManagement>
 
 </project>

@@ -40,7 +40,7 @@ abstract class AbstractHierarchyComponent<C extends HierarchyComponent<HI>, HI e
         }
 
         public void add(int index, I item) {
-            if (item.parent != null) throw new IllegalStateException("item.getParent() != null");
+            if (item.getParent() != null) throw new IllegalStateException("item.getParent() != null");
             l.add(index, item);
             modCount++;
             item.setParent(parent);
@@ -53,7 +53,7 @@ abstract class AbstractHierarchyComponent<C extends HierarchyComponent<HI>, HI e
         }
 
         public I set(int index, I item) {
-            if (item.parent != null) throw new IllegalStateException("item.getParent() != null");
+            if (item.getParent() != null) throw new IllegalStateException("item.getParent() != null");
             AbstractHierarchyComponent hier = parent.getHierarchy();
             I ret = l.get(index);
             hier.removingItem(ret);
@@ -151,7 +151,7 @@ abstract class AbstractHierarchyComponent<C extends HierarchyComponent<HI>, HI e
             return parent;
         }
 
-        private void setParent(Object parent) {
+        void setParent(Object parent) {
             this.parent = parent;
         }            
         
