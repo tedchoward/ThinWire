@@ -16,7 +16,6 @@ the web rendering and browser/server communication automatically.
 ## Notes
 
 - This is an unofficial fork. The official website is [http://thinwire.sourceforge.net][1]
-- ThinWire is a registered trademark of Custom Credit Systems
 - The best documentation available is in the form of an [ebook][2]
   co-authored by yours truly
 
